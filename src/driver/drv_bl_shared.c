@@ -12,14 +12,13 @@
 #include "../hal/hal_ota.h"
 #include "drv_local.h"
 #include "drv_ntp.h"
-#include "drv_deviceclock.h"
 #include "drv_public.h"
 #include "drv_uart.h"
 #include "../cmnds/cmd_public.h" //for enum EventCode
 #include <math.h>
-//#include <time.h>
-#include "../libraries/obktime/obktime.h"	// for time functions
+#include <time.h>
 
+#define CMD_SEND_VAL_MQTT 1
 
 #if ENABLE_BL_TWIN
 #define BL_SENSDATASETS_COUNT 2
@@ -149,7 +148,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t * request, int bPreS
     
     int i;
     const char *mode;
-//    struct tm *ltm;
+    struct tm *ltm;
 
     if(DRV_IsRunning("BL0937")) {
         mode = "BL0937";
@@ -180,8 +179,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t * request, int bPreS
     if ((energyCounterMinutes == NULL) && (i == OBK_CONSUMPTION_LAST_HOUR)) {
       continue;
     }
-    if (i <= OBK__NUM_MEASUREMENTS || TIME_IsTimeSynced()) {
-
+    if (i <= OBK__NUM_MEASUREMENTS || NTP_IsTimeSynced()) {
 			poststr(request, "<tr><td><b>");
 			poststr(request, sensdataset->sensors[i].names.name_friendly);
 			poststr(request, "</b></td><td style='text-align: right;'>");
@@ -201,18 +199,18 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t * request, int bPreS
     {
       poststr(request, "<h5>Energy Clear Date: ");
       if (ConsumptionResetTime) {
-/*        ltm = gmtime(&ConsumptionResetTime);
+        ltm = gmtime(&ConsumptionResetTime);
         hprintf255(request, "%04d-%02d-%02d %02d:%02d:%02d",
           ltm->tm_year+1900, ltm->tm_mon+1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min, ltm->tm_sec);
-*/
-        hprintf255(request, "%s",TS2STR(ConsumptionResetTime,TIME_FORMAT_LONG));
       } else {
         poststr(request, "(not set)");
       }
 
       hprintf255(request, "<br>");
-      if(TIME_IsTimeSynced()==false) {
-        hprintf255(request,"Device time not in sync, daily energy stats disabled.");
+      if(DRV_IsRunning("NTP")==false) {
+        hprintf255(request,"NTP driver is not started, daily energy stats disabled.");
+      } else if (!NTP_IsTimeSynced()) {
+        hprintf255(request,"Daily energy stats awaiting NTP driver to sync real time...");
       }
       hprintf255(request, "</h5>");
 
@@ -328,7 +326,7 @@ commandResult_t BL09XX_ResetEnergyCounterEx(int asensdatasetix, float* pvalue)
       sensdataset->sensors[OBK_CONSUMPTION_TOTAL].lastReading = *pvalue;
       energyCounterStamp[asensdatasetix] = xTaskGetTickCount();
     }
-    ConsumptionResetTime = (time_t)TIME_GetCurrentTime();
+    ConsumptionResetTime = (time_t)NTP_GetCurrentTime();
     if (OTA_GetProgress()==-1)
     { 
       BL09XX_SaveEmeteringStatistics();
@@ -383,19 +381,19 @@ commandResult_t BL09XX_SetupEnergyStatistic(const void *context, const char *cmd
     /* Security limits for sample interval */
     if (sample_time <10)
         sample_time = 10;
-    if (sample_time >900)
-        sample_time = 900;
+    if (sample_time >86400)
+        sample_time = 86400;
 
     /* Security limits for sample count */
-    if (sample_count < 10)
-        sample_count = 10;
+    if (sample_count < 1)
+        sample_count = 1;
     if (sample_count > 180)
         sample_count = 180;   
 
     /* process changes */
     if (enable != 0)
     {
-        addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "Consumption History enabled");
+        addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "Consumption History enabled with with time %d and count %d", sample_time, sample_count);
         /* Enable function */
         energyCounterStatsEnable = true;
         if (energyCounterSampleCount != sample_count)
@@ -448,18 +446,27 @@ commandResult_t BL09XX_SetupEnergyStatistic(const void *context, const char *cmd
 
 commandResult_t BL09XX_VCPPublishIntervals(const void *context, const char *cmd, const char *args, int cmdFlags)
 {
+	int argok=0;
 	Tokenizer_TokenizeString(args, 0);
 	// following check must be done after 'Tokenizer_TokenizeString',
 	// so we know arguments count in Tokenizer. 'cmd' argument is
 	// only for warning display
-	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 2)) {
-		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+//	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 2)) {
+	if(Tokenizer_GetArgsCount()<2) {
+//		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+		argok=-1;
+	} else {
+		changeDoNotSendMinFrames = Tokenizer_GetArgInteger(0);
+		changeSendAlwaysFrames = Tokenizer_GetArgInteger(1);
+		argok=1;
 	}
-
-	changeDoNotSendMinFrames = Tokenizer_GetArgInteger(0);
-	changeSendAlwaysFrames = Tokenizer_GetArgInteger(1);
-
-	return CMD_RES_OK;
+#if CMD_SEND_VAL_MQTT > 0
+	char curvalstr[24]; 
+	sprintf(curvalstr, "%i %i", changeDoNotSendMinFrames, changeSendAlwaysFrames);
+	MQTT_PublishMain_StringString("VCPPublishIntervals", curvalstr, OBK_PUBLISH_FLAG_QOS_ZERO);
+#endif
+//	return CMD_RES_OK;
+	return (argok>0)?CMD_RES_OK:((argok>=-1)?CMD_RES_NOT_ENOUGH_ARGUMENTS:CMD_RES_BAD_ARGUMENT);
 }
 
 #if ENABLE_BL_TWIN
@@ -473,40 +480,52 @@ commandResult_t BL09XX_VCPPrecision(const void* context, const char* cmd, const 
   energysensdataset_t* sensdataset = &datasetlist[asensdatasetix];
 
   int i;
+	int argok=0;
 	Tokenizer_TokenizeString(args, 0);
 	// following check must be done after 'Tokenizer_TokenizeString',
 	// so we know arguments count in Tokenizer. 'cmd' argument is
 	// only for warning display
 	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
-		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+//		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+		argok=-1;
+	} else {
+
+	  for (i = 0; i < Tokenizer_GetArgsCount(); i++) {
+		int val = Tokenizer_GetArgInteger(i);
+		switch(i) {
+		case 0: // voltage
+		sensdataset->sensors[OBK_VOLTAGE].rounding_decimals = val;
+		break;
+		case 1: // current
+		sensdataset->sensors[OBK_CURRENT].rounding_decimals = val;
+		break;
+		case 2: // power
+		sensdataset->sensors[OBK_POWER].rounding_decimals = val;
+		sensdataset->sensors[OBK_POWER_APPARENT].rounding_decimals = val;
+		sensdataset->sensors[OBK_POWER_REACTIVE].rounding_decimals = val;
+		break;
+		case 3: // energy
+		for (int j = OBK_CONSUMPTION__DAILY_FIRST; j <= OBK_CONSUMPTION__DAILY_LAST; j++) {
+			sensdataset->sensors[j].rounding_decimals = val;
+		};
+		break;
+		case 4: // frequency
+		sensdataset->sensors[OBK_FREQUENCY].rounding_decimals = val;
+		break;
+
+		};
+	  }
+//		return CMD_RES_OK;
+		argok=1;
 	}
-
-  for (i = 0; i < Tokenizer_GetArgsCount(); i++) {
-    int val = Tokenizer_GetArgInteger(i);
-    switch(i) {
-    case 0: // voltage
-      sensdataset->sensors[OBK_VOLTAGE].rounding_decimals = val;
-      break;
-    case 1: // current
-      sensdataset->sensors[OBK_CURRENT].rounding_decimals = val;
-      break;
-    case 2: // power
-      sensdataset->sensors[OBK_POWER].rounding_decimals = val;
-      sensdataset->sensors[OBK_POWER_APPARENT].rounding_decimals = val;
-      sensdataset->sensors[OBK_POWER_REACTIVE].rounding_decimals = val;
-      break;
-    case 3: // energy
-      for (int j = OBK_CONSUMPTION__DAILY_FIRST; j <= OBK_CONSUMPTION__DAILY_LAST; j++) {
-        sensdataset->sensors[j].rounding_decimals = val;
-      };
-      break;
-    case 4: // frequency
-      sensdataset->sensors[OBK_FREQUENCY].rounding_decimals = val;
-      break;
-
-    };
-  }
-	return CMD_RES_OK;
+#if CMD_SEND_VAL_MQTT > 0
+	char curvalstr[60]; 
+	sprintf(curvalstr, "%i %i %i %i %i", sensdataset->sensors[OBK_VOLTAGE].rounding_decimals, sensdataset->sensors[OBK_CURRENT].rounding_decimals
+		, sensdataset->sensors[OBK_POWER].rounding_decimals, sensdataset->sensors[OBK_CONSUMPTION__DAILY_FIRST].rounding_decimals
+		, sensdataset->sensors[OBK_FREQUENCY].rounding_decimals);
+	MQTT_PublishMain_StringString("VCPPrecision", curvalstr, OBK_PUBLISH_FLAG_QOS_ZERO);
+#endif
+	return (argok>0)?CMD_RES_OK:((argok>=-1)?CMD_RES_NOT_ENOUGH_ARGUMENTS:CMD_RES_BAD_ARGUMENT);
 }
 
 #if ENABLE_BL_TWIN
@@ -525,30 +544,49 @@ commandResult_t BL09XX_VCPPublishThreshold(const void* context, const char* cmd,
   int asensdatasetix = BL_SENSORS_IX_0;
 #endif
   energysensdataset_t* sensdataset = &datasetlist[asensdatasetix];
-
+	int argok=0;
   Tokenizer_TokenizeString(args, 0);
   // following check must be done after 'Tokenizer_TokenizeString',
   // so we know arguments count in Tokenizer. 'cmd' argument is
   // only for warning display
   if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 3)) {
-    return CMD_RES_NOT_ENOUGH_ARGUMENTS;
-  }
+//		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+		argok=-1;
+	} else {
 
-  sensdataset->sensors[OBK_VOLTAGE].changeSendThreshold = Tokenizer_GetArgFloat(0);
-  sensdataset->sensors[OBK_CURRENT].changeSendThreshold = Tokenizer_GetArgFloat(1);
-  sensdataset->sensors[OBK_POWER].changeSendThreshold = Tokenizer_GetArgFloat(2);
-  sensdataset->sensors[OBK_POWER_APPARENT].changeSendThreshold = Tokenizer_GetArgFloatDefault(2,sensdataset->sensors[OBK_POWER_APPARENT].changeSendThreshold);
-  sensdataset->sensors[OBK_POWER_REACTIVE].changeSendThreshold = Tokenizer_GetArgFloatDefault(2,sensdataset->sensors[OBK_POWER_REACTIVE].changeSendThreshold);
-  //sensdataset->sensors[OBK_POWER_FACTOR].changeSendThreshold = Tokenizer_GetArgFloat(TODO);
+		sensdataset->sensors[OBK_VOLTAGE].changeSendThreshold = Tokenizer_GetArgFloat(0);
+		sensdataset->sensors[OBK_CURRENT].changeSendThreshold = Tokenizer_GetArgFloat(1);
+		sensdataset->sensors[OBK_POWER].changeSendThreshold = Tokenizer_GetArgFloat(2);
+		sensdataset->sensors[OBK_POWER_APPARENT].changeSendThreshold = Tokenizer_GetArgFloatDefault(2,sensdataset->sensors[OBK_POWER_APPARENT].changeSendThreshold);
+		sensdataset->sensors[OBK_POWER_REACTIVE].changeSendThreshold = Tokenizer_GetArgFloatDefault(2,sensdataset->sensors[OBK_POWER_REACTIVE].changeSendThreshold);
+		//sensdataset->sensors[OBK_POWER_FACTOR].changeSendThreshold = Tokenizer_GetArgFloat(TODO);
 
-  if (Tokenizer_GetArgsCount() >= 4) {
-    for (int i = OBK_CONSUMPTION_LAST_HOUR; i <= OBK_CONSUMPTION__DAILY_LAST; i++) {
-      sensdataset->sensors[i].changeSendThreshold = Tokenizer_GetArgFloat(3);
-    }
-  }
+		if (Tokenizer_GetArgsCount() >= 4) {
+			for (int i = OBK_CONSUMPTION_LAST_HOUR; i <= OBK_CONSUMPTION__DAILY_LAST; i++) {
+			sensdataset->sensors[i].changeSendThreshold = Tokenizer_GetArgFloat(3);
+			}
+		}
 
-  sensdataset->sensors[OBK_FREQUENCY].changeSendThreshold = Tokenizer_GetArgFloatDefault(4,sensdataset->sensors[OBK_FREQUENCY].changeSendThreshold);
-  return CMD_RES_OK;
+		sensdataset->sensors[OBK_FREQUENCY].changeSendThreshold = Tokenizer_GetArgFloatDefault(4,sensdataset->sensors[OBK_FREQUENCY].changeSendThreshold);
+		//		return CMD_RES_OK;
+		argok=1;
+	}
+#if CMD_SEND_VAL_MQTT > 0
+	char curvalstr[106]; //20char per value should be enough
+/*	sprintf(curvalstr, "%g %g %g %g %g", sensdataset->sensors[OBK_VOLTAGE].changeSendThreshold, sensdataset->sensors[OBK_CURRENT].changeSendThreshold
+		, sensdataset->sensors[OBK_POWER].changeSendThreshold, sensdataset->sensors[OBK_CONSUMPTION__DAILY_FIRST].changeSendThreshold
+		, sensdataset->sensors[OBK_FREQUENCY].changeSendThreshold);
+*/
+		int prec=3;
+		sprintf(curvalstr, "%.*f %.*f %.*f %.*f %.*f"
+			, sensdataset->sensors[OBK_VOLTAGE].rounding_decimals, sensdataset->sensors[OBK_VOLTAGE].changeSendThreshold
+			, sensdataset->sensors[OBK_CURRENT].rounding_decimals, sensdataset->sensors[OBK_CURRENT].changeSendThreshold
+			, sensdataset->sensors[OBK_POWER].rounding_decimals, sensdataset->sensors[OBK_POWER].changeSendThreshold
+			, sensdataset->sensors[OBK_CONSUMPTION__DAILY_FIRST].rounding_decimals, sensdataset->sensors[OBK_CONSUMPTION__DAILY_FIRST].changeSendThreshold
+			, sensdataset->sensors[OBK_FREQUENCY].rounding_decimals, sensdataset->sensors[OBK_FREQUENCY].changeSendThreshold);
+	MQTT_PublishMain_StringString("VCPPublishThreshold", curvalstr, OBK_PUBLISH_FLAG_QOS_ZERO);
+#endif
+	return (argok>0)?CMD_RES_OK:((argok>=-1)?CMD_RES_NOT_ENOUGH_ARGUMENTS:CMD_RES_BAD_ARGUMENT);
 }
 
 #if ENABLE_BL_TWIN
@@ -562,24 +600,34 @@ commandResult_t BL09XX_VCPPublishThreshold(const void* context, const char* cmd,
 commandResult_t BL09XX_SetupConsumptionThreshold(const void *context, const char *cmd, const char *args, int cmdFlags)
 {
     float threshold;
+	int argok=0;
     Tokenizer_TokenizeString(args,0);
 	// following check must be done after 'Tokenizer_TokenizeString',
 	// so we know arguments count in Tokenizer. 'cmd' argument is
 	// only for warning display
 	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
-		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
-	}
+//		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+		argok=-1;
+	} else {
     
-    threshold = (float)atof(Tokenizer_GetArg(0));
+		threshold = (float)atof(Tokenizer_GetArg(0));
 
-    if (threshold<1.0f)
-        threshold = 1.0f;
-    if (threshold>5000.0f)
-        threshold = 5000.0f;
-    changeSavedThresholdEnergy = threshold;
-    addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "ConsumptionThreshold: %1.1f", changeSavedThresholdEnergy);
+		if (threshold<1.0f)
+			threshold = 1.0f;
+		if (threshold>5000.0f)
+			threshold = 5000.0f;
+		changeSavedThresholdEnergy = threshold;
+		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "ConsumptionThreshold: %1.1f", changeSavedThresholdEnergy);
 
-    return CMD_RES_OK;
+//		return CMD_RES_OK;
+		argok=1;
+	}
+#if CMD_SEND_VAL_MQTT > 0
+	char curvalstr[12]; 
+	sprintf(curvalstr, "%f", changeSavedThresholdEnergy); //limited above
+	MQTT_PublishMain_StringString("VCPPrecision", curvalstr, OBK_PUBLISH_FLAG_QOS_ZERO);
+#endif
+	return (argok>0)?CMD_RES_OK:((argok>=-1)?CMD_RES_NOT_ENOUGH_ARGUMENTS:CMD_RES_BAD_ARGUMENT);
 }
 
 bool Channel_AreAllRelaysOpen() {
@@ -634,8 +682,8 @@ void BL_ProcessUpdate(float voltage, float current, float power,
   cJSON* stats;
   char *msg;
   portTickType interval;
-  time_t deviceTime;
-//  struct tm *ltm;
+  time_t ntpTime;
+  struct tm *ltm;
   char datetime[64];
   float diff;
 
@@ -680,8 +728,17 @@ void BL_ProcessUpdate(float voltage, float current, float power,
   {
     float energy = 0;
     if (isnan(energyWh)) {
-      xPassedTicks = (int)(xTaskGetTickCount() - energyCounterStamp[asensdatasetix]);
-      // FIXME: Wrong calculation if tick count overflows
+//fix for this below      xPassedTicks = (int)(xTaskGetTickCount() - energyCounterStamp[asensdatasetix]);
+      //fixed? FIXME: Wrong calculation if tick count overflows
+//reuse same var, verify on every platform tickcount is uint32, otherwise replace 0xFFFFFFFFUL accordingly with 16/64bit constant
+	xPassedTicks = xTaskGetTickCount();
+	if (xPassedTicks >= energyCounterStamp[asensdatasetix]) {
+		xPassedTicks -= energyCounterStamp[asensdatasetix];
+	} else {
+		xPassedTicks = (0xFFFFFFFFUL - xPassedTicks) + energyCounterStamp[asensdatasetix] + 1;
+		addLogAdv(LOG_DEBUG, LOG_FEATURE_ENERGYMETER,"diff prev %lu now = %lu\n"
+			, energyCounterStamp[asensdatasetix], xPassedTicks);
+	}
       if (xPassedTicks <= 0)
         xPassedTicks = 1;
       energy = xPassedTicks * power / (3600000.0f / portTICK_PERIOD_MS);
@@ -703,27 +760,23 @@ void BL_ProcessUpdate(float voltage, float current, float power,
     #endif
     sensdataset->sensors[OBK_CONSUMPTION_TODAY].lastReading += energy;
 
-    if (TIME_IsTimeSynced()) {
-      deviceTime = (time_t)TIME_GetCurrentTime();
-//      ltm = gmtime(&deviceTime);
-      uint8_t mday=TIME_GetMDay();
+    if (NTP_IsTimeSynced()) {
+      ntpTime = (time_t)NTP_GetCurrentTime();
+      ltm = gmtime(&ntpTime);
       if (ConsumptionResetTime == 0)
-        ConsumptionResetTime = (time_t)deviceTime;
+        ConsumptionResetTime = (time_t)ntpTime;
 
       if (actual_mday[asensdatasetix] == -1)
       {
-//        actual_mday[asensdatasetix] = ltm->tm_mday;
-        actual_mday[asensdatasetix] = mday;
+        actual_mday[asensdatasetix] = ltm->tm_mday;
       }
-//      if (actual_mday[asensdatasetix] != ltm->tm_mday)
-      if (actual_mday[asensdatasetix] != mday)
+      if (actual_mday[asensdatasetix] != ltm->tm_mday)
       {
         for (i = OBK_CONSUMPTION__DAILY_LAST; i >= OBK_CONSUMPTION__DAILY_FIRST; i--) {
           sensdataset->sensors[i].lastReading = sensdataset->sensors[i - 1].lastReading;
         }
         sensdataset->sensors[OBK_CONSUMPTION_TODAY].lastReading = 0.0;
-//        actual_mday[asensdatasetix] = ltm->tm_mday;
-        actual_mday[asensdatasetix] = mday;
+        actual_mday[asensdatasetix] = ltm->tm_mday;
 
         //MQTT_PublishMain_StringFloat(sensdataset->sensors[OBK_CONSUMPTION_YESTERDAY].names.name_mqtt, BL_ChangeEnergyUnitIfNeeded(sensors[OBK_CONSUMPTION_YESTERDAY].lastReading ),
         //							sensdataset->sensors[OBK_CONSUMPTION_YESTERDAY].rounding_decimals, 0);
@@ -741,13 +794,18 @@ void BL_ProcessUpdate(float voltage, float current, float power,
     {
       interval = energyCounterSampleInterval;
       interval *= (1000 / portTICK_PERIOD_MS);
-      if ((xTaskGetTickCount() - energyCounterMinutesStamp) >= interval)
+	  int samplesperhour = (int)(3600 / energyCounterSampleInterval);
+	  addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_ENERGYMETER, "ts %5d encounterSintvl %d = interval %d now-encounterTS %d ensamplelcnt %d\n smp/hr %d", g_secondsElapsed
+			, energyCounterSampleInterval, interval, (xTaskGetTickCount() - energyCounterMinutesStamp), energyCounterSampleCount, samplesperhour);
+	  if ((xTaskGetTickCount() - energyCounterMinutesStamp) >= interval)
       {
         if (energyCounterMinutes != NULL) {
           sensdataset->sensors[OBK_CONSUMPTION_LAST_HOUR].lastReading = 0;
           for (int i = 0; i < energyCounterSampleCount; i++) {
             sensdataset->sensors[OBK_CONSUMPTION_LAST_HOUR].lastReading += energyCounterMinutes[i];
           }
+			addLogAdv(LOG_DEBUG, LOG_FEATURE_ENERGYMETER, "ts %5d encounterSintvl %d = interval %d, diff now-encounterTS - interval = %d ensamplelcnt %d\n smp/hr %d", g_secondsElapsed
+					, energyCounterSampleInterval, (xTaskGetTickCount() - energyCounterMinutesStamp) - interval, energyCounterSampleCount, samplesperhour);
         }
 #if ENABLE_MQTT
         if ((energyCounterStatsJSONEnable == true) && (MQTT_IsReady() == true))
@@ -759,34 +817,21 @@ void BL_ProcessUpdate(float voltage, float current, float power,
           cJSON_AddNumberToObject(root, "consumption_stat_index", energyCounterMinutesIndex);
           cJSON_AddNumberToObject(root, "consumption_sample_count", energyCounterSampleCount);
           cJSON_AddNumberToObject(root, "consumption_sampling_period", energyCounterSampleInterval);
-          if(TIME_IsTimeSynced() == true)
+          if(NTP_IsTimeSynced() == true)
           {
             cJSON_AddNumberToObject(root, "consumption_today", BL_ChangeEnergyUnitIfNeeded(DRV_GetReading(OBK_CONSUMPTION_TODAY)));
             cJSON_AddNumberToObject(root, "consumption_yesterday", BL_ChangeEnergyUnitIfNeeded(DRV_GetReading(OBK_CONSUMPTION_YESTERDAY)));
-//            ltm = gmtime(&ConsumptionResetTime);
-/*
-            if (TIME_GetTimesZoneOfsSeconds()>0)
+            ltm = gmtime(&ConsumptionResetTime);
+            if (NTP_GetTimesZoneOfsSeconds()>0)
             {
               snprintf(datetime,sizeof(datetime), "%04i-%02i-%02iT%02i:%02i+%02i:%02i",
                 ltm->tm_year+1900, ltm->tm_mon+1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min,
-                TIME_GetTimesZoneOfsSeconds()/3600, (TIME_GetTimesZoneOfsSeconds()/60) % 60);
+                NTP_GetTimesZoneOfsSeconds()/3600, (NTP_GetTimesZoneOfsSeconds()/60) % 60);
             } else {
               snprintf(datetime, sizeof(datetime), "%04i-%02i-%02iT%02i:%02i-%02i:%02i",
                 ltm->tm_year+1900, ltm->tm_mon+1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min,
-                abs(TIME_GetTimesZoneOfsSeconds()/3600), (abs(TIME_GetTimesZoneOfsSeconds())/60) % 60);
+                abs(NTP_GetTimesZoneOfsSeconds()/3600), (abs(NTP_GetTimesZoneOfsSeconds())/60) % 60);
             }
-*/
-            // optimized output: since we can be sure, a negative offset is minumum 1 hour, 
-            // the sign for the hour will be "-" for "negative" timezones 
-            //    this wouldn't work if a negative offset less than one hour would be possible
-/*
-            snprintf(datetime, sizeof(datetime), "%04i-%02i-%02iT%02i:%02i%+03i:%02i",
-                ltm->tm_year+1900, ltm->tm_mon+1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min,
-                TIME_GetTimesZoneOfsSeconds()/3600, (abs(TIME_GetTimesZoneOfsSeconds())/60) % 60);
-*/            
-            snprintf(datetime, sizeof(datetime), "%.16s%+03i:%02i",TS2STR(ConsumptionResetTime, TIME_FORMAT_ISO_8601),
-                TIME_GetTimesZoneOfsSeconds()/3600, (abs(TIME_GetTimesZoneOfsSeconds())/60) % 60);
-
             cJSON_AddStringToObject(root, "consumption_clear_date", datetime);
           }
 
@@ -902,31 +947,18 @@ void BL_ProcessUpdate(float voltage, float current, float power,
         if (i == OBK_CONSUMPTION_CLEAR_DATE) {
           {
             sensdataset->sensors[i].lastReading = ConsumptionResetTime; //Only to make the 'nochangeframe' mechanism work here
-//            ltm = gmtime(&ConsumptionResetTime);
+            ltm = gmtime(&ConsumptionResetTime);
             /* 2019-09-07T15:50-04:00 */
-/*
-            if (TIME_GetTimesZoneOfsSeconds()>0)
+            if (NTP_GetTimesZoneOfsSeconds()>0)
             {
               snprintf(datetime, sizeof(datetime), "%04i-%02i-%02iT%02i:%02i+%02i:%02i",
                 ltm->tm_year+1900, ltm->tm_mon+1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min,
-                TIME_GetTimesZoneOfsSeconds()/3600, (TIME_GetTimesZoneOfsSeconds()/60) % 60);
+                NTP_GetTimesZoneOfsSeconds()/3600, (NTP_GetTimesZoneOfsSeconds()/60) % 60);
             } else {
               snprintf(datetime, sizeof(datetime), "%04i-%02i-%02iT%02i:%02i-%02i:%02i",
                 ltm->tm_year+1900, ltm->tm_mon+1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min,
-                abs(TIME_GetTimesZoneOfsSeconds()/3600), (abs(TIME_GetTimesZoneOfsSeconds())/60) % 60);
+                abs(NTP_GetTimesZoneOfsSeconds()/3600), (abs(NTP_GetTimesZoneOfsSeconds())/60) % 60);
             }
-*/
-            // optimized output: since we can be sure, a negative offset is minumum 1 hour, 
-            // the sign for the hour will be "-" for "negative" timezones 
-            //    this wouldn't work if a negative offset less than one hour would be possible
-/*
-            snprintf(datetime, sizeof(datetime), "%04i-%02i-%02iT%02i:%02i%+03i:%02i",
-                ltm->tm_year+1900, ltm->tm_mon+1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min,
-                TIME_GetTimesZoneOfsSeconds()/3600, (abs(TIME_GetTimesZoneOfsSeconds())/60) % 60);
-*/
-            snprintf(datetime, sizeof(datetime), "%.16s%+03i:%02i",TS2STR(ConsumptionResetTime, TIME_FORMAT_ISO_8601),
-                TIME_GetTimesZoneOfsSeconds()/3600, (abs(TIME_GetTimesZoneOfsSeconds())/60) % 60);
-            
             MQTT_PublishMain_StringString(sensdataset->sensors[i].names.name_mqtt, datetime, 0);
           }
         } else { //all other sensors
