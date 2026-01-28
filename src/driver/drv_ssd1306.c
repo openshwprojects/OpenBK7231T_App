@@ -182,7 +182,7 @@ void SSD1306_OnEverySecond() {
 
 
 commandResult_t SSD1306_Cmd_Print(const void* context, const char* cmd, const char* args, int cmdFlags) {
-	Tokenizer_TokenizeString(args, 0);
+	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES);
 	// following check must be done after 'Tokenizer_TokenizeString',
 	// so we know arguments count in Tokenizer. 'cmd' argument is
 	// only for warning display
@@ -239,6 +239,14 @@ void SSD1306_Cmd_Rect(const void* context, const char* cmd, const char* args, in
 }
 // startDriver SSD1306 16 20 0x3C
 // backlog stopdriver SSD1306 ; startDriver SSD1306 16 20 0x3C
+/*
+
+
+backlog stopdriver SSD1306 ; startDriver SSD1306 16 20 0x3C
+ssd1306_clear 0
+ssd1306_on 1
+ssd1306_print 0 0 Hello
+*/
 void SSD1306_Init() {
 
 	g_softI2C.pin_clk = Tokenizer_GetPin(1, 16);
