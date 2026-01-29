@@ -168,6 +168,22 @@ void Test_TuyaMCU_Mult() {
 	Test_TuyaMCU_Mult_Internal(0.5f);
 	Test_TuyaMCU_Mult_Internal(100.0f);
 }
+void Test_TuyaMCU_TH08() {
+	SIM_ClearOBK(0);
+	SIM_UART_InitReceiveRingBuffer(2048);
+	CMD_ExecuteCommand("startDriver TuyaMCU", 0);
+	CMD_ExecuteCommand("startDriver tmSensor", 0);
+
+	Sim_RunFrames(100, false);
+	SELFTEST_ASSERT_HAS_SENT_UART_STRING("55 AA	00	01		00 00		00	");
+
+
+	CMD_ExecuteCommand("uartFakeHex 55 AA	03	01		00 37	7B2270223A2269756E697661687039327A6C6C643064222C2276223A22312E302E30222C226D223A302C226E223A312C22736D223A307D	18	", 0);
+
+	Sim_RunSeconds(3, false);
+	//SELFTEST_ASSERT_HAS_SENT_UART_STRING("55 AA	03	02		00 00		04	");
+
+}
 void Test_TuyaMCU_Boolean() {
 	SIM_ClearOBK(0);
 	SIM_UART_InitReceiveRingBuffer(2048);
@@ -176,15 +192,15 @@ void Test_TuyaMCU_Boolean() {
 
 	CMD_ExecuteCommand("setChannel 2 1", 0);
 	/*
-	55 AA    00    06        00 05    0201000101    0F    
-	HEADER    VER=00    SetDP        LEN    dpId=2 Bool V=1        CHK    
+	55 AA    00    06        00 05    0201000101    0F
+	HEADER    VER=00    SetDP        LEN    dpId=2 Bool V=1        CHK
 	*/
 	SELFTEST_ASSERT_HAS_SENT_UART_STRING("55 AA    00    06        00 05    0201000101    0F");
 	SELFTEST_ASSERT_HAS_UART_EMPTY();
 	//CMD_ExecuteCommand("setChannel 2 0", 0);
 	/*
-	55 AA    00    06        00 05    0201000100    0E    
-	HEADER    VER=00    SetDP        LEN    dpId=2 Bool V=0        CHK    
+	55 AA    00    06        00 05    0201000100    0E
+	HEADER    VER=00    SetDP        LEN    dpId=2 Bool V=0        CHK
 	*/
 	//SELFTEST_ASSERT_HAS_SENT_UART_STRING("55 AA    00    06        00 05    0201000100    0E");
 	//SELFTEST_ASSERT_HAS_UART_EMPTY();

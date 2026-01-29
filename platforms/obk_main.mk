@@ -148,6 +148,7 @@ OBKM_SRC  += $(OBK_SRCS)driver/drv_spiLED.c
 OBKM_SRC  += $(OBK_SRCS)driver/drv_spi_flash.c
 OBKM_SRC  += $(OBK_SRCS)driver/drv_spidma.c
 OBKM_SRC  += $(OBK_SRCS)driver/drv_ssdp.c
+OBKM_SRC  += $(OBK_SRCS)driver/drv_ssd1306.c
 OBKM_SRC  += $(OBK_SRCS)driver/drv_tasmotaDeviceGroups.c
 OBKM_SRC  += $(OBK_SRCS)driver/drv_tclAC.c
 OBKM_SRC  += $(OBK_SRCS)driver/drv_test.c
