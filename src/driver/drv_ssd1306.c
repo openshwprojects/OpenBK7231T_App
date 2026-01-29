@@ -251,11 +251,21 @@ void SSD1306_Cmd_Rect(const void* context, const char* cmd, const char* args, in
 /*
 
 
+
+
 backlog stopdriver SSD1306 ; startDriver SSD1306 16 20 0x3C
 ssd1306_clear 0
 ssd1306_on 1
+setChannel 12 0
+again:
+delay_s 1
 ssd1306_goto 0 0
-ssd1306_print Hello
+ssd1306_print "Hello "
+ssd1306_print  $CH12
+addChannel 12 1
+goto again
+
+
 */
 void SSD1306_Init() {
 
