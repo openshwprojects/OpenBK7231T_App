@@ -27,7 +27,6 @@ int g_cfg_pendingChanges = 0;
 #define MAIN_CFG_VERSION_V3 3
 // version 4 - bumped size by 1024,
 // added alternate ssid fields
-
 #define MAIN_CFG_VERSION 5
 
 static byte CFG_CalcChecksum(mainConfig_t *inf) {
@@ -50,7 +49,6 @@ static byte CFG_CalcChecksum(mainConfig_t *inf) {
 	{
 		configSize = sizeof(mainConfig_t);
 	}
-	configSize = sizeof(mainConfig_t);
 	remaining_size = configSize - header_size;
 
 	ADDLOG_DEBUG(LOG_FEATURE_CFG, "CFG_CalcChecksum: header size %i, total size %i, rem size %i\n",
