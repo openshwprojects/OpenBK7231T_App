@@ -29,7 +29,7 @@ void DRV_MAX72XX_Clock_OnEverySecond();
 void DRV_MAX72XX_Clock_RunFrame();
 void DRV_MAX72XX_Clock_Init();
 
-void SSD1306_Init();
+void SSD1306_DRV_Init();
 void SSD1306_OnEverySecond();
 
 void DRV_ADCButton_Init();

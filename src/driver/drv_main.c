@@ -1013,7 +1013,7 @@ static driver_t g_drivers[] = {
 	//drvdetail:"descr":"SSD1306SSD1306SSD1306SSD1306SSD1306SSD1306e.",
 	//drvdetail:"requires":""}
 	{ "SSD1306",                              // Driver Name
-		SSD1306_Init,                             // Init
+		SSD1306_DRV_Init,                             // Init
 		SSD1306_OnEverySecond,                    // onEverySecond
 		NULL, // appendInformationToHTTPIndexPage
 		NULL,                                    // runQuickTick
