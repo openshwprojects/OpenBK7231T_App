@@ -230,7 +230,7 @@ commandResult_t SSD1306_Cmd_Clear(const void* context, const char* cmd, const ch
 	return CMD_RES_OK;
 }
 
-void SSD1306_Cmd_Rect(const void* context, const char* cmd, const char* args, int cmdFlags) {
+commandResult_t SSD1306_Cmd_Rect(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	Tokenizer_TokenizeString(args, 0);
 	// following check must be done after 'Tokenizer_TokenizeString',
 	// so we know arguments count in Tokenizer. 'cmd' argument is
