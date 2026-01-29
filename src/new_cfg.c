@@ -23,17 +23,11 @@ int g_cfg_pendingChanges = 0;
 #define CFG_IDENT_1 'F'
 #define CFG_IDENT_2 'G'
 
-//20260107 remove special handling for W600 - use default config
-/*
+
 #define MAIN_CFG_VERSION_V3 3
 // version 4 - bumped size by 1024,
 // added alternate ssid fields
-#if PLATFORM_W600
-#define MAIN_CFG_VERSION 3
-#else
-#define MAIN_CFG_VERSION 5
-#endif
-*/
+
 #define MAIN_CFG_VERSION 5
 
 static byte CFG_CalcChecksum(mainConfig_t *inf) {
@@ -44,8 +38,6 @@ static byte CFG_CalcChecksum(mainConfig_t *inf) {
 
 	header_size = ((byte*)&inf->version)-((byte*)inf);
 
-//20260107 remove special handling for W600 - use default config
-/*
 	if (inf->version == MAIN_CFG_VERSION_V3) {
 		configSize = MAGIC_CONFIG_SIZE_V3;
 #if ALLOW_SSID2
@@ -58,7 +50,6 @@ static byte CFG_CalcChecksum(mainConfig_t *inf) {
 	{
 		configSize = sizeof(mainConfig_t);
 	}
-*/
 	configSize = sizeof(mainConfig_t);
 	remaining_size = configSize - header_size;
 
@@ -866,6 +857,14 @@ void CFG_InitAndLoad() {
 			WiFI_GetMacAddress((char*)g_cfg.mac);
 		}
 		WiFI_SetMacAddress((char*)g_cfg.mac);
+#endif
+#if defined(PLATFORM_W600)
+		if (g_cfg.version <= MAIN_CFG_VERSION_V3){
+			// we read a valid V3 config, convert to V5
+			// (flash_vars should have been moved before by HAL_FlashVars_IncreaseBootCount() ... 
+			g_cfg.version = MAIN_CFG_VERSION;
+			g_cfg_pendingChanges ++;
+		}
 #endif
 		addLogAdv(LOG_WARN, LOG_FEATURE_CFG, "CFG_InitAndLoad: Correct config has been loaded with %i changes count.",g_cfg.changeCounter);
 	}

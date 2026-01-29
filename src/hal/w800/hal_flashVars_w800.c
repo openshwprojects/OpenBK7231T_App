@@ -12,6 +12,7 @@ static int FLASH_VARS_STRUCTURE_SIZE = sizeof(FLASH_VARS_STRUCTURE);
 //20260106 - try for V4 of config - (3584 + 512 instead of 2016 + 512) so use 3584+512 = 4096
 
 #if defined(PLATFORM_W600) 
+#define FLASH_VARS_STRUCTURE_ADDR_V3 (0xF0000 + 2528)
 #define FLASH_VARS_STRUCTURE_ADDR (0xF0000 + 4096)
 #else
 #include "easyflash.h"
@@ -47,8 +48,48 @@ void write_flash_boot_content() {
 /// @brief Update the boot count in flash. This is called called at startup. This is what initializes flash_vars.
 void HAL_FlashVars_IncreaseBootCount() {
 	initFlashIfNeeded();
-	tls_fls_read(FLASH_VARS_STRUCTURE_ADDR, &flash_vars, FLASH_VARS_STRUCTURE_SIZE);
+/*
+To check for an update from config V3 we'll need the first bytes from config to check the version ...
 
+typedef struct mainConfig_s {
+	byte ident0;
+	byte ident1;
+	byte ident2;
+	byte crc;
+	// 0x4
+	int version;
+	// 0x08
+	uint32_t genericFlags;
+	....
+	}
+	
+we will use some magic to check ident as int:
+
+Read two "int", the first memory bytes will be
+	"434647ZZ"	(ZZ is the crc, the rest "CFG")
+	since we are on little endian, this represents
+	0xZZ474643
+	so first int & 0x00FFFFFF = 0x00474643 
+	as an 32 bit int this is 4671043 
+	
+	
+	
+
+*/
+	struct {
+		int dummy;
+		// 0x4
+		int version;
+	}tempstruct;
+	tls_fls_read(0xF0000, &tempstruct, sizeof(tempstruct));
+	if ( ((tempstruct.dummy & 0x00FFFFFF) == 0x00474643) && tempstruct.version < 4) {
+		// we have an old version, so flashvars start at FLASH_VARS_STRUCTURE_ADDR_V3 ...
+		// ... so let's read from old location.
+		// After increasing boot_count, it will be written to the new location!
+		tls_fls_read(FLASH_VARS_STRUCTURE_ADDR_V3, &flash_vars, FLASH_VARS_STRUCTURE_SIZE);
+	} else {
+		tls_fls_read(FLASH_VARS_STRUCTURE_ADDR, &flash_vars, FLASH_VARS_STRUCTURE_SIZE);
+	}
 	flash_vars.boot_count++;
 	ADDLOG_INFO(LOG_FEATURE_CFG, "####### Boot Count %d #######", flash_vars.boot_count);
 	write_flash_boot_content();
