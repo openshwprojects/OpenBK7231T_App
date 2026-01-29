@@ -267,7 +267,7 @@ goto again
 
 
 */
-void SSD1306_Init() {
+void SSD1306_DRV_Init() {
 
 	g_softI2C.pin_clk = Tokenizer_GetPin(1, 16);
 	g_softI2C.pin_data = Tokenizer_GetPin(2, 20);
