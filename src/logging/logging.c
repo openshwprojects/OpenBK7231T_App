@@ -193,15 +193,17 @@ commandResult_t log_port(const void* context, const char* cmd, const char* args,
 	idx = Tokenizer_GetArgInteger(0);
 	switch(idx)
 	{
-		default:
+		case 0:
 			port = SER_PORT_UART0;
 			break;
 		case 1:
 			port = SER_PORT_UART1;
 			break;
-		case 2:
-			port = SER_PORT_UART2;
-			break;
+		//case 2:
+		//	port = SER_PORT_UART2;
+		//	break;
+		default:
+			return CMD_RES_BAD_ARGUMENT;
 	}
 
 	ln_kv_set(KV_LOG_PORT, &port, sizeof(serial_port_id_t));
