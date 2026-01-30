@@ -861,6 +861,7 @@ void CFG_InitAndLoad() {
 			// we read a valid V3 config, convert to V5
 			// (flash_vars should have been moved before by HAL_FlashVars_IncreaseBootCount() ... 
 			g_cfg.version = MAIN_CFG_VERSION;
+			memset(&g_cfg+MAGIC_CONFIG_SIZE_V3,0,sizeof(mainConfig_t)-MAGIC_CONFIG_SIZE_V3);
 			g_cfg_pendingChanges ++;
 		}
 #endif
