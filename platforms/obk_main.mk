@@ -96,6 +96,7 @@ OBKM_SRC  += $(OBK_SRCS)driver/drv_ddp.c
 OBKM_SRC  += $(OBK_SRCS)driver/drv_debouncer.c
 OBKM_SRC  += $(OBK_SRCS)driver/drv_dht_internal.c
 OBKM_SRC  += $(OBK_SRCS)driver/drv_dht.c
+OBKM_SRC  += $(OBK_SRCS)driver/drv_dmx512.c
 OBKM_SRC  += $(OBK_SRCS)driver/drv_drawers.c
 OBKM_SRC  += $(OBK_SRCS)driver/drv_doorSensorWithDeepSleep.c
 OBKM_SRC  += $(OBK_SRCS)driver/drv_ds1820_common.c
