@@ -1069,7 +1069,9 @@ void Main_OnEverySecond()
 #if ENABLE_DRIVER_HLW8112SPI
 			HLW8112_Save_Statistics();
 #endif 
-			ADDLOGF_INFO("Going to call HAL_RebootModule\r\n");
+			ADDLOGF_INFO("Rebooting...\r\n");
+			// call disconnect so that fast connect wouldn't fail
+			HAL_DisconnectFromWifi();
 			HAL_RebootModule();
 		}
 		else {
@@ -1116,6 +1118,7 @@ void QuickTick(void* param)
 {
 	if (g_bWantPinDeepSleep) {
 		g_bWantPinDeepSleep = 0;
+		HAL_DisconnectFromWifi();
 		PINS_BeginDeepSleepWithPinWakeUp(g_pinDeepSleepWakeUp);
 		return;
 	}

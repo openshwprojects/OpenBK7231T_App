@@ -78,3 +78,9 @@ SRC_C += ${MBEDTLS_DIR}/library/ssl_cli.c
 
 endif   #ifeq ($(CFG_USE_MQTT_TLS),1)
 endif   #ifeq ($(TARGET_PLATFORM),bk7231n)
+
+SRC_C += $(OBK_DIR)/libraries/easyflash/ports/ef_port.c
+SRC_C += $(OBK_DIR)/libraries/easyflash/src/easyflash.c
+SRC_C += $(OBK_DIR)/libraries/easyflash/src/ef_env.c
+SRC_C += $(OBK_DIR)/libraries/easyflash/src/ef_utils.c
+INCLUDES += -I$(OBK_DIR)/libraries/easyflash/inc

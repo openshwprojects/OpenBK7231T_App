@@ -43,6 +43,12 @@ APP_CXX += $(OBKM_SRC_CXX)
 CCFLAGS += $(OBK_CFLAGS)
 
 
+APP_C += $(OBK_DIR)/../libraries/easyflash/ports/ef_port.c
+APP_C += $(OBK_DIR)/../libraries/easyflash/src/easyflash.c
+APP_C += $(OBK_DIR)/../libraries/easyflash/src/ef_env.c
+APP_C += $(OBK_DIR)/../libraries/easyflash/src/ef_utils.c
+INCLUDES += -I$(OBK_DIR)/../libraries/easyflash/inc
+
 BERRY_MODULEPATH = $(OBK_DIR)/berry/modules
 BERRY_SRCPATH = $(OBK_DIR)/../libraries/berry/src
 include $(OBK_DIR)/../libraries/berry.mk

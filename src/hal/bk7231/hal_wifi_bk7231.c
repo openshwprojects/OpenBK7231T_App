@@ -38,7 +38,7 @@ static char g_IP[32] = "unknown";
 static int g_bOpenAccessPointMode = 0;
 char *get_security_type(int type);
 bool g_bStaticIP = false, g_needFastConnectSave = false;
-
+static obkFastConnectData_t fcdata = { 0 };
 IPStatusTypedef ipStatus;
 // This must return correct IP for both SOFT_AP and STATION modes,
 // because, for example, javascript control panel requires it
@@ -194,10 +194,10 @@ void HAL_PrintNetworkInfo()
 				// If we use password instead of psk, then first attempt to connect will almost always fail.
 				// And even if it succeeds, first connect is not faster.
 				ADDLOG_WARN(LOG_FEATURE_GENERAL, "Fast connect is not supported with current AP encryption.");
-				if(g_cfg.fcdata.channel != 0)
+				if(fcdata.channel != 0)
 				{
-					g_cfg.fcdata.channel = 0;
-					g_cfg_pendingChanges++;
+					fcdata.channel = 0;
+					HAL_DisableEnhancedFastConnect();
 				}
 			}
 			else
@@ -212,17 +212,17 @@ void HAL_PrintNetworkInfo()
 
 				for(int i = 0; i < 32 && sprintf(psks + i * 2, "%02x", psk[i]) == 2; i++);
 
-				if(memcmp((char*)psks, g_cfg.fcdata.psk, 64) != 0 ||
-					memcmp(g_cfg.fcdata.bssid, linkStatus.bssid, 6) != 0 ||
-					linkStatus.channel != g_cfg.fcdata.channel ||
-					linkStatus.security != g_cfg.fcdata.security_type)
+				if(memcmp((char*)psks, fcdata.psk, 64) != 0 ||
+					memcmp(fcdata.bssid, linkStatus.bssid, 6) != 0 ||
+					linkStatus.channel != fcdata.channel ||
+					linkStatus.security != fcdata.security_type)
 				{
 					ADDLOG_INFO(LOG_FEATURE_GENERAL, "Saved fast connect data differ to current one, saving...");
-					memcpy(g_cfg.fcdata.bssid, linkStatus.bssid, 6);
-					g_cfg.fcdata.channel = linkStatus.channel;
-					g_cfg.fcdata.security_type = linkStatus.security;
-					memcpy(g_cfg.fcdata.psk, psks, sizeof(g_cfg.fcdata.psk));
-					g_cfg_pendingChanges++;
+					memcpy(fcdata.bssid, linkStatus.bssid, 6);
+					fcdata.channel = linkStatus.channel;
+					fcdata.security_type = linkStatus.security;
+					memcpy(fcdata.psk, psks, sizeof(fcdata.psk));
+					ef_set_env_blob("fcdata", &fcdata, sizeof(obkFastConnectData_t));
 				}
 			}
 			g_needFastConnectSave = false;
@@ -402,19 +402,16 @@ void HAL_ConnectToWiFi(const char* oob_ssid, const char* connect_key, obkStaticI
 
 void HAL_FastConnectToWiFi(const char* oob_ssid, const char* connect_key, obkStaticIP_t* ip)
 {
-	if(strnlen(g_cfg.fcdata.psk, 64) == 64 &&
-		g_cfg.fcdata.channel != 0 &&
-		g_cfg.fcdata.security_type != 0 &&
-		!(g_cfg.fcdata.bssid[0] == 0 && g_cfg.fcdata.bssid[1] == 0 && g_cfg.fcdata.bssid[2] == 0 &&
-		g_cfg.fcdata.bssid[3] == 0 && g_cfg.fcdata.bssid[4] == 0 && g_cfg.fcdata.bssid[5] == 0))
+	int len = ef_get_env_blob("fcdata", &fcdata, sizeof(obkFastConnectData_t), NULL);
+	if(len == sizeof(obkFastConnectData_t) && fcdata.channel != 0)
 	{
 		ADDLOG_INFO(LOG_FEATURE_GENERAL, "We have fast connection data, connecting...");
 		network_InitTypeDef_adv_st network_cfg;
 		memset(&network_cfg, 0, sizeof(network_InitTypeDef_adv_st));
 		strcpy(network_cfg.ap_info.ssid, oob_ssid);
-		memcpy(network_cfg.key, g_cfg.fcdata.psk, 64);
+		memcpy(network_cfg.key, fcdata.psk, 64);
 		network_cfg.key_len = 64;
-		memcpy(network_cfg.ap_info.bssid, g_cfg.fcdata.bssid, sizeof(g_cfg.fcdata.bssid));
+		memcpy(network_cfg.ap_info.bssid, fcdata.bssid, sizeof(fcdata.bssid));
 
 		if(ip->localIPAddr[0] == 0)
 		{
@@ -430,8 +427,8 @@ void HAL_FastConnectToWiFi(const char* oob_ssid, const char* connect_key, obkSta
 			convert_IP_to_string(network_cfg.dns_server_ip_addr, ip->dnsServerIpAddr);
 			g_bStaticIP = true;
 		}
-		network_cfg.ap_info.channel = g_cfg.fcdata.channel;
-		network_cfg.ap_info.security = g_cfg.fcdata.security_type;
+		network_cfg.ap_info.channel = fcdata.channel;
+		network_cfg.ap_info.security = fcdata.security_type;
 		network_cfg.wifi_retry_interval = 100;
 
 		bk_wlan_start_sta_adv(&network_cfg);
@@ -445,11 +442,7 @@ void HAL_FastConnectToWiFi(const char* oob_ssid, const char* connect_key, obkSta
 
 void HAL_DisableEnhancedFastConnect()
 {
-	if(g_cfg.fcdata.channel != 0)
-	{
-		g_cfg.fcdata.channel = 0;
-		g_cfg_pendingChanges++;
-	}
+	ef_del_env("fcdata");
 }
 
 void HAL_DisconnectFromWifi()
