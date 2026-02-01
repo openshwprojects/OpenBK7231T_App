@@ -84,6 +84,7 @@ typedef void* QueueHandle_t;
 
 #elif PLATFORM_BEKEN
 
+#include "include.h"
 #include "flash_pub.h"
 #include "rtos_pub.h"
 #include "uart_pub.h"
