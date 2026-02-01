@@ -23,7 +23,6 @@ int g_cfg_pendingChanges = 0;
 #define CFG_IDENT_1 'F'
 #define CFG_IDENT_2 'G'
 
-
 #define MAIN_CFG_VERSION_V3 3
 // version 4 - bumped size by 1024,
 // added alternate ssid fields
@@ -51,9 +50,8 @@ static byte CFG_CalcChecksum(mainConfig_t *inf) {
 	}
 	remaining_size = configSize - header_size;
 
-//	ADDLOG_DEBUG(LOG_FEATURE_CFG, "CFG_CalcChecksum: header size %i, total size %i, rem size %i\n",
-	ADDLOG_WARN(LOG_FEATURE_CFG, "CFG_CalcChecksum: version: %i, header size %i, total size %i, rem size %i\n",
-		inf->version, header_size, configSize, remaining_size);
+	ADDLOG_DEBUG(LOG_FEATURE_CFG, "CFG_CalcChecksum: header size %i, total size %i, rem size %i\n",
+		header_size, configSize, remaining_size);
 
 	// This is more flexible method and won't be affected by field offsets
 	crc = Tiny_CRC8((const char*)&inf->version,remaining_size);
@@ -844,7 +842,6 @@ void CFG_InitAndLoad() {
 
 	HAL_Configuration_ReadConfigMemory(&g_cfg,sizeof(g_cfg));
 	chkSum = CFG_CalcChecksum(&g_cfg);
-	addLogAdv(LOG_WARN, LOG_FEATURE_CFG, "CFG_InitAndLoad: Config has been loaded with version %i and CRC %X - computed CRC: %X.",g_cfg.version,g_cfg.crc,chkSum);
 	if(g_cfg.ident0 != CFG_IDENT_0 || g_cfg.ident1 != CFG_IDENT_1 || g_cfg.ident2 != CFG_IDENT_2
 		|| chkSum != g_cfg.crc) {
 			addLogAdv(LOG_WARN, LOG_FEATURE_CFG, "CFG_InitAndLoad: Config crc or ident mismatch. Default config will be loaded.");
@@ -859,17 +856,12 @@ void CFG_InitAndLoad() {
 		WiFI_SetMacAddress((char*)g_cfg.mac);
 #endif
 #if defined(PLATFORM_W600)
-		addLogAdv(LOG_WARN, LOG_FEATURE_CFG, "CFG_InitAndLoad: Config has been loaded with version %i and CRC %X.",g_cfg.version,g_cfg.crc);
-#if ALLOW_WEB_PASSWORD
-		addLogAdv(LOG_WARN, LOG_FEATURE_CFG, "CFG_InitAndLoad: Web_Password: \"%s\" .",g_cfg.webPassword);
-#endif
 		if (g_cfg.version <= MAIN_CFG_VERSION_V3){
 			// we read a valid V3 config, convert to V5
-			// (flash_vars should have been moved before by HAL_FlashVars_IncreaseBootCount() ... 
+			// (flash_vars should have been moved before by HAL_FlashVars_IncreaseBootCount() ... )
 			g_cfg.version = MAIN_CFG_VERSION;
-			
+			// zero additional memory - it included flashvars and old date might be interpreted as web password 
 			memset((char*)(&g_cfg) + MAGIC_CONFIG_SIZE_V3, 0, sizeof(mainConfig_t) - MAGIC_CONFIG_SIZE_V3);
-			addLogAdv(LOG_WARN, LOG_FEATURE_CFG, "CFG_InitAndLoad: zeroed memory range. Actual Web_Password: \"%s\" .",g_cfg.webPassword);
 			g_cfg_pendingChanges ++;
 		}
 #endif
