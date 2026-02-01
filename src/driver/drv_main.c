@@ -1010,10 +1010,10 @@ static driver_t g_drivers[] = {
 #if ENABLE_DRIVER_SSD1306
 	//drvdetail:{"name":"SSD1306",
 	//drvdetail:"title":"TODO",
-	//drvdetail:"descr":"SSD1306SSD1306SSD1306SSD1306SSD1306SSD1306e.",
+	//drvdetail:"descr":"SSD1306 OLEd 128x32 I2C display driver.",
 	//drvdetail:"requires":""}
 	{ "SSD1306",                              // Driver Name
-		SSD1306_Init,                             // Init
+		SSD1306_DRV_Init,                             // Init
 		SSD1306_OnEverySecond,                    // onEverySecond
 		NULL, // appendInformationToHTTPIndexPage
 		NULL,                                    // runQuickTick
