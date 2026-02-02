@@ -558,11 +558,14 @@ const char* htmlPinRoleNames[] = {
 	"StripState",
 	"StripState_n",
 	"HLW_8112_SCSN",
-	"error",
+	"RCRecv",
+	"RCRecv_nPup",
+	"Btn_pd",
+	"Btn_pd_n",
+	"TglChanOnTgl_pd",
 	"error",
 	"error",
 };
-
 const char* PIN_RoleToString(int role) {
 	return htmlPinRoleNames[role];
 }

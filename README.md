@@ -1,11 +1,11 @@
 # Introduction
 
 OpenBK7231T/OpenBeken is a Tasmota/ESPHome alternative for modern Tuya-based modules, offering MQTT and Home Assistant compatibility.
-Although this repository is named "OpenBK7231T_App", it has evolved into a multiplatform application, supporting builds for multiple chipsets from various vendors, including ESWIN, Transa Semi, Lightning Semi, Espressif, Beken, WinnerMicro, Xradiotech/Allwinner, Realtek, and Bouffalo Lab.
+Although this repository is named `OpenBK7231T_App`, it has evolved into a multi-platform application, supporting builds for multiple chipsets from various vendors, including ESWIN, Transa Semi, Lightning Semi, Espressif, Beken, WinnerMicro, Xradiotech/Allwinner, Realtek, and Bouffalo Lab.
 
 -   [BK7231T](https://www.elektroda.com/rtvforum/topic3951016.html) (eg [WB3S](https://developer.tuya.com/en/docs/iot/wb3s-module-datasheet?id=K9dx20n6hz5n4), [WB2S](https://developer.tuya.com/en/docs/iot/wb2s-module-datasheet?id=K9ghecl7kc479), WB2L)
 -   [BK7231N](https://www.elektroda.com/rtvforum/topic3951016.html) (eg [CB2S](https://developer.tuya.com/en/docs/iot/cb2s-module-datasheet?id=Kafgfsa2aaypq), [CB2L](https://developer.tuya.com/en/docs/iot/cb2l-module-datasheet?id=Kai2eku1m3pyl), [WB2L_M1](https://www.elektroda.com/rtvforum/topic3903356.html))
--   [BK7231M](https://www.elektroda.com/rtvforum/topic4058227.html), this is a non-Tuya version of BK7231N with 00000000 keys, sometimes labelled as Belon BL2028. [example1](https://www.elektroda.com/rtvforum/topic4056377.html) [example2](https://www.elektroda.com/rtvforum/topic4086986.html)
+-   [BK7231M](https://www.elektroda.com/rtvforum/topic4058227.html), this is a non-Tuya version of BK7231N with `00000000` keys, sometimes labelled as Belon BL2028. [example1](https://www.elektroda.com/rtvforum/topic4056377.html) [example2](https://www.elektroda.com/rtvforum/topic4086986.html)
 -   T34 (flash as if [standard BK7231N](https://developer.tuya.com/en/docs/iot/t34-module-datasheet?id=Ka0l4h5zvg6j8)), see [flashing trick](https://www.elektroda.com/rtvforum/topic4036975.html)
 -   BL2028N ([BL2028N is a Belon version of BK7231N](https://www.elektroda.com/rtvforum/viewtopic.php?p=20262533#20262533))
 -   BK7238 (eg XH-CB3S) (see [tutorial for 1$ board](https://www.elektroda.com/rtvforum/topic4106397.html#21440428))
@@ -33,12 +33,26 @@ Although this repository is named "OpenBK7231T_App", it has evolved into a multi
 -   ECR6600 (eg [AXYU](https://developer.tuya.com/en/docs/iot/AXYU?id=Kb0rwbv5b7aiy), [AXY2S](https://developer.tuya.com/en/docs/iot/AXY2S?id=Kb1aztk507fxf), [WG236](https://www.skylabmodule.com/product/wifi6-802-11axbluetooth-ble-5-1-combo-module-wg236), [DSM-036](https://www.dusuniot.com/product-specification/dsm-036-wi-fi6-and-ble-dual-cloud-module]), CDI-WX56600A-00, [BL-M6600XT1](https://jkrorwxhkqmllp5m-static.micyjz.com/BL-M6600XT1_datasheet_V1.0.1.0_230817-aidllBpoKqpljSRnkmnkjlnjp.pdf?dp=GvUApKfKKUAU), [HF-LPT6200](http://www.hi-flying.com/hf-lpt6200) (see [guide](https://www.elektroda.com/rtvforum/topic4111822.html))
 -   TXW81X (eg TXW817-810, see [development thread](https://www.elektroda.com/rtvforum/topic4033757.html))
 -   RDA5981 (eg RDA5981AM, RDA5981BM, WRD2L, TYWRD3S, HLK-M50, see [development thread](https://www.elektroda.com/rtvforum/topic4105474.html), see [guide](https://www.elektroda.com/rtvforum/topic4148573.html))
+-   LN8825B (eg SCW-T503)
 
 Please use automatically compiled binaries from the Releases tab. To build OpenBeken yourself for any supported platform, fork our version of the submodule SDK first, and then check out this app repository alongside it. Details further down. Alternatively consider using the easier [override method.](https://www.elektroda.com/rtvforum/topic4082682.html)
 
 See our guides in Russian: [BK7231N/T34](https://www.v-elite.ru/t34), and [BL602 RGB](https://www.v-elite.ru/bl602rgb), and [Youtube guide for BK7231/T34](https://www.youtube.com/watch?v=BnmSWZchK-E)
 
 For general information about the BK7231 family, available datasheets, pinout, peripherals, [consult our docs topic](https://www.elektroda.com/rtvforum/topic3951016.html).
+
+# TXW81X Camera Sensor Support
+
+OpenTXW81x camera sensor support is defined at build time (see [`project_config.h`](https://github.com/NonPIayerCharacter/OpenTXW81X/blob/main/project/project_config.h)).
+
+Supported sensors (enabled in the current config):
+
+-   GalaxyCore: GC0308, GC0309, GC0311, GC0312, GC0328, GC0329
+-   OmniVision: OV2640, OV7660, OV7670, OV7725
+-   BYD: BF3A03, BF30A2, BF2013, BF3703, BF3720
+-   Hynix: HI704
+-   SuperPix: SP0A19, SP0828, SP0A20, SP0718
+-   Other: XC7011_GC1054, XC7011_H63, XC7016_H63, XCG532
 
 # In Progress
 
@@ -48,7 +62,7 @@ To varying degrees, support for the following is in development.
 -   BK7252U (eg [Tuya doorbell](https://www.elektroda.com/rtvforum/topic4073760.html), eg [A9 camera PCB](https://www.elektroda.com/rtvforum/topic4123266.html))
 -   BK7252N (eg [A9 camera](https://www.elektroda.com/rtvforum/topic4118499.html))
 
-# [Supported Devices/Templates List](https://openbekeniot.github.io/webapp/devicesList.html) Now with 700+ entries! (Get 🏆[free SD Card](https://www.elektroda.com/rtvforum/topic3950844.html)🏆 for submitting new one!)
+# [Supported Devices/Templates List](https://openbekeniot.github.io/webapp/devicesList.html) Now with 800+ entries! (Get 🏆[free SD Card](https://www.elektroda.com/rtvforum/topic3950844.html)🏆 for submitting new one!)
 
 We have our own interactive devices database that is maintained by users.
 The database is also accessible from inside our firmware (but requires internet connection to fetch).
@@ -109,7 +123,7 @@ There is also a bit more outdated [WIKI](https://github.com/openshwprojects/Open
 
 OpenBeken supports [online builds](https://www.elektroda.com/rtvforum/viewtopic.php?p=20946719#20946719) for all platforms (BK7231T, BK7231N, BK7238, XR809, BL602, W600, W800, ESP32, RTL8710A, RTL8710B, RTL87X0C, RTL8720D/CS, TR6260, ECR6600, LN882H), but if you want to compile it yourself, see [BUILDING.md](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/BUILDING.md)
 
-# Developer guides
+# Developer Guides
 
 -   online builds system [guide](https://www.elektroda.com/rtvforum/viewtopic.php?p=20946719#20946719)
 -   how to [create custom OBK driver](https://www.elektroda.com/rtvforum/topic4056286.html)
@@ -119,7 +133,7 @@ OpenBeken supports [online builds](https://www.elektroda.com/rtvforum/viewtopic.
 
 # Flashing
 
-For BK7231N, BK7231T, BK7231M, BK7238, BL2028N, T34 see our [GUI easy flash tool](https://github.com/openshwprojects/BK7231GUIFlashTool), also see [FLASHING.md](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/FLASHING.md)
+See our [GUI easy flash tool](https://github.com/openshwprojects/BK7231GUIFlashTool) for BK7231N, BK7231T, BK7231M, BK7238, BK7252N, BK7252U, BL2028N, T34, BL602, ECR6600, LN882H, RDA5981, RTL8710B, RTL8710C, RTL8720D / RTL8720CS, W800, and W600 (write-only). Also see [FLASHING.md](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/FLASHING.md)
 
 Repository of flash tools for [all other supported platforms](https://github.com/openshwprojects/FlashTools/tree/main)
 
@@ -127,7 +141,7 @@ TXW81X requires either CK-Link or STM32F103 (64kb flash or more). See [flashing 
 
 # [Docs - MQTT topics, Console Commands, Flags, Constants, Pin Roles, Channel Types, FAQ, autoexec.bat examples](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/docs)
 
-# Further reading
+# Further Reading
 
 For technical insights and generic SDK information related to Beken, WinnerMicro, Bouffalo Lab and Xradio modules, please refer to:
 
@@ -137,7 +151,7 @@ https://www.elektroda.com/rtvforum/topic3866123.html
 
 https://www.elektroda.com/rtvforum/topic3806769.html
 
-# Support project
+# Support Project
 
 ❤️ Love the project? Please consider supporting it with a donation: https://www.paypal.com/paypalme/openshwprojects ❤️
 

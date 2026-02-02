@@ -250,6 +250,7 @@ enum TuyaMCUV0State {
 static byte g_tuyaBatteryPoweredState = 0;
 static byte g_hello[] = { 0x55, 0xAA, 0x00, 0x01, 0x00, 0x00, 0x00 };
 //static byte g_request_state[] = { 0x55, 0xAA, 0x00, 0x02, 0x00, 0x01, 0x04, 0x06 };
+static bool g_tuyaMCU_batteryPoweredMode = false;
 
 typedef struct tuyaMCUPacket_s {
 	byte *data;
@@ -1936,12 +1937,31 @@ void TuyaMCU_V0_SendDPCacheReply() {
 #endif
 }
 void TuyaMCU_ParseReportStatusType(const byte *value, int len) {
-	int command = value[0];
-	addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "0x34 command %i\n", command);
-	// query: 55 AA 03 34 00 01 04 3B
-	// reply: 55 aa 00 34 00 02 04 00 39
-	byte reply[2] = { 0x04, 00 };
-	TuyaMCU_SendCommandWithData(0x34, reply, 2);
+	int subcommand = value[0];
+	addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "0x%X command, subcommand 0x%X\n", TUYA_CMD_REPORT_STATUS_RECORD_TYPE, subcommand);
+	byte reply[2] = { 0x00, 0x00 };
+	reply[0] = subcommand;
+	switch (subcommand)
+	{
+	case 0x04:
+		// query: 55 AA 03 34 00 01 04 3B
+		// reply: 55 aa 00 34 00 02 04 00 39
+		// No processing, just reply
+		break;
+	
+	case 0x0B:
+		// TuyaMCU version 3 equivalent packet to version 0 0x08 packet
+		// This packet includes first DateTime (skip past), then DataUnits
+		TuyaMCU_ParseStateMessage(value + 9, len - 9);
+		state_updated = true;
+		g_sendQueryStatePackets = 0;
+		break;
+
+	default:
+		// Unknown subcommand, ignore
+		return;
+	}
+	TuyaMCU_SendCommandWithData(TUYA_CMD_REPORT_STATUS_RECORD_TYPE, reply, 2);
 }
 void TuyaMCU_ProcessIncoming(const byte* data, int len) {
 	int checkLen;
@@ -2250,6 +2270,20 @@ commandResult_t Cmd_TuyaMCU_EnableAutoSend(const void* context, const char* cmd,
 	return CMD_RES_OK;
 }
 
+commandResult_t Cmd_TuyaMCU_BatteryPoweredMode(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	int enable = 1;
+
+	Tokenizer_TokenizeString(args, 0);
+
+	if (Tokenizer_GetArgsCount() > 0) {
+		enable = Tokenizer_GetArgInteger(0);
+	}
+	addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "TuyaMCU power saving %s\n", enable ? "enabled" : "disabled");
+	TuyaMCU_BatteryPoweredMode(enable != 0);
+
+	return CMD_RES_OK;
+}
+
 void TuyaMCU_RunWiFiUpdateAndPackets() {
 	//addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"WifiCheck %d ", wifi_state_timer);
 	/* Monitor WIFI and MQTT connection and apply Wifi state
@@ -2324,6 +2358,31 @@ void TuyaMCU_RunReceive() {
 	}
 }
 void TuyaMCU_RunStateMachine_V3() {
+
+	/* For power saving mode */
+	/* Devices are powered by the TuyaMCU, transmit information and get turned off */
+	/* Use the minimal amount of communications */
+	if (g_tuyaMCU_batteryPoweredMode) {
+		/* Don't worry about connection after state is updated device will be turned off */
+		if (!state_updated) {
+			/* Don't send heartbeats just work on product information */
+			heartbeat_valid = true;
+			if (product_information_valid == false)
+			{
+				addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_TUYAMCU, "Will send TUYA_CMD_QUERY_PRODUCT.\n");
+				/* Request production information */
+				TuyaMCU_SendCommandWithData(TUYA_CMD_QUERY_PRODUCT, NULL, 0);
+			}
+			else 
+			{
+				/* Don't bother with MCU config */
+				working_mode_valid = true;
+				/* No query state. Will be updated when connected to wifi/mqtt */
+				TuyaMCU_RunWiFiUpdateAndPackets();
+			}
+		}
+		return;
+	}
 
 	//addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"UART ring buffer state: %i %i\n",g_recvBufIn,g_recvBufOut);
 
@@ -2523,6 +2582,10 @@ static int g_previousLEDPower = -1;
 
 void TuyaMCU_EnableAutomaticSending(bool enable) {
 	g_tuyaMCU_allowAutomaticSending = enable;
+}
+
+void TuyaMCU_BatteryPoweredMode(bool enable) {
+	g_tuyaMCU_batteryPoweredMode = enable;
 }
 
 void TuyaMCU_OnRGBCWChange(const float *rgbcw, int bLightEnableAll, int iLightMode, float brightnessRange01, float temperatureRange01) {
@@ -2758,6 +2821,12 @@ void TuyaMCU_Init()
 	//cmddetail:"fn":"Cmd_TuyaMCU_EnableAutoSend","file":"driver/drv_tuyaMCU.c","requires":"",
 	//cmddetail:"examples":"tuyaMcu_enableAutoSend 0"}
 	CMD_RegisterCommand("tuyaMcu_enableAutoSend", Cmd_TuyaMCU_EnableAutoSend, NULL);
+
+	//cmddetail:{"name":"tuyaMcu_batteryPoweredMode","args": "[Optional 1 or 0, by default 1 is assumed]",
+	//cmddetail:"descr":"Enables battery mode communications for version 3 TuyaMCU. tuyaMcu_batteryPoweredMode 0 can be used to disable the mode.",
+	//cmddetail:"fn":"Cmd_TuyaMCU_BatteryPoweredMode","file":"driver/drv_tuyaMCU.c","requires":"",
+	//cmddetail:"examples":"tuyaMcu_batteryPoweredMode"}
+	CMD_RegisterCommand("tuyaMcu_batteryPoweredMode", Cmd_TuyaMCU_BatteryPoweredMode, NULL);
 }
 
 

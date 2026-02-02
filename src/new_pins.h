@@ -576,14 +576,14 @@ typedef enum ioRole_e {
 	IOR_PWM_ScriptOnly_n,
 	//iodetail:{"name":"Counter_f",
 	//iodetail:"title":"TODO",
-	//iodetail:"descr":"",
+	//iodetail:"descr":"Counts pulses on falling edge (transition from high to low). Each transitions adds 1 to linked channel.",
 	//iodetail:"enum":"IOR_Counter_f",
 	//iodetail:"file":"new_pins.h",
 	//iodetail:"driver":""}
 	IOR_Counter_f,
 	//iodetail:{"name":"Counter_r",
 	//iodetail:"title":"TODO",
-	//iodetail:"descr":"",
+	//iodetail:"descr":"Counts pulses on rising edge (transition from low to high). Each transitions adds 1 to linked channel.",
 	//iodetail:"enum":"IOR_Counter_r",
 	//iodetail:"file":"new_pins.h",
 	//iodetail:"driver":""}
@@ -616,6 +616,41 @@ typedef enum ioRole_e {
 	//iodetail:"file":"new_pins.h",
 	//iodetail:"driver":"HLW8112SPI"}
 	IOR_HLW8112_SCSN,
+	//iodetail:{"name":"RCRecv",
+	//iodetail:"title":"RCRecv Pin",
+	//iodetail:"descr":"433MHz RC receiver input (uses internal pull-up).",
+	//iodetail:"enum":"IOR_RCRecv",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":"RC"}
+	IOR_RCRecv,
+	//iodetail:{"name":"RCRecv_nPup",
+	//iodetail:"title":"RCRecv_nPup Pin",
+	//iodetail:"descr":"433MHz RC receiver input without internal pull-up.",
+	//iodetail:"enum":"IOR_RCRecv_nPup",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":"RC"}
+	IOR_RCRecv_nPup,
+	//iodetail:{"name":"Button_pd",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"same as Button but with pulldown instead pullup",
+	//iodetail:"enum":"IOR_Button_pd",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
+	IOR_Button_pd,
+	//iodetail:{"name":"Button_pd_n",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"same as Button but with pulldown instead pullup",
+	//iodetail:"enum":"IOR_Button_pd_n",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
+	IOR_Button_pd_n,
+	//iodetail:{"name":"ToggleChannelOnToggle_pd",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"pulldown version of ToggleChannelOnToggle",
+	//iodetail:"enum":"IOR_ToggleChannelOnToggle_pd",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
+	IOR_ToggleChannelOnToggle_pd,
 	//iodetail:{"name":"Total_Options",
 	//iodetail:"title":"TODO",
 	//iodetail:"descr":"Current total number of available IOR roles",
@@ -1114,7 +1149,7 @@ typedef enum channelType_e {
 #define PLATFORM_GPIO_MAX 17
 #elif PLATFORM_W800
 #define PLATFORM_GPIO_MAX 44
-#elif PLATFORM_LN882H
+#elif PLATFORM_LN882H || PLATFORM_LN8825
 #define PLATFORM_GPIO_MAX 26
 #elif PLATFORM_ESPIDF
 #ifdef CONFIG_IDF_TARGET_ESP32C3
@@ -1650,5 +1685,10 @@ void FV_UpdateStartupSSIDIfChanged_StoredValue(int assidindex);
 float XJ_MovingAverage_float(float aprevvalue, float aactvalue);
 int XJ_MovingAverage_int(int aprevvalue, int aactvalue);
 #endif
+
+// Find index of a pin from string.
+// Either a number or an alias for a pin.
+// used e.g. for Tokenizer_GetPin()
+int PIN_FindIndexFromString(const char *name);
 
 #endif

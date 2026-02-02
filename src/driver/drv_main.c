@@ -3,8 +3,10 @@
 #include "drv_bl0937.h"
 #include "drv_bl0942.h"
 #include "drv_bl_shared.h"
+#include "drv_neo6m.h"
 #include "drv_cse7766.h"
 #include "drv_ir.h"
+#include "drv_rc.h"
 #include "drv_local.h"
 #include "drv_ntp.h"
 #include "drv_deviceclock.h"
@@ -757,6 +759,22 @@ static driver_t g_drivers[] = {
 	false,                                   // loaded
 	},
 #endif
+#if ENABLE_DRIVER_RC
+		//drvdetail:{"name":"RC",
+		//drvdetail:"title":"TODO",
+		//drvdetail:"descr":"",
+		//drvdetail:"requires":""}
+	{ "RC",                                  // Driver Name
+	DRV_RC_Init,                             // Init
+	NULL,                                    // onEverySecond
+	RC_AppendInformationToHTTPIndexPage,                                    // appendInformationToHTTPIndexPage
+	DRV_RC_RunFrame,                         // runQuickTick
+	NULL,                                    // stopFunction
+	NULL,                                    // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
+	},
+#endif
 #if ENABLE_DRIVER_IR2
 	//drvdetail:{"name":"IR2",
 	//drvdetail:"title":"TODO",
@@ -987,6 +1005,22 @@ static driver_t g_drivers[] = {
 	NULL,                                    // onChannelChanged
 	NULL,                                    // onHassDiscovery
 	false,                                   // loaded
+	},
+#endif
+#if ENABLE_DRIVER_SSD1306
+	//drvdetail:{"name":"SSD1306",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"SSD1306 OLEd 128x32 I2C display driver.",
+	//drvdetail:"requires":""}
+	{ "SSD1306",                              // Driver Name
+		SSD1306_DRV_Init,                             // Init
+		SSD1306_OnEverySecond,                    // onEverySecond
+		NULL, // appendInformationToHTTPIndexPage
+		NULL,                                    // runQuickTick
+		NULL,                                    // stopFunction
+		NULL,                                    // onChannelChanged
+		NULL,                                    // onHassDiscovery
+		false,                                   // loaded
 	},
 #endif
 #if ENABLE_DRIVER_BMP280
@@ -1345,6 +1379,22 @@ static driver_t g_drivers[] = {
 	TXW_Cam_Init,                            // Init
 	TXW_Cam_RunEverySecond,                  // onEverySecond
 	NULL,                                    // appendInformationToHTTPIndexPage
+	NULL,                                    // runQuickTick
+	NULL,                                    // stopFunction
+	NULL,                                    // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
+	},
+#endif
+#if ENABLE_DRIVER_NEO6M
+	//drvdetail:{"name":"NEO6M",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"NEO6M is a GPS chip which uses UART protocol for communication. By default, it uses 9600 baud, but you can also enable it with other baud rates by using 'startDriver NEO6M <rate>'.",
+	//drvdetail:"requires":""}
+	{ "NEO6M",                               // Driver Name
+	NEO6M_UART_Init,                         // Init
+	NEO6M_UART_RunEverySecond,               // onEverySecond
+	NEO6M_AppendInformationToHTTPIndexPage,  // appendInformationToHTTPIndexPage
 	NULL,                                    // runQuickTick
 	NULL,                                    // stopFunction
 	NULL,                                    // onChannelChanged

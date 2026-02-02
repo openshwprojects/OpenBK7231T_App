@@ -10,6 +10,8 @@
 #include "../httpserver/new_http.h"
 #include "../hal/hal_pins.h"
 
+static int g_clk_period = SM2135_DELAY;
+
 #if !PLATFORM_ESPIDF && !PLATFORM_XR806 && !PLATFORM_XR872 && !PLATFORM_ESP8266 && !PLATFORM_REALTEK_NEW && !PLATFORM_TXW81X
 void usleep(int r) //delay function do 10*r nops, because rtos_delay_milliseconds is too much
 {
@@ -31,7 +33,27 @@ void Soft_I2C_SetHigh(uint8_t pin) {
 	HAL_PIN_Setup_Input_Pullup(pin);
 }
 
+static commandResult_t CMD_SoftI2C_SetClkPeriod(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	Tokenizer_TokenizeString(args, 0);
+
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+
+	g_clk_period = Tokenizer_GetArgInteger(0);
+	return CMD_RES_OK;
+}
+
 bool Soft_I2C_PreInit(softI2C_t *i2c) {
+	//cmddetail:{"name":"SoftI2C_SetClkPeriod","args":"[period]",
+	//cmddetail:"descr":"Sets the clock period in number of nop delay cycles (times 10)",
+	//cmddetail:"fn":"CMD_SoftI2C_SetClkPeriod","file":"driver/drv_soft_i2c.c","requires":"",
+	//cmddetail:"examples":"SoftI2C_SetClkPeriod 50"}
+	CMD_RegisterCommand("SoftI2C_SetClkPeriod", CMD_SoftI2C_SetClkPeriod, NULL);
+
 	HAL_PIN_SetOutputValue(i2c->pin_data, 0);
 	HAL_PIN_SetOutputValue(i2c->pin_clk, 0);
 	Soft_I2C_SetHigh(i2c->pin_data);
@@ -51,39 +73,39 @@ bool Soft_I2C_WriteByte(softI2C_t *i2c, uint8_t value) {
 			Soft_I2C_SetLow(i2c->pin_data);
 		}
 		Soft_I2C_SetHigh(i2c->pin_clk);
-		usleep(SM2135_DELAY);
+		usleep(g_clk_period);
 		Soft_I2C_SetLow(i2c->pin_clk);
 	}
 	// get Ack or Nak
 	Soft_I2C_SetHigh(i2c->pin_data);
 	Soft_I2C_SetHigh(i2c->pin_clk);
-	usleep(SM2135_DELAY / 2);
+	usleep(g_clk_period / 2);
 	ack = HAL_PIN_ReadDigitalInput(i2c->pin_data);
 	Soft_I2C_SetLow(i2c->pin_clk);
-	usleep(SM2135_DELAY / 2);
+	usleep(g_clk_period / 2);
 	Soft_I2C_SetLow(i2c->pin_data);
 	return (0 == ack);
 }
 
 void Soft_I2C_Start_Internal(softI2C_t *i2c) {
 	Soft_I2C_SetLow(i2c->pin_data);
-	usleep(SM2135_DELAY);
+	usleep(g_clk_period);
 	Soft_I2C_SetLow(i2c->pin_clk);
 }
 bool Soft_I2C_Start(softI2C_t *i2c, uint8_t addr) {
 	Soft_I2C_SetLow(i2c->pin_data);
-	usleep(SM2135_DELAY);
+	usleep(g_clk_period);
 	Soft_I2C_SetLow(i2c->pin_clk);
 	return Soft_I2C_WriteByte(i2c,addr);
 }
 
 void Soft_I2C_Stop(softI2C_t *i2c) {
 	Soft_I2C_SetLow(i2c->pin_data);
-	usleep(SM2135_DELAY);
+	usleep(g_clk_period);
 	Soft_I2C_SetHigh(i2c->pin_clk);
-	usleep(SM2135_DELAY);
+	usleep(g_clk_period);
 	Soft_I2C_SetHigh(i2c->pin_data);
-	usleep(SM2135_DELAY);
+	usleep(g_clk_period);
 }
 
 
@@ -106,7 +128,7 @@ uint8_t Soft_I2C_ReadByte(softI2C_t *i2c, bool nack)
 	Soft_I2C_SetHigh(i2c->pin_data);
 	for (int i = 0; i < 8; i++)
 	{
-		usleep(SM2135_DELAY);
+		usleep(g_clk_period);
 		Soft_I2C_SetHigh(i2c->pin_clk);
 		val <<= 1;
 		if (HAL_PIN_ReadDigitalInput(i2c->pin_data))
@@ -124,9 +146,9 @@ uint8_t Soft_I2C_ReadByte(softI2C_t *i2c, bool nack)
 		Soft_I2C_SetLow(i2c->pin_data);
 	}
 	Soft_I2C_SetHigh(i2c->pin_clk);
-	usleep(SM2135_DELAY);
+	usleep(g_clk_period);
 	Soft_I2C_SetLow(i2c->pin_clk);
-	usleep(SM2135_DELAY);
+	usleep(g_clk_period);
 	Soft_I2C_SetLow(i2c->pin_data);
 
 	return val;

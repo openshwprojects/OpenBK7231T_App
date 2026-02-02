@@ -201,5 +201,9 @@
   {
     "name": "OnDiscovery",
     "CMD": "CMD_EVENT_ON_DISCOVERY"
+  },
+  {
+    "name": "RC",
+    "CMD": "CMD_EVENT_RC"
   }
 ]

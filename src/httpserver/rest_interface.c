@@ -199,7 +199,7 @@ static int http_rest_post(http_request_t* request) {
 		r = http_rest_post_flash(request, -1, -1);
 #elif PLATFORM_BL602
 		r = http_rest_post_flash(request, -1, -1);
-#elif PLATFORM_LN882H
+#elif PLATFORM_LN882H || PLATFORM_LN8825
 		r = http_rest_post_flash(request, -1, -1);
 #elif PLATFORM_ESPIDF || PLATFORM_ESP8266
 		r = http_rest_post_flash(request, -1, -1);

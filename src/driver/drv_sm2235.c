@@ -70,6 +70,7 @@ void SM2235_Write(float *rgbcw) {
 static void SM2235_SetCurrent(int curValRGB, int curValCW) {
 	g_cur_RGB = curValRGB;
 	g_cur_CW = curValCW;
+	LED_ResendCurrentColors();
 }
 
 static commandResult_t SM2235_Current(const void *context, const char *cmd, const char *args, int flags){

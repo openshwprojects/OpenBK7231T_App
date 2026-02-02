@@ -30,6 +30,8 @@ void SelfTest_Failed(const char *file, const char *function, int line, const cha
 #define SELFTEST_ASSERT_ARGUMENT_INTEGER(argumentIndex, res) SELFTEST_ASSERT((Tokenizer_GetArgInteger(argumentIndex)== res));
 #define SELFTEST_ASSERT_ARGUMENTS_COUNT(wantedCount) SELFTEST_ASSERT((Tokenizer_GetArgsCount()==wantedCount));
 #define SELFTEST_ASSERT_JSON_VALUE_STRING(obj, varName, res) SELFTEST_ASSERT(!strcmp(Test_GetJSONValue_String(varName,obj), res));
+#define SELFTEST_ASSERT_JSON_ONE_OF_TWO_VALUES_STRING(obj, varName, res, res2) SELFTEST_ASSERT(!strcmp(Test_GetJSONValue_String(varName,obj), res) || !strcmp(Test_GetJSONValue_String(varName,obj), res2));
+#define SELFTEST_ASSERT_JSON_VALUE_STRING_STARTSWITH(obj, varName, res) SELFTEST_ASSERT(!strncmp(Test_GetJSONValue_String(varName,obj), res, strlen(res)));
 #define SELFTEST_ASSERT_JSON_VALUE_STRING_NOT_PRESENT(obj, varName) SELFTEST_ASSERT((*Test_GetJSONValue_String(varName,obj))==0);
 #define SELFTEST_ASSERT_JSON_VALUE_EXISTS(obj, varName) SELFTEST_ASSERT(Test_GetJSONValue_Generic(varName,obj));
 #define SELFTEST_ASSERT_JSON_VALUE_INTEGER(obj, varName, res) SELFTEST_ASSERT((Test_GetJSONValue_Integer(varName,obj) == res));
@@ -153,6 +155,7 @@ void Test_PIR();
 void Test_Driver_TCL_AC();
 void Test_MAX72XX();
 void Test_OpenWeatherMap();
+void Test_Pins();
 
 void Test_GetJSONValue_Setup(const char *text);
 void Test_FakeHTTPClientPacket_GET(const char *tg);

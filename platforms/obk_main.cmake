@@ -28,6 +28,7 @@ set(OBKM_SRC
 	${OBK_SRCS}hal/generic/hal_flashVars_generic.c
 	${OBK_SRCS}hal/generic/hal_generic.c
 	${OBK_SRCS}hal/generic/hal_main_generic.c
+	${OBK_SRCS}hal/generic/hal_ota_generic.c
 	${OBK_SRCS}hal/generic/hal_pins_generic.c
 	${OBK_SRCS}hal/generic/hal_wifi_generic.c
 	${OBK_SRCS}hal/generic/hal_uart_generic.c
@@ -101,6 +102,7 @@ set(OBKM_SRC
 	${OBK_SRCS}driver/drv_ntp.c
 	${OBK_SRCS}driver/drv_deviceclock.c
 	${OBK_SRCS}driver/drv_ds3231.c
+	${OBK_SRCS}driver/drv_neo6m.c
 	${OBK_SRCS}libraries/obktime/obktime.c
 	${OBK_SRCS}driver/drv_timed_events.c
 	${OBK_SRCS}driver/drv_openWeatherMap.c
@@ -127,6 +129,7 @@ set(OBKM_SRC
 	${OBK_SRCS}driver/drv_spi_flash.c
 	${OBK_SRCS}driver/drv_spidma.c
 	${OBK_SRCS}driver/drv_ssdp.c
+	${OBK_SRCS}driver/drv_ssd1306.c
 	${OBK_SRCS}driver/drv_tasmotaDeviceGroups.c
 	${OBK_SRCS}driver/drv_tca9554.c
 	${OBK_SRCS}driver/drv_tclAC.c

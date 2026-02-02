@@ -1,4 +1,4 @@
-#ifdef PLATFORM_LN882H
+#if PLATFORM_LN882H || PLATFORM_LN8825
 
 #include "../hal_flashConfig.h"
 #include "hal/hal_flash.h"

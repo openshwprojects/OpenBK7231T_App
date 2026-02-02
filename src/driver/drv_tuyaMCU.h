@@ -9,3 +9,4 @@ void TuyaMCU_Send_RawBuffer(byte *data, int len);
 bool TuyaMCU_IsChannelUsedByTuyaMCU(int channelIndex);
 void TuyaMCU_ForcePublishChannelValues();
 void TuyaMCU_EnableAutomaticSending(bool enable);
+void TuyaMCU_BatteryPoweredMode(bool enable);

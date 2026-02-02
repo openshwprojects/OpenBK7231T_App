@@ -28,6 +28,12 @@ int cmd_uartInitIndex = 0;
 #elif PLATFORM_LN882H
 #include <wifi.h>
 #include <power_mgmt/ln_pm.h>
+#elif PLATFORM_LN8825
+#include <wifi.h>
+#include <hal/hal_sleep.h>
+#define wifi_sta_set_powersave wifi_station_set_powersave
+#define ln_pm_sleep_mode_set hal_sleep_set_mode
+#define sysparam_sta_powersave_update(x)
 #elif PLATFORM_ESPIDF || PLATFORM_ESP8266
 #include "esp_wifi.h"
 #include "esp_sleep.h"
@@ -95,7 +101,7 @@ static int generateHashValue(const char* fname) {
 command_t* g_commands[HASH_SIZE] = { NULL };
 bool g_powersave;
 
-#if defined(PLATFORM_LN882H)
+#if defined(PLATFORM_LN882H) || PLATFORM_LN8825
 // this will be applied after WiFi connect
 int g_ln882h_pendingPowerSaveCommand = -1;
 
@@ -125,7 +131,7 @@ static commandResult_t CMD_PowerSave(const void* context, const char* cmd, const
 	if (Tokenizer_GetArgsCount() > 0) {
 		bOn = Tokenizer_GetArgInteger(0);
 	}
-#if (PLATFORM_LN882H)	
+#if PLATFORM_LN882H || PLATFORM_LN8825
 	ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_PowerSave: will set to %i%s", bOn, Main_IsConnectedToWiFi() == 0 ? " after WiFi is connected" : "");
 #else
 	ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_PowerSave: will set to %i", bOn);
@@ -143,23 +149,12 @@ static commandResult_t CMD_PowerSave(const void* context, const char* cmd, const
 	else {
 		bk_wlan_power_save_set_level(0);
 	}
-#elif defined(PLATFORM_W600)
+#elif defined(PLATFORM_W600) || defined(PLATFORM_W800)
 	if (bOn) {
 		tls_wifi_set_psflag(1, 0);	//Enable powersave but don't save to flash
 	}
 	else {
 		tls_wifi_set_psflag(0, 0);	//Disable powersave but don't save to flash
-	}
-#elif defined(PLATFORM_W800)
-	if(bOn)
-	{
-		uint8_t enable = 1;
-		tls_param_set(TLS_PARAM_ID_PSM, (void*)&enable, false);
-	}
-	else
-	{
-		uint8_t enable = 0;
-		tls_param_set(TLS_PARAM_ID_PSM, (void*)&enable, false);
 	}
 #elif defined(PLATFORM_BL602)
 	if (bOn) {
@@ -168,7 +163,7 @@ static commandResult_t CMD_PowerSave(const void* context, const char* cmd, const
 	else {
 		wifi_mgmr_sta_ps_exit();
 	}
-#elif defined(PLATFORM_LN882H)
+#elif defined(PLATFORM_LN882H) || PLATFORM_LN8825
 	// this will be applied after WiFi connect
 	if (Main_IsConnectedToWiFi() == 0){
 		g_ln882h_pendingPowerSaveCommand = bOn;
@@ -942,6 +937,19 @@ commandResult_t CMD_DeepSleep_SetEdge(const void* context, const char* cmd, cons
 
 	return CMD_RES_OK;
 }
+static commandResult_t CMD_PowerSave_WFI(const void* context, const char* cmd, const char* args, int cmdFlags)
+{
+	int bOn = 1;
+	Tokenizer_TokenizeString(args, 0);
+
+	if(Tokenizer_GetArgsCount() > 0)
+	{
+		bOn = Tokenizer_GetArgInteger(0);
+	}
+	extern bool g_use_wfi;
+	g_use_wfi = (bOn);
+	return CMD_RES_OK;
+}
 
 #if MQTT_USE_TLS
 static commandResult_t CMD_WebServer(const void* context, const char* cmd, const char* args, int cmdFlags) {	
@@ -1020,6 +1028,11 @@ void CMD_Init_Early() {
 	//cmddetail:"fn":"CMD_PowerSave","file":"cmnds/cmd_main.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("PowerSave", CMD_PowerSave, NULL);
+	//cmddetail:{"name":"PowerSave_WFI","args":"[Optional 1 or 0, by default 1 is assumed]",
+	//cmddetail:"descr":"Extra power save by sleeping during idle. Available on Beken, BL602, XR8xx, Realteks, W600 and W800. Reduces current by 0.001-0.002A on Beken. Enabled by default on BL602/W600/W800 (SDK behaviour).",
+	//cmddetail:"fn":"CMD_PowerSave_WFI","file":"cmnds/cmd_main.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("PowerSave_WFI", CMD_PowerSave_WFI, NULL);
 	//cmddetail:{"name":"if","args":"[Condition]['then'][CommandA]['else'][CommandB]",
 	//cmddetail:"descr":"Executed a conditional. Condition should be single line. You must always use 'then' after condition. 'else' is optional. Use aliases or quotes for commands with spaces",
 	//cmddetail:"fn":"CMD_If","file":"cmnds/cmd_main.c","requires":"",

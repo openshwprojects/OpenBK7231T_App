@@ -248,6 +248,8 @@
     <ClCompile Include="src\driver\drv_ntp.c" />
     <ClCompile Include="src\driver\drv_deviceclock.c" />
     <ClCompile Include="src\driver\drv_ds3231.c" />
+    <ClCompile Include="src\driver\drv_neo6m.c" />
+    <ClCompile Include="src\driver\drv_rc.cpp" />
     <ClCompile Include="src\libraries\obktime\obktime.c" />
     <ClCompile Include="src\driver\drv_timed_events.c" />
     <ClCompile Include="src\driver\drv_openWeatherMap.c" />
@@ -834,6 +836,7 @@
     <ClCompile Include="src\selftest\selftest_multiplePinsOnChannel.c" />
     <ClCompile Include="src\selftest\selftest_ntp.c" />
     <ClCompile Include="src\selftest\selftest_ntp_DST.c" />
+    <ClCompile Include="src\selftest\selftest_pins.c" />
     <ClCompile Include="src\selftest\selftest_repeatingEvents.c" />
     <ClCompile Include="src\selftest\selftest_role_toggleAll.c" />
     <ClCompile Include="src\selftest\selftest_script.c" />
@@ -959,6 +962,7 @@
     <ClInclude Include="src\driver\drv_ht16k33.h" />
     <ClInclude Include="src\driver\drv_max72xx_internal.h" />
     <ClInclude Include="src\driver\drv_pt6523_font.h" />
+    <ClInclude Include="src\driver\drv_rc.h" />
     <ClInclude Include="src\driver\drv_sgp.h" />
     <ClInclude Include="src\driver\drv_sht3x.h" />
     <ClInclude Include="src\driver\drv_sm2235.h" />

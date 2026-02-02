@@ -650,7 +650,7 @@
   {
     "name": "Counter_f",
     "title": "TODO",
-    "descr": "",
+    "descr": "Counts pulses on falling edge (transition from high to low). Each transitions adds 1 to linked channel.",
     "enum": "IOR_Counter_f",
     "file": "new_pins.h",
     "driver": ""
@@ -658,7 +658,7 @@
   {
     "name": "Counter_r",
     "title": "TODO",
-    "descr": "",
+    "descr": "Counts pulses on rising edge (transition from low to high). Each transitions adds 1 to linked channel.",
     "enum": "IOR_Counter_r",
     "file": "new_pins.h",
     "driver": ""
@@ -694,6 +694,22 @@
     "enum": "IOR_HLW8112_SCSN",
     "file": "new_pins.h",
     "driver": "HLW8112SPI"
+  },
+  {
+    "name": "RCRecv",
+    "title": "RCRecv Pin",
+    "descr": "433MHz RC receiver input (uses internal pull-up).",
+    "enum": "IOR_RCRecv",
+    "file": "new_pins.h",
+    "driver": "RC"
+  },
+  {
+    "name": "RCRecv_nPup",
+    "title": "RCRecv_nPup Pin",
+    "descr": "433MHz RC receiver input without internal pull-up.",
+    "enum": "IOR_RCRecv_nPup",
+    "file": "new_pins.h",
+    "driver": "RC"
   },
   {
     "name": "Total_Options",

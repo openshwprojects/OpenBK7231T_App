@@ -50,6 +50,7 @@
 #include "BkDriverWdg.h"
 
 void bg_register_irda_check_func(FUNCPTR func);
+extern void WFI(void);
 #elif PLATFORM_BL602
 #include <bl_sys.h>
 #include <hosal_adc.h>
@@ -108,6 +109,19 @@ int DRV_SSDP_Active = 0;
 
 void Main_ForceUnsafeInit();
 
+#if PLATFORM_BL602 || PLATFORM_W600 || PLATFORM_W800
+#define DEF_USE_WFI 1
+#else
+#define DEF_USE_WFI 0
+#endif
+#if PLATFORM_BEKEN
+#define WFI_FUNC WFI
+#elif PLATFORM_BL602 || PLATFORM_REALTEK || PLATFORM_XRADIO || PLATFORM_W600 || PLATFORM_RDA5981 || PLATFORM_LN8825 || PLATFORM_LN882H
+#define WFI_FUNC() __asm volatile("wfi")
+#elif PLATFORM_W800
+#define WFI_FUNC __WFI
+#endif
+bool g_use_wfi = DEF_USE_WFI;
 
 
 // TEMPORARY
@@ -190,6 +204,15 @@ static int get_tsen_adc(
 #endif
 
 #if PLATFORM_BEKEN
+#if (OBK_VARIANT == OBK_VARIANT_BATTERY)
+	#if PLATFORM_BEKEN_NEW
+		#define START_MS_DELAY 10;
+	#else
+		#define START_MS_DELAY 0;
+	#endif
+#else
+	#define START_MS_DELAY 250;
+#endif
 // this function waits for the extended app functions to finish starting.
 extern void extended_app_waiting_for_launch(void);
 void extended_app_waiting_for_launch2()
@@ -204,9 +227,9 @@ void extended_app_waiting_for_launch2()
 	// wait 100ms at the start.
 	// TCP is being setup in a different thread, and there does not seem to be a way to find out if it's complete yet?
 	// so just wait a bit, and then start.
-	int startDelay = 250;
+	uint8_t startDelay = START_MS_DELAY;
 	bk_printf("\r\ndelaying start\r\n");
-	for(int i = 0; i < startDelay / 10; i++)
+	for(uint8_t i = 0; i < startDelay / 10; i++)
 	{
 		rtos_delay_milliseconds(10);
 		bk_printf("#Startup delayed %dms#\r\n", i * 10);
@@ -224,7 +247,7 @@ void extended_app_waiting_for_launch2(void) {
 #endif
 
 
-#if PLATFORM_LN882H || PLATFORM_ESPIDF || PLATFORM_ESP8266 || PLATFORM_REALTEK_NEW
+#if PLATFORM_ESPIDF || PLATFORM_REALTEK_NEW
 
 int LWIP_GetMaxSockets() {
 	return 0;
@@ -234,7 +257,7 @@ int LWIP_GetActiveSockets() {
 }
 #endif
 
-#if PLATFORM_BL602 || PLATFORM_W800 || PLATFORM_W600 || PLATFORM_LN882H \
+#if PLATFORM_BL602 || PLATFORM_W800 || PLATFORM_W600 || PLATFORM_LN882H || PLATFORM_LN8825 \
 	|| PLATFORM_ESPIDF || PLATFORM_TR6260 || PLATFORM_REALTEK || PLATFORM_ECR6600 \
 	|| PLATFORM_XRADIO || PLATFORM_ESP8266
 
@@ -404,7 +427,7 @@ void ScheduleDriverStart(const char* name, int delay) {
 	}
 }
 
-#if defined(PLATFORM_LN882H)
+#if defined(PLATFORM_LN882H) || PLATFORM_LN8825
 // LN882H hack, maybe place somewhere else?
 // this will be applied after WiFi connect
 extern int g_ln882h_pendingPowerSaveCommand;
@@ -540,7 +563,7 @@ void Main_OnWiFiStatusChange(int code)
 				//DRV_SSDP_Restart(); // this kills things
 			}
 		}
-#if defined(PLATFORM_LN882H)
+#if defined(PLATFORM_LN882H) || PLATFORM_LN8825
 		// LN882H hack, maybe place somewhere else?
 		// this will be applied only if WiFi is connected
 		if (g_ln882h_pendingPowerSaveCommand != -1) {
@@ -690,7 +713,7 @@ bool Main_HasFastConnect() {
 	}
 	return false;
 }
-#if PLATFORM_LN882H || PLATFORM_ESPIDF || PLATFORM_ESP8266
+#if PLATFORM_LN882H || PLATFORM_ESPIDF || PLATFORM_ESP8266 || PLATFORM_LN8825
 // Quick hack to display LN-only temperature,
 // we may improve it in the future
 extern float g_wifi_temperature;
@@ -722,11 +745,16 @@ void Main_OnEverySecond()
 #if PLATFORM_BEKEN
 		UINT32 temperature;
 		temp_single_get_current_temperature(&temperature);
-#if PLATFORM_BK7231T
-		g_wifi_temperature = 2.21f * (temperature / 25.0f) - 65.91f;
 #if PLATFORM_BEKEN_NEW
-		g_wifi_temperature = temperature * 0.04f;
-#endif
+	#if PLATFORM_BK7231N
+		g_wifi_temperature = (-0.38f * temperature) + 156.0f;
+	#elif PLATFORM_BK7238 || PLATFORM_BK7252N
+		g_wifi_temperature = (-0.4f * temperature) + 131.0f;
+	#else
+		g_wifi_temperature = temperature * 0.128f;
+	#endif
+#elif PLATFORM_BK7231T
+		g_wifi_temperature = 2.21f * (temperature / 25.0f) - 65.91f;
 #else
 		g_wifi_temperature = (-0.457f * temperature) + 188.474f;
 #endif
@@ -1172,7 +1200,7 @@ void QuickTick(void* param)
 #if WINDOWS
 
 #elif PLATFORM_BL602 || PLATFORM_W600 || PLATFORM_W800 || PLATFORM_TR6260 || defined(PLATFORM_REALTEK) || PLATFORM_ECR6600 \
-	|| PLATFORM_ESP8266 || PLATFORM_ESPIDF || PLATFORM_XRADIO || PLATFORM_LN882H || PLATFORM_TXW81X || PLATFORM_RDA5981
+	|| PLATFORM_ESP8266 || PLATFORM_ESPIDF || PLATFORM_XRADIO || PLATFORM_LN882H || PLATFORM_TXW81X || PLATFORM_RDA5981 || PLATFORM_LN8825
 void quick_timer_thread(void* param)
 {
 	while (1) {
@@ -1188,7 +1216,7 @@ void QuickTick_StartThread(void)
 #if WINDOWS
 
 #elif PLATFORM_BL602 || PLATFORM_W600 || PLATFORM_W800 || PLATFORM_TR6260 || defined(PLATFORM_REALTEK) || PLATFORM_ECR6600 \
-	|| PLATFORM_ESP8266 || PLATFORM_ESPIDF || PLATFORM_XRADIO || PLATFORM_LN882H
+	|| PLATFORM_ESP8266 || PLATFORM_ESPIDF || PLATFORM_XRADIO || PLATFORM_LN882H || PLATFORM_LN8825
 	xTaskCreate(quick_timer_thread, "quick", QT_STACK_SIZE, NULL, 15, NULL);
 #elif PLATFORM_TXW81X
 	os_task_create("quick", quick_timer_thread, NULL, 15, 0, NULL, QT_STACK_SIZE);
@@ -1232,8 +1260,15 @@ int Main_IsConnectedToWiFi()
 
 // called from idle thread each loop.
 // - just so we know it is running.
+#if PLATFORM_ESPIDF || PLATFORM_ESP8266 || PLATFORM_BL602 || (PLATFORM_REALTEK && !PLATFORM_REALTEK_NEW) \
+|| PLATFORM_XRADIO || PLATFORM_LN8825 || PLATFORM_LN882H
+inline __attribute__((always_inline))
+#endif
 void isidle() {
 	idleCount++;
+#ifdef WFI_FUNC
+	if(g_use_wfi) WFI_FUNC();
+#endif
 }
 
 bool g_unsafeInitDone = false;
@@ -1601,17 +1636,12 @@ void Main_Init()
 
 }
 
-#if PLATFORM_ESPIDF || PLATFORM_ESP8266 || PLATFORM_BL602 || (PLATFORM_REALTEK && !PLATFORM_REALTEK_NEW) || PLATFORM_XRADIO
+#if PLATFORM_ESPIDF || PLATFORM_ESP8266 || PLATFORM_BL602 || (PLATFORM_REALTEK && !PLATFORM_REALTEK_NEW) \
+|| PLATFORM_XRADIO || PLATFORM_W600 || PLATFORM_W800 || PLATFORM_LN8825 || PLATFORM_LN882H
 
 void vApplicationIdleHook(void)
 {
 	isidle();
-#if PLATFORM_BL602
-	// sleep
-	__asm volatile(
-	"   wfi     "
-		);
-#endif
 }
 
 #endif

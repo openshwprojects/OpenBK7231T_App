@@ -277,6 +277,7 @@
     <ClCompile Include="src\selftest\selftest_multiplePinsOnChannel.c" />
     <ClCompile Include="src\selftest\selftest_ntp.c" />
     <ClCompile Include="src\selftest\selftest_ntp_DST.c" />
+    <ClCompile Include="src\selftest\selftest_pins.c" />
     <ClCompile Include="src\selftest\selftest_repeatingEvents.c" />
     <ClCompile Include="src\selftest\selftest_role_toggleAll.c" />
     <ClCompile Include="src\selftest\selftest_script.c" />
@@ -422,6 +423,10 @@
     <ClCompile Include="src\driver\drv_aht2x.c" />
     <ClCompile Include="src\sim\Controller_MAX7219.cpp" />
     <ClCompile Include="src\sim\Point.cpp" />
+    <ClCompile Include="src\driver\drv_deviceclock.c" />
+    <ClCompile Include="src\driver\drv_ds3231.c" />
+    <ClCompile Include="src\libraries\obktime\obktime.c" />
+    <ClCompile Include="src\driver\drv_rc.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\base64\base64.h" />
@@ -631,6 +636,7 @@
     <ClInclude Include="libraries\berry\generate\be_fixed_time.h" />
     <ClInclude Include="libraries\berry\generate\be_fixed_undefined.h" />
     <ClInclude Include="src\driver\drv_soft_spi.h" />
+    <ClInclude Include="src\driver\drv_rc.h" />
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\..\platforms\bk7231t\bk7231t_os\beken378\func\include\net_param_pub.h" />

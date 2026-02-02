@@ -16,6 +16,7 @@
 #include "../driver/drv_deviceclock.h"
 #include "../driver/drv_tuyaMCU.h"
 #include "../hal/hal_ota.h"
+#include <math.h>
 #ifndef WINDOWS
 #include <lwip/dns.h>
 #endif
@@ -1446,6 +1447,9 @@ OBK_Publish_Result MQTT_PublishMain_StringInt(const char* sChannel, int iv, int 
 OBK_Publish_Result MQTT_PublishMain_StringFloat(const char* sChannel, float f, int maxDecimalPlaces, int flags)
 {
 	char valueStr[16];
+	if (isnan(f)) {
+		f = 0;
+	}
 
 	sprintf(valueStr, "%f", f);
 	// fix decimal places
@@ -1805,7 +1809,7 @@ static BENCHMARK_TEST_INFO* info = NULL;
 #if WINDOWS
 
 #elif PLATFORM_BL602 || PLATFORM_W600 || PLATFORM_W800 || PLATFORM_ESPIDF || PLATFORM_TR6260 \
-	|| PLATFORM_REALTEK || PLATFORM_ECR6600 || PLATFORM_ESP8266 || PLATFORM_TXW81X || PLATFORM_RDA5981
+	|| PLATFORM_REALTEK || PLATFORM_ECR6600 || PLATFORM_ESP8266 || PLATFORM_TXW81X || PLATFORM_RDA5981 || PLATFORM_LN8825
 static void mqtt_timer_thread(void* param)
 {
 	while (1)
@@ -1846,7 +1850,7 @@ commandResult_t MQTT_StartMQTTTestThread(const void* context, const char* cmd, c
 #if WINDOWS
 
 #elif PLATFORM_BL602 || PLATFORM_W600 || PLATFORM_W800 || PLATFORM_ESPIDF || PLATFORM_TR6260 \
-	|| PLATFORM_REALTEK || PLATFORM_ECR6600 || PLATFORM_ESP8266
+	|| PLATFORM_REALTEK || PLATFORM_ECR6600 || PLATFORM_ESP8266 || PLATFORM_LN8825
 	xTaskCreate(mqtt_timer_thread, "mqtt", 1024, (void*)info, 15, NULL);
 #elif PLATFORM_TXW81X
 	os_task_create("mqtt", mqtt_timer_thread, (void*)info, 15, 0, NULL, 1024);

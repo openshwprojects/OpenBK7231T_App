@@ -26,6 +26,18 @@ function mytrim(text) {
 	return text;
 }
 
+function writeIfChanged(fname, data) {
+	if (fs.existsSync(fname)) {
+		const existing = fs.readFileSync(fname, "utf8");
+		if (existing.replace(/\r/g, "") === data.replace(/\r/g, "")) {
+			// console.log("Skipping " + fname + " - no changes");
+			return;
+		}
+	}
+	fs.writeFileSync(fname, data);
+	console.log('wrote ' + fname);
+}
+
 
 function getFolder(name, cb) {
 	//console.error('dir:'+name);
@@ -165,7 +177,7 @@ function getFolder(name, cb) {
 								// move our parsing forward to skip all found
 								// we are allready BEHIND comments when we used break, 
 								// so we need to skip to j2-1 to handle the line in next loop 
-								j = j2 - 1 ;
+								j = j2 - 1;
 								let json = commentlines.join('\n');
 								try {
 									let chan = JSON.parse(json);
@@ -297,24 +309,24 @@ function getFolder(name, cb) {
 							let line2 = line2raw.trim();
 
 							if (line2.endsWith('return CMD_EVENT_NONE;')) {
-									break;
+								break;
 							}
 							if (line2.startsWith("#if ")) {
-								foundif = line2.replace(/^#if /,"");
+								foundif = line2.replace(/^#if /, "");
 							}
 							if (line2.startsWith("#endif")) {
 								foundif = "";
 							}
 							if (/if.*str[ni]*cmp/.test(line2)) {
-								let Ename = line2.replace(/if.*str[ni]*cmp\(s,[ ]*"/,"").replace(/"[^"]*$/,'');
-								if (Ename=='channel'){
-									Ename=Ename.replace("channel","channel<X>"); // special case for channels and its number (...atoi ...)
+								let Ename = line2.replace(/if.*str[ni]*cmp\(s,[ ]*"/, "").replace(/"[^"]*$/, '');
+								if (Ename == 'channel') {
+									Ename = Ename.replace("channel", "channel<X>"); // special case for channels and its number (...atoi ...)
 								}
 								let l = lines[++j].trim();
 								i++;
-								let CMD = l.replace(/^.*return /,"").replace(";","");
-								if (CMD.startsWith('CMD_EVENT_CHANGE_CHANNEL0')){
-									CMD=CMD.replace(/[ ]*\+[ ]*atoi.*/,'<X>'); // special case for channels and its number (...atoi ...)
+								let CMD = l.replace(/^.*return /, "").replace(";", "");
+								if (CMD.startsWith('CMD_EVENT_CHANGE_CHANNEL0')) {
+									CMD = CMD.replace(/[ ]*\+[ ]*atoi.*/, '<X>'); // special case for channels and its number (...atoi ...)
 								}
 								let event = {
 									name: Ename,
@@ -420,14 +432,14 @@ function getFolder(name, cb) {
 					if (sourceFile && line.startsWith('static driver_t g_drivers[] = {')) {
 						newlines.push(lines[i]);
 						let j;
-						let lasthash="nothing yet";
+						let lasthash = "nothing yet";
 						for (j = i; j < lines.length; j++) {
 							let line2raw = lines[j];
 							let line2 = line2raw.trim();
 							if (line2.startsWith('#if')) {
 								// try finding #if ENABLE_DRIVER_XY so we can use it in cas of a duplicate driver
-								lasthash=line2;
-							} 
+								lasthash = line2;
+							}
 							if (line2.startsWith('//drvdetail:')) {
 								let commentlines = [];
 								let j2;
@@ -444,20 +456,20 @@ function getFolder(name, cb) {
 								// move our parsing forward to skip all found
 								// we are allready BEHIND comments when we used break, 
 								// so we need to skip to j2-1 to handle the line in next loop 
-								j = j2 -1 ;
+								j = j2 - 1;
 								let json = commentlines.join('\n');
 								try {
 									let drv = JSON.parse(json);
 									if (drvindex[drv.name]) {
 										console.error('duplicate driver docs (in "' + line + '") for drv.name="' + drv.name + '" at file: ' + file + '  --  actual line:' + line2);
-										 console.error('\tlast "#if" statement: "' + lasthash +'"'+ '\n\tfirst defined with "#if" statement: "' + drvdefines[drv.name] +'"' );
-										 let tmpcmd=drvindex[drv.name];
-										 delete tmpcmd.define;		// we added "define" on the other element, but it's not present here
-										 if (JSON.stringify(tmpcmd) == JSON.stringify(drv)) console.error('\tshould be safe to ignore, because documentation is equal!' );
-										 else console.error('\tFirst found:\n\t\t"' + JSON.stringify(tmpcmd).replace(/,\"/g,"\n\t\t\t\"")  + '"\n\tactual:\n\t\t"' + JSON.stringify(drv).replace(/,\"/g,"\n\t\t\t\"") + '"' );
+										console.error('\tlast "#if" statement: "' + lasthash + '"' + '\n\tfirst defined with "#if" statement: "' + drvdefines[drv.name] + '"');
+										let tmpcmd = drvindex[drv.name];
+										delete tmpcmd.define;		// we added "define" on the other element, but it's not present here
+										if (JSON.stringify(tmpcmd) == JSON.stringify(drv)) console.error('\tshould be safe to ignore, because documentation is equal!');
+										else console.error('\tFirst found:\n\t\t"' + JSON.stringify(tmpcmd).replace(/,\"/g, "\n\t\t\t\"") + '"\n\tactual:\n\t\t"' + JSON.stringify(drv).replace(/,\"/g, "\n\t\t\t\"") + '"');
 										//console.error(line);
 									} else {
-										drv.define = 'Enabled by defining "' + lasthash.replace("defined(","").replace(")","").replace(/#if[^ ]* /,"<b>") + '</b>" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) ';
+										drv.define = 'Enabled by defining "' + lasthash.replace("defined(", "").replace(")", "").replace(/#if[^ ]* /, "<b>") + '</b>" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) ';
 										drvs.push(drv);
 										drvindex[drv.name] = drv;
 										drvdefines[drv.name] = lasthash;
@@ -514,9 +526,9 @@ function getFolder(name, cb) {
 									newlines.push(lines[j]);
 									// we found a driver definition before, so if its not a "one liner" we already copied before
 									// we need to copy the next lines, until we find the closing "},"
-									if (! lines[j].trim().endsWith('},')) {
+									if (!lines[j].trim().endsWith('},')) {
 										let j2;
-										for (j2 = j+1; j2 < lines.length; j2++) {
+										for (j2 = j + 1; j2 < lines.length; j2++) {
 											let l = lines[j2].trim();
 											if (l.endsWith('},')) {
 												newlines.push(lines[j2]);
@@ -531,9 +543,9 @@ function getFolder(name, cb) {
 										// so we need to skip to j2-1 to handle the line in next loop 
 										j = j2;
 									}
-									
-									
-									
+
+
+
 								}
 							}
 							if (line2.endsWith('};')) {
@@ -656,19 +668,19 @@ function getFolder(name, cb) {
 							let cmd = JSON.parse(json);
 							if (cmdindex[cmd.name]) {
 								console.error('duplicate command "' + cmd.name + '" docs at file: ' + file + ' line: ' + line + '\n\tfirst seen in "' + cmdindex[cmd.name].file + '"');
-								tmp=cmdindex[cmd.name];	// to test, if oth are equal (despit different file) construct a helper ...
+								tmp = cmdindex[cmd.name];	// to test, if oth are equal (despit different file) construct a helper ...
 								tmp.file = cmd.file;	// ... and set its "file" to the actual value
-								if (JSON.stringify(tmp) == JSON.stringify(cmd))	console.error('\tshould be safe to ignore, they are equal beside the file name!');
+								if (JSON.stringify(tmp) == JSON.stringify(cmd)) console.error('\tshould be safe to ignore, they are equal beside the file name!');
 								else {
-									console.error('\tFirst found:\n\t\t"' + JSON.stringify(cmdindex[cmd.name]).replace(/,\"/g,"\n\t\t\t\"")+ '"\n\tactual:\n\t\t"'+JSON.stringify(cmd).replace(/,\"/g,"\n\t\t\t\""));
+									console.error('\tFirst found:\n\t\t"' + JSON.stringify(cmdindex[cmd.name]).replace(/,\"/g, "\n\t\t\t\"") + '"\n\tactual:\n\t\t"' + JSON.stringify(cmd).replace(/,\"/g, "\n\t\t\t\""));
 								}
-							}  {
+							} {
 								//console.error('new command "' + cmd.name + '" docs at file: ' + file + ' line: ' + line + ' -- json='+ json );
 								if (cmd.file !== file.slice(6)) {
 									console.error('!!!! Posible wrong file location for command "' + cmd.name + '": found in file: "' + file.slice(6) + '" but claimes file: "' + cmd.file + '" - please verify! !!!!')
-									console.error('\t Posible fix: sed -i \''+ (i-3)  + ',' + (i-1) +  ' { /cmddetail:\\"fn\\":\\"' + cmd.fn + '\"/ s%'+cmd.file + "%" + file.slice(6) + '%} \'  src/' + file.slice(6))
-									console.error('\t test posible fix: sed -n \''+ (i-3)  + ',' + (i-1) +  ' {/cmddetail:\\"fn\\":\\"' + cmd.fn + '\"/ s%'+cmd.file + "%" + file.slice(6) + '% p }\'  src/' + file.slice(6))
-									
+									console.error('\t Posible fix: sed -i \'' + (i - 3) + ',' + (i - 1) + ' { /cmddetail:\\"fn\\":\\"' + cmd.fn + '\"/ s%' + cmd.file + "%" + file.slice(6) + '%} \'  src/' + file.slice(6))
+									console.error('\t test posible fix: sed -n \'' + (i - 3) + ',' + (i - 1) + ' {/cmddetail:\\"fn\\":\\"' + cmd.fn + '\"/ s%' + cmd.file + "%" + file.slice(6) + '% p }\'  src/' + file.slice(6))
+
 								}
 								commands.push(cmd);
 								cmdindex[cmd.name] = cmd;
@@ -719,8 +731,8 @@ function getFolder(name, cb) {
 
 						if (cmdindex[cmd.name] && cmdindex[cmd.name].fn !== cmd.fn) {
 							console.log('!!!!  "' + cmd.name + '" in file ' + cmd.file + ' -- fn "' + cmdindex[cmd.name].fn + '"  != called function "' + cmd.fn + '"  !!!!');
-							console.log('\t possible fix: sed -i \'' + (i-3)  + ',' + (i-1) + ' { /cmddetail:\\"fn\\":\\"' + cmdindex[cmd.name].fn + '\\"/ s%' + cmdindex[cmd.name].fn + "%" + cmd.fn + '% }\'  src/' + file.slice(6));
-							console.log('\t test possible fix: sed -n \'' + (i-3)  + ',' + (i-1) + ' { /cmddetail:\\"fn\\":\\"' + cmdindex[cmd.name].fn + '\\"/ s%' + cmdindex[cmd.name].fn + "%" + cmd.fn + '% p }\'  src/' + file.slice(6));
+							console.log('\t possible fix: sed -i \'' + (i - 3) + ',' + (i - 1) + ' { /cmddetail:\\"fn\\":\\"' + cmdindex[cmd.name].fn + '\\"/ s%' + cmdindex[cmd.name].fn + "%" + cmd.fn + '% }\'  src/' + file.slice(6));
+							console.log('\t test possible fix: sed -n \'' + (i - 3) + ',' + (i - 1) + ' { /cmddetail:\\"fn\\":\\"' + cmdindex[cmd.name].fn + '\\"/ s%' + cmdindex[cmd.name].fn + "%" + cmd.fn + '% p }\'  src/' + file.slice(6));
 						}
 
 						if (!cmdindex[cmd.name]) {
@@ -750,8 +762,7 @@ function getFolder(name, cb) {
 					let newdata = newlines.join('\n');
 					try {
 						// write new file as "proposal", so we can choose, if/how to change source file
-						fs.writeFileSync(file + ".getcommands", newdata);
-						console.log('updated ' + file);
+						writeIfChanged(file + ".getcommands", newdata);
 					} catch (e) {
 						console.error('failed to update ' + file);
 					}
@@ -771,6 +782,25 @@ function getFolder(name, cb) {
 
 
 console.log('starting');
+
+function removeGetCommandsFiles(dir) {
+	let list = fs.readdirSync(dir);
+	for (let i = 0; i < list.length; i++) {
+		let filename = list[i];
+		let file = dir + '/' + filename;
+		let s = fs.statSync(file);
+		if (s.isDirectory()) {
+			removeGetCommandsFiles(file);
+		} else {
+			if (filename.endsWith('.getcommands')) {
+				fs.unlinkSync(file);
+				console.log('Removed ' + file);
+			}
+		}
+	}
+}
+
+removeGetCommandsFiles('./src');
 
 getFolder('./src');
 
@@ -924,10 +954,10 @@ for (let i = 0; i < evnts.length; i++) {
 	let ev = evnts[i];
 
 
-	let textshort = `| ${ev.name.replace("<","&lt;").replace(">","&gt;")} | ${ev.CMD.replace("<","&lt;").replace(">","&gt;")}${ev.ifdef ? '\nonly if defined:\n' + ev.ifdef.replace(/\|/g,"\\|") : ''} |`;
+	let textshort = `| ${ev.name.replace("<", "&lt;").replace(">", "&gt;")} | ${ev.CMD.replace("<", "&lt;").replace(">", "&gt;")}${ev.ifdef ? '\nonly if defined:\n' + ev.ifdef.replace(/\|/g, "\\|") : ''} |`;
 	// allow multi-row entries in table entries.
 	textshort = textshort.replace(/\n/g, '<br/>');
-	evntsmdshort += textshort +'\n' ;
+	evntsmdshort += textshort + '\n';
 }
 
 evntsmdshort += '\n';
@@ -1115,7 +1145,7 @@ for (let i = 0; i < drvs.length; i++) {
 	let descMore = "<br/>" + genReadMore(drv.name);
 	let descBasic = formatDesc(drv.descr);
 	let textshort = `| ${drv.name} |  ${descBasic}\n${drv.define}(for Details see [here](https://www.elektroda.com/rtvforum/topic4033833.html)).${descMore} |`;
-	
+
 	// allow multi-row entries in table entries.
 	textshort = textshort.replace(/\n/g, '<br/>');
 
@@ -1170,16 +1200,15 @@ let links = [];
 
 function writeDocMD_Array(name, content, json, label, bWriteJSON, desc) {
 	let fullName = "docs/" + name + ".md";
-	fs.writeFileSync(fullName, content);
-	console.log('wrote ' + fullName);
+
+	writeIfChanged(fullName, content);
 
 	if (json) {
 		console.log('There are ' + json.length + " " + name);
 	}
 	if (json && bWriteJSON) {
 		let jsonName = `${dirPath}/${name}.json`;
-		fs.writeFileSync(jsonName, JSON.stringify(json, null, 2));
-		console.log('wrote ' + jsonName);
+		writeIfChanged(jsonName, JSON.stringify(json, null, 2));
 	}
 
 	let link = {
@@ -1196,8 +1225,7 @@ function writeDocMD_Array(name, content, json, label, bWriteJSON, desc) {
 function writeDocMD_Page(page) {
 	let fullName = "docs/" + page.mdName + ".md";
 	let pageText = "# " + page.topic + "\n" + page.content;
-	fs.writeFileSync(fullName, pageText);
-	console.log('wrote ' + fullName);
+	writeIfChanged(fullName, pageText);
 
 	page.fullMDPath = fullName;
 }
