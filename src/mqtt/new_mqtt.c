@@ -1207,7 +1207,7 @@ void dnsFound(const char *name, ip_addr_t *ipaddr, void *arg)
 		dns_resolved = true;
 		/* Try to reconnect immediately after resolving the host */
 		mqtt_loopsWithDisconnected = LOOPS_WITH_DISCONNECTED + 1;
-		addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "mqtt_host %s resolution SUCCESS\r\n", name);
+		addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "mqtt_host %s resotlution SUCCESS\r\n", name);
 	}
 	else
 	{
@@ -1222,10 +1222,13 @@ static int MQTT_do_connect(mqtt_client_t* client)
 	const char* mqtt_userName, * mqtt_host, * mqtt_pass, * mqtt_clientID;
 	int mqtt_port;
 	int res;
+#ifdef WINDOWS
 	struct hostent* hostEntry;
+#endif
 	char will_topic[CGF_MQTT_CLIENT_ID_SIZE + 16];
+#if MQTT_USE_TLS
 	bool mqtt_use_tls, mqtt_verify_tls_cert;
-
+#endif
 	mqtt_host = CFG_GetMQTTHost();
 
 	if (!mqtt_host[0]) {
@@ -1528,7 +1531,11 @@ commandResult_t MQTT_PublishChannel(const void* context, const char* cmd, const 
 }
 commandResult_t MQTT_PublishCommand(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	const char* topic, * value;
+#ifdef WINDOWS
 	OBK_Publish_Result ret;
+#else
+	OBK_Publish_Result ret __attribute__((unused));
+#endif
 	int flags = 0;
 
 	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_ALLOW_ESCAPING_QUOTATIONS | TOKENIZER_EXPAND_EARLY);
@@ -1556,7 +1563,11 @@ commandResult_t MQTT_PublishCommand(const void* context, const char* cmd, const 
 #if ENABLE_LITTLEFS
 commandResult_t MQTT_PublishFile(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	const char* topic, *fname;
+#ifdef WINDOWS
 	OBK_Publish_Result ret;
+#else
+	OBK_Publish_Result ret __attribute__((unused));
+#endif	
 	int flags = 0;
 	byte*data;
 
@@ -1586,7 +1597,11 @@ commandResult_t MQTT_PublishFile(const void* context, const char* cmd, const cha
 commandResult_t MQTT_PublishCommandInteger(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	const char* topic;
 	int value;
+#ifdef WINDOWS
 	OBK_Publish_Result ret;
+#else
+	OBK_Publish_Result ret __attribute__((unused));
+#endif	
 	int flags = 0;
 
 	Tokenizer_TokenizeString(args, 0);
@@ -1611,7 +1626,11 @@ commandResult_t MQTT_PublishCommandInteger(const void* context, const char* cmd,
 commandResult_t MQTT_PublishCommandFloat(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	const char* topic;
 	float value;
+#ifdef WINDOWS
 	OBK_Publish_Result ret;
+#else
+	OBK_Publish_Result ret __attribute__((unused));
+#endif
 	int flags = 0;
 	int decimalPlaces;
 
@@ -1636,8 +1655,11 @@ commandResult_t MQTT_PublishCommandFloat(const void* context, const char* cmd, c
 }
 commandResult_t MQTT_PublishCommandDriver(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	const char* driver;
+#ifdef WINDOWS
 	OBK_Publish_Result ret;
-
+#else
+	OBK_Publish_Result ret __attribute__((unused));
+#endif
 	Tokenizer_TokenizeString(args, 0);
 
 	driver = Tokenizer_GetArg(0);
@@ -2116,7 +2138,7 @@ OBK_Publish_Result MQTT_DoItemPublish(int idx)
 		return MQTT_DoItemPublishString("uptime", dataStr);
 
 	case PUBLISHITEM_SELF_FREEHEAP:
-		sprintf(dataStr, "%d", xPortGetFreeHeapSize());
+		sprintf(dataStr, "%d", (int)xPortGetFreeHeapSize());
 		return MQTT_DoItemPublishString("freeheap", dataStr);
 
 	case PUBLISHITEM_SELF_IP:

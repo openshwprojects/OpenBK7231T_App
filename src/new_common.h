@@ -1108,6 +1108,7 @@ extern int g_rebootReason;
 extern float g_wifi_temperature;
 extern char g_wifi_bssid[33];
 extern uint8_t g_wifi_channel;
+extern int g_reset;
 
 typedef int(*jsonCb_t)(void *userData, const char *fmt, ...);
 #if ENABLE_TASMOTA_JSON
