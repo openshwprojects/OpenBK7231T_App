@@ -13,7 +13,6 @@ static bool isWorking = false;
 
 void AHT2X_SoftReset()
 {
-	ADDLOG_DEBUG(LOG_FEATURE_SENSOR, "AHT2X_SoftReset: Resetting sensor");
 	Soft_I2C_Start(&g_softI2C, AHT2X_I2C_ADDR);
 	Soft_I2C_WriteByte(&g_softI2C, AHT2X_CMD_RST);
 	Soft_I2C_Stop(&g_softI2C);
@@ -42,19 +41,19 @@ void AHT2X_Initialization()
 		attempts++;
 		if(attempts > max_retries)
 		{
-			ADDLOG_INFO(LOG_FEATURE_SENSOR, "AHT2X_Initialization: Sensor timed out.");
+			ADDLOG_INFO(LOG_FEATURE_SENSOR, "%s: Sensor timed out.", __func__);
 			isWorking = false;
 			break;
 		}
 	}
 	if((data & 0x68) != 0x08)
 	{
-		ADDLOG_INFO(LOG_FEATURE_SENSOR, "AHT2X_Initialization: Initialization failed.");
+		ADDLOG_INFO(LOG_FEATURE_SENSOR, "%s: Initialization failed.", __func__);
 		isWorking = false;
 	}
 	else
 	{
-		ADDLOG_INFO(LOG_FEATURE_SENSOR, "AHT2X_Initialization: Initialization successful.");
+		ADDLOG_INFO(LOG_FEATURE_SENSOR, "%s: Initialization successful.", __func__);
 		isWorking = true;
 	}
 }
@@ -90,20 +89,20 @@ void AHT2X_Measure()
 		}
 		else
 		{
-			ADDLOG_DEBUG(LOG_FEATURE_SENSOR, "AHT2X_Measure: Sensor is busy, waiting... (%ims)", i * 20);
+			ADDLOG_DEBUG(LOG_FEATURE_SENSOR, "%s: Sensor is busy, waiting... (%ims)", __func__, i * 20);
 			rtos_delay_milliseconds(20);
 		}
 	}
 
 	if(!ready)
 	{
-		ADDLOG_INFO(LOG_FEATURE_SENSOR, "AHT2X_Measure: Measurements reading timed out.");
+		ADDLOG_INFO(LOG_FEATURE_SENSOR, "%s: Measurements reading timed out.", __func__);
 		return;
 	}
 
 	if(data[1] == 0x0 && data[2] == 0x0 && (data[3] >> 4) == 0x0)
 	{
-		ADDLOG_INFO(LOG_FEATURE_SENSOR, "AHT2X_Measure: Unrealistic humidity, will not update values.");
+		ADDLOG_INFO(LOG_FEATURE_SENSOR, "%s: Unrealistic humidity, will not update values.", __func__);
 		return;
 	}
 
@@ -122,7 +121,7 @@ void AHT2X_Measure()
 		CHANNEL_Set(channel_humid, (int)(g_humid), 0);
 	}
 
-	ADDLOG_INFO(LOG_FEATURE_SENSOR, "AHT2X_Measure: Temperature:%fC Humidity:%f%%", g_temp, g_humid);
+	ADDLOG_INFO(LOG_FEATURE_SENSOR, "%s: Temperature:%fC Humidity:%f%%", __func__, g_temp, g_humid);
 }
 
 commandResult_t AHT2X_Calibrate(const void* context, const char* cmd, const char* args, int cmdFlags)
@@ -135,8 +134,6 @@ commandResult_t AHT2X_Calibrate(const void* context, const char* cmd, const char
 
 	g_calTemp = Tokenizer_GetArgFloat(0);
 	g_calHum = Tokenizer_GetArgFloatDefault(1, 0.0f);
-
-	ADDLOG_INFO(LOG_FEATURE_SENSOR, "AHT2X_Calibrate: Calibration done temp %f and humidity %f", g_calTemp, g_calHum);
 
 	return CMD_RES_OK;
 }
@@ -152,7 +149,7 @@ commandResult_t AHT2X_Cycle(const void* context, const char* cmd, const char* ar
 	int seconds = Tokenizer_GetArgInteger(0);
 	if(seconds < 1)
 	{
-		ADDLOG_INFO(LOG_FEATURE_CMD, "AHT2X_Cycle: You must have at least 1 second cycle.");
+		ADDLOG_INFO(LOG_FEATURE_CMD, "%s: You must have at least 1 second cycle.", __func__);
 		return CMD_RES_BAD_ARGUMENT;
 	}
 	else
@@ -160,7 +157,7 @@ commandResult_t AHT2X_Cycle(const void* context, const char* cmd, const char* ar
 		g_aht_secondsBetweenMeasurements = seconds;
 	}
 
-	ADDLOG_INFO(LOG_FEATURE_CMD, "AHT2X_Cycle: Measurement will run every %i seconds.", g_aht_secondsBetweenMeasurements);
+	ADDLOG_INFO(LOG_FEATURE_CMD, "%s: Measurement will run every %i seconds.", __func__, g_aht_secondsBetweenMeasurements);
 
 	return CMD_RES_OK;
 }

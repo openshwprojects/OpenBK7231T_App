@@ -313,7 +313,7 @@
 #if PLATFORM_BEKEN_NEW
 #define NEW_TCP_SERVER							1
 #endif
-#define ENABLE_DRIVER_NEO6M						1
+//#define ENABLE_DRIVER_NEO6M						1
 
 // ENABLE_I2C_ is a syntax for
 // our I2C system defines for drv_i2c_main.c

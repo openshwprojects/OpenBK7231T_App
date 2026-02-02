@@ -8,6 +8,7 @@ include $(OBK_DIR)/libraries/berry.mk
 SRC_C += $(BERRY_SRC_C)
 
 CPPDEFINES += -DOBK_VARIANT=$(OBK_VARIANT)
+CPPDEFINES += -D__FILE__=\"\" -Wno-builtin-macro-redefined
 
 ifeq ($(TARGET_PLATFORM),bk7231n)
 
