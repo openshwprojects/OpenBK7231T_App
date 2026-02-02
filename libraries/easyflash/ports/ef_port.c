@@ -30,7 +30,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
-#if !WINDOWS && !PLATFORM_TXW81X && !PLATFORM_RDA5981 && !LINUX
+#if !WINDOWS && !PLATFORM_TXW81X && !PLATFORM_RDA5981 && !LINUX && !defined(PLATFORM_W800) && !defined(PLATFORM_W600)
 #include "FreeRTOS.h"
 #include "semphr.h"
 #include "queue.h"
@@ -45,6 +45,10 @@ flash_t flash;
 
 #elif defined(PLATFORM_W800) || defined(PLATFORM_W600)
 
+#include "FreeRTOS.h"
+#include "rtoslist.h"
+#include "semphr.h"
+#include "rtosqueue.h"
 #include "wm_internal_flash.h"
 #include "wm_flash.h"
 #define QueueHandle_t xQueueHandle
@@ -198,9 +202,6 @@ EfErrCode ef_port_init(ef_env const** default_env, size_t* default_env_size)
 	*default_env_size = sizeof(default_env_set) / sizeof(default_env_set[0]);
 
 	ef_mutex = xSemaphoreCreateMutex();
-#if defined(PLATFORM_W800) || defined(PLATFORM_W600)
-	tls_fls_init();
-#endif
 
 	return result;
 }
