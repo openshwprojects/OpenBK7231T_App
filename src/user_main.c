@@ -99,6 +99,8 @@ static HALWifiStatus_t g_prevWiFiStatus = WIFI_UNDEFINED;
 static int g_noMQTTTime = 0;
 
 uint8_t g_StartupDelayOver = 0;
+// flag to quick tick MQTT_FastConnect after WiFi STA connected
+bool Main_bRunMQTTFastConnect;
 
 uint32_t idleCount = 0;
 
@@ -531,7 +533,7 @@ void Main_OnWiFiStatusChange(int code)
 			HAL_GetWiFiChannel(&g_wifi_channel);
 
 			if (Main_HasFastConnect())
-				MQTT_FastConnect();
+				Main_bRunMQTTFastConnect = true;
 
 			if (strlen(CFG_DeviceGroups_GetName()) > 0) {
 				ScheduleDriverStart("DGR", 5);
@@ -1109,6 +1111,11 @@ void QuickTick(void* param)
 	}
 	g_last_time = g_timeMs;
 
+	// do FastConnect daisy chaining
+	if (Main_bRunMQTTFastConnect) {
+		Main_bRunMQTTFastConnect = false;
+		MQTT_FastConnect();
+	}
 #if ENABLE_OBK_SCRIPTING
 	SVM_RunThreads(g_deltaTimeMS);
 #endif
@@ -1526,9 +1533,6 @@ void Main_Init_After_Delay()
 		}
 		else {
 			if (Main_HasFastConnect()) {
-#if ENABLE_MQTT
-				mqtt_loopsWithDisconnected = 9999;
-#endif
 				Main_ConnectToWiFiNow();
 			}
 			else {

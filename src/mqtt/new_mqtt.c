@@ -1414,7 +1414,6 @@ static int MQTT_do_connect(mqtt_client_t* client)
 				LOCK_TCPIP_CORE();
 			}
 		} while (notGivingUp);
-		UNLOCK_TCPIP_CORE();
 		ADDLOGF_TIMING("%i - %s - Finished mqtt_client_connect, using %i of %i delays", xTaskGetTickCount(), __func__, MQTT_ROUTE_DELAYS - notGivingUp + 1, MQTT_ROUTE_DELAYS);
 		mqtt_connect_result = res;
 		if (res != ERR_OK)
@@ -1429,6 +1428,7 @@ static int MQTT_do_connect(mqtt_client_t* client)
 		else {
 			mqtt_status_message[0] = '\0';
 		}
+		UNLOCK_TCPIP_CORE();
 		return res;
 	}
 	else {
@@ -2212,9 +2212,9 @@ void MQTT_FastConnect() {
 	int ret = MQTT_do_connect(mqtt_client);
 	MQTT_Mutex_Free();
 	if (ret == ERR_RTE) {
+		mqtt_loopsWithDisconnected = LOOPS_WITH_DISCONNECTED + 1;
 		return;
 	}
-	mqtt_loopsWithDisconnected = 0;
 	ADDLOGF_TIMING("%i - %s - Continue with MQTT fast connect, return %i", xTaskGetTickCount(), __func__, ret);
 }
 
@@ -2255,8 +2255,14 @@ int MQTT_RunQuickTick(){
 // return true/false on connected/disconnected
 bool MQTT_RunEverySecondUpdate()
 {
-	if (!mqtt_initialised)
+	if (!mqtt_initialised || Main_IsOpenAccessPointMode())
 		return false;
+
+	// check OTA right away and stop processing
+	if (OTA_GetProgress() != -1) {
+		mqtt_initialised = 0; // don't come back here until restart
+		return false;
+	}
 
 	if (Main_HasWiFiConnected() == 0)
 	{
@@ -2277,19 +2283,6 @@ bool MQTT_RunEverySecondUpdate()
 	}
 
 	bool isReady = MQTT_IsReady();
-	// check OTA right away, close connection and stop processing
-	if (OTA_GetProgress() != -1) {
-		if (isReady) {
-			ADDLOGF_INFO("OTA started MQTT will be closed\n");
-			LOCK_TCPIP_CORE();
-			mqtt_disconnect(mqtt_client);
-			UNLOCK_TCPIP_CORE();
-		}
-		MQTT_Mutex_Free();
-		mqtt_initialised = 0; // don't come back here until restart
-		return false;
-	}
-
 	if (g_mqtt_bBaseTopicDirty) {
 		ADDLOGF_INFO("MQTT base topic is dirty, will reinit callbacks and reconnect\n");
 		MQTT_InitCallbacks();
