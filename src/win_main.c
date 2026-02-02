@@ -202,7 +202,12 @@ void Test_PartitionSearch()
 void Win_DoUnitTests()
 {
 	// SELFTEST_ASSERT_EXPRESSION("sqrt(4)", 2)
+	SELFTEST_ASSERT(PIN_ParsePinRoleName("Btn_pd") == IOR_Button_pd);
+	SELFTEST_ASSERT(PIN_ParsePinRoleName("Btn_pd_n") == IOR_Button_pd_n);
+	SELFTEST_ASSERT(PIN_ParsePinRoleName("TglChanOnTgl_pd") == IOR_ToggleChannelOnToggle_pd);
 
+	Test_TuyaMCU_TH08();
+	Test_ButtonEvents();
 	Test_Command_If();
 	Test_MQTT();
 	Test_HTTP_Client();
@@ -284,13 +289,13 @@ void Win_DoUnitTests()
 	Test_ChangeHandlers2();
 	Test_ChangeHandlers_EnsureThatChannelVariableIsExpandedAtHandlerRunTime();
 	Test_RepeatingEvents();
-	Test_ButtonEvents();
 	Test_Commands_Alias();
 	Test_Demo_SignAndValue();
 	Test_LEDDriver();
 	Test_LFS();
 	Test_Scripting();
 	Test_Tokenizer();
+	Test_Pins();
 	Test_Http();
 	Test_Http_LED();
 	Test_DeviceGroups();

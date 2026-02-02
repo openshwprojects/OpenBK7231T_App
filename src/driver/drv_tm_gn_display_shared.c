@@ -607,8 +607,10 @@ void TM_GN_Display_SharedInit(tmGnType_t type) {
 	if (type == TMGN_HD2015) {
 		// startDriver HD2015 [CLK] [DAT]
 		// startDriver HD2015 11 24
-		g_i2c.pin_clk = Tokenizer_GetArgIntegerDefault(1, 11); // A11
-		g_i2c.pin_data = Tokenizer_GetArgIntegerDefault(2, 24); // B8
+//		g_i2c.pin_clk = Tokenizer_GetArgIntegerDefault(1, 11); // A11
+//		g_i2c.pin_data = Tokenizer_GetArgIntegerDefault(2, 24); // B8
+		g_i2c.pin_clk = Tokenizer_GetPin(1, 11); // A11
+		g_i2c.pin_data = Tokenizer_GetPin(2, 24); // B8
 		g_i2c.pin_stb = -1; // B3
 		g_totalDigits = 4;
 		// HD2015 has no remap

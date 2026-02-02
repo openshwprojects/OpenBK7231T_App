@@ -1,19 +1,47 @@
-#ifdef PLATFORM_LN882H
+#if PLATFORM_LN882H || PLATFORM_LN8825
 
 #include "../hal_wifi.h"
 #include "wifi.h"
-#include "wifi_port.h"
 #include "dhcp.h"
 #include "netif/ethernetif.h"
 #include "wifi_manager.h"
 #include "lwip/tcpip.h"
 #include "utils/system_parameter.h"
-#include "ln_wifi_err.h"
-#include "ln_misc.h"
-#include "ln_psk_calc.h"
+//#include "ln_misc.h"
+//#include "ln_psk_calc.h"
 #include "utils/sysparam_factory_setting.h"
 #include <lwip/sockets.h>
 #include <stdbool.h>	// for bool "g_STA_static_IP"
+#if PLATFORM_LN8825
+#include "wifi_port/wifi_port.h"
+#include "wifi_port/ln_wifi_err.h"
+#include "ethernetif.h"
+#include "hal/hal_sleep.h"
+#define netdev_set_mac_addr ethernetif_set_mac_addr
+#define netdev_got_ip ethernetif_got_ip
+#define netdev_get_active ethernetif_get_active
+#define netdev_get_netif ethernetif_get_netif
+#define netdev_set_ip_info ethernetif_set_ip_info
+#define netdev_set_active(x) ethernetif_set_state(x, NETIF_UP)
+#define netdev_set_state ethernetif_set_state
+#define sysparam_sta_mac_get(x) system_parameter_get_macaddr(STATION_IF, x)
+#define sysparam_softap_mac_get(x) system_parameter_get_macaddr(SOFT_AP_IF, x)
+#define sysparam_sta_mac_update(x) system_parameter_set_macaddr(STATION_IF, x)
+#define sysparam_softap_mac_update(x) system_parameter_set_macaddr(SOFT_AP_IF, x)
+#define netif_idx_t wifi_interface_enum_t
+#define NETIF_IDX_AP SOFT_AP_IF
+#define NETIF_IDX_STA STATION_IF
+#define wifi_scan_cfg_t wifi_scan_config_t
+#define NETDEV_UP NETIF_UP
+#define SYSPARAM_ERR_NONE 0
+#define LN_UNUSED(x)
+#define wifi_sta_get_rssi(x) do{*x = wifi_station_get_rssi();}while(0)
+#define sysparam_sta_hostname_update(x) system_parameter_set_hostname(STATION_IF, x);
+#define wifi_sta_disconnect wifi_station_disconnect
+#else
+#include "wifi_port.h"
+#include "ln_wifi_err.h"
+#endif
 
 
 #define PM_WIFI_DEFAULT_PS_MODE           (WIFI_NO_POWERSAVE)
@@ -61,7 +89,6 @@ const char* HAL_GetMyIPString() {
 }
 
 const char* HAL_GetMyGatewayString() {
-    alert_log("HAL_GetMyGatewayString");
     struct netif *nif = get_connected_nif();
     if (nif != NULL) {
         char* ip_addr = ip4addr_ntoa(&nif->gw);
@@ -71,12 +98,10 @@ const char* HAL_GetMyGatewayString() {
 }
 
 const char* HAL_GetMyDNSString() {
-    alert_log("HAL_GetMyDNSString");
 	return g_IP;
 }
 
 const char* HAL_GetMyMaskString() {
-    alert_log("HAL_GetMyMaskString");
     struct netif *nif = get_connected_nif();
     if (nif != NULL) {
         char* ip_addr = ip4addr_ntoa(&nif->netmask);
@@ -88,7 +113,6 @@ const char* HAL_GetMyMaskString() {
 
 int WiFI_SetMacAddress(char* mac)
 {
-    alert_log("WiFI_SetMacAddress");
     if (netdev_got_ip()) {
         sysparam_sta_mac_update((const uint8_t *) mac);
         if (netdev_get_active() == NETIF_IDX_STA) {
@@ -102,13 +126,11 @@ int WiFI_SetMacAddress(char* mac)
 
 void WiFI_GetMacAddress(char* mac)
 {
-    alert_log("WiFI_GetMacAddress");
 	sysparam_sta_mac_get((unsigned char*)mac);
 }
 
 const char* HAL_GetMACStr(char* macstr)
 {
-    alert_log("HAL_GetMACStr");
 	unsigned char mac[6];
     sysparam_sta_mac_get((unsigned char*)mac);
 	sprintf(macstr, MACSTR, MAC2STR(mac));
@@ -159,6 +181,7 @@ char* HAL_GetWiFiSSID(char* ssid){
 	return ssid;
 };
 */
+#if PLATFORM_LN882H
 char* HAL_GetWiFiBSSID(char* bssid){
 	const uint8_t * tempbssid = NULL;
 	const char * ssid = NULL;
@@ -172,13 +195,14 @@ uint8_t HAL_GetWiFiChannel(uint8_t *chan){
 	return *chan;
 };
 
-
+#endif
 
 void HAL_WiFi_SetupStatusCallback(void (*cb)(int code))
 {
-    alert_log("HAL_WiFi_SetupStatusCallback");
 	g_wifiStatusCallback = cb;
 }
+
+#if PLATFORM_LN882H
 
 static void wifi_scan_complete_cb(void * arg)
 {
@@ -207,14 +231,6 @@ static void wifi_scan_complete_cb(void * arg)
     wifi_manager_ap_list_update_enable(LN_TRUE);
 }
 
-static void wifi_connected_cb(void * arg)
-{
-    LN_UNUSED(arg);
-    if (g_wifiStatusCallback != NULL) {
-        g_wifiStatusCallback(WIFI_STA_CONNECTED);
-    }    
-}
-
 static void wifi_connect_failed_cb(void* arg) {
     wifi_sta_connect_failed_reason_t reason = *((wifi_sta_connect_failed_reason_t*) arg);
     if (reason == WIFI_STA_CONN_WRONG_PWD) {
@@ -223,9 +239,30 @@ static void wifi_connect_failed_cb(void* arg) {
         }    
     }
 }
+#else
+
+static void wifi_disconnected_cb(void* arg)
+{
+    if(g_wifiStatusCallback != NULL)
+    {
+        g_wifiStatusCallback(WIFI_STA_DISCONNECTED);
+    }
+}
+
+#endif
+
+static void wifi_connected_cb(void* arg)
+{
+    LN_UNUSED(arg);
+    if(g_wifiStatusCallback != NULL)
+    {
+        g_wifiStatusCallback(WIFI_STA_CONNECTED);
+    }
+}
 
 void wifi_init_sta(const char* oob_ssid, const char* connect_key, obkStaticIP_t *ip)
 {
+#if PLATFORM_LN882H
     sta_ps_mode_t ps_mode = PM_WIFI_DEFAULT_PS_MODE;
 	wifi_sta_connect_t connect = {
 		.ssid    = oob_ssid,
@@ -233,6 +270,16 @@ void wifi_init_sta(const char* oob_ssid, const char* connect_key, obkStaticIP_t 
 		.bssid   = NULL,
 		.psk_value = NULL,
 	};
+#else
+    wifi_config_t connect = { 0 };
+    wifi_init_type_t init_param =
+    {
+        .wifi_mode = WIFI_MODE_STATION,
+        .sta_ps_mode = WIFI_NO_POWERSAVE,
+        .dhcp_mode = WLAN_DHCP_CLIENT,
+        .scanned_ap_list_size = SCANNED_AP_LIST_SIZE,
+    };
+#endif
 //	wifi_manager_set_ap_list_sort_rule(1);
 	wifi_scan_cfg_t scan_cfg = {
         .channel   = 0,
@@ -259,6 +306,7 @@ void wifi_init_sta(const char* oob_ssid, const char* connect_key, obkStaticIP_t 
 
     //2. net device(lwip)
     netdev_set_mac_addr(NETIF_IDX_STA, mac_addr);
+
     sysparam_sta_hostname_update(CFG_GetDeviceName());
     // static ip address
     g_STA_static_IP = (ip->localIPAddr[0] != 0) ;
@@ -276,10 +324,12 @@ void wifi_init_sta(const char* oob_ssid, const char* connect_key, obkStaticIP_t 
             dns_setserver(0,&ip->dnsServerIpAddr);
        } else  LOG(LOG_LVL_INFO, "INSIDE wifi_init_sta, no static IP - using DHCP\r\n");
 
+#if PLATFORM_LN882H
     netdev_set_active(NETIF_IDX_STA);
-
+#endif
 
     //3. wifi start
+#if PLATFORM_LN882H
     wifi_manager_reg_event_callback(WIFI_MGR_EVENT_STA_SCAN_COMPLETE, &wifi_scan_complete_cb);
 
     if(WIFI_ERR_NONE != wifi_sta_start(mac_addr, ps_mode)){
@@ -293,34 +343,63 @@ void wifi_init_sta(const char* oob_ssid, const char* connect_key, obkStaticIP_t 
             hexdump(LOG_LVL_INFO, "psk value ", psk_value, sizeof(psk_value));
         }
     }
+#endif
 
     if (g_wifiStatusCallback != NULL) {
         g_wifiStatusCallback(WIFI_STA_CONNECTING);
     }
 
+#if PLATFORM_LN882H
     wifi_manager_reg_event_callback(WIFI_MGR_EVENT_STA_CONNECTED, &wifi_connected_cb);
     wifi_manager_reg_event_callback(WIFI_MGR_EVENT_STA_CONNECT_FAILED, &wifi_connect_failed_cb);
     extern void ln_wpa_sae_enable(void);
     ln_wpa_sae_enable();
 
     wifi_sta_connect(&connect, &scan_cfg);
+#else
+    netif_set_hostname(ethernetif_get_netif(STATION_IF), CFG_GetDeviceName());
+    hal_sleep_set_mode(ACTIVE);
+    wifi_set_mode(init_param.wifi_mode);
+    wifi_set_config(STATION_IF, &connect);
+    if(g_STA_static_IP)
+    {
+        reg_wifi_msg_callbcak(WIFI_MSG_ID_STA_CONNECTED, &wifi_connected_cb);
+        reg_wifi_msg_callbcak(WIFI_MSG_ID_STA_DHCP_GOT_IP, NULL);
+    }
+    else
+    {
+        reg_wifi_msg_callbcak(WIFI_MSG_ID_STA_CONNECTED, NULL);
+        reg_wifi_msg_callbcak(WIFI_MSG_ID_STA_DHCP_GOT_IP, &wifi_connected_cb);
+    }
+    reg_wifi_msg_callbcak(WIFI_MSG_ID_STA_DISCONNECTED, &wifi_disconnected_cb);
+    reg_wifi_msg_callbcak(WIFI_MSG_ID_STA_DHCP_TIMEOUT, &wifi_disconnected_cb);
+    //wifi_station_scan(&scan_cfg);
+
+    if(!wifi_start(&init_param, true))
+    {
+        LOG(LOG_LVL_ERROR, "[%s, %d]wifi_start() fail.\r\n", __func__, __LINE__);
+    }
+    memcpy(connect.sta.ssid, oob_ssid, strlen(oob_ssid));
+    memcpy(connect.sta.password, connect_key, strlen(connect_key));
+    wifi_station_connect(&connect);
+#endif
 }
 
 void HAL_ConnectToWiFi(const char* oob_ssid, const char* connect_key, obkStaticIP_t *ip)
 {
-    alert_log("HAL_ConnectToWiFi");
 	g_bOpenAccessPointMode = 0;
 	wifi_init_sta(oob_ssid, connect_key, ip);
 }
 
 void HAL_DisconnectFromWifi()
 {
-    alert_log("HAL_DisconnectFromWifi");
     wifi_sta_disconnect();
     if (g_wifiStatusCallback != NULL) {
         g_wifiStatusCallback(WIFI_STA_DISCONNECTED);
     }
 }
+
+#if PLATFORM_LN882H
 
 static void ap_startup_cb(void * arg)
 {
@@ -412,5 +491,59 @@ int HAL_SetupWiFiOpenAccessPoint(const char* ssid)
 
 	return 0;
 }
+
+#else
+
+int HAL_SetupWiFiOpenAccessPoint(const char* ssid)
+{
+    system_parameter_set_hostname(SOFT_AP_IF, CFG_GetDeviceName());
+
+    uint8_t macaddr[6] = { 0 }, macaddr_default[6] = { 0 };
+    wifi_config_t wifi_config = {
+        .ap = {
+            .ssid_len = strlen(ssid),
+            .password = "",
+            .channel = 1,
+            .authmode = WIFI_AUTH_OPEN,
+            .ssid_hidden = 0,
+            .max_connection = 1,
+            .beacon_interval = 100,
+            .reserved = 0,
+        },
+    };
+    memcpy(&wifi_config.ap.ssid, ssid, wifi_config.ap.ssid_len);
+    wifi_init_type_t init_param = {
+        .wifi_mode = WIFI_MODE_AP,
+        .sta_ps_mode = WIFI_NO_POWERSAVE,
+        .dhcp_mode = WLAN_DHCP_SERVER,
+        .local_ip_addr = "192.168.4.1",
+        .gateway_ip_addr = "192.168.4.1",
+        .net_mask = "255.255.255.0",
+    };
+
+    wifi_set_mode(init_param.wifi_mode);
+
+    system_parameter_get_wifi_macaddr_default(SOFT_AP_IF, macaddr_default);
+    wifi_get_macaddr(SOFT_AP_IF, macaddr);
+    if(ln_is_valid_mac((const char*)macaddr) && memcmp(macaddr, macaddr_default, 6) != 0)
+    {
+        wifi_set_macaddr_current(SOFT_AP_IF, macaddr);
+    }
+    else
+    {
+        ln_generate_random_mac(macaddr);
+        wifi_set_macaddr(SOFT_AP_IF, macaddr);
+    }
+
+    wifi_set_config(SOFT_AP_IF, &wifi_config);
+
+    netif_set_hostname(ethernetif_get_netif(SOFT_AP_IF), CFG_GetDeviceName());
+    wifi_start(&init_param, true);
+    g_bOpenAccessPointMode = 1;
+
+    return 0;
+}
+
+#endif
 
 #endif // PLATFORM_LN882H

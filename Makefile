@@ -29,6 +29,8 @@ else ifeq ($(VARIANT),sensors)
 OBK_VARIANT = 5
 else ifeq ($(VARIANT),hlw8112)
 OBK_VARIANT = 6
+else ifeq ($(VARIANT),battery)
+OBK_VARIANT = 7
 else ifeq ($(VARIANT),2M)
 OBK_VARIANT = 1
 ESP_FSIZE = 2MB
@@ -129,7 +131,12 @@ sdk/OpenLN882H/project/OpenBeken/app:
 	@mkdir -p "sdk/OpenLN882H/project/OpenBeken"
 	ln -s "$(shell pwd)/" "sdk/OpenLN882H/project/OpenBeken/app"
 
-.PHONY: prebuild_OpenBK7231N prebuild_OpenBK7231T prebuild_OpenBL602 prebuild_OpenLN882H 
+sdk/OpenLN8825/project/OpenBeken/app:
+	@echo Create symlink for $(APP_NAME) into sdk folder
+	@mkdir -p "sdk/OpenLN8825/project/OpenBeken"
+	ln -s "$(shell pwd)/" "sdk/OpenLN8825/project/OpenBeken/app"
+
+.PHONY: prebuild_OpenBK7231N prebuild_OpenBK7231T prebuild_OpenBL602 prebuild_OpenLN882H prebuild_OpenLN8825 
 .PHONY: prebuild_OpenW600 prebuild_OpenW800 prebuild_OpenXR809 prebuild_OpenXR806 prebuild_OpenXR872 prebuild_ESPIDF prebuild_OpenTR6260
 .PHONY: prebuild_OpenRTL87X0C prebuild_OpenBK7238 prebuild_OpenBK7231N_ALT prebuild_OpenBK7231U
 .PHONY: prebuild_OpenBK7231N_ALT prebuild_OpenBK7231T_ALT prebuild_OpenBK7252
@@ -167,6 +174,14 @@ prebuild_OpenLN882H: berry
 		echo "prebuild found for OpenLN882H"; \
 		sh platforms/LN882H/pre_build.sh; \
 	else echo "prebuild for OpenLN882H not found ... "; \
+	fi
+
+prebuild_OpenLN8825: berry
+	git submodule update --init --recursive --depth=1 sdk/OpenLN8825
+	@if [ -e platforms/LN8825/pre_build.sh ]; then \
+		echo "prebuild found for OpenLN8825"; \
+		sh platforms/LN8825/pre_build.sh; \
+	else echo "prebuild for OpenLN8825 not found ... "; \
 	fi
 
 prebuild_OpenW600: berry
@@ -476,6 +491,14 @@ OpenLN882H: prebuild_OpenLN882H sdk/OpenLN882H/project/OpenBeken/app
 	cp sdk/OpenLN882H/build/bin/flashimage.bin output/$(APP_VERSION)/OpenLN882H_$(APP_VERSION).bin
 	cp sdk/OpenLN882H/build/bin/flashimage-ota-xz-v0.1.bin output/$(APP_VERSION)/OpenLN882H_$(APP_VERSION)_OTA.bin
 
+.PHONY: OpenLN8825
+OpenLN8825: prebuild_OpenLN8825 sdk/OpenLN8825/project/OpenBeken/app
+	CROSS_TOOLCHAIN_ROOT=$(ARM_NONE_EABI_GCC_PATH)/../ APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT) cmake sdk/OpenLN8825 -B sdk/OpenLN8825/build
+	CROSS_TOOLCHAIN_ROOT=$(ARM_NONE_EABI_GCC_PATH)/../ APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT) cmake --build ./sdk/OpenLN8825/build -j $(shell nproc)
+	mkdir -p output/$(APP_VERSION)
+	cp sdk/OpenLN8825/build/bin/flashimage.bin output/$(APP_VERSION)/OpenLN8825_$(APP_VERSION).bin
+	cp sdk/OpenLN8825/build/bin/flashimage-ota-xz.bin output/$(APP_VERSION)/OpenLN8825_$(APP_VERSION)_ota.img
+
 .PHONY: OpenESP32
 OpenESP32: prebuild_ESPIDF
 	IDF_TARGET="esp32" APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT) cmake platforms/ESP-IDF -B platforms/ESP-IDF/build-32 
@@ -545,12 +568,12 @@ OpenESP8266: prebuild_ESP8266
 	APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT) cmake platforms/ESP8266 -B platforms/ESP8266/build
 	APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT) cmake --build ./platforms/ESP8266/build -j $(shell nproc)
 	mkdir -p output/$(APP_VERSION)
-	python3 -m esptool -c esp8266 merge_bin -o output/$(APP_VERSION)/OpenESP8266_2MB_$(APP_VERSION).factory.bin --flash_mode dout --flash_size 2MB 0x0 ./platforms/ESP8266/build/bootloader/bootloader.bin 0x8000 ./platforms/ESP8266/build/partition_table/partition-table.bin 0x10000 ./platforms/ESP8266/build/OpenBeken.bin
+	esptool.py -c esp8266 merge_bin -o output/$(APP_VERSION)/OpenESP8266_2MB_$(APP_VERSION).factory.bin --flash_mode dout --flash_size 2MB 0x0 ./platforms/ESP8266/build/bootloader/bootloader.bin 0x8000 ./platforms/ESP8266/build/partition_table/partition-table.bin 0x10000 ./platforms/ESP8266/build/OpenBeken.bin
 	cp ./platforms/ESP8266/build/OpenBeken.bin output/$(APP_VERSION)/OpenESP8266_$(APP_VERSION).img
 	-rm platforms/ESP-IDF/partitions.csv
 	cp platforms/ESP8266/partitions-1mb.csv platforms/ESP8266/partitions.csv
 	cd platforms/ESP8266/ && idf.py partition_table
-	python3 -m esptool -c esp8266 merge-bin -o output/$(APP_VERSION)/OpenESP8266_1MB_$(APP_VERSION).factory.bin --flash-mode dout --flash-size 1MB 0x0 ./platforms/ESP8266/build/bootloader/bootloader.bin 0x8000 ./platforms/ESP8266/build/partition_table/partition-table.bin 0x10000 ./platforms/ESP8266/build/OpenBeken.bin
+	esptool.py -c esp8266 merge-bin -o output/$(APP_VERSION)/OpenESP8266_1MB_$(APP_VERSION).factory.bin --flash-mode dout --flash-size 1MB 0x0 ./platforms/ESP8266/build/bootloader/bootloader.bin 0x8000 ./platforms/ESP8266/build/partition_table/partition-table.bin 0x10000 ./platforms/ESP8266/build/OpenBeken.bin
 	
 .PHONY: OpenTR6260
 OpenTR6260: prebuild_OpenTR6260

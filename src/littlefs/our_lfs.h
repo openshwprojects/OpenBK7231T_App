@@ -59,7 +59,7 @@
 #define LFS_BLOCKS_END 0x80000000
 #define LFS_BLOCKS_MAX_LEN 0x80000000
 
-#elif PLATFORM_LN882H
+#elif PLATFORM_LN882H || PLATFORM_LN8825
 // start0x1000 after OTA addr (OTA, start_addr: 0x00133000, size_KB: 0x000AA000)
 // (OTA, start_addr: 0x00133000, size_KB: 0x000AA000)
 // --> OTA-start + 0x1000 = 0x00133000 + 0x1000 = 0x00134000
