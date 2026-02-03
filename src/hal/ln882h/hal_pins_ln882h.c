@@ -24,66 +24,66 @@ OBKInterruptType g_modes[PLATFORM_GPIO_MAX];
 #if PLATFORM_LN882H
 
 lnPinMapping_t g_pins[] = {
-	{ "A0", GPIOA_BASE, GPIO_PIN_0, -1 },
-	{ "A1", GPIOA_BASE, GPIO_PIN_1, -1 },
-	{ "A2", GPIOA_BASE, GPIO_PIN_2, -1 },
-	{ "A3", GPIOA_BASE, GPIO_PIN_3, -1 },
-	{ "A4", GPIOA_BASE, GPIO_PIN_4, -1 },
-	{ "A5", GPIOA_BASE, GPIO_PIN_5, -1 },
-	{ "A6", GPIOA_BASE, GPIO_PIN_6, -1 },
-	{ "A7", GPIOA_BASE, GPIO_PIN_7, -1 },
-	{ "A8", GPIOA_BASE, GPIO_PIN_8, -1 },
-	{ "A9", GPIOA_BASE, GPIO_PIN_9, -1 },
-	{ "A10", GPIOA_BASE, GPIO_PIN_10, -1 },
-	{ "A11", GPIOA_BASE, GPIO_PIN_11, -1 },
-	{ "A12", GPIOA_BASE, GPIO_PIN_12, -1 },
-	{ "A13", GPIOA_BASE, GPIO_PIN_13, -1 },
-	{ "A14", GPIOA_BASE, GPIO_PIN_14, -1 },
-	{ "A15", GPIOA_BASE, GPIO_PIN_15, -1 },
+	{ "A0 (ADC2)", GPIOA_BASE, GPIO_PIN_0, -1 },
+	{ "A1 (ADC3)", GPIOA_BASE, GPIO_PIN_1, -1 },
+	{ "A2",        GPIOA_BASE, GPIO_PIN_2, -1 },
+	{ "A3",        GPIOA_BASE, GPIO_PIN_3, -1 },
+	{ "A4 (ADC4)", GPIOA_BASE, GPIO_PIN_4, -1 },
+	{ "A5",        GPIOA_BASE, GPIO_PIN_5, -1 },
+	{ "A6",        GPIOA_BASE, GPIO_PIN_6, -1 },
+	{ "A7",        GPIOA_BASE, GPIO_PIN_7, -1 },
+	{ "A8",        GPIOA_BASE, GPIO_PIN_8, -1 },
+	{ "A9",        GPIOA_BASE, GPIO_PIN_9, -1 },
+	{ "A10",       GPIOA_BASE, GPIO_PIN_10, -1 },
+	{ "A11",       GPIOA_BASE, GPIO_PIN_11, -1 },
+	{ "A12",       GPIOA_BASE, GPIO_PIN_12, -1 },
+	{ "A13",       GPIOA_BASE, GPIO_PIN_13, -1 },
+	{ "A14",       GPIOA_BASE, GPIO_PIN_14, -1 },
+	{ "A15",       GPIOA_BASE, GPIO_PIN_15, -1 },
 	// port B
-	{ "B0", GPIOB_BASE, GPIO_PIN_0, -1 }, // 16
-	{ "B1", GPIOB_BASE, GPIO_PIN_1, -1 }, // 17
-	{ "B2", GPIOB_BASE, GPIO_PIN_2, -1 }, // 18
-	{ "B3", GPIOB_BASE, GPIO_PIN_3, -1 }, // 19
-	{ "B4", GPIOB_BASE, GPIO_PIN_4, -1 }, // 20
-	{ "B5", GPIOB_BASE, GPIO_PIN_5, -1 }, // 21
-	{ "B6", GPIOB_BASE, GPIO_PIN_6, -1 }, // 22
-	{ "B7", GPIOB_BASE, GPIO_PIN_7, -1 }, // 23
-	{ "B8", GPIOB_BASE, GPIO_PIN_8, -1 }, // 24
-	{ "B9", GPIOB_BASE, GPIO_PIN_9, -1 }, // 25
+	{ "B0",        GPIOB_BASE, GPIO_PIN_0, -1 }, // 16
+	{ "B1",        GPIOB_BASE, GPIO_PIN_1, -1 }, // 17
+	{ "B2",        GPIOB_BASE, GPIO_PIN_2, -1 }, // 18
+	{ "B3 (ADC5)", GPIOB_BASE, GPIO_PIN_3, -1 }, // 19
+	{ "B4 (ADC6)", GPIOB_BASE, GPIO_PIN_4, -1 }, // 20
+	{ "B5 (ADC7)", GPIOB_BASE, GPIO_PIN_5, -1 }, // 21
+	{ "B6",        GPIOB_BASE, GPIO_PIN_6, -1 }, // 22
+	{ "B7",        GPIOB_BASE, GPIO_PIN_7, -1 }, // 23
+	{ "B8",        GPIOB_BASE, GPIO_PIN_8, -1 }, // 24
+	{ "B9",        GPIOB_BASE, GPIO_PIN_9, -1 }, // 25
 	// ETC TODO
 };
 
 #else
 
 lnPinMapping_t g_pins[] = {
-	{ "A0",  GPIOA_0, -1 },
-	{ "A1",  GPIOA_1, -1 },
-	{ "A2",  GPIOA_2, -1 },
-	{ "A3",  GPIOA_3, -1 },
-	{ "A4",  GPIOA_4, -1 },
-	{ "A5",  GPIOA_5, -1 },
-	{ "A6",  GPIOA_6, -1 },
-	{ "A7",  GPIOA_7, -1 },
-	{ "A8",  GPIOA_8, -1 },
-	{ "A9",  GPIOA_9, -1 },
-	{ "A10", GPIOA_10, -1 },
-	{ "A11", GPIOA_11, -1 },
-	{ "A12", GPIOA_12, -1 },
-	{ "A13", GPIOA_13, -1 },
-	{ "A14", GPIOA_14, -1 },
-	{ "A15", GPIOA_15, -1 },
+	{ "A0 (ADC0)",  GPIOA_0, -1 },
+	{ "A1 (ADC1)",  GPIOA_1, -1 },
+	{ "A2",         GPIOA_2, -1 },
+	{ "A3",         GPIOA_3, -1 },
+	{ "A4 (ADC2)",  GPIOA_4, -1 },
+	{ "A5",         GPIOA_5, -1 },
+	{ "A6",         GPIOA_6, -1 },
+	{ "A7",         GPIOA_7, -1 },
+	{ "A8",         GPIOA_8, -1 },
+	{ "A9",         GPIOA_9, -1 },
+	{ "A10",        GPIOA_10, -1 },
+	{ "A11",        GPIOA_11, -1 },
+	{ "A12",        GPIOA_12, -1 },
+	{ "A13",        GPIOA_13, -1 },
+	{ "A14",        GPIOA_14, -1 },
+	{ "A15",        GPIOA_15, -1 },
 	// port B
-	{ "B0", GPIOB_0, -1 }, // 16
-	{ "B1", GPIOB_1, -1 }, // 17
-	{ "B2", GPIOB_2, -1 }, // 18
-	{ "B3", GPIOB_3, -1 }, // 19
-	{ "B4", GPIOB_4, -1 }, // 20
-	{ "B5", GPIOB_5, -1 }, // 21
-	{ "B6", GPIOB_6, -1 }, // 22
-	{ "B7", GPIOB_7, -1 }, // 23
-	{ "B8", GPIOB_8, -1 }, // 24
-	{ "B9", GPIOB_9, -1 }, // 25
+	{ "B0",         GPIOB_0, -1 }, // 16
+	{ "B1",         GPIOB_1, -1 }, // 17
+	{ "B2",         GPIOB_2, -1 }, // 18
+	{ "B3 (ADC3)",  GPIOB_3, -1 }, // 19
+	{ "B4 (ADC4)",  GPIOB_4, -1 }, // 20
+	{ "B5 (ADC5)",  GPIOB_5, -1 }, // 21
+	{ "B6",         GPIOB_6, -1 }, // 22
+	{ "B7",         GPIOB_7, -1 }, // 23
+	{ "B8",         GPIOB_8, -1 }, // 24
+	{ "B9",         GPIOB_9, -1 }, // 25
 	// ETC TODO
 };
 
