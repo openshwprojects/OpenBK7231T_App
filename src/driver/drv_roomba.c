@@ -510,14 +510,37 @@ void Roomba_RunEverySecond() {
  * Parses incoming 52-byte Group 6 response directly (no buffer checking)
  */
 void Roomba_OnQuickTick() {
+	static byte s_frame[52];
+	static int  s_frameLen = 0;
+
 	int avail = UART_GetDataSizeEx(g_roomba_uart);
+
+	// Assemble Group 6 frame (52 bytes) robustly by consuming bytes as they arrive
+	while (avail > 0 && s_frameLen < 52) {
+		s_frame[s_frameLen++] = UART_GetByteEx(g_roomba_uart, 0);
+		UART_ConsumeBytesEx(g_roomba_uart, 1);
+		avail--;
+	}
 	
 	// Parse Group 6 response (52 bytes) when available
-	if (avail >= 52) {
+	if (s_frameLen >= 52) {
 		byte buf[52];
 		for (int i = 0; i < 52; i++) {
-			buf[i] = UART_GetByteEx(g_roomba_uart, i);
+			buf[i] = s_frame[i];
 		}
+
+		// ===== RAW Group 6 frame visibility (52 bytes) =====
+		{
+			char hex[52 * 3 + 1];
+			int o = 0;
+			for (int i = 0; i < 52; i++) {
+				o += snprintf(hex + o, sizeof(hex) - o,
+				              "%02X%s", buf[i], (i == 51) ? "" : " ");
+				if (o >= (int)sizeof(hex)) break;
+			}
+			addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "Roomba: G6 RAW: %s", hex);
+		}
+		// ===================================================
 		
 		// Sanity Check: Charging State (Byte 16) must be 0-5
 		if (buf[16] > 5) {
@@ -584,8 +607,9 @@ void Roomba_OnQuickTick() {
 		// Publish sensors via MQTT (BL_shared style)
 		Roomba_PublishSensors();
 		
-		// Consume the 52 bytes from buffer
-		UART_ConsumeBytesEx(g_roomba_uart, 52);
+		// Reset frame accumulator for next frame
+		s_frameLen = 0;
+
 	}
 	else if (avail > 64) {
 		// Flush buffer if it's getting full (likely garbage)
