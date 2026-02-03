@@ -206,6 +206,7 @@ void Win_DoUnitTests()
 	SELFTEST_ASSERT(PIN_ParsePinRoleName("Btn_pd_n") == IOR_Button_pd_n);
 	SELFTEST_ASSERT(PIN_ParsePinRoleName("TglChanOnTgl_pd") == IOR_ToggleChannelOnToggle_pd);
 
+	Test_TuyaMCU_TH08();
 	Test_ButtonEvents();
 	Test_Command_If();
 	Test_MQTT();

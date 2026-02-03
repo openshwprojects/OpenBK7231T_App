@@ -1007,6 +1007,22 @@ static driver_t g_drivers[] = {
 	false,                                   // loaded
 	},
 #endif
+#if ENABLE_DRIVER_SSD1306
+	//drvdetail:{"name":"SSD1306",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"SSD1306 OLEd 128x32 I2C display driver.",
+	//drvdetail:"requires":""}
+	{ "SSD1306",                              // Driver Name
+		SSD1306_DRV_Init,                             // Init
+		SSD1306_OnEverySecond,                    // onEverySecond
+		NULL, // appendInformationToHTTPIndexPage
+		NULL,                                    // runQuickTick
+		NULL,                                    // stopFunction
+		NULL,                                    // onChannelChanged
+		NULL,                                    // onHassDiscovery
+		false,                                   // loaded
+	},
+#endif
 #if ENABLE_DRIVER_BMP280
 	//drvdetail:{"name":"BMP280",
 	//drvdetail:"title":"TODO",
