@@ -212,8 +212,8 @@ commandResult_t CMD_Roomba_Stop(const void* context, const char* cmd, const char
 }
 
 commandResult_t CMD_Roomba_Discovery(const void* context, const char* cmd, const char* args, int cmdFlags) {
-	// Schedule discovery to run on main loop (safe stack)
-	g_hass_discovery_timer = 1;
+	addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "Roomba: Manual HA discovery requested");
+	Roomba_OnHassDiscovery("homeassistant");
 	return CMD_RES_OK;
 }
 
