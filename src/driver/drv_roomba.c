@@ -685,17 +685,17 @@ void Roomba_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreSt
 	const char *charging_states[] = {"Not charging", "Reconditioning", "Full charging", "Trickle charging", "Waiting", "Fault"};
 	int charging_state = g_sensors[ROOMBA_SENSOR_CHARGING_STATE].lastReading;
 	const char *state_str = (charging_state >= 0 && charging_state <= 5) ? charging_states[charging_state] : "Unknown";
-	poststr(request, "<tr><td><b>State</b></td><td style='text-align: right;'>");
+	poststr(request, "<tr><td><b>Charging</b></td><td style='text-align: right;'>");
 	hprintf255(request, "%s</td></tr>", state_str);
 
-	// Status (Phase 3.1: conservative)
-	poststr(request, "<tr><td><b>Status</b></td><td style='text-align: right;'>");
-	poststr(request, (charging_state != 0) ? "Charging" : "Idle");
+	// Activity (conservative)
+	poststr(request, "<tr><td><b>Activity</b></td><td style='text-align: right;'>");
+	poststr(request, (charging_state != 0) ? "Docked" : "Idle");
 	poststr(request, "</td></tr>");
 
-	// Error reason (placeholder)
+	// Error (conservative: only what we truly know from charging state)
 	poststr(request, "<tr><td><b>Error</b></td><td style='text-align: right;'>");
-	poststr(request, "&mdash;");
+	poststr(request, (charging_state == 5) ? "Charging fault" : "&mdash;");
 	poststr(request, "</td></tr>");
 	
 	poststr(request, "</table>");	
