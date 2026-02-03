@@ -2,6 +2,7 @@ let fs = require('fs');
 
 let commands = [];
 let cmdindex = {};
+let cmdindexAll = {};	// name -> [cmd docs...], keeps duplicates/variants
 let channels = [];
 let chanindex = {};
 let ios = [];
@@ -9,6 +10,7 @@ let ioindex = {};
 let drvs = [];
 let drvindex = {};
 let drvdefines = {};	// try to save the "#if ENABLE_DRIVER_XY"
+let drvdefinesAll = {};	// drv.name -> [#if lines], keeps duplicates/variants
 let flags = [];
 let flagindex = {};
 let cnsts = [];
@@ -19,6 +21,23 @@ let inFile = 0;
 
 let oldStyleFlagTitles = [];
 
+
+function makeDriverDefineText(defineLines) {
+	// defineLines: array of '#if ...' lines; de-duplicate and format as a human-friendly "define" string.
+	if (!defineLines || defineLines.length < 1) {
+		return '';
+	}
+	let uniq = [];
+	for (let i = 0; i < defineLines.length; i++) {
+		let d = defineLines[i];
+		if (!d) continue;
+		if (uniq.indexOf(d) < 0) uniq.push(d);
+	}
+	if (uniq.length < 1) return '';
+	let parts = uniq.map(x => x.replace("defined(", "").replace(")", "").replace(/#if[^ ]* /, "<b>") + '</b>');
+	let joined = parts.join(' or ');
+	return 'Enabled by defining "' + joined + '" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) ';
+}
 
 function mytrim(text) {
 	text = text.trim();
@@ -463,13 +482,26 @@ function getFolder(name, cb) {
 									if (drvindex[drv.name]) {
 										console.error('duplicate driver docs (in "' + line + '") for drv.name="' + drv.name + '" at file: ' + file + '  --  actual line:' + line2);
 										console.error('\tlast "#if" statement: "' + lasthash + '"' + '\n\tfirst defined with "#if" statement: "' + drvdefines[drv.name] + '"');
-										let tmpcmd = drvindex[drv.name];
-										delete tmpcmd.define;		// we added "define" on the other element, but it's not present here
-										if (JSON.stringify(tmpcmd) == JSON.stringify(drv)) console.error('\tshould be safe to ignore, because documentation is equal!');
-										else console.error('\tFirst found:\n\t\t"' + JSON.stringify(tmpcmd).replace(/,\"/g, "\n\t\t\t\"") + '"\n\tactual:\n\t\t"' + JSON.stringify(drv).replace(/,\"/g, "\n\t\t\t\"") + '"');
+										// Compare without mutating the stored object (otherwise "define" can get deleted and leak as "undefined" into docs).
+										let tmpcmd = Object.assign({}, drvindex[drv.name]);
+										delete tmpcmd.define;
+										let drvNoDefine = Object.assign({}, drv);
+										delete drvNoDefine.define;
+										if (JSON.stringify(tmpcmd) == JSON.stringify(drvNoDefine)) {
+											console.error('\tshould be safe to ignore, because documentation is equal!');
+											// Merge both #if defines into a single "define" string so the docs remain accurate.
+											if (!drvdefinesAll[drv.name]) drvdefinesAll[drv.name] = [];
+											if (drvdefines[drv.name] && drvdefinesAll[drv.name].indexOf(drvdefines[drv.name]) < 0) drvdefinesAll[drv.name].push(drvdefines[drv.name]);
+											if (lasthash && drvdefinesAll[drv.name].indexOf(lasthash) < 0) drvdefinesAll[drv.name].push(lasthash);
+											drvindex[drv.name].define = makeDriverDefineText(drvdefinesAll[drv.name]);
+										} else {
+											console.error('\tFirst found:\n\t\t"' + JSON.stringify(tmpcmd).replace(/,\"/g, "\n\t\t\t\"") + '"\n\tactual:\n\t\t"' + JSON.stringify(drvNoDefine).replace(/,\"/g, "\n\t\t\t\"") + '"');
+										}
 										//console.error(line);
 									} else {
-										drv.define = 'Enabled by defining "' + lasthash.replace("defined(", "").replace(")", "").replace(/#if[^ ]* /, "<b>") + '</b>" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) ';
+										if (!drvdefinesAll[drv.name]) drvdefinesAll[drv.name] = [];
+										if (lasthash && drvdefinesAll[drv.name].indexOf(lasthash) < 0) drvdefinesAll[drv.name].push(lasthash);
+										drv.define = makeDriverDefineText(drvdefinesAll[drv.name]);
 										drvs.push(drv);
 										drvindex[drv.name] = drv;
 										drvdefines[drv.name] = lasthash;
@@ -666,25 +698,36 @@ function getFolder(name, cb) {
 						let json = commentlines.join('\n');
 						try {
 							let cmd = JSON.parse(json);
+
+							// sanity: verify declared file matches the file we actually parsed
+							if (cmd.file !== file.slice(6)) {
+								console.error('!!!! Posible wrong file location for command "' + cmd.name + '": found in file: "' + file.slice(6) + '" but claimes file: "' + cmd.file + '" - please verify! !!!!')
+								console.error('\t Posible fix: sed -i \'\'' + (i - 3) + ',' + (i - 1) + ' { /cmddetail:\\"fn\\":\\"' + cmd.fn + '\"/ s%' + cmd.file + "%" + file.slice(6) + '%} \'\'  src/' + file.slice(6))
+								console.error('\t test posible fix: sed -n \'\'' + (i - 3) + ',' + (i - 1) + ' {/cmddetail:\\"fn\\":\\"' + cmd.fn + '\"/ s%' + cmd.file + "%" + file.slice(6) + '% p }\'\'  src/' + file.slice(6))
+							}
+
 							if (cmdindex[cmd.name]) {
 								console.error('duplicate command "' + cmd.name + '" docs at file: ' + file + ' line: ' + line + '\n\tfirst seen in "' + cmdindex[cmd.name].file + '"');
-								tmp = cmdindex[cmd.name];	// to test, if oth are equal (despit different file) construct a helper ...
-								tmp.file = cmd.file;	// ... and set its "file" to the actual value
+
+								// compare without mutating the first-seen object
+								let tmp = Object.assign({}, cmdindex[cmd.name]);
+								tmp.file = cmd.file;
 								if (JSON.stringify(tmp) == JSON.stringify(cmd)) console.error('\tshould be safe to ignore, they are equal beside the file name!');
 								else {
 									console.error('\tFirst found:\n\t\t"' + JSON.stringify(cmdindex[cmd.name]).replace(/,\"/g, "\n\t\t\t\"") + '"\n\tactual:\n\t\t"' + JSON.stringify(cmd).replace(/,\"/g, "\n\t\t\t\""));
 								}
-							} {
-								//console.error('new command "' + cmd.name + '" docs at file: ' + file + ' line: ' + line + ' -- json='+ json );
-								if (cmd.file !== file.slice(6)) {
-									console.error('!!!! Posible wrong file location for command "' + cmd.name + '": found in file: "' + file.slice(6) + '" but claimes file: "' + cmd.file + '" - please verify! !!!!')
-									console.error('\t Posible fix: sed -i \'' + (i - 3) + ',' + (i - 1) + ' { /cmddetail:\\"fn\\":\\"' + cmd.fn + '\"/ s%' + cmd.file + "%" + file.slice(6) + '%} \'  src/' + file.slice(6))
-									console.error('\t test posible fix: sed -n \'' + (i - 3) + ',' + (i - 1) + ' {/cmddetail:\\"fn\\":\\"' + cmd.fn + '\"/ s%' + cmd.file + "%" + file.slice(6) + '% p }\'  src/' + file.slice(6))
-
-								}
-								commands.push(cmd);
+							} else {
+								// first time we've seen this command name
 								cmdindex[cmd.name] = cmd;
 							}
+
+							// keep all variants (same name can be implemented by multiple drivers)
+							if (!cmdindexAll[cmd.name]) {
+								cmdindexAll[cmd.name] = [];
+							}
+							cmdindexAll[cmd.name].push(cmd);
+
+							commands.push(cmd);
 						} catch (e) {
 							console.error('error in json at file: ' + file + ' line: ' + line + ' er ' + e);
 							console.error(json);
@@ -729,13 +772,19 @@ function getFolder(name, cb) {
 						//   modified++;
 						//}
 
-						if (cmdindex[cmd.name] && cmdindex[cmd.name].fn !== cmd.fn) {
-							console.log('!!!!  "' + cmd.name + '" in file ' + cmd.file + ' -- fn "' + cmdindex[cmd.name].fn + '"  != called function "' + cmd.fn + '"  !!!!');
-							console.log('\t possible fix: sed -i \'' + (i - 3) + ',' + (i - 1) + ' { /cmddetail:\\"fn\\":\\"' + cmdindex[cmd.name].fn + '\\"/ s%' + cmdindex[cmd.name].fn + "%" + cmd.fn + '% }\'  src/' + file.slice(6));
-							console.log('\t test possible fix: sed -n \'' + (i - 3) + ',' + (i - 1) + ' { /cmddetail:\\"fn\\":\\"' + cmdindex[cmd.name].fn + '\\"/ s%' + cmdindex[cmd.name].fn + "%" + cmd.fn + '% p }\'  src/' + file.slice(6));
+						// if there are multiple cmddetail entries for the same name, only compare
+						// against the one that belongs to this file to avoid false positives
+						let docSameFile = null;
+						if (cmdindexAll[cmd.name]) {
+							docSameFile = cmdindexAll[cmd.name].find(x => x.file === cmd.file);
+						}
+						if (docSameFile && docSameFile.fn !== cmd.fn) {
+							console.log('!!!!  "' + cmd.name + '" in file ' + cmd.file + ' -- fn "' + docSameFile.fn + '"  != called function "' + cmd.fn + '"  !!!!');
+							console.log('	 possible fix: sed -i \'\'' + (i - 3) + ',' + (i - 1) + ' { /cmddetail:\"fn\":\"' + docSameFile.fn + '\"/ s%' + docSameFile.fn + "%" + cmd.fn + '% }\'\'  src/' + file.slice(6));
+							console.log('	 test possible fix: sed -n \'\'' + (i - 3) + ',' + (i - 1) + ' { /cmddetail:\"fn\":\"' + docSameFile.fn + '\"/ s%' + docSameFile.fn + "%" + cmd.fn + '% p }\'\'  src/' + file.slice(6));
 						}
 
-						if (!cmdindex[cmd.name]) {
+						if (!cmdindexAll[cmd.name] || cmdindexAll[cmd.name].length < 1) {
 							// it did not have a doc line before
 							let json = JSON.stringify(cmd);
 							// insert CR at "fn":
@@ -753,6 +802,7 @@ function getFolder(name, cb) {
 							modified++;
 							commands.push(cmd);
 							cmdindex[cmd.name] = cmd;
+							cmdindexAll[cmd.name] = [cmd];
 						}
 					}
 
