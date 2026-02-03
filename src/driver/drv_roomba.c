@@ -829,10 +829,10 @@ void Roomba_OnHassDiscovery(const char *topic) {
 		snprintf(config_topic, sizeof(config_topic), "homeassistant/button/%s/config", unique_id);
 		
 		snprintf(payload, sizeof(payload), 
-			"{\"name\":\"%s %s\",\"uniq_id\":\"%s\","
+			"{\"name\":\"%s\",\"uniq_id\":\"%s\","
 			"\"cmd_t\":\"cmnd/%s/%s\","
 			"\"dev\":{\"ids\":[\"%s\"],\"name\":\"%s\"}}",
-			devName, cmd_names[i], unique_id,
+			cmd_names[i], unique_id,
 			clientId, cmd_funcs[i],
 			devName, devName);
 		
@@ -866,7 +866,7 @@ void Roomba_OnHassDiscovery(const char *topic) {
 		"\"dev\":{\"ids\":[\"%s\"],\"name\":\"%s\",\"sw\":\"%s\",\"mf\":\"iRobot\",\"mdl\":\"Roomba\",\"cu\":\"http://%s/index\"}}",
 		unique_id,
 		clientId,
-		devName, devName, g_build_str, ip);
+		devName, g_build_str, ip);
 	
 	MQTT_PublishMain_StringString(config_topic, payload,
 		OBK_PUBLISH_FLAG_RAW_TOPIC_NAME | OBK_PUBLISH_FLAG_RETAIN);
