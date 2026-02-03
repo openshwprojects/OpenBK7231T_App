@@ -110,8 +110,10 @@
 #define ENABLE_LITTLEFS							1
 #define NEW_TCP_SERVER							1
 #define ENABLE_DRIVER_NEO6M						1
-#define ENABLE_TIME_SUNRISE_SUNSET					1
-#define ENABLE_TIME_DST				1
+#define ENABLE_TIME_SUNRISE_SUNSET				1
+#define ENABLE_TIME_DST							1
+#define ENABLE_DRIVER_LTR_ALS					1
+
 #elif WINDOWS
 
 #if LINUX

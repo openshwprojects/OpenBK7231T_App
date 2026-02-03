@@ -1384,6 +1384,7 @@ int ChannelType_GetDivider(int type) {
 	case ChType_Frequency_div10:
 	case ChType_ReadOnly_div10:
 	case ChType_Current_div10:
+	case ChType_Illuminance_div10:
 		return 10;
 	case ChType_Frequency_div100:
 	case ChType_Current_div100:
@@ -1453,6 +1454,7 @@ const char *ChannelType_GetUnit(int type) {
 	case ChType_ReactivePower:
 		return "vAr";
 	case ChType_Illuminance:
+	case ChType_Illuminance_div10:
 		return "Lux";
 	case ChType_Ph:
 		return "Ph";
@@ -1510,6 +1512,7 @@ const char *ChannelType_GetTitle(int type) {
 	case ChType_ReactivePower:
 		return "ReactivePower";
 	case ChType_Illuminance:
+	case ChType_Illuminance_div10:
 		return "Illuminance";
 	case ChType_Ph:
 		return "Ph Water Quality";
@@ -2422,6 +2425,7 @@ const char* g_channelTypeNames[] = {
 	"Enum",
 	"ReadOnlyEnum",
 	"Current_div10",
+	"Illuminance_div10",
 	"error",
 	"error",
 	"error",
