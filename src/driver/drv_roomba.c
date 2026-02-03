@@ -424,7 +424,7 @@ void Roomba_Init() {
 	
 	// Send SAFE mode command (131)
 	// SAFE mode allows sensor reading and motor control
-	Roomba_SendByte(CMD_SAFE);
+	// Roomba_SendByte(CMD_SAFE);
 
 	// Register console commands for manual testing
 	CMD_RegisterCommand("Roomba_SendCmd", CMD_Roomba_SendCmd, NULL);
