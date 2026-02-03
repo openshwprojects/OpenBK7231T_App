@@ -939,15 +939,15 @@ static driver_t g_drivers[] = {
 	//drvdetail:"title":"Roomba",
 	//drvdetail:"descr":"Roomba OI Driver",
 	//drvdetail:"requires":""}
-	{ "Roomba",                              // Driver Name
-	Roomba_Init,                             // Init
-	Roomba_RunEverySecond,                   // onEverySecond
-	NULL,                                    // appendInformationToHTTPIndexPage
-	Roomba_OnQuickTick,                      // runQuickTick
-	NULL,                                    // stopFunction
-	NULL,                                    // onChannelChanged
-	NULL,                                    // onHassDiscovery
-	false,                                   // loaded
+	{ "Roomba",                              	// Driver Name
+	Roomba_Init,                             	// Init
+	Roomba_RunEverySecond,                   	// onEverySecond
+	Roomba_AppendInformationToHTTPIndexPage,	// appendInformationToHTTPIndexPage
+	Roomba_OnQuickTick,                      	// runQuickTick
+	NULL,                                    	// stopFunction
+	NULL,                                    	// onChannelChanged
+	NULL,                                    	// onHassDiscovery
+	false,                                   	// loaded
 	},
 #endif
 #if ENABLE_DRIVER_MAX72XX
