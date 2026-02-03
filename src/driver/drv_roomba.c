@@ -548,9 +548,18 @@ void Roomba_OnQuickTick() {
 		
 		// Sanity Check: Charging State (Byte 16) must be 0-5
 		if (buf[16] > 5) {
-			addLogAdv(LOG_WARN, LOG_FEATURE_DRV, "Roomba: Invalid Charging State (%d). Flushing buffer.", buf[16]);
-			UART_ConsumeBytesEx(g_roomba_uart, avail);
-			s_frameLen = 0;
+			addLogAdv(LOG_WARN, LOG_FEATURE_DRV,
+					"Roomba: Invalid Charging State (%d). Resync shift.", buf[16]);
+
+			// Resync: drop 1 byte from assembled frame and try to realign on next ticks
+			if (s_frameLen > 0) {
+				for (int i = 1; i < s_frameLen; i++) {
+					s_frame[i - 1] = s_frame[i];
+				}
+				s_frameLen--;
+			} else {
+				s_frameLen = 0;
+			}
 			return;
 		}
 
