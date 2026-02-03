@@ -41,6 +41,10 @@ extern void Main_OnEverySecond();
 
 void usr_app_task_entry(void *params)
 {
+	// from tuyaopen
+#if PLATFORM_LN882H
+	*(volatile int*)(0x40012034) = 0x540;
+#endif
 	wifi_manager_init();
 
 	int8_t cap_comp = 0;
