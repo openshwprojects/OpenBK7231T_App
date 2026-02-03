@@ -75,6 +75,18 @@ static const char *Roomba_ChargingStateStr(int st) {
     }
 }
 
+static const char *Roomba_ChargingStateStrHA(int st) {
+	switch (st) {
+		case 0: return "not_charging";
+		case 1: return "reconditioning";
+		case 2: return "full_charging";
+		case 3: return "trickle_charging";
+		case 4: return "waiting";
+		case 5: return "charging_fault";
+		default: return "unknown";
+	}
+}
+
 // Vacuum state for Home Assistant integration
 static vacuum_state_t g_vacuum_state = VACUUM_STATE_IDLE;
 
@@ -357,9 +369,8 @@ void Roomba_PublishSensors(void) {
 				// Special-case: Charging State should publish TEXT, not a number
 				if (i == ROOMBA_SENSOR_CHARGING_STATE) {
 					MQTT_PublishMain_StringString(g_sensors[i].name_mqtt,
-						Roomba_ChargingStateStr((int)currentReading), 0);
+						Roomba_ChargingStateStrHA((int)currentReading), 0);
 				} else {
-					// Analog sensors: float value
 					MQTT_PublishMain_StringFloat(g_sensors[i].name_mqtt,
 						currentReading, g_sensors[i].decimals, 0);
 				}
@@ -464,7 +475,7 @@ void Roomba_Init() {
  * Implements a 5-second polling interval with alternating sensor requests
  * 
  * Polling sequence:
- * Requests Sensor Group 3 (Power) which returns 10 bytes of data
+ * Requests Sensor Group 6 (52 bytes) … includes charging, voltage, current, temperature, charge, capacity, buttons, bump/cliff, etc.
  * Includes: Charging State, Voltage, Current, Temperature, Charge, Capacity
  * Requests Sensor Group 6 every 5 seconds and handles HA discovery
  */

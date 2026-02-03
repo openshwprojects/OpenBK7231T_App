@@ -946,7 +946,7 @@ static driver_t g_drivers[] = {
 	Roomba_OnQuickTick,                      	// runQuickTick
 	NULL,                                    	// stopFunction
 	NULL,                                    	// onChannelChanged
-	NULL,                                    	// onHassDiscovery
+	Roomba_OnHassDiscovery,	                	// onHassDiscovery
 	false,                                   	// loaded
 	},
 #endif
