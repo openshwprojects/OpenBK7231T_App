@@ -745,8 +745,8 @@ void Roomba_OnHassDiscovery(const char *topic) {
 		// build JSON safely
 		size_t n = 0;
 		n += snprintf(payload + n, sizeof(payload) - n,
-			"{\"name\":\"%s %s\",\"uniq_id\":\"%s\",",
-			devName, g_sensors[i].name_friendly, unique_id);
+			"{\"name\":\"%s\",\"uniq_id\":\"%s\",",
+			g_sensors[i].name_friendly, unique_id);
 
 		// stat_t: BL-style topic <clientId>/<name_mqtt>/get
 		// This matches MQTT_PublishMain_StringFloat() publishing
