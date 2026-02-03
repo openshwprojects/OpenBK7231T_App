@@ -658,11 +658,27 @@ void Roomba_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreSt
 	if (bPreState)
 		return;
 
-	// Command Buttons (top row)
-	poststr(request, "<hr><table style='width:100%'><tr>");
-	poststr(request, "<td style='width:34%'><form action='/index' method='get'><button name='Roomba_Clean' value='1' class='btn btn-primary' style='width:100%'>Clean</button></form></td>");
-	poststr(request, "<td style='width:33%'><form action='/index' method='get'><button name='Roomba_Spot' value='1' class='btn' style='width:100%'>Spot</button></form></td>");
-	poststr(request, "<td style='width:33%'><form action='/index' method='get'><button name='Roomba_Dock' value='1' class='btn' style='width:100%'>Dock</button></form></td>");
+	// Command Buttons (top row) - call /cm?cmnd=... so we don't need http_fns.c hacks
+	poststr(request, "<hr>");
+	poststr(request, "<div id='roomba_cmd_msg' style='margin:6px 0; font-size:12px;'></div>");
+	poststr(request,
+		"<script>"
+		"function roombaSend(cmnd){"
+		"var el=document.getElementById('roomba_cmd_msg');"
+		"el.innerHTML='Sending: <b>'+cmnd+'</b> ...';"
+		"fetch('/cm?cmnd='+encodeURIComponent(cmnd))"
+		".then(r=>r.text())"
+		".then(t=>{el.innerHTML='OK: <b>'+cmnd+'</b>';})"
+		".catch(e=>{el.innerHTML='Error sending <b>'+cmnd+'</b>';});"
+		"return false;"
+		"}"
+		"</script>"
+	);
+
+	poststr(request, "<table style='width:100%'><tr>");
+	poststr(request, "<td style='width:34%'><button type='button' class='btn btn-primary' style='width:100%' onclick=\"return roombaSend('Roomba_Clean')\">Clean</button></td>");
+	poststr(request, "<td style='width:33%'><button type='button' class='btn' style='width:100%' onclick=\"return roombaSend('Roomba_Spot')\">Spot</button></td>");
+	poststr(request, "<td style='width:33%'><button type='button' class='btn' style='width:100%' onclick=\"return roombaSend('Roomba_Dock')\">Dock</button></td>");
 	poststr(request, "</tr></table>");
 		
 	poststr(request, "<hr><h5>Roomba Sensors</h5><table style='width:100%'>");

@@ -288,43 +288,6 @@ int http_fn_index(http_request_t* request) {
 			DRV_HTTPButtons_ProcessChanges(request);
 		}
 #endif
-#ifndef OBK_DISABLE_ALL_DRIVERS
-		// Roomba driver button handling
-		if (DRV_IsRunning("Roomba")) {
-			if (http_getArg(request->url, "Roomba_Clean", tmpA, sizeof(tmpA))) {
-				hprintf255(request, "<h3>Executing Roomba Clean!</h3>");
-				CMD_ExecuteCommand("Roomba_Clean", COMMAND_FLAG_SOURCE_HTTP);
-			}
-			else if (http_getArg(request->url, "Roomba_Spot", tmpA, sizeof(tmpA))) {
-				hprintf255(request, "<h3>Executing Roomba Spot!</h3>");
-				CMD_ExecuteCommand("Roomba_Spot", COMMAND_FLAG_SOURCE_HTTP);
-			}
-			else if (http_getArg(request->url, "Roomba_Dock", tmpA, sizeof(tmpA))) {
-				hprintf255(request, "<h3>Executing Roomba Dock!</h3>");
-				CMD_ExecuteCommand("Roomba_Dock", COMMAND_FLAG_SOURCE_HTTP);
-			}
-			else if (http_getArg(request->url, "Roomba_Max", tmpA, sizeof(tmpA))) {
-				hprintf255(request, "<h3>Executing Roomba Max!</h3>");
-				CMD_ExecuteCommand("Roomba_Max", COMMAND_FLAG_SOURCE_HTTP);
-			}
-			else if (http_getArg(request->url, "Roomba_Safe", tmpA, sizeof(tmpA))) {
-				hprintf255(request, "<h3>Executing Roomba Reset!</h3>");
-				CMD_ExecuteCommand("Roomba_Safe", COMMAND_FLAG_SOURCE_HTTP);
-			}
-			else if (http_getArg(request->url, "Roomba_SetPassive", tmpA, sizeof(tmpA))) {
-				hprintf255(request, "<h3>Executing Roomba Set Passive!</h3>");
-				CMD_ExecuteCommand("Roomba_SetPassive", COMMAND_FLAG_SOURCE_HTTP);
-			}
-			else if (http_getArg(request->url, "Roomba_SetSafe", tmpA, sizeof(tmpA))) {
-				hprintf255(request, "<h3>Executing Roomba Set Safe!</h3>");
-				CMD_ExecuteCommand("Roomba_SetSafe", COMMAND_FLAG_SOURCE_HTTP);
-			}
-			else if (http_getArg(request->url, "Roomba_SetFull", tmpA, sizeof(tmpA))) {
-				hprintf255(request, "<h3>Executing Roomba Set Full!</h3>");
-				CMD_ExecuteCommand("Roomba_SetFull", COMMAND_FLAG_SOURCE_HTTP);
-			}
-		}
-#endif
 		if (http_getArg(request->url, "tgl", tmpA, sizeof(tmpA))) {
 			j = atoi(tmpA);
 			if (j == SPECIAL_CHANNEL_LEDPOWER) {
