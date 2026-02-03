@@ -646,15 +646,22 @@ void Roomba_OnQuickTick() {
 void Roomba_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState) {
 	if (bPreState)
 		return;
+
+	// Command Buttons (top row)
+	poststr(request, "<hr><table style='width:100%'><tr>");
+	poststr(request, "<td style='width:34%'><form action='/index' method='get'><button name='Roomba_Clean' value='1' class='btn btn-primary' style='width:100%'>Clean</button></form></td>");
+	poststr(request, "<td style='width:33%'><form action='/index' method='get'><button name='Roomba_Spot' value='1' class='btn' style='width:100%'>Spot</button></form></td>");
+	poststr(request, "<td style='width:33%'><form action='/index' method='get'><button name='Roomba_Dock' value='1' class='btn' style='width:100%'>Dock</button></form></td>");
+	poststr(request, "</tr></table>");
 		
 	poststr(request, "<hr><h5>Roomba Sensors</h5><table style='width:100%'>");
 	
 	// Voltage
-	poststr(request, "<tr><td><b>Voltage</b></td><td style='text-align: right;'>");
+	poststr(request, "<tr><td><b>Batt Voltage</b></td><td style='text-align: right;'>");
 	hprintf255(request, "%.2f V</td></tr>", g_sensors[ROOMBA_SENSOR_VOLTAGE].lastReading / 1000.0f);
 	
 	// Current
-	poststr(request, "<tr><td><b>Current</b></td><td style='text-align: right;'>");
+	poststr(request, "<tr><td><b>Batt Current</b></td><td style='text-align: right;'>");
 	hprintf255(request, "%.2f A</td></tr>", g_sensors[ROOMBA_SENSOR_CURRENT].lastReading / 1000.0f);
 	
 	// Power (Calculated: V * A)
@@ -663,11 +670,11 @@ void Roomba_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreSt
 	hprintf255(request, "%.2f W</td></tr>", power_w);
 
 	// Temperature
-	poststr(request, "<tr><td><b>Temperature</b></td><td style='text-align: right;'>");
+	poststr(request, "<tr><td><b>Batt Temp</b></td><td style='text-align: right;'>");
 	hprintf255(request, "%.0f C</td></tr>", g_sensors[ROOMBA_SENSOR_TEMPERATURE].lastReading);
 
-	// Battery
-	poststr(request, "<tr><td><b>Battery</b></td><td style='text-align: right;'>");
+	// Charge / Capacity
+	poststr(request, "<tr><td><b>Charge/Cap</b></td><td style='text-align: right;'>");
 	hprintf255(request, "%.0f/%.0f mAh (%.0f%%)</td></tr>", 
 		g_sensors[ROOMBA_SENSOR_CHARGE].lastReading, 
 		g_sensors[ROOMBA_SENSOR_CAPACITY].lastReading,
@@ -678,45 +685,20 @@ void Roomba_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreSt
 	const char *charging_states[] = {"Not charging", "Reconditioning", "Full charging", "Trickle charging", "Waiting", "Fault"};
 	int charging_state = g_sensors[ROOMBA_SENSOR_CHARGING_STATE].lastReading;
 	const char *state_str = (charging_state >= 0 && charging_state <= 5) ? charging_states[charging_state] : "Unknown";
-	poststr(request, "<tr><td><b>Charging</b></td><td style='text-align: right;'>");
+	poststr(request, "<tr><td><b>State</b></td><td style='text-align: right;'>");
 	hprintf255(request, "%s</td></tr>", state_str);
 
-	poststr(request, "</table>");
-	
-	// Binary Sensors Table
-	// Binary Sensors Table (Generated from loop)
-	poststr(request, "<hr><h5>Binary Sensors</h5><table style='width:100%'>");
-	poststr(request, "<tr><th>Sensor</th><th style='text-align: right;'>Status</th></tr>");
-	
-	for (int i = 0; i < ROOMBA_SENSOR__COUNT; i++) {
-		if (g_sensors[i].is_binary) {
-			poststr(request, "<tr><td>");
-			poststr(request, g_sensors[i].name_friendly);
-			poststr(request, "</td><td style='text-align: right;'>");
-			poststr(request, g_sensors[i].lastReading ? "YES" : "No");
-			poststr(request, "</td></tr>");
-		}
-	}
+	// Status (Phase 3.1: conservative)
+	poststr(request, "<tr><td><b>Status</b></td><td style='text-align: right;'>");
+	poststr(request, (charging_state != 0) ? "Charging" : "Idle");
+	poststr(request, "</td></tr>");
 
-	poststr(request, "</table>");
+	// Error reason (placeholder)
+	poststr(request, "<tr><td><b>Error</b></td><td style='text-align: right;'>");
+	poststr(request, "&mdash;");
+	poststr(request, "</td></tr>");
 	
-	// Command Buttons - 4 per row, full width
-	poststr(request, "<hr><table style='width:100%'><tr>");
-	poststr(request, "<td style='width:25%'><form action='/index' method='get'><button name='Roomba_Clean' value='1' class='btn btn-primary' style='width:100%'>Clean</button></form></td>");
-	poststr(request, "<td style='width:25%'><form action='/index' method='get'><button name='Roomba_Spot' value='1' class='btn' style='width:100%'>Spot</button></form></td>");
-	poststr(request, "<td style='width:25%'><form action='/index' method='get'><button name='Roomba_Dock' value='1' class='btn' style='width:100%'>Dock</button></form></td>");
-	poststr(request, "<td style='width:25%'><form action='/index' method='get'><button name='Roomba_Max' value='1' class='btn' style='width:100%'>Max</button></form></td>");
-	poststr(request, "</tr></table>");
-	
-	// Mode Toggles & Reset
-	poststr(request, "<h5>OI Mode Control</h5>");
-	poststr(request, "<table style='width:100%'><tr>");
-	poststr(request, "<td style='width:25%'><form action='/index' method='get'><button name='Roomba_SetPassive' value='1' class='btn' style='width:100%'>Passive</button></form></td>");
-	poststr(request, "<td style='width:25%'><form action='/index' method='get'><button name='Roomba_SetSafe' value='1' class='btn btn-success' style='width:100%'>Safe</button></form></td>");
-	poststr(request, "<td style='width:25%'><form action='/index' method='get'><button name='Roomba_SetFull' value='1' class='btn btn-warning' style='width:100%'>Full</button></form></td>");
-	poststr(request, "<td style='width:25%'><form action='/index' method='get'><button name='Roomba_Safe' value='1' class='btn btn-danger' style='width:100%'>Reset</button></form></td>");
-	poststr(request, "</tr></table>");
-	
+	poststr(request, "</table>");	
 	hprintf255(request, "<hr>");
 }
 
