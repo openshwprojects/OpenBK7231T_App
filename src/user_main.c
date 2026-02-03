@@ -1359,6 +1359,8 @@ void Main_Init_BeforeDelay_Unsafe(bool bAutoRunScripts) {
 	CMD_Init_Early();
 #if WINDOWS
 	CMD_InitSimulatorOnlyCommands();
+#else
+	HAL_RegisterPlatformSpecificCommands();
 #endif
 
 	/* Automatic disable of PIN MONITOR after reboot */

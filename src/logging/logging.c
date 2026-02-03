@@ -171,6 +171,47 @@ commandResult_t log_port(const void* context, const char* cmd, const char* args,
 
 	return CMD_RES_OK;
 }
+#elif PLATFORM_LN882H
+#include "serial_hw.h"
+#include "ln_kv_api.h"
+#define KV_LOG_PORT "logport"
+commandResult_t log_port(const void* context, const char* cmd, const char* args, int cmdFlags)
+{
+	int idx;
+
+	Tokenizer_TokenizeString(args, 0);
+
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if(Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1))
+	{
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+
+	serial_port_id_t port;
+	idx = Tokenizer_GetArgInteger(0);
+	switch(idx)
+	{
+		case 0:
+			port = SER_PORT_UART0;
+			break;
+		case 1:
+			port = SER_PORT_UART1;
+			break;
+		//case 2:
+		//	port = SER_PORT_UART2;
+		//	break;
+		default:
+			return CMD_RES_BAD_ARGUMENT;
+	}
+
+	ln_kv_set(KV_LOG_PORT, &port, sizeof(serial_port_id_t));
+	log_deinit();
+	log_init();
+
+	return CMD_RES_OK;
+}
 #endif
 
 // Here is how you can get log print on UART1:
@@ -213,7 +254,7 @@ static void initLog(void)
 	//cmddetail:"fn":"log_command","file":"logging/logging.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("logdelay", log_command, NULL);
-#if PLATFORM_BEKEN
+#if PLATFORM_BEKEN || PLATFORM_LN882H
 	//cmddetail:{"name":"logport","args":"[Index]",
 	//cmddetail:"descr":"Allows you to change log output port. On Beken, the UART1 is used for flashing and for TuyaMCU/BL0942, while UART2 is for log. Sometimes it might be easier for you to have log on UART1, so now you can just use this command like backlog uartInit 115200; logport 1 to enable logging on UART1..",
 	//cmddetail:"fn":"log_port","file":"logging/logging.c","requires":"",

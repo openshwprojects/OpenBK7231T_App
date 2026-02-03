@@ -348,10 +348,10 @@ void HAL_PIN_PWM_Update(int index, float value)
 		return;
 	int ch = PIN_GetPWMIndexForPinIndex(index);
 	if(ch < 0) return;
-	if(value < 0.1)
-		value = 0.1;
-	if(value >= 100)
-		value = 99.9;
+	//if(value < 0.1)
+	//	value = 0.1;
+	//if(value >= 100)
+	//	value = 99.9;
 	pwm_config(ch, g_pins[index].freq, (uint32_t)(value * 10));
 	pwm_start(ch);
 }
