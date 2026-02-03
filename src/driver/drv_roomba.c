@@ -507,11 +507,13 @@ void Roomba_RunEverySecond() {
 
 /**
  * Called frequently by OpenBeken main loop
- * Parses incoming 52-byte Group 6 response directly (no buffer checking)
+ * Assembles and parses incoming 52-byte Group 6 response (robust stream handling)
  */
 void Roomba_OnQuickTick() {
 	static byte s_frame[52];
 	static int  s_frameLen = 0;
+	static int  s_rawEvery = 10;
+	static int  s_rawCnt = 0;
 
 	int avail = UART_GetDataSizeEx(g_roomba_uart);
 
@@ -522,6 +524,8 @@ void Roomba_OnQuickTick() {
 		avail--;
 	}
 	
+	int totalPending = avail + s_frameLen;
+
 	// Parse Group 6 response (52 bytes) when available
 	if (s_frameLen >= 52) {
 		byte buf[52];
@@ -530,12 +534,12 @@ void Roomba_OnQuickTick() {
 		}
 
 		// ===== RAW Group 6 frame visibility (52 bytes) =====
-		{
+		if ((s_rawCnt++ % s_rawEvery) == 0) {
 			char hex[52 * 3 + 1];
 			int o = 0;
 			for (int i = 0; i < 52; i++) {
 				o += snprintf(hex + o, sizeof(hex) - o,
-				              "%02X%s", buf[i], (i == 51) ? "" : " ");
+							"%02X%s", buf[i], (i == 51) ? "" : " ");
 				if (o >= (int)sizeof(hex)) break;
 			}
 			addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "Roomba: G6 RAW: %s", hex);
@@ -612,7 +616,8 @@ void Roomba_OnQuickTick() {
 		s_frameLen = 0;
 
 	}
-	else if (avail > 64) {
+
+	else if (totalPending > 64) {
 		// Flush buffer if it's getting full (likely garbage)
 		addLogAdv(LOG_WARN, LOG_FEATURE_DRV, "Roomba: Flushing overfull buffer (%d bytes)", avail);
 		UART_ConsumeBytesEx(g_roomba_uart, avail);
