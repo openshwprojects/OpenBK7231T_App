@@ -1402,6 +1402,22 @@ static driver_t g_drivers[] = {
 	false,                                   // loaded
 	},
 #endif
+#if ENABLE_DRIVER_LTR_ALS
+	//drvdetail:{"name":"LTR_ALS",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"LTR-303/329 ambient light sensor driver.",
+	//drvdetail:"requires":""}
+	{ "LTR_ALS",                          // Driver Name
+	LTR_Init,                             // Init
+	LTR_OnEverySecond,                    // onEverySecond
+	LTR_AppendInformationToHTTPIndexPage, // appendInformationToHTTPIndexPage
+	NULL,                                 // runQuickTick
+	NULL,                                 // stopFunction
+	NULL,                                 // onChannelChanged
+	NULL,                                 // onHassDiscovery
+	false,                                // loaded
+	},
+#endif
 	//{ "", NULL, NULL, NULL, NULL, NULL, NULL, NULL, false },
 };
 
