@@ -124,6 +124,7 @@ set(OBKM_SRC
 	${OBK_SRCS}driver/drv_sm16703P.c
 	${OBK_SRCS}driver/drv_simpleEEPROM.c
 	${OBK_SRCS}driver/drv_leds_shared.c
+	${OBK_SRCS}driver/drv_ltr_als.c
 	${OBK_SRCS}driver/drv_spi.c
 	${OBK_SRCS}driver/drv_spiLED.c
 	${OBK_SRCS}driver/drv_spi_flash.c

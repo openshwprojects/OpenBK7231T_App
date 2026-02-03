@@ -24,3 +24,8 @@ void __attribute__((weak)) HAL_Run_WDT()
 {
 
 }
+
+void __attribute__((weak)) HAL_RegisterPlatformSpecificCommands()
+{
+
+}

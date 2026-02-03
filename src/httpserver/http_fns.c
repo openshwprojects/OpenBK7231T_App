@@ -2386,6 +2386,11 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 				dev_info = hass_createEnumChannelInfo(i);
 			}
 			break;
+			case ChType_Illuminance_div10:
+			{
+				dev_info = hass_init_sensor_device_info(ILLUMINANCE_SENSOR, i, 2, 1, 1);
+			}
+			break;
 			default:
 			{
 				int numOptions;

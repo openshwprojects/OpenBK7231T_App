@@ -2447,6 +2447,11 @@ void MQTT_QueuePublishWithCommand(const char* topic, const char* channel, const 
 
 		if (newItem == NULL) {
 			newItem = os_malloc(sizeof(MqttPublishItem_t));
+			if(newItem == NULL)
+			{
+				//addLogAdv(LOG_ERROR, LOG_FEATURE_MQTT, "os_malloc failed for MqttPublishItem_t");
+				return;
+			}
 			newItem->next = NULL;
 			get_queue_tail(g_MqttPublishQueueHead)->next = newItem; //Append new item
 		}
