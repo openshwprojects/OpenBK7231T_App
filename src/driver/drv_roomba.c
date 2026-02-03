@@ -497,7 +497,7 @@ void Roomba_RunEverySecond() {
 #endif
 
 	// Request Sensor Group 6 every 5 seconds
-	if (++g_poll_counter >= 5) {
+	if (++g_poll_counter >= 1) {
 		g_poll_counter = 0;
 		Roomba_SendByte(CMD_SENSORS);
 		Roomba_SendByte(PACKET_GROUP_6); // Group 6 (52 bytes)
