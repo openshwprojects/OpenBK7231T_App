@@ -821,10 +821,10 @@ void Roomba_OnHassDiscovery(const char *topic) {
 	// 2. Vacuum entity discovery is published later (Tasmota-style). Removed duplicate block.
 
 	// 3. Publish Buttons
-	const char* cmd_names[] = {"Clean", "Spot", "Dock", "Max", "SafeMode", "Passive", "Full", "Reset"};
-	const char* cmd_funcs[] = {"Roomba_Clean", "Roomba_Spot", "Roomba_Dock", "Roomba_Max", "Roomba_SetSafe", "Roomba_SetPassive", "Roomba_SetFull", "Roomba_Safe"}; 
+	const char* cmd_names[] = {"Clean", "Spot", "Dock"};
+	const char* cmd_funcs[] = {"Roomba_Clean", "Roomba_Spot", "Roomba_Dock"}; 
 	
-	for (int i = 0; i < 8; i++) {
+	for (int i = 0; i < 3; i++) {
 		snprintf(unique_id, sizeof(unique_id), "%s_roomba_btn_%s", devName, cmd_names[i]);
 		snprintf(config_topic, sizeof(config_topic), "homeassistant/button/%s/config", unique_id);
 		
