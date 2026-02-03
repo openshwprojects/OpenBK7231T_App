@@ -546,6 +546,7 @@ void Roomba_OnQuickTick() {
 		if (buf[16] > 5) {
 			addLogAdv(LOG_WARN, LOG_FEATURE_DRV, "Roomba: Invalid Charging State (%d). Flushing buffer.", buf[16]);
 			UART_ConsumeBytesEx(g_roomba_uart, avail);
+			s_frameLen = 0;
 			return;
 		}
 
@@ -615,6 +616,7 @@ void Roomba_OnQuickTick() {
 		// Flush buffer if it's getting full (likely garbage)
 		addLogAdv(LOG_WARN, LOG_FEATURE_DRV, "Roomba: Flushing overfull buffer (%d bytes)", avail);
 		UART_ConsumeBytesEx(g_roomba_uart, avail);
+		s_frameLen = 0;
 	}
 }
 
