@@ -57,6 +57,10 @@ extern void Main_ScheduleHomeAssistantDiscovery(int seconds);
 
 // UART port index (1 = UART1/TX1/RX1, 2 = UART2/TX2/RX2)
 static int g_roomba_uart = 1;
+static byte s_frame[52];
+static int  s_frameLen = 0;
+static int  s_rawEvery = 10;
+static int  s_rawCnt = 0;	
 
 // --- helper functions ---------------------------------
 static const char *Roomba_ChargingStateStr(int st) {
@@ -465,6 +469,8 @@ void Roomba_Init() {
  * Requests Sensor Group 6 every 5 seconds and handles HA discovery
  */
 void Roomba_RunEverySecond() {
+
+#if 0   // Phase1: NO HA / NO MQTT
 	// 1. Automatic Discovery on Startup / MQTT Reconnect
 	// This fixes the "race condition" where discovery tried to run before MQTT was ready
 	if (MQTT_IsReady()) {
@@ -488,7 +494,8 @@ void Roomba_RunEverySecond() {
 			g_hass_discovery_timer = 0; // Always stop after one attempt
 		}
 	}
-	
+#endif
+
 	// Request Sensor Group 6 every 5 seconds
 	if (++g_poll_counter >= 5) {
 		g_poll_counter = 0;
@@ -497,8 +504,10 @@ void Roomba_RunEverySecond() {
 		addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "Roomba: Requesting Sensor Group 6");
 	}
 	
+#if 0   // Phase1: NO MQTT
 	// Publish Vacuum State (State Machine / Inference)
 	Roomba_PublishVacuumState();
+#endif
 }
 
 // ============================================================================
@@ -510,10 +519,6 @@ void Roomba_RunEverySecond() {
  * Assembles and parses incoming 52-byte Group 6 response (robust stream handling)
  */
 void Roomba_OnQuickTick() {
-	static byte s_frame[52];
-	static int  s_frameLen = 0;
-	static int  s_rawEvery = 10;
-	static int  s_rawCnt = 0;
 
 	int avail = UART_GetDataSizeEx(g_roomba_uart);
 
