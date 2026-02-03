@@ -61,7 +61,7 @@
     },
     {
         "question": "How to setup RGB LED?",
-        "answer": "Determine whether this LED is using 'I2C' LED driver like SM2135, or is it using PWMs. If it's using PWMs, just check which 3 GPIO pins are used for colours, and set PWM roles for them, keep channels in RGB order - Red is 1, Green is 2, Blue is 3 (altough firmware will also support indexing started from 0)"
+        "answer": "Determine whether this LED is using 'I2C' LED driver like SM2135, or is it using PWMs. If it's using PWMs, just check which 3 GPIO pins are used for colours, and set PWM roles for them, keep channels in RGB order - Red is 1, Green is 2, Blue is 3 (although firmware will also support indexing started from 0)"
     },
     {
         "question": "How to use bistable button? A button that toggles relay when it's changed?",
