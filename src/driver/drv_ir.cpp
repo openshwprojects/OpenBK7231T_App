@@ -663,12 +663,12 @@ extern "C" void DRV_IR_Init(){
 
 	//cmddetail:{"name":"IRSend","args":"[PROT-ADDR-CMD-REP-BITS]",
 	//cmddetail:"descr":"Sends IR commands in the form PROT-ADDR-CMD-REP-BITS, e.g. NEC-1-1A-0-0, note that -BITS is optional, it can be 0 for default one, so you can just do NEC-1-1A-0",
-	//cmddetail:"fn":"IR_Send_Cmd","file":"driver/drv_ir.cpp","requires":"",
+	//cmddetail:"fn":"IR_Send_Cmd","file":"driver/drv_ir.cpp","requires":"ENABLE_DRIVER_IR (Arduino-IRremote)",
 	//cmddetail:"examples":""}
             CMD_RegisterCommand("IRSend",IR_Send_Cmd, NULL);
 	//cmddetail:{"name":"IREnable","args":"[Str][1or0]",
 	//cmddetail:"descr":"Enable/disable aspects of IR.  IREnable RXTX 0/1 - enable Rx whilst Tx.  IREnable [protocolname] 0/1 - enable/disable a specified protocol",
-	//cmddetail:"fn":"IR_Enable","file":"driver/drv_ir.cpp","requires":"",
+	//cmddetail:"fn":"IR_Enable","file":"driver/drv_ir.cpp","requires":"ENABLE_DRIVER_IR (Arduino-IRremote)",
 	//cmddetail:"examples":""}
             CMD_RegisterCommand("IREnable", IR_Enable, NULL);
         }
