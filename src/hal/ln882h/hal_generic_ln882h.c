@@ -68,9 +68,9 @@ static commandResult_t CMD_SetUARTPins(const void* context, const char* cmd, con
 
 void HAL_RegisterPlatformSpecificCommands()
 {
-	//cmddetail:{"name":"alias","args":"[rx pin][tx pin]",
+	//cmddetail:{"name":"SetUARTPins","args":"[rx pin] [tx pin]",
 	//cmddetail:"descr":"Set UART pins",
-	//cmddetail:"fn":"CMD_SetUARTPins","file":"hal/ln882h/hal_generic_ln882h.c","requires":"",
+	//cmddetail:"fn":"CMD_SetUARTPins","file":"hal/ln882h/hal_generic_ln882h.c","requires":"PLATFORM_LN882H",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("SetUARTPins", CMD_SetUARTPins, NULL);
 }

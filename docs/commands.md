@@ -30,7 +30,6 @@ Do not add anything here, as it will overwritten with next rebuild.
 | AHT2X_Measure |  | Retrieve OneShot measurement.<br/><br/>Example: AHT2X_Measure<br/><br/>See also [AHT2X_Measure on forum](https://www.elektroda.com/rtvforum/find.php?q=AHT2X_Measure). |
 | AHT2X_Reinit |  | Reinitialize sensor.<br/><br/>Example: AHT2X_Reinit<br/><br/>See also [AHT2X_Reinit on forum](https://www.elektroda.com/rtvforum/find.php?q=AHT2X_Reinit). |
 | alias | [Alias][Command with spaces] | Add an aliased command, so a command with spaces can be called with a short, nospaced alias.<br/><br/>See also [alias on forum](https://www.elektroda.com/rtvforum/find.php?q=alias). |
-| alias | [rx pin][tx pin] | Set UART pins.<br/><br/>See also [alias on forum](https://www.elektroda.com/rtvforum/find.php?q=alias). |
 | aliasMem |  | Internal usage only. See docs for 'alias' command.<br/><br/>See also [aliasMem on forum](https://www.elektroda.com/rtvforum/find.php?q=aliasMem). |
 | Anim | [AnimationIndex] | Starts given WS2812 animation by index.<br/><br/>See also [Anim on forum](https://www.elektroda.com/rtvforum/find.php?q=Anim). |
 | AnimSpeed | [Interval] | Sets WS2812 animation speed.<br/><br/>See also [AnimSpeed on forum](https://www.elektroda.com/rtvforum/find.php?q=AnimSpeed). |
@@ -288,7 +287,7 @@ Do not add anything here, as it will overwritten with next rebuild.
 | setStartupSSID | [Value] | Sets startup SSID, 0 (SSID0) 1 (SSID1).<br/><br/>See also [setStartupSSID on forum](https://www.elektroda.com/rtvforum/find.php?q=setStartupSSID). |
 | setStartupSSIDChannel | [Value] | Sets retain channel number to store last used SSID, 0..MAX_RETAIN_CHANNELS-1, -1 to disable. Suggested channel number is 7 (MAXMAX_RETAIN_CHANNELS-5).<br/><br/>See also [setStartupSSIDChannel on forum](https://www.elektroda.com/rtvforum/find.php?q=setStartupSSIDChannel). |
 | SetStartValue | [Channel][Value] | Sets the startup value for a channel. Used for start values for relays. Use 1 for High, 0 for low and -1 for 'remember last state'.<br/><br/>See also [SetStartValue on forum](https://www.elektroda.com/rtvforum/find.php?q=SetStartValue). |
-| SetUARTPins | TODO | .<br/><br/>See also [SetUARTPins on forum](https://www.elektroda.com/rtvforum/find.php?q=SetUARTPins). |
+| SetUARTPins | [rx pin] [tx pin]<br/>Req:PLATFORM_LN882H | Set UART pins.<br/><br/>See also [SetUARTPins on forum](https://www.elektroda.com/rtvforum/find.php?q=SetUARTPins). |
 | SetupEnergyStats | [Enable1or0][SampleTime][SampleCount][JSonEnable] | Setup Energy Statistic Parameters: [enable 0 or 1] [sample_time[10..90]] [sample_count[10..180]] [JsonEnable 0 or 1]. JSONEnable is optional.<br/><br/>See also [SetupEnergyStats on forum](https://www.elektroda.com/rtvforum/find.php?q=SetupEnergyStats). |
 | SetupIR2 | [myPeriodUs] [dutyOnFrac] [dutyOffFrac] [txPin] | Init IR2 pin and interrupt.<br/><br/>See also [SetupIR2 on forum](https://www.elektroda.com/rtvforum/find.php?q=SetupIR2). |
 | SetupTestPower | [fakeVoltage] [FakeCurrent] [FakePower] [FakeFrequency] [bAllowRandom] | Starts the fake power metering driver.<br/><br/>See also [SetupTestPower on forum](https://www.elektroda.com/rtvforum/find.php?q=SetupTestPower). |

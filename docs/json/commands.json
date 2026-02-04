@@ -198,15 +198,6 @@
     "examples": ""
   },
   {
-    "name": "alias",
-    "args": "[rx pin][tx pin]",
-    "descr": "Set UART pins",
-    "fn": "CMD_SetUARTPins",
-    "file": "hal/ln882h/hal_generic_ln882h.c",
-    "requires": "",
-    "examples": ""
-  },
-  {
     "name": "aliasMem",
     "args": "",
     "descr": "Internal usage only. See docs for 'alias' command.",
@@ -2521,11 +2512,11 @@
   },
   {
     "name": "SetUARTPins",
-    "args": "TODO",
-    "descr": "",
+    "args": "[rx pin] [tx pin]",
+    "descr": "Set UART pins",
     "fn": "CMD_SetUARTPins",
     "file": "hal/ln882h/hal_generic_ln882h.c",
-    "requires": "",
+    "requires": "PLATFORM_LN882H",
     "examples": ""
   },
   {
