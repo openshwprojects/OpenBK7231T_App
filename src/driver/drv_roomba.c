@@ -75,18 +75,6 @@ static const char *Roomba_ChargingStateStr(int st) {
     }
 }
 
-static const char *Roomba_ChargingStateStrHA(int st) {
-	switch (st) {
-		case 0: return "not_charging";
-		case 1: return "reconditioning";
-		case 2: return "full_charging";
-		case 3: return "trickle_charging";
-		case 4: return "waiting";
-		case 5: return "charging_fault";
-		default: return "unknown";
-	}
-}
-
 // Vacuum state for Home Assistant integration
 static vacuum_state_t g_vacuum_state = VACUUM_STATE_IDLE;
 
@@ -367,7 +355,7 @@ void Roomba_PublishSensors(void) {
 				// Special-case: Charging State should publish TEXT, not a number
 				if (i == ROOMBA_SENSOR_CHARGING_STATE) {
 					MQTT_PublishMain_StringString(g_sensors[i].name_mqtt,
-						Roomba_ChargingStateStrHA((int)currentReading), 0);
+						Roomba_ChargingStateStr((int)currentReading), 0);
 				} else {
 					MQTT_PublishMain_StringFloat(g_sensors[i].name_mqtt,
 						currentReading, g_sensors[i].decimals, 0);
@@ -735,7 +723,8 @@ void Roomba_OnHassDiscovery(const char *topic) {
 			continue;
 		}
 		if (strlen(g_sensors[i].hass_dev_class) == 0 && strlen(g_sensors[i].units) == 0 && !g_sensors[i].is_binary) {
-			continue;
+			if (i != ROOMBA_SENSOR_CHARGING_STATE)
+				continue;
 		}
 
 		// unique id
@@ -762,7 +751,7 @@ void Roomba_OnHassDiscovery(const char *topic) {
 			"\"dev\":{\"ids\":[\"%s\"],\"name\":\"%s\",\"mf\":\"iRobot\",\"mdl\":\"Roomba\"},",
 			devName, devName);
 
-		if (strlen(g_sensors[i].hass_dev_class) > 0) {
+		if (strlen(g_sensors[i].hass_dev_class) > 0 && i != ROOMBA_SENSOR_CHARGING_STATE) {
 			n += snprintf(payload + n, sizeof(payload) - n,
 				"\"dev_cla\":\"%s\",", g_sensors[i].hass_dev_class);
 		}
@@ -776,12 +765,10 @@ void Roomba_OnHassDiscovery(const char *topic) {
 				"\"pl_on\":\"ON\",\"pl_off\":\"OFF\",");
 		}
 		
-
-
 		// Enum sensors (like Charging State) should declare options in discovery
 		if (strcmp(g_sensors[i].hass_dev_class, "enum") == 0) {
 			n += snprintf(payload + n, sizeof(payload) - n,
-				"\"options\":[\"not_charging\",\"reconditioning\",\"full_charging\",\"trickle_charging\",\"waiting\",\"charging_fault\",\"unknown\"],");
+				"\"options\":[\"Not charging\",\"Reconditioning\",\"Full charging\",\"Trickle charging\",\"Waiting\",\"Charging fault\",\"Unknown\"],");
 		}
 
 		if (!g_sensors[i].is_binary && strcmp(g_sensors[i].hass_dev_class, "enum") != 0) {
