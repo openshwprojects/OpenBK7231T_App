@@ -1431,6 +1431,7 @@ const char *ChannelType_GetUnit(int type) {
 	case ChType_Power_div10:
 	case ChType_Power_div100:
 		return "W";
+	case ChType_Frequency:
 	case ChType_Frequency_div10:
 	case ChType_Frequency_div100:
 	case ChType_Frequency_div1000:
@@ -1485,6 +1486,7 @@ const char *ChannelType_GetTitle(int type) {
 	case ChType_Power_div10:
 	case ChType_Power_div100:
 		return "Power";
+	case ChType_Frequency:
 	case ChType_Frequency_div10:
 	case ChType_Frequency_div100:
 	case ChType_Frequency_div1000:
@@ -2426,6 +2428,7 @@ const char* g_channelTypeNames[] = {
 	"ReadOnlyEnum",
 	"Current_div10",
 	"Illuminance_div10",
+	"Frequency",
 	"error",
 	"error",
 	"error",
