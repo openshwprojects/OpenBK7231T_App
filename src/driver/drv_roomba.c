@@ -13,7 +13,7 @@
  * Hardware Requirements:
  * - UART connection to Roomba's Mini-DIN connector
  * - Default: UART1 (TX2/RX2) at 115200 baud, 8N1
- * - Roomba models: 500/600/700/800/900 series (OI Spec compatible)
+ * - Roomba models: 500/600/700/800First of all series (OI Spec compatible)
  * 
  * Channel Configuration:
  * - Channel 1: Battery Voltage (in mV)
@@ -299,8 +299,15 @@ commandResult_t CMD_RoombaOrder(const void* context, const char* cmd, const char
 	}
 
 	if (stricmp(args, "start") == 0 || stricmp(args, "clean") == 0) {
-		Roomba_SendCmd(CMD_CLEAN);
-		g_vacuum_state = VACUUM_STATE_CLEANING;
+		// Single-button behavior: If already cleaning, Stop/Pause. Else, Start.
+		if (g_vacuum_state == VACUUM_STATE_CLEANING) {
+			Roomba_SendCmd(CMD_SAFE); // Stop motors (Pause)
+			g_vacuum_state = VACUUM_STATE_PAUSED;
+			addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "Roomba: Toggling to PAUSE");
+		} else {
+			Roomba_SendCmd(CMD_CLEAN);
+			g_vacuum_state = VACUUM_STATE_CLEANING; 
+		}
 
 	} else if (stricmp(args, "clean_spot") == 0 || stricmp(args, "spot") == 0) {
 		Roomba_SendCmd(CMD_SPOT);
@@ -334,49 +341,84 @@ commandResult_t CMD_RoombaOrder(const void* context, const char* cmd, const char
 void Roomba_PublishVacuumState(void) {
 	if (!MQTT_IsReady()) return;
 
-	// Note: MQTT_Publish Main_StringString() automatically prepends clientId
-	// So we just pass "roomba/state" and it becomes "<clientId>/roomba/state"
+	// State Inference Variables
+	static int idle_latch_timer = 0; // Frames of low-current to confirm IDLE
+	const int IDLE_CONFIRM_FRAMES = 5; // 5 seconds of low current -> IDLE
+	
 	const char* stateStr = "idle";
 	
-	// Infer state from sensors
-	// Charging State: 0=Not, 1=Recond, 2=Full, 3=Trickle, 4=Waiting, 5=Fault
+	// charging_state: 0=Not, 1=Recond, 2=Full, 3=Trickle, 4=Waiting, 5=Fault
 	int charging = g_sensors[ROOMBA_SENSOR_CHARGING_STATE].lastReading;
 	float current = g_sensors[ROOMBA_SENSOR_CURRENT].lastReading;
 
+	// 1. DOCKED Check
+	// If we are charging (1, 2, 3) or Waiting (4) with low current draw? 
+	// Usually just being in state 1-5 means we are on the dock.
 	if (charging >= 1 && charging <= 5) {
-		stateStr = "docked";
 		g_vacuum_state = VACUUM_STATE_DOCKED;
-	} else if (current < -400) { 
-		// Significant negative current implies motors running -> cleaning
-		stateStr = "cleaning";
+		stateStr = "docked";
+		idle_latch_timer = 0; // Reset idle latch
+	} 
+	// 2. CLEANING Check
+	// If current is significantly negative (< -300 mA), motors are running.
+	// We use -300mA as a safe threshold (motors draw ~1A combined, logic+static is ~200mA)
+	else if (current < -300) {
 		g_vacuum_state = VACUUM_STATE_CLEANING;
-	} else if (g_vacuum_state == VACUUM_STATE_RETURNING) {
-		stateStr = "returning";
-	} else {
-		stateStr = "idle";
-		g_vacuum_state = VACUUM_STATE_IDLE;
+		stateStr = "cleaning";
+		idle_latch_timer = 0; // Reset idle latch
 	}
-
-	// OLD: Publish sensor-style state topic for compatibility
-	MQTT_PublishMain_StringString("state", stateStr, 0);
+	// 3. IDLE vs RETURNING vs STARTING
+	else {
+		// Current is low ( > -300 mA). Robot is likely standing still or turning slowly.
+		// We use a LATCH to prevent status flickering during turns/pauses.
+		
+		if (g_vacuum_state == VACUUM_STATE_CLEANING) {
+			// currently marked as cleaning, but current is low.
+			// Wait for N frames before dropping to IDLE.
+			idle_latch_timer++;
+			if (idle_latch_timer > IDLE_CONFIRM_FRAMES) {
+				g_vacuum_state = VACUUM_STATE_IDLE;
+				stateStr = "idle";
+			} else {
+				// Keep reporting cleaning for now
+				stateStr = "cleaning";
+			}
+		} 
+		else if (g_vacuum_state == VACUUM_STATE_RETURNING) {
+			// If we were returning, we stay returning until we dock or user stops.
+			// (No feedback for returning without visual sensors)
+			stateStr = "returning";
+		}
+		else {
+			// Already idle
+			g_vacuum_state = VACUUM_STATE_IDLE;
+			stateStr = "idle";
+		}
+	}
 	
-	// NEW: Publish vacuum-style JSON state for HA vacuum entity
-	const char *clientId = CFG_GetMQTTClientId();
-	char vacTopic[128];
-	char vacPayload[256];
-	const char *fanSpeed = "min";  // Roomba doesn't have variable speed
-	
-	// Handle paused state
+	// Handle manual pause override if set by command
 	if (g_vacuum_state == VACUUM_STATE_PAUSED) {
 		stateStr = "paused";
 	}
+
+	// Publish for HA Vacuum Entity
+	const char *clientId = CFG_GetMQTTClientId();
+	char vacTopic[128];
+	char vacPayload[256];
+	
+	// Format: { "state": "cleaning", "battery_level": N, "fan_speed": "max" }
+	// We allow 'returning' as a state for HA.
 	
 	snprintf(vacTopic, sizeof(vacTopic), "%s/vacuum/state", clientId);
-	snprintf(vacPayload, sizeof(vacPayload), "{\"state\":\"%s\",\"fan_speed\":\"%s\"}", 
-		stateStr, fanSpeed);
+	snprintf(vacPayload, sizeof(vacPayload), 
+		"{\"state\":\"%s\",\"battery_level\":%.0f,\"fan_speed\":\"default\"}", 
+		stateStr, 
+		// Calculate battery inline for the state update
+		(g_sensors[ROOMBA_SENSOR_CAPACITY].lastReading > 0) ? 
+			(g_sensors[ROOMBA_SENSOR_CHARGE].lastReading / g_sensors[ROOMBA_SENSOR_CAPACITY].lastReading * 100.0f) : 0
+	);
 	
-	// Use low-level publish to avoid wrapper bugs/trailing slashes
-	// MQTT_PublishMain_StringString(topic, payload, flags)
+	// Publish raw topic
 	extern int MQTT_PublishMain_StringString(const char* sChannel, const char* valueStr, int flags);
 	MQTT_PublishMain_StringString(vacTopic, vacPayload, OBK_PUBLISH_FLAG_RAW_TOPIC_NAME);
 }
@@ -546,26 +588,36 @@ void Roomba_RunEverySecond() {
 
 	// Decide keepalive first, so we don't append to any other command stream
 	int doKeepAlive = 0;
-	if (++g_roomba_keepalive_sec >= g_roomba_keepalive_interval_sec) {
+    // User requested 30 seconds interval (OI sleep timeout is 5 minutes/300s)
+	if (++g_roomba_keepalive_sec >= 30) {
 		g_roomba_keepalive_sec = 0;
 		doKeepAlive = 1;
 	}
 
-	// Keep-alive: allowed ONLY for charging_state 0 (Not charging) or 4 (Waiting)
+	// Keep-alive: Prevent sleep when off-dock and not cleaning.
+    // Spec: "Start (128)... resets 5 min timer". "Safe (131)... stops motors".
+    // Logic: Only send 128+131 if we are IDLE or PAUSED (Not Working) and NOT ON DOCK.
 	if (doKeepAlive) {
-		int st = g_roomba_last_charging_state;
+        // We use g_vacuum_state because it has the "latch" logic for cleaning.
+        // If state is CLEANING or RETURNING, we MUST NOT send 131.
+        bool isWorking = (g_vacuum_state == VACUUM_STATE_CLEANING || g_vacuum_state == VACUUM_STATE_RETURNING);
+        bool isDocked  = (g_vacuum_state == VACUUM_STATE_DOCKED);
+        
+        // Also check raw charging state for safety (if state logic fails)
+        int chg = g_sensors[ROOMBA_SENSOR_CHARGING_STATE].lastReading;
+        if (chg >= 1 && chg <= 5) isDocked = true; // 4 is Waiting, usually on dock
 
-		if (st == 0 || st == 4) {
-			Roomba_SendByte(128);
-			Roomba_SendByte(131);
+		if (!isWorking && !isDocked) {
+            // "Send the 128 131 only then" - User Request
+			Roomba_SendByte(CMD_START); // 128
+			Roomba_SendByte(CMD_SAFE);  // 131
 			addLogAdv(LOG_INFO, LOG_FEATURE_DRV,
-				"Roomba: keepalive 0x80 0x83 sent (charging_state=%d)", st);
-			return; // skip sensor poll ONLY when keepalive was sent
-		}
-
-		addLogAdv(LOG_INFO, LOG_FEATURE_DRV,
-			"Roomba: keepalive blocked (charging_state=%d)", st);
-		// Do NOT return here -> continue to normal poll
+				"Roomba: Keep-Alive 128+131 sent (State: %d, Chg: %d)", g_vacuum_state, chg);
+			return; // skip sensor poll to avoid traffic collision
+		} else {
+             // Debug log to confirm we skipped it intentionally
+             // addLogAdv(LOG_DEBUG, LOG_FEATURE_DRV, "Roomba: Keep-Alive skipped (Working: %d, Docked: %d)", isWorking, isDocked);
+        }
 	}
 
 	// Normal sensor polling
@@ -970,7 +1022,7 @@ void Roomba_OnHassDiscovery(const char *topic) {
 		"\"pl_avail\":\"online\","
 		"\"pl_not_avail\":\"offline\","
 		"\"send_cmd_t\":\"~/vacuum/send_command\","
-		"\"sup_feat\":[\"start\",\"pause\",\"stop\",\"return_home\",\"clean_spot\"],"
+		"\"supported_features\":[\"start\",\"pause\",\"stop\",\"return_home\",\"clean_spot\"],"
 		"\"dev\":{\"ids\":[\"%s\"],\"name\":\"%s\",\"sw\":\"%s\",\"mf\":\"iRobot\",\"mdl\":\"Roomba\",\"cu\":\"http://%s/index\"}}",
 		unique_id,
 		clientId,
