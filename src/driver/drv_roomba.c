@@ -775,7 +775,7 @@ void Roomba_OnHassDiscovery(const char *topic) {
 		payload[n++] = '}';
 		payload[n] = 0;
 
-		snprintf(payload + strlen(payload), sizeof(payload) - strlen(payload), "}");
+		//snprintf(payload + strlen(payload), sizeof(payload) - strlen(payload), "}");
 
 		MQTT_PublishMain_StringString(config_topic, payload,
 			OBK_PUBLISH_FLAG_RAW_TOPIC_NAME | OBK_PUBLISH_FLAG_RETAIN);
@@ -853,7 +853,10 @@ void Roomba_OnHassDiscovery(const char *topic) {
 		"\"dev\":{\"ids\":[\"%s\"],\"name\":\"%s\",\"sw\":\"%s\",\"mf\":\"iRobot\",\"mdl\":\"Roomba\",\"cu\":\"http://%s/index\"}}",
 		unique_id,
 		clientId,
-		devName, g_build_str, ip);
+		devName,
+		devName, 
+		g_build_str,
+		 ip);
 	
 	MQTT_PublishMain_StringString(config_topic, payload,
 		OBK_PUBLISH_FLAG_RAW_TOPIC_NAME | OBK_PUBLISH_FLAG_RETAIN);
