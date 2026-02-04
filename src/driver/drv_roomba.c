@@ -475,11 +475,11 @@ void Roomba_Init() {
  * Polling sequence:
  * Requests Sensor Group 6 (52 bytes) … includes charging, voltage, current, temperature, charge, capacity, buttons, bump/cliff, etc.
  * Includes: Charging State, Voltage, Current, Temperature, Charge, Capacity
- * Requests Sensor Group 6 every 5 seconds and handles HA discovery
+ * Currently requests Sensor Group 6 every 1 second
  */
 void Roomba_RunEverySecond() {
 
-	// Request Sensor Group 6 every 5 seconds
+	// Currently request Sensor Group 6 every 1 second
 	if (++g_poll_counter >= 1) {
 		g_poll_counter = 0;
 		Roomba_SendByte(CMD_SENSORS);
