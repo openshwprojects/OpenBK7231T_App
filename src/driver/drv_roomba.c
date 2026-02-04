@@ -654,10 +654,8 @@ void Roomba_OnQuickTick() {
  * Append Roomba sensor information to the HTTP index page
  * Formatted like BL0937 driver
  */
-void Roomba_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState) {
-	if (bPreState)
-		return;
-
+static void Roomba_AddStatusToHTTPPage(http_request_t *request)
+{
 	// Command Buttons (top row) - call /cm?cmnd=... so we don't need http_fns.c hacks
 	poststr(request, "<hr>");
 	poststr(request, "<div id='roomba_cmd_msg' style='margin:6px 0; font-size:12px;'></div>");
@@ -727,6 +725,13 @@ void Roomba_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreSt
 	
 	poststr(request, "</table>");	
 	hprintf255(request, "<hr>");
+}
+
+void Roomba_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState) {
+	if (bPreState)
+		return;
+
+	Roomba_AddStatusToHTTPPage(request);
 }
 
 /**
