@@ -745,7 +745,7 @@ void Roomba_OnHassDiscovery(const char *topic) {
 			"\"dev\":{\"ids\":[\"%s\"],\"name\":\"%s\",\"mf\":\"iRobot\",\"mdl\":\"Roomba\"},",
 			devName, devName);
 
-		if (strlen(g_sensors[i].hass_dev_class) > 0 && i != ROOMBA_SENSOR_CHARGING_STATE) {
+		if (strlen(g_sensors[i].hass_dev_class) > 0) {
 			n += snprintf(payload + n, sizeof(payload) - n,
 				"\"dev_cla\":\"%s\",", g_sensors[i].hass_dev_class);
 		}
