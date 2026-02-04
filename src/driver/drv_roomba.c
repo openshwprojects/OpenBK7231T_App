@@ -50,7 +50,6 @@
 extern int MQTT_PublishMain_StringString(const char* sChannel, const char* valueStr, int flags);
 extern int MQTT_Publish(const char* sTopic, const char* sChannel, const char* sVal, int flags);
 extern void Main_ScheduleHomeAssistantDiscovery(int seconds);
-extern uint32_t HAL_GetTimeMS(void);
 
 // ============================================================================
 // GLOBAL VARIABLES
@@ -123,6 +122,8 @@ static roomba_sensor_t g_sensors[ROOMBA_SENSOR__COUNT] = {
 
 // ---------------- MQTT Vacuum Phase 4 ----------------
 static uint32_t g_roomba_lastVacStatePubMs = 0;
+static uint32_t g_roomba_lastKeepAliveMs = 0;
+
 
 static const char *Roomba_VacuumStateStr(void) {
     // NOTE: update these conditions to match your actual parsed fields.
@@ -642,10 +643,24 @@ void Roomba_OnQuickTick() {
 		// Publish sensors via MQTT (BL_shared style)
 		Roomba_PublishSensors();
 		// Phase 4: publish vacuum JSON state at 1 Hz (no adaptive polling yet)
-		uint32_t now = HAL_GetTimeMS();
+		uint32_t now = rtos_get_time();
 		if (now - g_roomba_lastVacStatePubMs > 1000) {
 			g_roomba_lastVacStatePubMs = now;
 			Roomba_MQTT_PublishVacuumStateJSON();
+		}
+
+		// Keep-awake workaround for off-dock testing:
+		// Send OI START (128) every 120s when NOT docked (charging_state == 0).
+		if (g_sensors[ROOMBA_SENSOR_CHARGING_STATE].lastReading == 0) {
+			if (now - g_roomba_lastKeepAliveMs > 120000) { // 120 seconds
+				g_roomba_lastKeepAliveMs = now;
+				Roomba_SendByte(128);
+				// optional:
+				// addLogAdv(LOG_DEBUG, LOG_FEATURE_DRV, "Roomba: keepalive START(128)");
+			}
+		} else {
+			// Reset timer when docked so we don't instantly fire after undocking
+			g_roomba_lastKeepAliveMs = now;
 		}
 		
 		// Reset frame accumulator for next frame
