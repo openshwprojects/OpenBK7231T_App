@@ -561,12 +561,7 @@ void Roomba_OnQuickTick() {
 		
 		// Packet 15: Dirt Detect (Byte 8)
 		g_sensors[ROOMBA_SENSOR_DIRT_DETECT].lastReading = buf[8];
-		
-		// Packet 18: Buttons (Byte 11)
-		g_sensors[ROOMBA_SENSOR_BUTTON_CLEAN].lastReading = (buf[11] & 0x01) ? 1 : 0;
-		g_sensors[ROOMBA_SENSOR_BUTTON_SPOT].lastReading = (buf[11] & 0x02) ? 1 : 0;
-		g_sensors[ROOMBA_SENSOR_BUTTON_DOCK].lastReading = (buf[11] & 0x04) ? 1 : 0;
-		
+				
 		// Packet 21: Charging State (Byte 16)
 		g_sensors[ROOMBA_SENSOR_CHARGING_STATE].lastReading = buf[16];
 		

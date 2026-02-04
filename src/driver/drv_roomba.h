@@ -118,14 +118,8 @@ typedef enum {
 	ROOMBA_SENSOR_CLIFF_RIGHT,
 	ROOMBA_SENSOR_VIRTUAL_WALL,
 	ROOMBA_SENSOR_DIRT_DETECT,
-	
-	// Buttons
-	ROOMBA_SENSOR_BUTTON_CLEAN,
-	ROOMBA_SENSOR_BUTTON_SPOT,
-	ROOMBA_SENSOR_BUTTON_DOCK,
-	ROOMBA_SENSOR_BUTTON_MAX,
 
-	ROOMBA_SENSOR__COUNT  // Total number of sensors (21)
+	ROOMBA_SENSOR__COUNT  // Total number of sensors (17)
 } roomba_sensor_type_t;
 
 // Sensor metadata for auto-publishing
