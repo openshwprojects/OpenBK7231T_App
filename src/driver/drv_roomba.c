@@ -662,7 +662,7 @@ void Roomba_OnQuickTick() {
 		// Keep-awake workaround for off-dock testing:
 		// Send OI START (128) every 120s when NOT docked (charging_state == 0).
 		if (g_sensors[ROOMBA_SENSOR_CHARGING_STATE].lastReading == 0) {
-			if (now - g_roomba_lastKeepAliveMs > 120000) { // 120 seconds
+			if (now - g_roomba_lastKeepAliveMs > 30000) { // 30 seconds
 				g_roomba_lastKeepAliveMs = now;
 				Roomba_SendByte(128);
 				// optional:
