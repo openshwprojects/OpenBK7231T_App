@@ -305,6 +305,7 @@ commandResult_t CMD_RoombaOrder(const void* context, const char* cmd, const char
 	// - If Robot IS Cleaning -> Toggle to PAUSE (Stop motors)
 	// - If Robot IS NOT Cleaning -> Start CLEANING
 	// ------------------------------------------------------------------------
+	if (stricmp(args, "start") == 0 || stricmp(args, "clean") == 0) {
 		// Single-button behavior: If already cleaning, Stop/Pause. Else, Start.
 		if (g_vacuum_state == VACUUM_STATE_CLEANING) {
 			Roomba_SendCmd(CMD_SAFE); // Stop motors (Pause)
@@ -872,9 +873,9 @@ static void Roomba_AddStatusToHTTPPage(http_request_t *request)
 	// Activity (based on the robust state inference)
 	const char* actStr = "Idle";
 	switch (g_vacuum_state) {
-		case VACUUM_STATE_DOCKED:    actStr = "Docked (charging)"; break;
-		case VACUUM_STATE_CLEANING:  actStr = "Cleaning (working)"; break;
-		case VACUUM_STATE_RETURNING: actStr = "Docking (returning)"; break;
+		case VACUUM_STATE_DOCKED:    actStr = "Docked"; break;
+		case VACUUM_STATE_CLEANING:  actStr = "Cleaning"; break;
+		case VACUUM_STATE_RETURNING: actStr = "Docking"; break;
 		case VACUUM_STATE_PAUSED:    actStr = "Paused"; break;
 		case VACUUM_STATE_IDLE:      actStr = "Idle"; break;
 		default:                     actStr = "Unknown"; break;
