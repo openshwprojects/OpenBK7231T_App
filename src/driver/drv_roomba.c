@@ -93,6 +93,9 @@ static int g_poll_counter = 0;
 static int g_roomba_keepalive_sec = 0;
 static int g_roomba_keepalive_interval_sec = 10;
 
+// Last parsed OI Group 6 charging_state (0..5). Used for keepalive gating.
+static int g_roomba_last_charging_state = -1;
+
 // ============================================================================
 // SENSOR REGISTRY
 // ============================================================================
@@ -532,14 +535,14 @@ void Roomba_RunEverySecond() {
 	if (doKeepAlive) {
 
 		// Only keep-awake when not charging (prevents interfering with dock charging)
-		if (g_last_charging_state == 0) {  // <-- use your parsed charging_state variable
-			Roomba_SendByte(128); // Start OI
-			Roomba_SendByte(131); // Safe mode
+		if (g_roomba_last_charging_state == 0) {
+			Roomba_SendByte(128);
+			Roomba_SendByte(131);
 			addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "Roomba: keepalive 0x80 0x83 sent");
 		} else {
-			addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "Roomba: keepalive skipped (charging_state=%d)", g_last_charging_state);
+			addLogAdv(LOG_INFO, LOG_FEATURE_DRV,
+				"Roomba: keepalive skipped (charging_state=%d)", g_roomba_last_charging_state);
 		}
-
 		return; // still skip sensor poll that second
 	}
 
@@ -635,6 +638,7 @@ void Roomba_OnQuickTick() {
 				
 		// Packet 21: Charging State (Byte 16)
 		g_sensors[ROOMBA_SENSOR_CHARGING_STATE].lastReading = buf[16];
+		g_roomba_last_charging_state = buf[16];
 		
 		// Packet 22: Voltage (Bytes 17-18, mV)
 		g_sensors[ROOMBA_SENSOR_VOLTAGE].lastReading = (buf[17] << 8) | buf[18];
@@ -671,18 +675,16 @@ void Roomba_OnQuickTick() {
 
 		// Keep-awake workaround for off-dock testing:
 		// Send OI START (128) every 120s when NOT docked (charging_state == 0).
+#if 0
 		if (g_sensors[ROOMBA_SENSOR_CHARGING_STATE].lastReading == 0) {
-			if (now - g_roomba_lastKeepAliveMs > 120000) { // 120 seconds
+			if (now - g_roomba_lastKeepAliveMs > 120000) {
 				g_roomba_lastKeepAliveMs = now;
 				Roomba_SendByte(128);
-				// optional:
-				// addLogAdv(LOG_DEBUG, LOG_FEATURE_DRV, "Roomba: keepalive START(128)");
 			}
 		} else {
-			// Reset timer when docked so we don't instantly fire after undocking
 			g_roomba_lastKeepAliveMs = now;
 		}
-		
+#endif
 		// Reset frame accumulator for next frame
 		s_frameLen = 0;
 
