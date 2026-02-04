@@ -323,7 +323,7 @@ void Roomba_PublishVacuumState(void) {
 	int charging = g_sensors[ROOMBA_SENSOR_CHARGING_STATE].lastReading;
 	float current = g_sensors[ROOMBA_SENSOR_CURRENT].lastReading;
 
-	if (charging == 2 || charging == 3) {
+	if (charging_state >= 1 && charging_state <= 5) {
 		stateStr = "docked";
 		g_vacuum_state = VACUUM_STATE_DOCKED;
 	} else if (current < -400) { 
@@ -524,35 +524,41 @@ void Roomba_Init() {
  */
 void Roomba_RunEverySecond() {
 
-    // Decide keepalive first, so we don't append to any other command stream
-    int doKeepAlive = 0;
-    if (++g_roomba_keepalive_sec >= g_roomba_keepalive_interval_sec) {
-        g_roomba_keepalive_sec = 0;
-        doKeepAlive = 1;
-    }
-
-	// Proper keep-alive: Start OI + Safe mode (OFF-DOCK ONLY)
-	if (doKeepAlive) {
-
-		// Only keep-awake when not charging (prevents interfering with dock charging)
-		if (g_roomba_last_charging_state == 0) {
-			Roomba_SendByte(128);
-			Roomba_SendByte(131);
-			addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "Roomba: keepalive 0x80 0x83 sent");
-		} else {
-			addLogAdv(LOG_INFO, LOG_FEATURE_DRV,
-				"Roomba: keepalive skipped (charging_state=%d)", g_roomba_last_charging_state);
-		}
-		return; // still skip sensor poll that second
+	// Decide keepalive first, so we don't append to any other command stream
+	int doKeepAlive = 0;
+	if (++g_roomba_keepalive_sec >= g_roomba_keepalive_interval_sec) {
+		g_roomba_keepalive_sec = 0;
+		doKeepAlive = 1;
 	}
 
-    // Normal sensor polling
-    if (++g_poll_counter >= 1) {
-        g_poll_counter = 0;
-        Roomba_SendByte(CMD_SENSORS);
-        Roomba_SendByte(PACKET_GROUP_6);
-        addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "Roomba: Requesting Sensor Group 6");
-    }
+	// Proper keep-alive: Start OI + Safe mode (IDLE/WAITING ONLY)
+	if (doKeepAlive) {
+
+		// Allowed keepalive states:
+		// 0 = Not charging
+		// 4 = Waiting
+		int st = g_roomba_last_charging_state;
+
+		if (st == 0 || st == 4) {
+			Roomba_SendByte(128);
+			Roomba_SendByte(131);
+			addLogAdv(LOG_INFO, LOG_FEATURE_DRV,
+				"Roomba: keepalive 0x80 0x83 sent (charging_state=%d)", st);
+			return; // IMPORTANT: only skip poll when we actually sent keepalive
+		}
+
+		// Blocked (1,2,3,5 or unknown): continue to normal poll
+		addLogAdv(LOG_INFO, LOG_FEATURE_DRV,
+			"Roomba: keepalive blocked (charging_state=%d)", st);
+	}
+
+	// Normal sensor polling
+	if (++g_poll_counter >= 1) {
+		g_poll_counter = 0;
+		Roomba_SendByte(CMD_SENSORS);
+		Roomba_SendByte(PACKET_GROUP_6);
+		addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "Roomba: Requesting Sensor Group 6");
+	}
 }
 
 // ============================================================================
