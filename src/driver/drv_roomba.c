@@ -118,12 +118,6 @@ static roomba_sensor_t g_sensors[ROOMBA_SENSOR__COUNT] = {
 	{"Cliff Right", "cliff_right", "", "safety", 0, 0.5f, 0, 0, 0, PACKET_CLIFF_RIGHT, 1, true},
 	{"Virtual Wall", "virtual_wall", "", "occupancy", 0, 0.5f, 0, 0, 0, PACKET_VIRTUAL_WALL, 1, true},
 	{"Dirt Detect", "dirt_detect", "", "occupancy", 0, 0.5f, 0, 0, 0, PACKET_DIRT_DETECT, 1, false},
-	
-	// Buttons (Parsed from Packet 18)
-	{"Button Clean", "button_clean", "", "running", 0, 0.5f, 0, 0, 0, PACKET_BUTTONS, 1, true},
-	{"Button Spot", "button_spot", "", "running", 0, 0.5f, 0, 0, 0, PACKET_BUTTONS, 1, true},
-	{"Button Dock", "button_dock", "", "running", 0, 0.5f, 0, 0, 0, PACKET_BUTTONS, 1, true},
-	{"Button Max", "button_max", "", "running", 0, 0.5f, 0, 0, 0, PACKET_BUTTONS, 1, true},
 };
 
 // ============================================================================
@@ -777,7 +771,9 @@ void Roomba_OnHassDiscovery(const char *topic) {
 		}
 
 		// remove trailing comma if present
-		if (n > 0 && payload[n-1] == ',') payload[n-1] = 0;
+		if (n > 0 && payload[n-1] == ',') n--;
+		payload[n++] = '}';
+		payload[n] = 0;
 
 		snprintf(payload + strlen(payload), sizeof(payload) - strlen(payload), "}");
 
