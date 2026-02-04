@@ -91,7 +91,7 @@ static int g_poll_counter = 0;
 
 // Keep-awake: send OI opcode 128 (0x80) every 120 seconds
 static int g_roomba_keepalive_sec = 0;
-static int g_roomba_keepalive_interval_sec = 120;
+static int g_roomba_keepalive_interval_sec = 10;
 
 // ============================================================================
 // SENSOR REGISTRY
