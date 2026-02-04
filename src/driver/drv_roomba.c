@@ -340,6 +340,12 @@ void Roomba_PublishSensors(void) {
 		}
 
 		if (shouldPublish) {
+			addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "Roomba MQTT ch='%s' first4=%02X %02X %02X %02X",
+				g_sensors[i].name_mqtt,
+				(unsigned char)g_sensors[i].name_mqtt[0],
+				(unsigned char)g_sensors[i].name_mqtt[1],
+				(unsigned char)g_sensors[i].name_mqtt[2],
+				(unsigned char)g_sensors[i].name_mqtt[3]);
 			// Publish via MQTT (BL_shared style)
 			if (g_sensors[i].is_binary) {
 				// Binary sensors: "ON" / "OFF"
@@ -774,8 +780,6 @@ void Roomba_OnHassDiscovery(const char *topic) {
 		if (n > 0 && payload[n-1] == ',') n--;
 		payload[n++] = '}';
 		payload[n] = 0;
-
-		//snprintf(payload + strlen(payload), sizeof(payload) - strlen(payload), "}");
 
 		MQTT_PublishMain_StringString(config_topic, payload,
 			OBK_PUBLISH_FLAG_RAW_TOPIC_NAME | OBK_PUBLISH_FLAG_RETAIN);
