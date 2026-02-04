@@ -14,6 +14,7 @@ SRC_C  += $(OBK_DIR)/src/hal/realtek/rtl8710a/hal_pins_rtl8710a.c
 SRC_C  += $(OBK_DIR)/src/hal/realtek/hal_flashConfig_realtek.c
 SRC_C  += $(OBK_DIR)/src/hal/realtek/hal_flashVars_realtek.c
 SRC_C  += $(OBK_DIR)/src/hal/realtek/hal_generic_realtek.c
+SRC_C  += $(OBK_DIR)/src/hal/realtek/hal_hwtimer_realtek.c
 SRC_C  += $(OBK_DIR)/src/hal/realtek/hal_pins_realtek.c
 SRC_C  += $(OBK_DIR)/src/hal/realtek/hal_wifi_realtek.c
 SRC_C  += $(OBK_DIR)/src/hal/realtek/hal_ota_realtek.c

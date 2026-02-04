@@ -29,6 +29,7 @@ set(PROJ_ALL_SRC
 	${OBK_SRCS}hal/ln882h/hal_flashConfig_ln882h.c
 	${OBK_SRCS}hal/ln882h/hal_flashVars_ln882h.c
 	${OBK_SRCS}hal/ln882h/hal_generic_ln882h.c
+	${OBK_SRCS}hal/ln882h/hal_hwtimer_ln882h.c
 	${OBK_SRCS}hal/ln882h/hal_main_ln882h.c
 	${OBK_SRCS}hal/ln882h/hal_pins_ln882h.c
 	${OBK_SRCS}hal/ln882h/hal_wifi_ln882h.c

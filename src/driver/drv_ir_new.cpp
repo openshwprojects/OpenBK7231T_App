@@ -15,6 +15,7 @@ extern "C" {
 #include "../cmnds/cmd_public.h"
 #include "../hal/hal_pins.h"
 #include "../hal/hal_generic.h"
+#include "../hal/hal_hwtimer.h"
 
 #if PLATFORM_BEKEN
 #include "include.h"
@@ -150,39 +151,10 @@ Print Serial;
 // #define ISR void IR_ISR
 
 // THIS function is defined in src/libraries/IRremoteESP8266/src/IRrecv.cpp
-extern "C" void
-#if PLATFORM_BEKEN
-DRV_IR_ISR(UINT8 t)
-#elif PLATFORM_REALTEK
-DRV_IR_ISR()
-#else
-DRV_IR_ISR(void* arg)
-#endif
-;
+extern "C" void DRV_IR_ISR(void* arg);
 extern void IR_ISR();
 
-#if PLATFORM_BEKEN
-static UINT32 ir_chan = BKTIMER0;
-static UINT32 ir_div = 1;
-#elif PLATFORM_REALTEK
-static gtimer_t ir_timer;
-static UINT32 ir_chan = TIMER2;
-#elif PLATFORM_BL602
-static hosal_timer_dev_t ir_timer;
-static UINT32 ir_chan = TIMER_CH0;
-#elif PLATFORM_LN882H
-static UINT32 ir_chan = TIMER0_BASE;
-extern "C" void TIMER0_IRQHandler()
-{
-	if(hal_tim_get_it_flag(TIMER0_BASE, TIM_IT_FLAG_ACTIVE))
-	{
-		hal_tim_clr_it_flag(TIMER0_BASE, TIM_IT_FLAG_ACTIVE);
-		DRV_IR_ISR(NULL);
-	}
-}
-#elif PLATFORM_LN8825
-static TIMER_Index ir_chan = TIMER_2;
-#endif
+static int8_t ir_chan = -1;
 static UINT32 ir_periodus = 50;
 
 void timerConfigForReceive() {
@@ -192,84 +164,7 @@ void timerConfigForReceive() {
 void _timerConfigForReceive() {
 	ir_counter = 0;
 
-#if PLATFORM_BEKEN
-	timer_param_t params = {
-		(unsigned char)ir_chan,
-		(unsigned char)ir_div, // div
-		ir_periodus, // us
-		DRV_IR_ISR
-	};
-	//GLOBAL_INT_DECLARATION();
-
-
-	UINT32 res;
-	// test what error we get with an invalid command
-	res = sddev_control((char *)TIMER_DEV_NAME, -1, nullptr);
-
-	if (res == 1) {
-		ADDLOG_INFO(LOG_FEATURE_IR, (char *)"bk_timer already initialised");
-	}
-	else {
-		ADDLOG_ERROR(LOG_FEATURE_IR, (char *)"bk_timer driver not initialised?");
-		if ((int)res == -5) {
-			ADDLOG_INFO(LOG_FEATURE_IR, (char *)"bk_timer sddev not found - not initialised?");
-			return;
-		}
-		return;
-	}
-
-
-	//ADDLOG_INFO(LOG_FEATURE_IR, (char *)"ir timer init");
-	// do not need to do this
-	//bk_timer_init();
-	//ADDLOG_INFO(LOG_FEATURE_IR, (char *)"ir timer init done");
-	ADDLOG_INFO(LOG_FEATURE_IR, (char *)"will ir timer setup %u", res);
-	res = sddev_control((char *)TIMER_DEV_NAME, CMD_TIMER_INIT_PARAM_US, &params);
-	ADDLOG_INFO(LOG_FEATURE_IR, (char *)"ir timer setup %u", res);
-	res = sddev_control((char *)TIMER_DEV_NAME, CMD_TIMER_UNIT_ENABLE, &ir_chan);
-	ADDLOG_INFO(LOG_FEATURE_IR, (char *)"ir timer enabled %u", res);
-#elif PLATFORM_REALTEK
-	gtimer_init(&ir_timer, ir_chan);
-#elif PLATFORM_BL602
-	ir_timer.port = ir_chan;
-	ir_timer.config.period = ir_periodus;
-	ir_timer.config.reload_mode = TIMER_RELOAD_PERIODIC;
-	ir_timer.config.cb = DRV_IR_ISR;
-	ir_timer.config.arg = NULL;
-	hosal_timer_init(&ir_timer);
-#elif PLATFORM_LN882H
-	tim_init_t_def tim_init;
-	memset(&tim_init, 0, sizeof(tim_init));
-	tim_init.tim_mode = TIM_USER_DEF_CNT_MODE;
-	if(ir_periodus < 1000)
-	{
-		tim_init.tim_div = 0;
-		tim_init.tim_load_value = ir_periodus * (uint32_t)(hal_clock_get_apb0_clk() / 1000000) - 1;
-	}
-	else
-	{
-		tim_init.tim_div = (uint32_t)(hal_clock_get_apb0_clk() / 1000000) - 1;
-		tim_init.tim_load_value = ir_periodus - 1;
-	}
-	hal_tim_init(ir_chan, &tim_init);
-	NVIC_SetPriority(TIMER0_IRQn, 4);
-	NVIC_EnableIRQ(TIMER0_IRQn);
-#elif PLATFORM_LN8825
-	TIMER_InitTypeDef hwtimer_cfg;
-
-	hwtimer_cfg.index = ir_chan;
-	hwtimer_cfg.mask = TIMER_MASKED_NO;
-	hwtimer_cfg.mode = TIMER_MODE_USERDEFINED;
-	hwtimer_cfg.user_freq = 1000 * 1000;
-	hwtimer_cfg.timer_cb.cb_func = (timer_cb_func_t)DRV_IR_ISR;
-	hwtimer_cfg.timer_cb.arg = NULL;
-
-	HAL_TIMER_Init(&hwtimer_cfg);
-	HAL_TIMER_LoadCount_Set(ir_chan, (hwtimer_cfg.user_freq / 1000000) * ir_periodus);
-	hal_sleep_register((hal_peripheral_module_t)(14 + ir_chan), NULL, NULL, NULL);
-	HAL_TIMER_Enable(ir_chan, TIMER_DISABLE);
-	NVIC_EnableIRQ(TIMER_IRQn);
-#endif
+	ir_chan = HAL_RequestHWTimer(ir_periodus, DRV_IR_ISR, NULL);
 }
 
 static void timer_enable() {
@@ -278,35 +173,12 @@ static void timer_disable() {
 }
 static void _timer_enable() {
 	UINT32 res = 0;
-#if PLATFORM_BEKEN
-	res = sddev_control((char *)TIMER_DEV_NAME, CMD_TIMER_UNIT_ENABLE, &ir_chan);
-#elif PLATFORM_REALTEK
-	gtimer_start_periodical(&ir_timer, ir_periodus, (void*)&DRV_IR_ISR, (uint32_t)&ir_timer);
-#elif PLATFORM_BL602
-	hosal_timer_start(&ir_timer);
-#elif PLATFORM_LN882H
-	hal_tim_en(ir_chan, HAL_ENABLE);
-	hal_tim_it_cfg(ir_chan, TIM_IT_FLAG_ACTIVE, HAL_ENABLE);
-#elif PLATFORM_LN8825
-	HAL_TIMER_Enable(ir_chan, TIMER_ENABLE);
-#endif
+	HAL_HWTimerStart(ir_chan);
 	ADDLOG_INFO(LOG_FEATURE_IR, (char *)"ir timer enabled %u", res);
 }
 static void _timer_disable() {
 	UINT32 res = 0;
-#if PLATFORM_BEKEN
-	res = sddev_control((char *)TIMER_DEV_NAME, CMD_TIMER_UNIT_DISABLE, &ir_chan);
-#elif PLATFORM_REALTEK
-	gtimer_stop(&ir_timer);
-#elif PLATFORM_BL602
-	hosal_timer_stop(&ir_timer);
-	hosal_timer_finalize(&ir_timer);
-#elif PLATFORM_LN882H
-	hal_tim_en(ir_chan, HAL_DISABLE);
-	hal_tim_it_cfg(ir_chan, TIM_IT_FLAG_ACTIVE, HAL_DISABLE);
-#elif PLATFORM_LN8825
-	HAL_TIMER_Enable(ir_chan, TIMER_DISABLE);
-#endif
+	HAL_HWTimerStop(ir_chan);
 	ADDLOG_INFO(LOG_FEATURE_IR, (char *)"ir timer disabled %u", res);
 }
 
@@ -457,14 +329,7 @@ IRrecv *ourReceiver = NULL;
 
 // this is our ISR.
 // it is called every 50us, so we need to work on making it as efficient as possible.
-extern "C" void
-#if PLATFORM_BEKEN
-DRV_IR_ISR(UINT8 t)
-#elif PLATFORM_REALTEK
-DRV_IR_ISR()
-#else
-DRV_IR_ISR(void* arg)
-#endif
+extern "C" void DRV_IR_ISR(void* arg)
 {
 	int sending = 0;
 	if (pIRsend) {
