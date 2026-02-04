@@ -60,7 +60,69 @@ static int g_roomba_uart = 1;
 static byte s_frame[52];
 static int  s_frameLen = 0;
 static int  s_rawEvery = 10;
-static int  s_rawCnt = 0;	
+static int  s_rawCnt = 0;
+
+// ---------------- MQTT Vacuum Phase 4 ----------------
+static uint32_t g_roomba_lastVacStatePubMs = 0;
+
+static const char *Roomba_VacuumStateStr(void) {
+    // NOTE: update these conditions to match your actual parsed fields.
+    // Docked is reliably inferred from charging_state in OI Group 6.
+	int chg = g_sensors[ROOMBA_SENSOR_CHARGING_STATE].lastReading;
+
+    // Optional: if you have an error flag, check it first.
+    // if (g_roomba_error) return "error";
+
+    if (chg != 0) {
+        return "docked";
+    }
+
+    // Optional: if you have a cleaning flag/mode, prefer it.
+    // if (g_roomba_is_cleaning) return "cleaning";
+    // if (g_roomba_is_returning) return "returning";
+    // if (g_roomba_is_paused) return "paused";
+
+    return "idle";
+}
+
+static void Roomba_MQTT_PublishAvailability(int online) {
+    char topic[128];
+    const char *clientId = CFG_GetMQTTClientId();
+	snprintf(topic, sizeof(topic), "%s/availability", clientId);
+
+    MQTT_Publish(topic, online ? "online" : "offline", 1 /*retain*/, 0 /*qos*/);
+}
+
+static void Roomba_MQTT_PublishVacuumStateJSON(void) {
+    char topicState[128];
+    char topicAttr[128];
+    char payload[512];
+
+	const char *clientId = CFG_GetMQTTClientId();
+	snprintf(topicState, sizeof(topicState), "%s/vacuum/state", clientId);
+	snprintf(topicAttr,  sizeof(topicAttr),  "%s/vacuum/attr",  clientId);
+
+    const char *st = Roomba_VacuumStateStr();
+
+    // Build a compact but useful JSON. Add/remove fields as you like.
+    // IMPORTANT: keep it stable so HA attributes don’t thrash.
+	snprintf(payload, sizeof(payload),
+		"{"
+		"\"state\":\"%s\","
+		"\"charging_state\":%d,"
+		"\"docked\":%s"
+		"}",
+		st,
+		g_sensors[ROOMBA_SENSOR_CHARGING_STATE].lastReading,
+		(g_sensors[ROOMBA_SENSOR_CHARGING_STATE].lastReading != 0) ? "true" : "false"
+	);
+
+    // State topic: JSON (non-retained is usually fine)
+    MQTT_Publish(topicState, payload, 0 /*retain*/, 0 /*qos*/);
+
+    // Attributes topic: same JSON (or richer JSON if you want)
+    MQTT_Publish(topicAttr, payload, 0 /*retain*/, 0 /*qos*/);
+}
 
 // --- helper functions ---------------------------------
 static const char *Roomba_ChargingStateStr(int st) {
@@ -591,6 +653,12 @@ void Roomba_OnQuickTick() {
 		
 		// Publish sensors via MQTT (BL_shared style)
 		Roomba_PublishSensors();
+		// Phase 4: publish vacuum JSON state at 1 Hz (no adaptive polling yet)
+		uint32_t now = HAL_GetTimeMS();
+		if (now - g_roomba_lastVacStatePubMs > 1000) {
+			g_roomba_lastVacStatePubMs = now;
+			Roomba_MQTT_PublishVacuumStateJSON();
+		}
 		
 		// Reset frame accumulator for next frame
 		s_frameLen = 0;
@@ -847,19 +915,25 @@ void Roomba_OnHassDiscovery(const char *topic) {
 		"\"~\":\"%s\","
 		"\"cmd_t\":\"~/vacuum/command\","
 		"\"stat_t\":\"~/vacuum/state\","
+		"\"val_tpl\":\"{{ value_json.state }}\","
+		"\"json_attr_t\":\"~/vacuum/attr\","
+		"\"avty_t\":\"~/availability\","
+		"\"pl_avail\":\"online\","
+		"\"pl_not_avail\":\"offline\","
 		"\"send_cmd_t\":\"~/vacuum/send_command\","
 		"\"sup_feat\":[\"start\",\"pause\",\"stop\",\"return_home\",\"clean_spot\"],"
 		"\"dev\":{\"ids\":[\"%s\"],\"name\":\"%s\",\"sw\":\"%s\",\"mf\":\"iRobot\",\"mdl\":\"Roomba\",\"cu\":\"http://%s/index\"}}",
 		unique_id,
 		clientId,
 		devName,
-		devName, 
+		devName,
 		g_build_str,
-		 ip);
+		ip);
 	
 	MQTT_PublishMain_StringString(config_topic, payload,
 		OBK_PUBLISH_FLAG_RAW_TOPIC_NAME | OBK_PUBLISH_FLAG_RETAIN);
 	rtos_delay_milliseconds(50);  // Delay to prevent MQTT overload
+	Roomba_MQTT_PublishAvailability(1);
 	
 	addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "Roomba: HA discovery complete!");
 }
