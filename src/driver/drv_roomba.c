@@ -298,12 +298,18 @@ commandResult_t CMD_RoombaOrder(const void* context, const char* cmd, const char
 		return CMD_RES_BAD_ARGUMENT;
 	}
 
-	if (stricmp(args, "start") == 0 || stricmp(args, "clean") == 0) {
+	// ------------------------------------------------------------------------
+	// Command Handler: "clean" / "start"
+	// ------------------------------------------------------------------------
+	// Single-button behavior: 
+	// - If Robot IS Cleaning -> Toggle to PAUSE (Stop motors)
+	// - If Robot IS NOT Cleaning -> Start CLEANING
+	// ------------------------------------------------------------------------
 		// Single-button behavior: If already cleaning, Stop/Pause. Else, Start.
 		if (g_vacuum_state == VACUUM_STATE_CLEANING) {
 			Roomba_SendCmd(CMD_SAFE); // Stop motors (Pause)
 			g_vacuum_state = VACUUM_STATE_PAUSED;
-			addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "Roomba: Toggling to PAUSE");
+			addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "Roomba: Toggling PAUSE");
 		} else {
 			Roomba_SendCmd(CMD_CLEAN);
 			g_vacuum_state = VACUUM_STATE_CLEANING; 
@@ -341,6 +347,13 @@ commandResult_t CMD_RoombaOrder(const void* context, const char* cmd, const char
 void Roomba_PublishVacuumState(void) {
 	if (!MQTT_IsReady()) return;
 
+	// ========================================================================
+	// STATE INFERENCE ENGINE
+	// ========================================================================
+	// Determines the vacuum state (Docked, Cleaning, Idle, Returning)
+	// based on sensor readings. Uses a latch to prevent flickering.
+	// ========================================================================
+
 	// State Inference Variables
 	static int idle_latch_timer = 0; // Frames of low-current to confirm IDLE
 	const int IDLE_CONFIRM_FRAMES = 5; // 5 seconds of low current -> IDLE
@@ -351,27 +364,35 @@ void Roomba_PublishVacuumState(void) {
 	int charging = g_sensors[ROOMBA_SENSOR_CHARGING_STATE].lastReading;
 	float current = g_sensors[ROOMBA_SENSOR_CURRENT].lastReading;
 
+	// ------------------------------------------------------------------------
 	// 1. DOCKED Check
-	// If we are charging (1, 2, 3) or Waiting (4) with low current draw? 
-	// Usually just being in state 1-5 means we are on the dock.
+	// ------------------------------------------------------------------------
+	// If Charging State is Non-Zero (1..5), we are effectively docked.
+	// 4=Waiting often appears even if battery is full but still on dock.
 	if (charging >= 1 && charging <= 5) {
 		g_vacuum_state = VACUUM_STATE_DOCKED;
 		stateStr = "docked";
 		idle_latch_timer = 0; // Reset idle latch
 	} 
+	// ------------------------------------------------------------------------
 	// 2. CLEANING Check
-	// If current is significantly negative (< -300 mA), motors are running.
-	// We use -300mA as a safe threshold (motors draw ~1A combined, logic+static is ~200mA)
+	// ------------------------------------------------------------------------
+	// Detects aggressive motor usage via current draw.
+	// Threshold: < -300mA covers the sum of all motors + logic.
 	else if (current < -300) {
 		g_vacuum_state = VACUUM_STATE_CLEANING;
 		stateStr = "cleaning";
 		idle_latch_timer = 0; // Reset idle latch
 	}
-	// 3. IDLE vs RETURNING vs STARTING
+	// ------------------------------------------------------------------------
+	// 3. IDLE vs RETURNING Check (with Latch)
+	// ------------------------------------------------------------------------
+	// If current is low ( > -300mA):
+	// - If we were Cleaning, wait for N frames to confirm we truly stopped (Idle).
+	//   (Prevents flickering during turns/pauses).
+	// - If we were Returning, keep Returning until Docked or Stopped.
 	else {
-		// Current is low ( > -300 mA). Robot is likely standing still or turning slowly.
 		// We use a LATCH to prevent status flickering during turns/pauses.
-		
 		if (g_vacuum_state == VACUUM_STATE_CLEANING) {
 			// currently marked as cleaning, but current is low.
 			// Wait for N frames before dropping to IDLE.
@@ -586,6 +607,13 @@ void Roomba_Init() {
  */
 void Roomba_RunEverySecond() {
 
+	// ========================================================================
+	// KEEP-ALIVE MECHANISM
+	// ========================================================================
+	// Roomba 600 enters sleep mode after 5 minutes of inactivity on lack of commands.
+	// We periodically "ping" the robot to keep it awake if it is NOT on the dock.
+	// ========================================================================
+	
 	// Decide keepalive first, so we don't append to any other command stream
 	int doKeepAlive = 0;
     // User requested 30 seconds interval (OI sleep timeout is 5 minutes/300s)
@@ -594,9 +622,13 @@ void Roomba_RunEverySecond() {
 		doKeepAlive = 1;
 	}
 
-	// Keep-alive: Prevent sleep when off-dock and not cleaning.
-    // Spec: "Start (128)... resets 5 min timer". "Safe (131)... stops motors".
-    // Logic: Only send 128+131 if we are IDLE or PAUSED (Not Working) and NOT ON DOCK.
+	// Keep-alive Logic:
+	// - Trigger: Every 30 seconds
+	// - Condition: Robot is IDLE or PAUSED (Not Cleaning/Returning) AND NOT DOCKED.
+	// - Action: Send CMD_START (128) + CMD_SAFE (131).
+	//   - 128 resets the sleep timer.
+	//   - 131 ensures we are in Safe mode to accept commands.
+	//   - We do NOT send this during Cleaning because 131 stops the motors!
 	if (doKeepAlive) {
         // We use g_vacuum_state because it has the "latch" logic for cleaning.
         // If state is CLEANING or RETURNING, we MUST NOT send 131.
@@ -837,9 +869,18 @@ static void Roomba_AddStatusToHTTPPage(http_request_t *request)
 	poststr(request, "<tr><td><b>Charging</b></td><td style='text-align: right;'>");
 	hprintf255(request, "%s</td></tr>", state_str);
 
-	// Activity (conservative)
+	// Activity (based on the robust state inference)
+	const char* actStr = "Idle";
+	switch (g_vacuum_state) {
+		case VACUUM_STATE_DOCKED:    actStr = "Docked (charging)"; break;
+		case VACUUM_STATE_CLEANING:  actStr = "Cleaning (working)"; break;
+		case VACUUM_STATE_RETURNING: actStr = "Docking (returning)"; break;
+		case VACUUM_STATE_PAUSED:    actStr = "Paused"; break;
+		case VACUUM_STATE_IDLE:      actStr = "Idle"; break;
+		default:                     actStr = "Unknown"; break;
+	}
 	poststr(request, "<tr><td><b>Activity</b></td><td style='text-align: right;'>");
-	poststr(request, (charging_state != 0) ? "Docked" : "Idle");
+	poststr(request, actStr);
 	poststr(request, "</td></tr>");
 
 	// Error (conservative: only what we truly know from charging state)
