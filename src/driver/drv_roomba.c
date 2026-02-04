@@ -521,32 +521,28 @@ void Roomba_Init() {
  */
 void Roomba_RunEverySecond() {
 
-    // Decide keepalive first, so we don't append 0x80 to any other command stream
+    // Decide keepalive first, so we don't append to any other command stream
     int doKeepAlive = 0;
     if (++g_roomba_keepalive_sec >= g_roomba_keepalive_interval_sec) {
         g_roomba_keepalive_sec = 0;
         doKeepAlive = 1;
     }
 
-    // Keep-awake poke: send OI opcode 128 (0x80) every 120 seconds
+    // Proper keep-alive: Start OI + Safe mode
     if (doKeepAlive) {
-        Roomba_SendByte(128);
-        addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "Roomba: keepalive 0x80 sent");
-        return; // IMPORTANT: skip sensor poll this second
+        Roomba_SendByte(128); // Start OI
+        Roomba_SendByte(131); // Safe mode (resets sleep timer)
+        addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "Roomba: keepalive 0x80 0x83 sent");
+        return;
     }
 
-    // Currently request Sensor Group 6 every 1 second
+    // Normal sensor polling
     if (++g_poll_counter >= 1) {
         g_poll_counter = 0;
         Roomba_SendByte(CMD_SENSORS);
-        Roomba_SendByte(PACKET_GROUP_6); // Group 6 (52 bytes)
+        Roomba_SendByte(PACKET_GROUP_6);
         addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "Roomba: Requesting Sensor Group 6");
     }
-
-#if 0   // Phase1: NO MQTT
-    // Publish Vacuum State (State Machine / Inference)
-    Roomba_PublishVacuumState();
-#endif
 }
 
 // ============================================================================
