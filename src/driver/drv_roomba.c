@@ -100,8 +100,6 @@ static int changeDoNotSendMinFrames = 5; // Minimum 5 seconds between publishes
 
 // Polling state machine
 static int g_poll_counter = 0;
-static int g_hass_discovery_timer = 0;    // Manual trigger only via Roomba_Discovery command
-static bool g_has_auto_discovered = false;
 
 // ============================================================================
 // SENSOR REGISTRY
@@ -480,32 +478,6 @@ void Roomba_Init() {
  * Requests Sensor Group 6 every 5 seconds and handles HA discovery
  */
 void Roomba_RunEverySecond() {
-
-#if 0   // Phase1: NO HA / NO MQTT
-	// 1. Automatic Discovery on Startup / MQTT Reconnect
-	// This fixes the "race condition" where discovery tried to run before MQTT was ready
-	if (MQTT_IsReady()) {
-		if (!g_has_auto_discovered) {
-			addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "Roomba: Auto-triggering HA Discovery...");
-			Roomba_OnHassDiscovery("homeassistant");
-			g_has_auto_discovered = true;
-		}
-	} else {
-		// Reset flag if MQTT disconnects to allow re-discovery on reconnection
-		// g_has_auto_discovered = false; 
-	}
-
-	// 2. Handle HA Discovery Manual Trigger
-	if (g_hass_discovery_timer > 0) {
-		g_hass_discovery_timer--;
-		if (g_hass_discovery_timer <= 0) {
-			if (MQTT_IsReady()) {
-				Roomba_OnHassDiscovery("homeassistant");
-			}
-			g_hass_discovery_timer = 0; // Always stop after one attempt
-		}
-	}
-#endif
 
 	// Request Sensor Group 6 every 5 seconds
 	if (++g_poll_counter >= 1) {
