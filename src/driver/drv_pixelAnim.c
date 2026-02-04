@@ -244,11 +244,6 @@ void TheaterChaseRainbow_Run() {
 }
 // startDriver PixelAnim
 
-typedef struct ledAnim_s {
-	const char *name;
-	void(*runFunc)();
-} ledAnim_t;
-
 int activeAnim = -1;
 ledAnim_t g_anims[] = {
 	{ "Rainbow Cycle", RainbowCycle_Run },
@@ -261,13 +256,23 @@ ledAnim_t g_anims[] = {
 int g_numAnims = sizeof(g_anims) / sizeof(g_anims[0]);
 int g_speed = 0;
 
-void PixelAnim_SetAnim(int j) {
+void PixelAnim_SetAnim(int j)
+{
 	activeAnim = j;
-	g_lightMode = Light_Anim;
-	if (CFG_HasFlag(OBK_FLAG_LED_AUTOENABLE_ON_ANY_ACTION)) {
-		LED_SetEnableAll(true);
+	if(j >= 0)
+	{
+		g_lightMode = Light_Anim;
+		if(CFG_HasFlag(OBK_FLAG_LED_AUTOENABLE_ON_ANY_ACTION))
+		{
+			LED_SetEnableAll(true);
+		}
+		apply_smart_light();
+		MQTT_PublishMain_StringString_DeDuped(DEDUP_CURRENT_ANIM, DEDUP_EXPIRE_TIME, "currentAnim", g_anims[j].name, 0);
 	}
-	apply_smart_light();
+	else
+	{
+		MQTT_PublishMain_StringString_DeDuped(DEDUP_CURRENT_ANIM, DEDUP_EXPIRE_TIME, "currentAnim", "None", 0);
+	}
 }
 commandResult_t PA_Cmd_Anim(const void *context, const char *cmd, const char *args, int flags) {
 
@@ -359,6 +364,7 @@ void PixelAnim_SetAnimQuickTick() {
 		return;
 	}
 	if (g_lightMode != Light_Anim) {
+		if(activeAnim != -1) PixelAnim_SetAnim(-1);
 		// disabled
 		return;
 	}

@@ -37,7 +37,6 @@ set(PROJ_ALL_SRC
 	${OBKM_SRC_CXX}
 	${BERRY_SRC_C}
 	${PRO_DIR}/main.c
-	${PRO_DIR}/usr_app.c
 	${PRO_DIR}/bsp/serial_hw.c
 	${PRO_DIR}/bsp/drv_adc_measure.c
 	${PRO_DIR}/startup/startup_ln882x_gcc.c

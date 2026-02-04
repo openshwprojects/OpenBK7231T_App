@@ -572,6 +572,7 @@ OSStatus rtos_suspend_thread(beken_thread_t* thread);
 #define hal_flash_read FLASH_Read
 #define hal_flash_program FLASH_Program
 #define hal_flash_erase FLASH_Erase
+#define HAL_ADC_Init OBK_HAL_ADC_Init
 #define OBK_OTA_EXTENSION		".img"
 #define OBK_OTA_NAME_EXTENSION	"_ota"
 #else

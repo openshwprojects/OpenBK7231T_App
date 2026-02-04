@@ -6,6 +6,7 @@
 #include "../driver/drv_public.h"
 #include "../new_pins.h"
 #include "../cmnds/cmd_enums.h"
+#include "../driver/drv_local.h"
 
 #if ENABLE_HA_DISCOVERY
 
@@ -793,6 +794,31 @@ HassDeviceInfo* hass_init_light_device_info(ENTITY_TYPE type) {
 	cJSON_AddStringToObject(info->root, "bri_cmd_t", g_hassBuffer);  //brightness_command_topic
 
 	cJSON_AddNumberToObject(info->root, "bri_scl", brightness_scale);	//brightness_scale
+
+#if ENABLE_DRIVER_PIXELANIM
+	if((DRV_IsRunning("SM16703P") || DRV_IsRunning("DMX")) && DRV_IsRunning("PixelAnim"))
+	{
+		cJSON_AddStringToObject(info->root, "fx_stat_t", "~/currentAnim/get");
+		sprintf(g_hassBuffer, "cmnd/%s/anim", CFG_GetMQTTClientId());
+		cJSON_AddStringToObject(info->root, "fx_cmd_t", g_hassBuffer);
+
+		char entry[64];
+		cJSON* fxmodes = cJSON_CreateArray();
+		cJSON_AddItemToArray(fxmodes, cJSON_CreateString("None"));
+		strcpy(g_hassBuffer, "{{ {");
+		strcat(g_hassBuffer, "'None':-1");
+		for(int i = 0; i < g_numAnims; i++)
+		{
+			const char* mode = g_anims[i].name;
+			cJSON_AddItemToArray(fxmodes, cJSON_CreateString(mode));
+			snprintf(entry, sizeof(entry), ",'%s':%d", g_anims[i].name, i);
+			strcat(g_hassBuffer, entry);
+		}
+		strcat(g_hassBuffer, "}[value] }}");
+		cJSON_AddItemToObject(info->root, "fx_list", fxmodes);
+		cJSON_AddItemToObject(info->root, "fx_cmd_tpl", cJSON_CreateString(g_hassBuffer));
+	}
+#endif
 
 	return info;
 }
