@@ -521,6 +521,20 @@ void Roomba_Init() {
  */
 void Roomba_RunEverySecond() {
 
+    // Decide keepalive first, so we don't append 0x80 to any other command stream
+    int doKeepAlive = 0;
+    if (++g_roomba_keepalive_sec >= g_roomba_keepalive_interval_sec) {
+        g_roomba_keepalive_sec = 0;
+        doKeepAlive = 1;
+    }
+
+    // Keep-awake poke: send OI opcode 128 (0x80) every 120 seconds
+    if (doKeepAlive) {
+        Roomba_SendByte(128);
+        addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "Roomba: keepalive 0x80 sent");
+        return; // IMPORTANT: skip sensor poll this second
+    }
+
     // Currently request Sensor Group 6 every 1 second
     if (++g_poll_counter >= 1) {
         g_poll_counter = 0;
@@ -528,13 +542,6 @@ void Roomba_RunEverySecond() {
         Roomba_SendByte(PACKET_GROUP_6); // Group 6 (52 bytes)
         addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "Roomba: Requesting Sensor Group 6");
     }
-
-	// Keep-awake poke: send OI opcode 128 (0x80) every 120 seconds
-	if (++g_roomba_keepalive_sec >= g_roomba_keepalive_interval_sec) {
-		g_roomba_keepalive_sec = 0;
-		Roomba_SendByte(128);
-		addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "Roomba: keepalive 0x80 sent");
-	}
 
 #if 0   // Phase1: NO MQTT
     // Publish Vacuum State (State Machine / Inference)
@@ -662,7 +669,7 @@ void Roomba_OnQuickTick() {
 		// Keep-awake workaround for off-dock testing:
 		// Send OI START (128) every 120s when NOT docked (charging_state == 0).
 		if (g_sensors[ROOMBA_SENSOR_CHARGING_STATE].lastReading == 0) {
-			if (now - g_roomba_lastKeepAliveMs > 30000) { // 30 seconds
+			if (now - g_roomba_lastKeepAliveMs > 120000) { // 120 seconds
 				g_roomba_lastKeepAliveMs = now;
 				Roomba_SendByte(128);
 				// optional:
