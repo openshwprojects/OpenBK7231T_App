@@ -42,16 +42,15 @@ int8_t HAL_RequestHWTimer(uint32_t period_us, HWTimerCB callback, void* arg)
 		period_us, // us
 		BK_ISR_CB
 	};
-
-	UINT32 res;
-	res = sddev_control((char*)TIMER_DEV_NAME, -1, NULL);
+	UINT32 res = sddev_control((char*)TIMER_DEV_NAME, -1, NULL);
 	if(res != 1)
 	{
 		return -1;
 	}
 	g_used_timers |= 1 << freetimer;
 	sddev_control((char*)TIMER_DEV_NAME, CMD_TIMER_INIT_PARAM_US, &params);
-	sddev_control((char*)TIMER_DEV_NAME, CMD_TIMER_UNIT_ENABLE, &freetimer);
+	UINT32 ch = freetimer;
+	sddev_control((char*)TIMER_DEV_NAME, CMD_TIMER_UNIT_ENABLE, &ch);
 
 	return freetimer;
 }

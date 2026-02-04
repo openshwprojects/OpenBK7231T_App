@@ -12,8 +12,10 @@
 #define MAX_TIMER (GTIMER_MAX - 1)
 #endif
 
-#if PLATFORM_RTL87X0C || PLATFORM_RTL8710A
+#if PLATFORM_RTL8710A
 static const uint16_t g_excluded_timers = 1 << TIMER4;
+#elif PLATFORM_RTL87X0C
+static const uint16_t g_excluded_timers = (1 << TIMER0) | (1 << TIMER4);
 #elif PLATFORM_RTL8710B || PLATFORM_RTL8720D
 static const uint16_t g_excluded_timers = (1 << TIMER1) | (1 << TIMER2);
 #elif PLATFORM_REALTEK_NEW

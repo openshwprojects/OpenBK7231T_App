@@ -172,14 +172,12 @@ static void timer_enable() {
 static void timer_disable() {
 }
 static void _timer_enable() {
-	UINT32 res = 0;
 	HAL_HWTimerStart(ir_chan);
-	ADDLOG_INFO(LOG_FEATURE_IR, (char *)"ir timer enabled %u", res);
+	ADDLOG_INFO(LOG_FEATURE_IR, (char *)"ir timer enabled %u", ir_chan);
 }
 static void _timer_disable() {
-	UINT32 res = 0;
 	HAL_HWTimerStop(ir_chan);
-	ADDLOG_INFO(LOG_FEATURE_IR, (char *)"ir timer disabled %u", res);
+	ADDLOG_INFO(LOG_FEATURE_IR, (char *)"ir timer disabled %u", ir_chan);
 }
 
 #define TIMER_ENABLE_RECEIVE_INTR timer_enable();
