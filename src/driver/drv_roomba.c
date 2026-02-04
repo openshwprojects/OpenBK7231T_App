@@ -89,6 +89,10 @@ static int changeDoNotSendMinFrames = 5; // Minimum 5 seconds between publishes
 // Polling state machine
 static int g_poll_counter = 0;
 
+// Keep-awake: send OI opcode 128 (0x80) every 120 seconds
+static int g_roomba_keepalive_sec = 0;
+static int g_roomba_keepalive_interval_sec = 120;
+
 // ============================================================================
 // SENSOR REGISTRY
 // ============================================================================
@@ -123,7 +127,6 @@ static roomba_sensor_t g_sensors[ROOMBA_SENSOR__COUNT] = {
 // ---------------- MQTT Vacuum Phase 4 ----------------
 static uint32_t g_roomba_lastVacStatePubMs = 0;
 static uint32_t g_roomba_lastKeepAliveMs = 0;
-
 
 static const char *Roomba_VacuumStateStr(void) {
     // NOTE: update these conditions to match your actual parsed fields.
@@ -518,17 +521,24 @@ void Roomba_Init() {
  */
 void Roomba_RunEverySecond() {
 
-	// Currently request Sensor Group 6 every 1 second
-	if (++g_poll_counter >= 1) {
-		g_poll_counter = 0;
-		Roomba_SendByte(CMD_SENSORS);
-		Roomba_SendByte(PACKET_GROUP_6); // Group 6 (52 bytes)
-		addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "Roomba: Requesting Sensor Group 6");
+    // Currently request Sensor Group 6 every 1 second
+    if (++g_poll_counter >= 1) {
+        g_poll_counter = 0;
+        Roomba_SendByte(CMD_SENSORS);
+        Roomba_SendByte(PACKET_GROUP_6); // Group 6 (52 bytes)
+        addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "Roomba: Requesting Sensor Group 6");
+    }
+
+	// Keep-awake poke: send OI opcode 128 (0x80) every 120 seconds
+	if (++g_roomba_keepalive_sec >= g_roomba_keepalive_interval_sec) {
+		g_roomba_keepalive_sec = 0;
+		Roomba_SendByte(128);
+		addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "Roomba: keepalive 0x80 sent");
 	}
-	
+
 #if 0   // Phase1: NO MQTT
-	// Publish Vacuum State (State Machine / Inference)
-	Roomba_PublishVacuumState();
+    // Publish Vacuum State (State Machine / Inference)
+    Roomba_PublishVacuumState();
 #endif
 }
 
