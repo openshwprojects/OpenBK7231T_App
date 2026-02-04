@@ -528,13 +528,20 @@ void Roomba_RunEverySecond() {
         doKeepAlive = 1;
     }
 
-    // Proper keep-alive: Start OI + Safe mode
-    if (doKeepAlive) {
-        Roomba_SendByte(128); // Start OI
-        Roomba_SendByte(131); // Safe mode (resets sleep timer)
-        addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "Roomba: keepalive 0x80 0x83 sent");
-        return;
-    }
+	// Proper keep-alive: Start OI + Safe mode (OFF-DOCK ONLY)
+	if (doKeepAlive) {
+
+		// Only keep-awake when not charging (prevents interfering with dock charging)
+		if (g_last_charging_state == 0) {  // <-- use your parsed charging_state variable
+			Roomba_SendByte(128); // Start OI
+			Roomba_SendByte(131); // Safe mode
+			addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "Roomba: keepalive 0x80 0x83 sent");
+		} else {
+			addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "Roomba: keepalive skipped (charging_state=%d)", g_last_charging_state);
+		}
+
+		return; // still skip sensor poll that second
+	}
 
     // Normal sensor polling
     if (++g_poll_counter >= 1) {
