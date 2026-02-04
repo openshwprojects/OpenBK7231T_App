@@ -291,25 +291,45 @@ commandResult_t CMD_Roomba_SetPassive(const void* context, const char* cmd, cons
 // Custom Command Handler for Home Assistant Vacuum Entity
 // Payload: "clean", "dock", "stop", "return_to_base"
 commandResult_t CMD_RoombaOrder(const void* context, const char* cmd, const char* args, int cmdFlags) {
-	if (stricmp(args, "clean") == 0) {
+	// Home Assistant vacuum commands we accept:
+	// start, pause, stop, return_to_base/return_home, clean_spot (plus legacy: clean, dock)
+	if (args == 0 || *args == 0) {
+		addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "Roomba: Order received: <empty>");
+		return CMD_RES_BAD_ARGUMENT;
+	}
+
+	if (stricmp(args, "start") == 0 || stricmp(args, "clean") == 0) {
 		Roomba_SendCmd(CMD_CLEAN);
 		g_vacuum_state = VACUUM_STATE_CLEANING;
-	} else if (stricmp(args, "dock") == 0 || stricmp(args, "return_to_base") == 0) {
+
+	} else if (stricmp(args, "clean_spot") == 0 || stricmp(args, "spot") == 0) {
+		Roomba_SendCmd(CMD_SPOT);
+		g_vacuum_state = VACUUM_STATE_CLEANING;
+
+	} else if (stricmp(args, "return_to_base") == 0 || stricmp(args, "return_home") == 0 || stricmp(args, "dock") == 0) {
 		Roomba_SendCmd(CMD_DOCK);
 		g_vacuum_state = VACUUM_STATE_RETURNING;
+
+	} else if (stricmp(args, "pause") == 0) {
+		// No explicit PAUSE in OI; SAFE typically stops motion without powering off OI.
+		Roomba_SendCmd(CMD_SAFE);
+		g_vacuum_state = VACUUM_STATE_PAUSED;
+
 	} else if (stricmp(args, "stop") == 0) {
-		// Stop means... Drive 0? or just Stop command? 
-		// OI doesn't have explicit STOP in Cleaning mode except by switching mode.
-		// Sending OFF (173)? Or just entering SAFE mode stops motors.
-		Roomba_SendCmd(CMD_SAFE); // SAFE mode stops motors
+		Roomba_SendCmd(CMD_SAFE);
 		g_vacuum_state = VACUUM_STATE_IDLE;
+
 	} else if (stricmp(args, "locate") == 0) {
-		Roomba_SendCmd(CMD_PLAY); // Play a song?
+		Roomba_SendCmd(CMD_PLAY); // optional: play a song?
+	} else {
+		addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "Roomba: Order received: %s (unhandled)", args);
+		return CMD_RES_BAD_ARGUMENT;
 	}
-	
+
 	addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "Roomba: Order received: %s", args);
 	return CMD_RES_OK;
 }
+
 
 void Roomba_PublishVacuumState(void) {
 	if (!MQTT_IsReady()) return;
@@ -323,7 +343,7 @@ void Roomba_PublishVacuumState(void) {
 	int charging = g_sensors[ROOMBA_SENSOR_CHARGING_STATE].lastReading;
 	float current = g_sensors[ROOMBA_SENSOR_CURRENT].lastReading;
 
-	if (charging_state >= 1 && charging_state <= 5) {
+	if (charging >= 1 && charging <= 5) {
 		stateStr = "docked";
 		g_vacuum_state = VACUUM_STATE_DOCKED;
 	} else if (current < -400) { 
@@ -531,12 +551,8 @@ void Roomba_RunEverySecond() {
 		doKeepAlive = 1;
 	}
 
-	// Proper keep-alive: Start OI + Safe mode (IDLE/WAITING ONLY)
+	// Keep-alive: allowed ONLY for charging_state 0 (Not charging) or 4 (Waiting)
 	if (doKeepAlive) {
-
-		// Allowed keepalive states:
-		// 0 = Not charging
-		// 4 = Waiting
 		int st = g_roomba_last_charging_state;
 
 		if (st == 0 || st == 4) {
@@ -544,12 +560,12 @@ void Roomba_RunEverySecond() {
 			Roomba_SendByte(131);
 			addLogAdv(LOG_INFO, LOG_FEATURE_DRV,
 				"Roomba: keepalive 0x80 0x83 sent (charging_state=%d)", st);
-			return; // IMPORTANT: only skip poll when we actually sent keepalive
+			return; // skip sensor poll ONLY when keepalive was sent
 		}
 
-		// Blocked (1,2,3,5 or unknown): continue to normal poll
 		addLogAdv(LOG_INFO, LOG_FEATURE_DRV,
 			"Roomba: keepalive blocked (charging_state=%d)", st);
+		// Do NOT return here -> continue to normal poll
 	}
 
 	// Normal sensor polling
@@ -644,7 +660,7 @@ void Roomba_OnQuickTick() {
 				
 		// Packet 21: Charging State (Byte 16)
 		g_sensors[ROOMBA_SENSOR_CHARGING_STATE].lastReading = buf[16];
-		g_roomba_last_charging_state = buf[16];
+			g_roomba_last_charging_state = buf[16];
 		
 		// Packet 22: Voltage (Bytes 17-18, mV)
 		g_sensors[ROOMBA_SENSOR_VOLTAGE].lastReading = (buf[17] << 8) | buf[18];
@@ -681,16 +697,18 @@ void Roomba_OnQuickTick() {
 
 		// Keep-awake workaround for off-dock testing:
 		// Send OI START (128) every 120s when NOT docked (charging_state == 0).
-#if 0
 		if (g_sensors[ROOMBA_SENSOR_CHARGING_STATE].lastReading == 0) {
-			if (now - g_roomba_lastKeepAliveMs > 120000) {
+			if (now - g_roomba_lastKeepAliveMs > 120000) { // 120 seconds
 				g_roomba_lastKeepAliveMs = now;
 				Roomba_SendByte(128);
+				// optional:
+				// addLogAdv(LOG_DEBUG, LOG_FEATURE_DRV, "Roomba: keepalive START(128)");
 			}
 		} else {
+			// Reset timer when docked so we don't instantly fire after undocking
 			g_roomba_lastKeepAliveMs = now;
 		}
-#endif
+		
 		// Reset frame accumulator for next frame
 		s_frameLen = 0;
 
