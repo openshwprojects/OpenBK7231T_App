@@ -1031,7 +1031,7 @@ void urldecode2_safe(char *dst, const char *srcin, int maxDstLen);
 int strIsInteger(const char *s);
 
 #if !defined(PLATFORM_ESPIDF) && !defined(PLATFORM_TR6260) && !defined(PLATFORM_ECR6600) && !defined(PLATFORM_BL602) && \
-	!defined(PLATFORM_ESP8266)
+	!defined(PLATFORM_ESP8266) && !defined(PLATFORM_W800)
 
 const char* strcasestr(const char* str1, const char* str2);
 #endif
