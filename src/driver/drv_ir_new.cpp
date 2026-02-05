@@ -22,6 +22,11 @@ extern "C" {
 #include "arm_arch.h"
 #elif PLATFORM_LN882H || PLATFORM_LN8825
 #define delay_ms OS_MsDelay
+#elif PLATFORM_RTL8710B
+	int __wrap_atoi(const char* str);
+	char* _strncpy(char* dest, const char* src, size_t count);
+	int _sscanf_patch(const char* buf, const char* fmt, ...);
+//#undef sscanf
 #endif
 
 // why can;t I call this?

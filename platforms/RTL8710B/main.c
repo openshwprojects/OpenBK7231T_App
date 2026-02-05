@@ -42,6 +42,8 @@ int main(void)
 
 	current_fw_idx = ota_get_cur_index();
 
+	__libc_init_array();
+
 	xTaskCreate(
 		obk_task,
 		"OpenBeken",

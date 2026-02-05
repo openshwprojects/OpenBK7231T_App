@@ -36,7 +36,7 @@ static uint16_t g_used_timers = 0b0;
 
 int8_t HAL_RequestHWTimer(uint32_t period_us, HWTimerCB callback, void* arg)
 {
-#if PLATFORM_RTL8710B || PLATFORM_RTL8720D
+#if PLATFORM_RTL8720D //|| PLATFORM_RTL8710B //on B too, but this is not needed
 	if(period_us < 62) period_us = 62; // timers are using 32khz clock
 #endif
 	if(callback == NULL) return -1;
