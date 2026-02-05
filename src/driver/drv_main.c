@@ -737,7 +737,7 @@ static driver_t g_drivers[] = {
 	NULL,                                    // onEverySecond
 	NULL,                                    // appendInformationToHTTPIndexPage
 	DRV_IR_RunFrame,                         // runQuickTick
-	NULL,                                    // stopFunction
+	DRV_IR_Deinit,                           // stopFunction
 	NULL,                                    // onChannelChanged
 	NULL,                                    // onHassDiscovery
 	false,                                   // loaded

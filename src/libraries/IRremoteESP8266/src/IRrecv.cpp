@@ -2132,8 +2132,11 @@ static uint32_t        ir_start = 0;
 
 void IR_ISR() {
   // TODO: is there a lock or a mutex to prevent race condition ???
-
+#if PLATFORM_RTL8720D || PLATFORM_RTL8710B
+  ir_now += 61;
+#else
   ir_now += 50; // timer is supposed to be running at 50us ?
+#endif
   if (params.rcvstate == kStopState) return;
   uint_fast8_t tIRInputLevel = (uint_fast8_t)digitalReadFast(params.recvpin);
   uint32_t time_since_last_change;

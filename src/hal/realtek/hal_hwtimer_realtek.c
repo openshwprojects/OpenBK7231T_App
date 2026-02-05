@@ -8,6 +8,10 @@
 
 #if PLATFORM_RTL8710A
 #define MAX_TIMER GTIMER_MAX
+#elif PLATFORM_REALTEK_NEW
+#undef FIRST_TIMER
+#define FIRST_TIMER TIMER10
+#define MAX_TIMER (GTIMER_MAX - 1)
 #else
 #define MAX_TIMER (GTIMER_MAX - 1)
 #endif
@@ -17,9 +21,9 @@ static const uint16_t g_excluded_timers = 1 << TIMER4;
 #elif PLATFORM_RTL87X0C
 static const uint16_t g_excluded_timers = (1 << TIMER0) | (1 << TIMER4);
 #elif PLATFORM_RTL8710B || PLATFORM_RTL8720D
-static const uint16_t g_excluded_timers = (1 << TIMER1) | (1 << TIMER2);
-#elif PLATFORM_REALTEK_NEW
-static const uint16_t g_excluded_timers = (1 << TIMER8) | (1 << TIMER9);
+static const uint16_t g_excluded_timers = (1 << TIMER0) | (1 << TIMER1);
+//#elif PLATFORM_REALTEK_NEW
+//static const uint16_t g_excluded_timers = (1 << TIMER8) | (1 << TIMER9); // timer8 pwm, timer9 ??
 #else
 static const uint16_t g_excluded_timers = 0b0;
 #endif
@@ -32,6 +36,9 @@ static uint16_t g_used_timers = 0b0;
 
 int8_t HAL_RequestHWTimer(uint32_t period_us, HWTimerCB callback, void* arg)
 {
+#if PLATFORM_RTL8710B || PLATFORM_RTL8720D
+	if(period_us < 62) period_us = 62; // timers are using 32khz clock
+#endif
 	if(callback == NULL) return -1;
 	uint8_t freetimer;
 	for(freetimer = FIRST_TIMER; freetimer <= MAX_TIMER; freetimer++)

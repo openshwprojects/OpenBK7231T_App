@@ -331,7 +331,11 @@ extern "C" void DRV_IR_ISR(void* arg)
 {
 	int sending = 0;
 	if (pIRsend) {
+#if PLATFORM_RTL8720D || PLATFORM_RTL8710B
+		pIRsend->our_us += 61;
+#else
 		pIRsend->our_us += 50;
+#endif
 		if (pIRsend->our_us > 1000) {
 			pIRsend->our_ms++;
 			pIRsend->our_us -= 1000;
@@ -777,6 +781,11 @@ extern "C" void DRV_IR_Init() {
 	}
 }
 
+extern "C" void DRV_IR_Deinit()
+{
+	_timer_disable();
+	HAL_HWTimerDeinit(ir_chan);
+}
 
 void dump(decode_results *results) {
 	// Dumps out the decode_results structure.

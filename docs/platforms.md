@@ -19,7 +19,7 @@
 | RTL8711AM (Ameba1)                                      | Realtek        | ✅   | ❗️   | ✅⁴    | ✅      | ✅   | ✅⁸ | ❌  | ❌         | ✅  | ✅     | ❌ |
 | RTL8710B (AmebaZ)                                       | Realtek        | ✅   | ✅   | ✅⁴    | ✅      | ✅   | ✅⁸ | ❌  | ❌         | ✅  | ✅     | ❌ |
 | RTL8710C<br>RTL8720C (AmebaZ2)                          | Realtek        | ✅   | ✅   | ✅⁴    | ✅      | ✅   | ✅⁸ | ➖  | ❌         | ✅  | ✅     | ✅ |
-| RTL8720D (AmebaD)<br>RTL872xCSM<br>RTL8720CS (AmebaCS)  | Realtek        | ✅   | ✅   | ✅⁴    | ✅      | ✅   | ✅⁸ | ❌  | ❌         | ✅  | ✅     | ❗️ |
+| RTL8720D (AmebaD)<br>RTL872xCSM<br>RTL8720CS (AmebaCS)  | Realtek        | ✅   | ✅   | ✅⁴    | ✅      | ✅   | ✅⁸ | ❌  | ❌         | ✅  | ✅     | ✅ |
 | RTL8721DA<br>RTL8711DAF (AmebaDplus)                    | Realtek        | ✅   | ✅   | ✅     | ✅      | ✅   | ✅  | ❌  | ❌         | ✅  | ✅     | ❗️ |
 | RTL8720E<br>RTL8710ECF (AmebaLite)                      | Realtek        | ✅   | ✅   | ✅     | ✅      | ✅   | ✅  | ❌  | ❌         | ✅  | ✅     | ❗️ |
 | ECR6600                                                 | ESWIN          | ✅   | ✅   | ✅     | ✅      | ✅   | ✅⁸ | ❗️  | ❗️¹¹       | ✅  | ❌     | ❌ |

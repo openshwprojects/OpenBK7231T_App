@@ -733,8 +733,10 @@ extern u32 pwmout_pin2chan(PinName pin);
 #define os_free vPortFree
 
 #if PLATFORM_RTL8720D
+#undef vsprintf
 #undef vsnprintf
 #undef sprintf
+#undef snprintf
 #undef atoi
 #undef printf
 #endif
