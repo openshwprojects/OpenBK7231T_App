@@ -20,50 +20,12 @@ extern "C" {
 #if PLATFORM_BEKEN
 #include "include.h"
 #include "arm_arch.h"
-#include "bk_timer_pub.h"
-#include "drv_model_pub.h"
-#include <gpio_pub.h>
-//#include "pwm.h"
-#include "pwm_pub.h"
-#include "../../beken378/func/include/net_param_pub.h"
-#include "../../beken378/func/user_driver/BkDriverPwm.h"
-#include "../../beken378/func/user_driver/BkDriverI2c.h"
-#include "../../beken378/driver/i2c/i2c1.h"
-#include "../../beken378/driver/gpio/gpio.h"
-#elif PLATFORM_REALTEK
-#define MBED_PERIPHERALNAMES_H
-#include "timer_api.h"
-#include "pwmout_api.h"
-#include "../hal/realtek/hal_pinmap_realtek.h"
-void pwmout_start(pwmout_t* obj);
-void pwmout_stop(pwmout_t* obj);
-#elif PLATFORM_BL602
-#include "bl602_timer.h"
-#include "hosal_timer.h"
-#define UINT32 uint32_t
-#elif PLATFORM_LN882H
-#define __HAL_COMMON_H__
-typedef enum
-{
-	HAL_DISABLE = 0u,
-	HAL_ENABLE = 1u
-} hal_en_t;
-#include "hal/hal_timer.h"
-#include "hal/hal_clock.h"
+#elif PLATFORM_LN882H || PLATFORM_LN8825
 #define delay_ms OS_MsDelay
-#define UINT32 uint32_t
-#elif PLATFORM_LN8825
-#include "hal/hal_timer.h"
-#include "hal/hal_sleep.h"
-#define delay_ms OS_MsDelay
-#define UINT32 uint32_t
 #endif
 
 // why can;t I call this?
 #include "../mqtt/new_mqtt.h"
-
-
-
 
 	unsigned long ir_counter = 0;
 	uint8_t gEnableIRSendWhilstReceive = 0;
@@ -155,7 +117,7 @@ extern "C" void DRV_IR_ISR(void* arg);
 extern void IR_ISR();
 
 static int8_t ir_chan = -1;
-static UINT32 ir_periodus = 50;
+static uint32_t ir_periodus = 50;
 
 void timerConfigForReceive() {
 	// nothing here`
@@ -299,17 +261,6 @@ public:
 		}
 		return val;
 	}
-#if PLATFORM_REALTEK
-	void ledOff()
-	{
-		pwmout_start(g_pins[sendPin].pwm);
-	}
-
-	void ledOn()
-	{
-		pwmout_stop(g_pins[sendPin].pwm);
-	}
-#endif
 	int currentsendtime;
 	int currentbitval;
 
