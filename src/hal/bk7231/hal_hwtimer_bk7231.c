@@ -42,6 +42,10 @@ int8_t HAL_RequestHWTimer(uint32_t period_us, HWTimerCB callback, void* arg)
 		period_us, // us
 		BK_ISR_CB
 	};
+	if(arg == NULL)
+	{
+		params.t_Int_Handler = (TFUNC)callback;
+	}
 	UINT32 res = sddev_control((char*)TIMER_DEV_NAME, -1, NULL);
 	if(res != 1)
 	{
