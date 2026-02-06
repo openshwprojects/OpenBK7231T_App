@@ -3,7 +3,7 @@ OBK_DIR = ./app
 INCLUDES += -I$(OBK_DIR)/../include
 INCLUDES += -I./fixes
 
-CCFLAGS += -DPLATFORM_BEKEN -DPLATFORM_BEKEN_NEW
+CCFLAGS += -DPLATFORM_BEKEN -DPLATFORM_BEKEN_NEW -D__FILE__=\"\" -Wno-builtin-macro-redefined
 
 ifeq ($(CFG_SOC_NAME), 1)
 CCFLAGS += -DPLATFORM_BK7231T
@@ -42,6 +42,12 @@ APP_C += $(OBKM_SRC)
 APP_CXX += $(OBKM_SRC_CXX)
 CCFLAGS += $(OBK_CFLAGS)
 
+
+APP_C += $(OBK_DIR)/../libraries/easyflash/ports/ef_port.c
+APP_C += $(OBK_DIR)/../libraries/easyflash/src/easyflash.c
+APP_C += $(OBK_DIR)/../libraries/easyflash/src/ef_env.c
+APP_C += $(OBK_DIR)/../libraries/easyflash/src/ef_utils.c
+INCLUDES += -I$(OBK_DIR)/../libraries/easyflash/inc
 
 BERRY_MODULEPATH = $(OBK_DIR)/berry/modules
 BERRY_SRCPATH = $(OBK_DIR)/../libraries/berry/src

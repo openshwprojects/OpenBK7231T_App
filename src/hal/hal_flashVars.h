@@ -19,11 +19,7 @@ typedef struct ENERGY_METERING_DATA {
 #else
 	float ConsumptionHistory[2];
 #endif
-#ifdef PLATFORM_BEKEN_NEW
-	unsigned int ConsumptionResetTime;
-#else
 	time_t ConsumptionResetTime;
-#endif
 	unsigned char reseved[3];
 	char actual_mday;
 } ENERGY_METERING_DATA;

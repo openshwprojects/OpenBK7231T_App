@@ -1576,13 +1576,7 @@ typedef struct mainConfig_s {
 	// offset 0x00000CBB (3259 decimal)
 	byte disable_web_server;
 	// offset 0x00000CBC (3260 decimal)
-#if PLATFORM_BEKEN
-	obkFastConnectData_t fcdata;
-	// offset 0x00000D0C (3340 decimal)
-	char unused[244];
-#else
 	char unused[324];
-#endif
 #endif
 } mainConfig_t;
 
