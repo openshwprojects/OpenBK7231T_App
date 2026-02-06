@@ -1127,6 +1127,20 @@ typedef enum channelType_e {
 	//chandetail:"file":"new_pins.h",
 	//chandetail:"driver":""}
 	ChType_Current_div10,
+	//chandetail:{"name":"Illuminance_div10",
+	//chandetail:"title":"Illuminance_div10",
+	//chandetail:"descr":"Illuminance in Lux",
+	//chandetail:"enum":"ChType_Illuminance_div10",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
+	ChType_Illuminance_div10,
+	//chandetail:{"name":"Frequency",
+	//chandetail:"title":"TODO",
+	//chandetail:"descr":"For TuyaMCU power metering. Not used for BL09** and CSE** sensors.",
+	//chandetail:"enum":"ChType_Frequency",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
+	ChType_Frequency,
 	//chandetail:{"name":"Max",
 	//chandetail:"title":"TODO",
 	//chandetail:"descr":"This is the current total number of available channel types.",
@@ -1564,13 +1578,7 @@ typedef struct mainConfig_s {
 	// offset 0x00000CBB (3259 decimal)
 	byte disable_web_server;
 	// offset 0x00000CBC (3260 decimal)
-#if PLATFORM_BEKEN
-	obkFastConnectData_t fcdata;
-	// offset 0x00000D0C (3340 decimal)
-	char unused[244];
-#else
 	char unused[324];
-#endif
 #endif
 } mainConfig_t;
 

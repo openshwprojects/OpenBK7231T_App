@@ -46,4 +46,35 @@ void HAL_Delay_us(int delay)
 	ln_block_delayus(delay);
 }
 
+#if PLATFORM_LN882H
+
+#include "../../cmnds/cmd_public.h"
+
+extern int g_urx_pin;
+extern int g_utx_pin;
+
+static commandResult_t CMD_SetUARTPins(const void* context, const char* cmd, const char* args, int cmdFlags)
+{
+	Tokenizer_TokenizeString(args, 0);
+
+	int rxpin = Tokenizer_GetPin(0, -1);
+	int txpin = Tokenizer_GetPin(1, -1);
+	if(rxpin == -1 || txpin == -1)
+		return CMD_RES_BAD_ARGUMENT;
+	g_urx_pin = rxpin;
+	g_utx_pin = txpin;
+	return CMD_RES_OK;
+}
+
+void HAL_RegisterPlatformSpecificCommands()
+{
+	//cmddetail:{"name":"alias","args":"[rx pin][tx pin]",
+	//cmddetail:"descr":"Set UART pins",
+	//cmddetail:"fn":"CMD_SetUARTPins","file":"hal/ln882h/hal_generic_ln882h.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("SetUARTPins", CMD_SetUARTPins, NULL);
+}
+
+#endif
+
 #endif // PLATFORM_LN882H
