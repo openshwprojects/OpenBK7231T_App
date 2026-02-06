@@ -727,7 +727,7 @@ static driver_t g_drivers[] = {
 	false,                                   // loaded
 	},
 #endif
-#if ENABLE_DRIVER_IRREMOTEESP
+#if ENABLE_DRIVER_IR || ENABLE_DRIVER_IRREMOTEESP
 	//drvdetail:{"name":"IR",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"IRLibrary wrapper, so you can receive remote signals and send them. See [forum discussion here](https://www.elektroda.com/rtvforum/topic3920360.html), also see [LED strip and IR YT video](https://www.youtube.com/watch?v=KU0tDwtjfjw)",
@@ -743,33 +743,17 @@ static driver_t g_drivers[] = {
 	false,                                   // loaded
 	},
 #endif
-#if ENABLE_DRIVER_IR
-	//drvdetail:{"name":"IR",
-	//drvdetail:"title":"TODO",
-	//drvdetail:"descr":"IRLibrary wrapper, so you can receive remote signals and send them. See [forum discussion here](https://www.elektroda.com/rtvforum/topic3920360.html), also see [LED strip and IR YT video](https://www.youtube.com/watch?v=KU0tDwtjfjw)",
-	//drvdetail:"requires":""}
-	{ "IR",                                  // Driver Name
-	DRV_IR_Init,                             // Init
-	NULL,                                    // onEverySecond
-	NULL,                                    // appendInformationToHTTPIndexPage
-	DRV_IR_RunFrame,                         // runQuickTick
-	NULL,                                    // stopFunction
-	NULL,                                    // onChannelChanged
-	NULL,                                    // onHassDiscovery
-	false,                                   // loaded
-	},
-#endif
 #if ENABLE_DRIVER_RC
-		//drvdetail:{"name":"RC",
-		//drvdetail:"title":"TODO",
-		//drvdetail:"descr":"",
-		//drvdetail:"requires":""}
+	//drvdetail:{"name":"RC",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"",
+	//drvdetail:"requires":""}
 	{ "RC",                                  // Driver Name
 	DRV_RC_Init,                             // Init
 	NULL,                                    // onEverySecond
-	RC_AppendInformationToHTTPIndexPage,                                    // appendInformationToHTTPIndexPage
+	RC_AppendInformationToHTTPIndexPage,     // appendInformationToHTTPIndexPage
 	DRV_RC_RunFrame,                         // runQuickTick
-	NULL,                                    // stopFunction
+	DRV_RC_Deinit,                           // stopFunction
 	NULL,                                    // onChannelChanged
 	NULL,                                    // onHassDiscovery
 	false,                                   // loaded

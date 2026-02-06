@@ -132,6 +132,7 @@ void _timerConfigForReceive() {
 	ir_counter = 0;
 
 	ir_chan = HAL_RequestHWTimer(ir_periodus, DRV_IR_ISR, NULL);
+	ADDLOG_INFO(LOG_FEATURE_IR, (char *)"ir timer enabled %u", ir_chan);
 }
 
 static void timer_enable() {
