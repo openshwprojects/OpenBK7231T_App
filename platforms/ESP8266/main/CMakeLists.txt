@@ -9,6 +9,7 @@ set(PROJ_ALL_SRC
 	${OBK_SRCS}hal/espidf/hal_flashConfig_espidf.c
 	${OBK_SRCS}hal/espidf/hal_flashVars_espidf.c
 	${OBK_SRCS}hal/espidf/hal_generic_espidf.c
+	${OBK_SRCS}hal/espidf/hal_hwtimer_espidf.c
 	${OBK_SRCS}hal/espidf/hal_main_espidf.c
 	${OBK_SRCS}hal/espidf/hal_pins_espidf.c
 	${OBK_SRCS}hal/espidf/hal_wifi_espidf.c
