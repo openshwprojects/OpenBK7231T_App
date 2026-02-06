@@ -338,6 +338,7 @@ static commandResult_t CMD_DeepSleep(const void* context, const char* cmd, const
 	}
 
 	timeMS = Tokenizer_GetArgInteger(0);
+	HAL_DisconnectFromWifi();
 #if defined(PLATFORM_BEKEN) && !defined(PLATFORM_BEKEN_NEW)
 	// It requires a define in SDK file:
 	// OpenBK7231T\platforms\bk7231t\bk7231t_os\beken378\func\include\manual_ps_pub.h
