@@ -165,3 +165,5 @@ void os_free(void* ptr)
 {
 	vPortFree(ptr);
 }
+
+void _init(void) {}

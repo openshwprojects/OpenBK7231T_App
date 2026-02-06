@@ -11,7 +11,7 @@ extern "C" {
 #include "../new_pins.h"
 #include "../new_cfg.h"
 #include "../cmnds/cmd_public.h"
-
+#include "../hal/hal_hwtimer.h"
 }
 
 #include "drv_rc.h"
@@ -31,6 +31,12 @@ void DRV_RC_Init() {
 	}
 	ADDLOG_INFO(LOG_FEATURE_IR, "DRV_RC_Init: passing pin %i\n", pin);
 	mySwitch.enableReceive(pin, pup);  // Receiver on interrupt 0 => that is pin #2
+}
+
+void DRV_RC_Deinit()
+{
+	HAL_HWTimerStop(mySwitch.rc_chan);
+	HAL_HWTimerDeinit(mySwitch.rc_chan);
 }
 //extern long g_micros;
 //extern int rc_triggers;

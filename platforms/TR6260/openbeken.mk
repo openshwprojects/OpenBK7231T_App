@@ -8,6 +8,7 @@ CSRCS  += hal/tr6260/hal_adc_tr6260.c
 CSRCS  += hal/tr6260/hal_flashConfig_tr6260.c
 CSRCS  += hal/tr6260/hal_flashVars_tr6260.c
 CSRCS  += hal/tr6260/hal_generic_tr6260.c
+CSRCS  += hal/tr6260/hal_hwtimer_tr6260.c
 CSRCS  += hal/tr6260/hal_main_tr6260.c
 CSRCS  += hal/tr6260/hal_pins_tr6260.c
 CSRCS  += hal/tr6260/hal_wifi_tr6260.c

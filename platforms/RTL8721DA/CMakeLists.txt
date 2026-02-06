@@ -50,6 +50,7 @@ target_sources(
 	${OBK_SRCS}hal/realtek/hal_flashConfig_realtek.c
 	${OBK_SRCS}hal/realtek/hal_flashVars_realtek.c
 	${OBK_SRCS}hal/realtek/hal_generic_realtek.c
+	${OBK_SRCS}hal/realtek/hal_hwtimer_realtek.c
 	${OBK_SRCS}hal/realtek/hal_pins_realtek.c
 	${OBK_SRCS}hal/realtek/hal_ota_realtek.c
 	${OBK_SRCS}hal/realtek/hal_wifi_realtek_new.c

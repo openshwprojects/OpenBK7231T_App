@@ -4,6 +4,7 @@ CC_FLAGS += -DPLATFORM_XRADIO
 SRCS += $(OBK_SRCS)hal/xradio/hal_adc_xradio
 SRCS += $(OBK_SRCS)hal/xradio/hal_wifi_xradio
 SRCS += $(OBK_SRCS)hal/xradio/hal_generic_xradio
+SRCS += $(OBK_SRCS)hal/xradio/hal_hwtimer_xradio
 SRCS += $(OBK_SRCS)hal/xradio/hal_main_xradio
 SRCS += $(OBK_SRCS)hal/xradio/hal_pins_xradio
 SRCS += $(OBK_SRCS)hal/xradio/hal_flashConfig_xradio

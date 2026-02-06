@@ -8,6 +8,7 @@ extern "C" {
 
 void DRV_IR_Init();
 void DRV_IR_RunFrame();
+void DRV_IR_Deinit();
 
 #ifdef __cplusplus
 }

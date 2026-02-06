@@ -11,6 +11,7 @@ CSRC  += hal/realtek/rtl8720d/hal_pins_rtl8720d.c
 CSRC  += hal/realtek/hal_flashConfig_realtek.c
 CSRC  += hal/realtek/hal_flashVars_realtek.c
 CSRC  += hal/realtek/hal_generic_realtek.c
+CSRC  += hal/realtek/hal_hwtimer_realtek.c
 CSRC  += hal/realtek/hal_pins_realtek.c
 CSRC  += hal/realtek/hal_wifi_realtek.c
 CSRC  += hal/realtek/hal_ota_realtek.c

@@ -14,6 +14,7 @@ extern "C" {
     #include "../logging/logging.h"
     #include "../obk_config.h"
     #include "../cmnds/cmd_public.h"
+    #include "../hal/hal_hwtimer.h"
     #include "bk_timer_pub.h"
     #include "drv_model_pub.h"
 
@@ -26,8 +27,6 @@ extern "C" {
 
     #include "../../beken378/func/include/net_param_pub.h"
     #include "../../beken378/func/user_driver/BkDriverPwm.h"
-    #include "../../beken378/func/user_driver/BkDriverI2c.h"
-    #include "../../beken378/driver/i2c/i2c1.h"
     #include "../../beken378/driver/gpio/gpio.h"
 
     #include <ctype.h>
@@ -128,11 +127,10 @@ void pinModeFast(unsigned char P, unsigned char V) {
 #undef ISR
 #  endif
 #define ISR void IR_ISR
-extern "C" void DRV_IR_ISR(UINT8 t);
+extern "C" void DRV_IR_ISR(void* arg);
 
-static UINT32 ir_chan = BKTIMER0;
-static UINT32 ir_div = 1;
-static UINT32 ir_periodus = 50;
+static int8_t ir_chan = -1;
+static uint32_t ir_periodus = 50;
 
 void timerConfigForReceive(){
     // nothing here`
@@ -141,40 +139,8 @@ void timerConfigForReceive(){
 void _timerConfigForReceive() {
     ir_counter = 0;
 
-    timer_param_t params = {
-        (unsigned char) ir_chan,
-        (unsigned char) ir_div, // div
-        ir_periodus, // us
-        DRV_IR_ISR
-    };
-    //GLOBAL_INT_DECLARATION();
-
-
-    UINT32 res;
-    // test what error we get with an invalid command
-    res = sddev_control((char *)TIMER_DEV_NAME, -1, nullptr);
-
-    if (res == 1){
-    	ADDLOG_INFO(LOG_FEATURE_IR, (char *)"bk_timer already initialised");
-    } else {
-    	ADDLOG_ERROR(LOG_FEATURE_IR, (char *)"bk_timer driver not initialised?");
-        if ((int)res == -5){
-            ADDLOG_INFO(LOG_FEATURE_IR, (char *)"bk_timer sddev not found - not initialised?");
-            return;
-        }
-        return;
-    }
-
-
-	//ADDLOG_INFO(LOG_FEATURE_IR, (char *)"ir timer init");
-    // do not need to do this
-    //bk_timer_init();
-	//ADDLOG_INFO(LOG_FEATURE_IR, (char *)"ir timer init done");
-	ADDLOG_INFO(LOG_FEATURE_IR, (char *)"will ir timer setup %u", res);
-    res = sddev_control((char *)TIMER_DEV_NAME, CMD_TIMER_INIT_PARAM_US, &params);
-	ADDLOG_INFO(LOG_FEATURE_IR, (char *)"ir timer setup %u", res);
-    res = sddev_control((char *)TIMER_DEV_NAME, CMD_TIMER_UNIT_ENABLE, &ir_chan);
-	ADDLOG_INFO(LOG_FEATURE_IR, (char *)"ir timer enabled %u", res);
+    ir_chan = HAL_RequestHWTimer(ir_periodus, DRV_IR_ISR, NULL);
+    ADDLOG_INFO(LOG_FEATURE_IR, (char*)"ir timer enabled %u", ir_chan);
 }
 
 static void timer_enable(){
@@ -182,14 +148,12 @@ static void timer_enable(){
 static void timer_disable(){
 }
 static void _timer_enable(){
-    UINT32 res;
-    res = sddev_control((char *)TIMER_DEV_NAME, CMD_TIMER_UNIT_ENABLE, &ir_chan);
-	ADDLOG_INFO(LOG_FEATURE_IR, (char *)"ir timer enabled %u", res);
+    HAL_HWTimerStart(ir_chan);
+    ADDLOG_INFO(LOG_FEATURE_IR, (char*)"ir timer enabled %u", ir_chan);
 }
 static void _timer_disable(){
-    UINT32 res;
-    res = sddev_control((char *)TIMER_DEV_NAME, CMD_TIMER_UNIT_DISABLE, &ir_chan);
-	ADDLOG_INFO(LOG_FEATURE_IR, (char *)"ir timer disabled %u", res);
+    HAL_HWTimerStop(ir_chan);
+    ADDLOG_INFO(LOG_FEATURE_IR, (char*)"ir timer disabled %u", ir_chan);
 }
 
 #define TIMER_ENABLE_RECEIVE_INTR timer_enable();
@@ -363,7 +327,7 @@ IRrecv *ourReceiver = NULL;
 
 // this is our ISR.
 // it is called every 50us, so we need to work on making it as efficient as possible.
-extern "C" void DRV_IR_ISR(UINT8 t){
+extern "C" void DRV_IR_ISR(void* arg){
     int sending = 0;
     if (pIRsend && (pIRsend->pwmIndex >= 0)){
         pIRsend->our_us += 50;
@@ -678,6 +642,12 @@ extern "C" void DRV_IR_Init(){
         _timerConfigForReceive();
         _timer_enable();
     }
+}
+
+extern "C" void DRV_IR_Deinit()
+{
+    _timer_disable();
+    HAL_HWTimerDeinit(ir_chan);
 }
 
 

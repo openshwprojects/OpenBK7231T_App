@@ -79,6 +79,7 @@ extern "C" {
 class RCSwitch {
 
   public:
+    static int8_t rc_chan;
     RCSwitch();
 
     void switchOn(int nGroupNumber, int nSwitchNumber);
