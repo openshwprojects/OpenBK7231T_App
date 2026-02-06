@@ -528,6 +528,22 @@
     "driver": ""
   },
   {
+    "name": "Illuminance_div10",
+    "title": "Illuminance_div10",
+    "descr": "Illuminance in Lux",
+    "enum": "ChType_Illuminance_div10",
+    "file": "new_pins.h",
+    "driver": ""
+  },
+  {
+    "name": "Frequency",
+    "title": "TODO",
+    "descr": "For TuyaMCU power metering. Not used for BL09** and CSE** sensors.",
+    "enum": "ChType_Frequency",
+    "file": "new_pins.h",
+    "driver": ""
+  },
+  {
     "name": "Max",
     "title": "TODO",
     "descr": "This is the current total number of available channel types.",

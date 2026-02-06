@@ -171,7 +171,7 @@ void LTR_Init()
 	//cmddetail:{"name":"LTR_ALS","args":"[gain] [integration] [repeat]",
 	//cmddetail:"descr":"ALS configuration. Gain mappings: 0-x1 1-x2 2-x4 3-x8 6-x48 7-x96. Integration mappings (ms): 0-100 1-50 2-200 3-400 4-150 5-250 6-300 7-350. Repeat mappings (ms): 0-50 1-100 2-200 3-500 4-1000 5-2000.",
 	//cmddetail:"fn":"LTR_ALS","file":"driver/drv_ltr_als.c","requires":"",
-	//cmddetail:"examples":LTR_ALS 3 0 3 <br /> gain 8x, integration 100ms, repeat 500ms"}
+	//cmddetail:"examples":"LTR_ALS 3 0 3 <br /> gain 8x, integration 100ms, repeat 500ms"}
 	CMD_RegisterCommand("LTR_ALS", LTR_ALS, NULL);
 	//cmddetail:{"name":"LTR_INT","args":"[enable] [als_low] [als_high] [persistance]",
 	//cmddetail:"descr":"Interrupt configuration. Enable = 0-1, persistance (oversampling) = 0-15. als_low/als_high - raw thresholds",

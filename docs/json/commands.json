@@ -461,11 +461,11 @@
   {
     "name": "CHT_Alert",
     "args": "[TempDiff][HumDiff][Freq][FQ]",
-    "descr": "Enable alert pin. TempDif (temperature difference is any float higher than 0.05�C) = set detected difference in temperature required for device to wake. HumDiff (humidity difference is any float higher than 0.1%). Freq (time per measurement in s) = 1, 5, 10, 60, 120 (default if wrong = 1). FQ (fault queue number) = 1, 2, 4, 6 (default if wrong = 1)",
+    "descr": "Enable alert pin. TempDif (temperature difference is any float higher than 0.05°C) = set detected difference in temperature required for device to wake. HumDiff (humidity difference is any float higher than 0.1%). Freq (time per measurement in s) = 1, 5, 10, 60, 120 (default if wrong = 1). FQ (fault queue number) = 1, 2, 4, 6 (default if wrong = 1)",
     "fn": "CHT83XX_Alert",
     "file": "driver/drv_cht8305.c",
     "requires": "",
-    "examples": "CHT_Alert 0.5 0 5 2 <br /> alert pin will trigger when temperature deviates by more than 0.5�C. Humidity will be ignored. Sensor measures every 5s with fault queue number 2."
+    "examples": "CHT_Alert 0.5 0 5 2 <br /> alert pin will trigger when temperature deviates by more than 0.5°C. Humidity will be ignored. Sensor measures every 5s with fault queue number 2."
   },
   {
     "name": "CHT_Calibrate",
@@ -945,6 +945,15 @@
     "examples": ""
   },
   {
+    "name": "getPin",
+    "args": "string",
+    "descr": "find pin index for a pin alias",
+    "fn": "CMD_getPin",
+    "file": "cmnds/cmd_test.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
     "name": "GetReadings",
     "args": "",
     "descr": "Prints voltage etc readings to console.",
@@ -1157,7 +1166,16 @@
     "descr": "Sends IR commands for HVAC control (TODO)",
     "fn": "IR_AC_Cmd",
     "file": "driver/drv_ir_new.cpp",
-    "requires": "",
+    "requires": "ENABLE_DRIVER_IRREMOTEESP (IRremoteESP8266)",
+    "examples": ""
+  },
+  {
+    "name": "IREnable",
+    "args": "[Str][1or0]",
+    "descr": "Enable/disable aspects of IR.  IREnable RXTX 0/1 - enable Rx whilst Tx.  IREnable [protocolname] 0/1 - enable/disable a specified protocol",
+    "fn": "IR_Enable",
+    "file": "driver/drv_ir.cpp",
+    "requires": "ENABLE_DRIVER_IR (Arduino-IRremote)",
     "examples": ""
   },
   {
@@ -1166,16 +1184,7 @@
     "descr": "Enable/disable aspects of IR.  IREnable RXTX 0/1 - enable Rx whilst Tx.  IREnable [protocolname] 0/1 - enable/disable a specified protocol",
     "fn": "IR_Enable",
     "file": "driver/drv_ir_new.cpp",
-    "requires": "",
-    "examples": ""
-  },
-  {
-    "name": "IREnable",
-    "args": "[Str][1or0]",
-    "descr": "Enable/disable aspects of IR.  IREnable RXTX 0/1 - enable Rx whilst Tx.  IREnable [protocolname] 0/1 - enable/disable a specified protocol",
-    "fn": "IR_Enable",
-    "file": "driver/drv_ir_new.cpp",
-    "requires": "",
+    "requires": "ENABLE_DRIVER_IRREMOTEESP (IRremoteESP8266)",
     "examples": ""
   },
   {
@@ -1184,7 +1193,7 @@
     "descr": "Set minimal size of the message and noise threshold",
     "fn": "IR_Param",
     "file": "driver/drv_ir_new.cpp",
-    "requires": "",
+    "requires": "ENABLE_DRIVER_IRREMOTEESP (IRremoteESP8266)",
     "examples": ""
   },
   {
@@ -1192,8 +1201,8 @@
     "args": "[PROT-ADDR-CMD-REP-BITS]",
     "descr": "Sends IR commands in the form PROT-ADDR-CMD-REP-BITS, e.g. NEC-1-1A-0-0, note that -BITS is optional, it can be 0 for default one, so you can just do NEC-1-1A-0",
     "fn": "IR_Send_Cmd",
-    "file": "driver/drv_ir_new.cpp",
-    "requires": "",
+    "file": "driver/drv_ir.cpp",
+    "requires": "ENABLE_DRIVER_IR (Arduino-IRremote)",
     "examples": ""
   },
   {
@@ -1202,7 +1211,7 @@
     "descr": "Sends IR commands in the form PROT-ADDR-CMD-REP, e.g. NEC-1-1A-0",
     "fn": "IR_Send_Cmd",
     "file": "driver/drv_ir_new.cpp",
-    "requires": "",
+    "requires": "ENABLE_DRIVER_IRREMOTEESP (IRremoteESP8266)",
     "examples": ""
   },
   {
@@ -1674,6 +1683,33 @@
     "examples": ""
   },
   {
+    "name": "LTR_ALS",
+    "args": "[gain] [integration] [repeat]",
+    "descr": "ALS configuration. Gain mappings: 0-x1 1-x2 2-x4 3-x8 6-x48 7-x96. Integration mappings (ms): 0-100 1-50 2-200 3-400 4-150 5-250 6-300 7-350. Repeat mappings (ms): 0-50 1-100 2-200 3-500 4-1000 5-2000.",
+    "fn": "LTR_ALS",
+    "file": "driver/drv_ltr_als.c",
+    "requires": "",
+    "examples": "LTR_ALS 3 0 3 <br /> gain 8x, integration 100ms, repeat 500ms"
+  },
+  {
+    "name": "LTR_Cycle",
+    "args": "[IntervalSeconds]",
+    "descr": "This is the interval between measurements in seconds, by default 1. Max is 255.",
+    "fn": "LTR_Cycle",
+    "file": "driver/drv_ltr_als.c",
+    "requires": "",
+    "examples": "LTR_Cycle 60 <br /> measurement is taken every 60 seconds"
+  },
+  {
+    "name": "LTR_INT",
+    "args": "[enable] [als_low] [als_high] [persistance]",
+    "descr": "Interrupt configuration. Enable = 0-1, persistance (oversampling) = 0-15. als_low/als_high - raw thresholds",
+    "fn": "LTR_INT",
+    "file": "driver/drv_ltr_als.c",
+    "requires": "",
+    "examples": "LTR_INT 1 200 2000 4 <br /> enable interrupt, when measurement is lower than 200 or higher than 2000 4 times"
+  },
+  {
     "name": "Map",
     "args": "[TargetChannel][InputValue][InMin][InMax][OutMin][OutMax]",
     "descr": "Used to convert a value from one range into a proportional value of another range.",
@@ -2029,6 +2065,15 @@
     "args": "[Optional 1 or 0, by default 1 is assumed]",
     "descr": "Enables dynamic power saving mode on all platforms with the exception of TR6260. On LN882H PowerSave 1 = light sleep and Powersave >1 (eg PowerSave 2) = deeper sleep. On LN882H PowerSave 1 should be used if BL0937 metering is present. On all supported platforms PowerSave 0 can be used to disable power saving.",
     "fn": "CMD_PowerSave",
+    "file": "cmnds/cmd_main.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "PowerSave_WFI",
+    "args": "[Optional 1 or 0, by default 1 is assumed]",
+    "descr": "Extra power save by sleeping during idle. Available on Beken, BL602, XR8xx, Realteks, W600 and W800. Reduces current by 0.001-0.002A on Beken. Enabled by default on BL602/W600/W800 (SDK behaviour).",
+    "fn": "CMD_PowerSave_WFI",
     "file": "cmnds/cmd_main.c",
     "requires": "",
     "examples": ""
@@ -2466,6 +2511,15 @@
     "examples": ""
   },
   {
+    "name": "SetUARTPins",
+    "args": "[rx pin] [tx pin]",
+    "descr": "Set UART pins",
+    "fn": "CMD_SetUARTPins",
+    "file": "hal/ln882h/hal_generic_ln882h.c",
+    "requires": "PLATFORM_LN882H",
+    "examples": ""
+  },
+  {
     "name": "SetupEnergyStats",
     "args": "[Enable1or0][SampleTime][SampleCount][JSonEnable]",
     "descr": "Setup Energy Statistic Parameters: [enable 0 or 1] [sample_time[10..90]] [sample_count[10..180]] [JsonEnable 0 or 1]. JSONEnable is optional.",
@@ -2763,6 +2817,15 @@
     "examples": ""
   },
   {
+    "name": "SoftI2C_SetClkPeriod",
+    "args": "[period]",
+    "descr": "Sets the clock period in number of nop delay cycles (times 10)",
+    "fn": "CMD_SoftI2C_SetClkPeriod",
+    "file": "driver/drv_soft_i2c.c",
+    "requires": "",
+    "examples": "SoftI2C_SetClkPeriod 50"
+  },
+  {
     "name": "SPC",
     "args": "[Index][RGB]",
     "descr": "Sets Palette Color by index.",
@@ -2813,6 +2876,51 @@
     "descr": "",
     "fn": "CMD_SPITestFlash_WriteStr",
     "file": "driver/drv_spi_flash.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "ssd1306_clear",
+    "args": "TODO",
+    "descr": "",
+    "fn": "SSD1306_Cmd_Clear",
+    "file": "driver/drv_ssd1306.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "ssd1306_goto",
+    "args": "TODO",
+    "descr": "",
+    "fn": "SSD1306_Cmd_GoTo",
+    "file": "driver/drv_ssd1306.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "ssd1306_on",
+    "args": "TODO",
+    "descr": "",
+    "fn": "SSD1306_Cmd_On",
+    "file": "driver/drv_ssd1306.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "ssd1306_print",
+    "args": "TODO",
+    "descr": "",
+    "fn": "SSD1306_Cmd_Print",
+    "file": "driver/drv_ssd1306.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "ssd1306_rect",
+    "args": "TODO",
+    "descr": "",
+    "fn": "SSD1306_Cmd_Rect",
+    "file": "driver/drv_ssd1306.c",
     "requires": "",
     "examples": ""
   },

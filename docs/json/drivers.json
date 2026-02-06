@@ -304,7 +304,8 @@
     "name": "IR",
     "title": "TODO",
     "descr": "IRLibrary wrapper, so you can receive remote signals and send them. See [forum discussion here](https://www.elektroda.com/rtvforum/topic3920360.html), also see [LED strip and IR YT video](https://www.youtube.com/watch?v=KU0tDwtjfjw)",
-    "requires": ""
+    "requires": "",
+    "define": "Enabled by defining \"<b>ENABLE_DRIVER_IRREMOTEESP</b> or <b>ENABLE_DRIVER_IR</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
   },
   {
     "name": "RC",
@@ -417,6 +418,13 @@
     "descr": "SM2335 andd SM2235 custom-'I2C' LED driver for RGBCW lights. This will start automatically if you set both SM2235 pin roles. This may need you to remap the RGBCW indexes with SM2235_Map command. This driver also works for SM2185N.",
     "requires": "",
     "define": "Enabled by defining \"<b>ENABLE_DRIVER_LED</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
+  },
+  {
+    "name": "SSD1306",
+    "title": "TODO",
+    "descr": "SSD1306 OLEd 128x32 I2C display driver.",
+    "requires": "",
+    "define": "Enabled by defining \"<b>ENABLE_DRIVER_SSD1306</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
   },
   {
     "name": "BMP280",
@@ -585,5 +593,12 @@
     "descr": "NEO6M is a GPS chip which uses UART protocol for communication. By default, it uses 9600 baud, but you can also enable it with other baud rates by using 'startDriver NEO6M <rate>'.",
     "requires": "",
     "define": "Enabled by defining \"<b>ENABLE_DRIVER_NEO6M</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
+  },
+  {
+    "name": "LTR_ALS",
+    "title": "TODO",
+    "descr": "LTR-303/329 ambient light sensor driver.",
+    "requires": "",
+    "define": "Enabled by defining \"<b>ENABLE_DRIVER_LTR_ALS</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
   }
 ]
