@@ -855,16 +855,6 @@ void CFG_InitAndLoad() {
 		}
 		WiFI_SetMacAddress((char*)g_cfg.mac);
 #endif
-#if defined(PLATFORM_W600)
-		if (g_cfg.version <= MAIN_CFG_VERSION_V3){
-			// we read a valid V3 config, convert to V5
-			// (flash_vars should have been moved before by HAL_FlashVars_IncreaseBootCount() ... )
-			g_cfg.version = MAIN_CFG_VERSION;
-			// zero additional memory - it included flashvars and old date might be interpreted as web password 
-			memset((char*)(&g_cfg) + MAGIC_CONFIG_SIZE_V3, 0, sizeof(mainConfig_t) - MAGIC_CONFIG_SIZE_V3);
-			g_cfg_pendingChanges ++;
-		}
-#endif
 		addLogAdv(LOG_WARN, LOG_FEATURE_CFG, "CFG_InitAndLoad: Correct config has been loaded with %i changes count.",g_cfg.changeCounter);
 	}
 
@@ -877,7 +867,16 @@ void CFG_InitAndLoad() {
 #if ALLOW_WEB_PASSWORD
 	// add web admin password configuration
 	if (g_cfg.version<5) {
+#if defined(PLATFORM_W600)
+	// W600 changed from V3 to V5, so at this point
+	// we read a valid V3 config but need a V5 config.
+	// Memory might contain old data (from flash_vars)
+	// so let's zero complete additional memory (including g_cfg.webPassword, making it empty).
+		memset((char*)(&g_cfg) + MAGIC_CONFIG_SIZE_V3, 0, sizeof(mainConfig_t) - MAGIC_CONFIG_SIZE_V3);
+		g_cfg_pendingChanges ++;
+#else
 		strcpy_safe(g_cfg.webPassword, "", sizeof(g_cfg.webPassword));
+#endif
 	}
 #endif
 	g_cfg.version = MAIN_CFG_VERSION;
