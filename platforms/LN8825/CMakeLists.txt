@@ -4,6 +4,8 @@ if($ENV{APP_VERSION} MATCHES "^[0-9]+\\.[0-9]+\\.[0-9]+$")
     string(REPLACE "." ";" VERSION_LIST "$ENV{APP_VERSION}")
     list(GET VERSION_LIST 1 VER_MAJOR)
     list(GET VERSION_LIST 2 VER_MINOR)
+
+    math(EXPR VER_MINOR "${VER_MINOR} % 256")
 else()
     set(VER_MAJOR 0)
     set(VER_MINOR 1)
