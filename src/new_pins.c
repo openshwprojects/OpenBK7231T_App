@@ -1053,7 +1053,7 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 			setGPIActive(index, 1, falling);
 
 			// digital input
-			if (role == IOR_Button_pd_n || IOR_Button_pd) {
+			if (role == IOR_Button_pd_n || role == IOR_Button_pd) {
 				HAL_PIN_Setup_Input_Pulldown(index);
 			}
 			else {
