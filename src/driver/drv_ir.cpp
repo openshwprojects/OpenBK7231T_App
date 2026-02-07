@@ -270,7 +270,7 @@ class myIRsend : public IRsend {
         	pwmperiod = (26000000 / pwmfrequency);
             pwmduty = pwmperiod/2;
 #else
-            HAL_PIN_PWM_Start(sendPin, aFrequencyKHz * 1000);
+            HAL_PIN_PWM_Start(sendPin, ((uint32_t)aFrequencyKHz) * 1000);
             pwmduty = 50;
 #endif
         }
