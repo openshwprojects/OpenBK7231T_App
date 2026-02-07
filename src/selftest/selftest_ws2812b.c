@@ -297,14 +297,19 @@ void Test_WS2812B_and_PWM_White() {
 
 	CFG_SetFlag(OBK_FLAG_LED_USE_OLD_LINEAR_MODE, 1);
 
+	CMD_ExecuteCommand("setChannel 4 0", 0);
+
 	PIN_SetPinRoleForPinIndex(26, IOR_PWM);
 	PIN_SetPinChannelForPinIndex(26, 4);
+	SELFTEST_ASSERT_CHANNEL(4, 0);
 
 	CMD_ExecuteCommand("startDriver SM16703P", 0);
 	CMD_ExecuteCommand("SM16703P_Init 3", 0);
+	SELFTEST_ASSERT_CHANNEL(4, 0);
 	CMD_ExecuteCommand("led_basecolor_rgb FF0080", 0);
 	CMD_ExecuteCommand("led_enableAll 1", 0);
 
+	SELFTEST_ASSERT_CHANNEL(4, 0);
 	SELFTEST_ASSERT_PIXEL(0, 255, 0, 128);
 	SELFTEST_ASSERT_PIXEL(1, 255, 0, 128);
 	SELFTEST_ASSERT_PIXEL(2, 255, 0, 128);
