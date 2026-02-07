@@ -322,7 +322,32 @@ void Test_WS2812B_and_PWM_White() {
 	// set 100% Warm
 	CMD_ExecuteCommand("led_temperature 500", 0);
 	CMD_ExecuteCommand("led_dimmer 100", 0);
+	SELFTEST_ASSERT_PIXEL(0, 0, 0, 0);
+	SELFTEST_ASSERT_PIXEL(1, 0, 0, 0);
+	SELFTEST_ASSERT_PIXEL(2, 0, 0, 0);
 
+	SELFTEST_ASSERT_CHANNEL(4, 100);
+
+	// set green
+	CMD_ExecuteCommand("led_basecolor_rgb 00FF00", 0);
+	SELFTEST_ASSERT_PIXEL(0, 0, 255, 0);
+	SELFTEST_ASSERT_PIXEL(1, 0, 255, 0);
+	SELFTEST_ASSERT_PIXEL(2, 0, 255, 0);
+
+
+	CFG_SetFlag(OBK_FLAG_LED_SMOOTH_TRANSITIONS, 1);
+
+
+	// set 100% Warm
+	CMD_ExecuteCommand("led_temperature 500", 0);
+	CMD_ExecuteCommand("led_dimmer 100", 0);
+	Sim_RunSeconds(2.0f, false);
+	SELFTEST_ASSERT_PIXEL(0, 0, 0, 0);
+	SELFTEST_ASSERT_PIXEL(1, 0, 0, 0);
+	SELFTEST_ASSERT_PIXEL(2, 0, 0, 0);
+
+	SELFTEST_ASSERT_CHANNEL(4, 100);
+	CFG_SetFlag(OBK_FLAG_LED_SMOOTH_TRANSITIONS, 0);
 }
 void Test_WS2812B() {
 	// reset whole device

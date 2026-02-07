@@ -366,7 +366,15 @@ void LED_RunQuickColorLerp(int deltaMS) {
 			// So, we need to map. Map component 3 of RGBCW to first channel, and component 4 to second.
 			CHANNEL_Set_FloatPWM(firstChannelIndex + 0, led_rawLerpCurrent[3] * g_cfg_colorScaleToChannel, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
 			CHANNEL_Set_FloatPWM(firstChannelIndex + 1, led_rawLerpCurrent[4] * g_cfg_colorScaleToChannel, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
-		} else {
+		}
+#if	ENABLE_DRIVER_SM16703P
+		else if (pixel_count > 0 && (g_lightMode != Light_Anim || g_lightEnableAll == 0)) {
+			// Not CW mode (not WS2812+ CW), but WS2812 + single PWM
+			CHANNEL_Set_FloatPWM(firstChannelIndex + 0, 
+				led_rawLerpCurrent[4] * g_cfg_colorScaleToChannel, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
+		}
+#endif
+		else {
 			// This should work for both RGB and RGBCW
 			// This also could work for a SINGLE COLOR strips
 			for(i = 0; i < maxPossibleIndexToSet; i++) {
@@ -638,7 +646,16 @@ void apply_smart_light() {
 					else if (i == 4) {
 						CHANNEL_Set_FloatPWM(firstChannelIndex + 1, chVal, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
 					}
-				} else {
+				}
+#if	ENABLE_DRIVER_SM16703P
+				else if (pixel_count > 0 && (g_lightMode != Light_Anim || g_lightEnableAll == 0)) {
+					// Not CW mode (not WS2812+ CW), but WS2812 + single PWM
+					if (i == 4) {
+						CHANNEL_Set_FloatPWM(firstChannelIndex + 0, chVal, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
+					}
+				}
+#endif
+				else {
 					// emulated cool is -1 by default, so this block will only execute
 					// if the cool emulation was enabled
 					if (channelToUse == emulatedCool && g_lightMode == Light_Temperature) {
