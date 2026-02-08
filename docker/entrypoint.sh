@@ -16,6 +16,11 @@ if [ -n "$IDF_PATH" ] && [ -f "$IDF_PATH/export.sh" ]; then
     # Suppress IDF checks during export to avoid noise
 fi
 
+# Ensure Python packages are installed for BL602 SDK
+echo "Ensuring Python packages for BL602 SDK..."
+pip3 install --quiet fdt toml configobj pycryptodomex 2>/dev/null || true
+
+
 # Smart Sync Strategy
 if [ ! -d "$BUILD_DIR/sdk" ]; then
     echo "Initial setup: Full sync of source to build volume..."

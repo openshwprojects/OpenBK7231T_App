@@ -1,4 +1,5 @@
-FROM --platform=linux/amd64 ubuntu:20.04
+ARG BUILDPLATFORM=linux/amd64
+FROM --platform=$BUILDPLATFORM ubuntu:22.04
 
 ARG DEBIAN_FRONTEND=noninteractive
 ARG USERNAME=devuser
@@ -16,6 +17,9 @@ RUN dpkg --add-architecture i386 \
 	# ESP-IDF Dependencies
 	flex bison gperf python3-venv \
 	build-essential cmake ninja-build ccache libffi-dev libssl-dev dfu-util libusb-1.0-0 gcc-arm-none-eabi
+
+# Install Python packages required by build scripts (BL602 SDK requirements from Makefile line 162)
+RUN pip3 install fdt toml configobj pycryptodomex
 
 RUN useradd -m -s /bin/bash -u "${UID}" ${USERNAME}
 
