@@ -271,7 +271,9 @@ def check_docker_running():
         result = subprocess.run(
             ["docker", "info"],
             capture_output=True,
-            timeout=5
+            timeout=5,
+            encoding='utf-8',
+            errors='replace'
         )
         return result.returncode == 0
     except (subprocess.TimeoutExpired, FileNotFoundError):
@@ -282,7 +284,7 @@ def build_docker_image(no_cache=False):
     cmd = ["docker", "build", "-t", "openbk_builder", "."]
     if no_cache:
         cmd.insert(2, "--no-cache")
-    subprocess.run(cmd, cwd=DOCKER_DIR, check=True)
+    subprocess.run(cmd, cwd=DOCKER_DIR, check=True, encoding='utf-8', errors='replace')
 
 def run_docker_build(output_dir, platform, custom_config_path, version=None, clean=False, flash_size=None):
     # Resolve Make target (e.g., BK7231N -> OpenBK7231N)
@@ -328,7 +330,7 @@ def run_docker_build(output_dir, platform, custom_config_path, version=None, cle
     ])
     
     start_time = time.time() # Use time.time for wall clock, os.times is process time
-    subprocess.run(cmd, check=True)
+    subprocess.run(cmd, check=True, encoding='utf-8', errors='replace')
     end_time = time.time()
     
     print(f"Build task finished in {end_time - start_time:.2f} seconds.")
