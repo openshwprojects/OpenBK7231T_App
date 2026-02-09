@@ -18,6 +18,13 @@
 
 // Starts with all driver flags undefined
 
+// Logging defines
+// Allows timing information in ticks to be displayed
+//#define OBK_LOG_TIMING_DISABLED					1
+//#define OBK_LOG_INFO_DISABLED					1
+//#define OBK_LOG_DEBUG_DISABLED					1
+//#define OBK_LOG_EXTRADEBUG_DISABLED				1
+
 // NOTE:
 // Defines for HTTP/HTMP (UI) pages: ENABLE_HTTP_*
 // Defines for drivers from drv_main.c: ENABLE_DRIVER_*
