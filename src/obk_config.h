@@ -114,7 +114,6 @@
 #define ENABLE_DRIVER_NEO6M						1
 #define ENABLE_TIME_SUNRISE_SUNSET				1
 #define ENABLE_TIME_DST							1
-
 #define ENABLE_DRIVER_LTR_ALS					1
 #define ENABLE_DRIVER_SM16703P					1
 #define ENABLE_DRIVER_PIXELANIM					1
@@ -649,6 +648,11 @@
 // #define ENABLE_BL_TWIN						1
 // allow moving average energy calculation +180 bytes
 // #define ENABLE_BL_MOVINGAVG					1
+#endif
+
+// ensure that there would be no conflicts
+#if ENABLE_DRIVER_IRREMOTEESP
+#undef ENABLE_DRIVER_IR
 #endif
 
 // closing OBK_CONFIG_H

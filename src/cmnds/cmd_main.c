@@ -140,9 +140,22 @@ static commandResult_t CMD_PowerSave(const void* context, const char* cmd, const
 
 #if defined(PLATFORM_BEKEN)
 	extern int bk_wlan_power_save_set_level(BK_PS_LEVEL level);
+
+	inline bool isBKSensitiveDriversRunning()
+	{
+		return PIN_FindPinIndexForRole(IOR_BL0937_CF, -1) != -1
+			|| PIN_FindPinIndexForRole(IOR_BL0937_CF1, -1) != -1
+			|| PIN_FindPinIndexForRole(IOR_BL0937_SEL, -1) != -1
+			|| PIN_FindPinIndexForRole(IOR_IRRecv, -1) != -1
+			|| PIN_FindPinIndexForRole(IOR_IRSend, -1) != -1
+			|| PIN_FindPinIndexForRole(IOR_IRRecv_nPup, -1) != -1
+			|| PIN_FindPinIndexForRole(IOR_RCRecv, -1) != -1
+			|| PIN_FindPinIndexForRole(IOR_RCRecv_nPup, -1) != -1;
+	}
+
 	if (bOn) {
 		BK_PS_LEVEL level = PS_RF_SLEEP_BIT;
-		if(PIN_FindPinIndexForRole(IOR_BL0937_CF, -1) == -1) level |= PS_MCU_SLEEP_BIT;
+		if(!isBKSensitiveDriversRunning()) level |= PS_MCU_SLEEP_BIT;
 		else bOn = 0;
 		bk_wlan_power_save_set_level(level);
 	}

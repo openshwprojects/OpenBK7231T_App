@@ -257,6 +257,7 @@ class myIRsend : public IRsend {
     public:
         myIRsend(uint_fast8_t aSendPin){
             //IRsend::IRsend(aSendPin); - has been called already?
+            sendPin = aSendPin;
             our_us = 0;
             our_ms = 0;
             resetsendqueue();
@@ -272,6 +273,7 @@ class myIRsend : public IRsend {
 #else
             HAL_PIN_PWM_Start(sendPin, ((uint32_t)aFrequencyKHz) * 1000);
             pwmduty = 50;
+            HAL_PIN_PWM_Update(sendPin, pwmduty);
 #endif
         }
 
