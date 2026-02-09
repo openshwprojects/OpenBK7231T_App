@@ -11,7 +11,7 @@
 #include "../mqtt/new_mqtt.h"
 #include "../hal/hal_ota.h"
 #include "drv_local.h"
-#include "drv_ntp.h"
+//#include "drv_ntp.h"
 #include "drv_deviceclock.h"
 #include "drv_public.h"
 #include "drv_uart.h"
@@ -804,7 +804,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
             cJSON_AddItemToObject(root, "consumption_samples", stats);
           }
 
-          if(NTP_IsTimeSynced() == true)
+          if(TIME_IsTimeSynced() == true)
           {
             stats = cJSON_CreateArray();
             for(i = OBK_CONSUMPTION__DAILY_FIRST; i <= OBK_CONSUMPTION__DAILY_LAST; i++)
