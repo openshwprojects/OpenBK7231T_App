@@ -114,11 +114,9 @@
 #define ENABLE_DRIVER_NEO6M						1
 #define ENABLE_TIME_SUNRISE_SUNSET				1
 #define ENABLE_TIME_DST							1
-
 #define ENABLE_DRIVER_LTR_ALS					1
 #define ENABLE_DRIVER_SM16703P					1
 #define ENABLE_DRIVER_PIXELANIM					1
-#define ENABLE_DRIVER_IRREMOTEESP				1
 
 #elif WINDOWS
 
@@ -516,7 +514,7 @@
 #define ENABLE_OBK_BERRY						1
 #endif
 
-#if PLATFORM_RTL87X0C || PLATFORM_REALTEK_NEW || PLATFORM_RTL8720D || PLATFORM_RTL8710B
+#if PLATFORM_RTL87X0C || PLATFORM_REALTEK_NEW || PLATFORM_RTL8720D
 #undef ENABLE_DRIVER_DDP
 #define ENABLE_DRIVER_IRREMOTEESP				1
 #endif
@@ -650,6 +648,11 @@
 // #define ENABLE_BL_TWIN						1
 // allow moving average energy calculation +180 bytes
 // #define ENABLE_BL_MOVINGAVG					1
+#endif
+
+// ensure that there would be no conflicts
+#if ENABLE_DRIVER_IRREMOTEESP
+#undef ENABLE_DRIVER_IR
 #endif
 
 // closing OBK_CONFIG_H
