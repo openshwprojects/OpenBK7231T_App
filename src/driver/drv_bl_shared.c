@@ -804,7 +804,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
             cJSON_AddItemToObject(root, "consumption_samples", stats);
           }
 
-          if(NTP_IsTimeSynced() == true)
+          if(TIME_IsTimeSynced() == true)
           {
             stats = cJSON_CreateArray();
             for(i = OBK_CONSUMPTION__DAILY_FIRST; i <= OBK_CONSUMPTION__DAILY_LAST; i++)
