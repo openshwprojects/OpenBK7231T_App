@@ -635,7 +635,7 @@ HassDeviceInfo* hass_init_device_info(ENTITY_TYPE type, int index, const char* p
 	if (DRV_IsRunning("DoorSensor") == false && DRV_IsRunning("tmSensor") == false)
 #endif
 	{
-		if (!isSensor && !flagavty) {
+		if (!flagavty) {
 			cJSON_AddStringToObject(info->root, "avty_t", "~/connected");   //availability_topic, `online` value is broadcasted
 		}
 	}
