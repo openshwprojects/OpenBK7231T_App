@@ -5,6 +5,8 @@ import sys
 import shutil
 import argparse
 import time
+import urllib.request
+import urllib.error
 
 # Configuration
 # Auto-detect repository root based on script location
@@ -20,6 +22,22 @@ else:
 DOCKER_DIR = os.path.join(REPO_ROOT, "docker")
 PLATFORMS_DIR = os.path.join(REPO_ROOT, "platforms")
 CONFIG_FILE = os.path.join(REPO_ROOT, "src", "obk_config.h")
+DEFAULT_BUILD_VOLUME = "openbk_build_data"
+DEFAULT_RTK_TOOLCHAIN_VOLUME = "openbk_rtk_toolchain"
+DEFAULT_ESPRESSIF_TOOLS_VOLUME = "openbk_espressif_tools"
+DEFAULT_ESP8266_TOOLS_VOLUME = "openbk_esp8266_tools"
+DEFAULT_MBEDTLS_CACHE_VOLUME = "openbk_mbedtls_cache"
+DEFAULT_CSKY_W800_CACHE_VOLUME = "openbk_csky_w800_cache"
+DEFAULT_CSKY_TXW_CACHE_VOLUME = "openbk_csky_txw_cache"
+DEFAULT_PIP_CACHE_VOLUME = "openbk_pip_cache"
+GCC_ARM_ARCHIVE_NAME = "gcc-arm-none-eabi-8-2019-q3-update-linux.tar.bz2"
+DEFAULT_GCC_ARM_URLS = [
+    # Prefer github.com raw URL (works with large/LFS-backed files in this mirror).
+    "https://github.com/DeDaMrAzR/ghpages/raw/refs/heads/main/gcc-arm-none-eabi-8-2019-q3-update-linux.tar.bz2",
+    # Keep blob/raw.githubusercontent fallbacks for compatibility.
+    "https://github.com/DeDaMrAzR/ghpages/blob/main/gcc-arm-none-eabi-8-2019-q3-update-linux.tar.bz2",
+    "https://raw.githubusercontent.com/DeDaMrAzR/ghpages/main/gcc-arm-none-eabi-8-2019-q3-update-linux.tar.bz2",
+]
 
 def update_paths(src_dir):
     """
@@ -32,6 +50,85 @@ def update_paths(src_dir):
         DOCKER_DIR = os.path.join(REPO_ROOT, "docker")
         PLATFORMS_DIR = os.path.join(REPO_ROOT, "platforms")
         CONFIG_FILE = os.path.join(REPO_ROOT, "src", "obk_config.h")
+
+
+def _normalize_github_blob_url(url):
+    """
+    Converts GitHub blob URLs to direct raw download URLs.
+    """
+    match = re.match(r"^https://github\.com/([^/]+)/([^/]+)/blob/([^/]+)/(.+)$", url)
+    if match:
+        owner, repo, ref, path = match.groups()
+        return f"https://github.com/{owner}/{repo}/raw/refs/heads/{ref}/{path}"
+    return url
+
+
+def _is_valid_gcc_archive(path):
+    """
+    Basic sanity checks for the required tar.bz2 toolchain archive.
+    Rejects tiny placeholder/LFS-pointer-like files and non-bzip payloads.
+    """
+    try:
+        if not os.path.isfile(path):
+            return False
+        size = os.path.getsize(path)
+        # Real archive is ~100MB. Keep threshold low but enough to reject pointers/html stubs.
+        if size < 1024 * 1024:
+            return False
+        with open(path, "rb") as f:
+            sig = f.read(3)
+        # bzip2 signature
+        return sig == b"BZh"
+    except OSError:
+        return False
+
+
+def ensure_gcc_arm_archive():
+    """
+    Ensures docker/gcc-arm-none-eabi-8-2019-q3-update-linux.tar.bz2 exists.
+    If missing, attempts to download it from mirror URLs.
+    """
+    archive_path = os.path.join(DOCKER_DIR, GCC_ARM_ARCHIVE_NAME)
+    if _is_valid_gcc_archive(archive_path):
+        return
+    if os.path.isfile(archive_path):
+        print(f"Existing {GCC_ARM_ARCHIVE_NAME} looks invalid, re-downloading...")
+
+    # Allow overriding URL from environment for custom mirrors.
+    env_url = os.environ.get("OPENBK_GCC_ARM_URL", "").strip()
+    urls = []
+    if env_url:
+        urls.append(env_url)
+    urls.extend(DEFAULT_GCC_ARM_URLS)
+
+    last_error = None
+    for raw_url in urls:
+        url = _normalize_github_blob_url(raw_url)
+        tmp_path = archive_path + ".tmp"
+        try:
+            print(f"GCC archive missing, downloading from: {url}")
+            with urllib.request.urlopen(url, timeout=60) as resp, open(tmp_path, "wb") as out_f:
+                shutil.copyfileobj(resp, out_f)
+
+            if not _is_valid_gcc_archive(tmp_path):
+                raise RuntimeError("Downloaded file is not a valid toolchain tar.bz2 archive")
+
+            os.replace(tmp_path, archive_path)
+            print(f"Saved {GCC_ARM_ARCHIVE_NAME} to {archive_path}")
+            return
+        except Exception as e:
+            last_error = e
+            if os.path.exists(tmp_path):
+                try:
+                    os.remove(tmp_path)
+                except OSError:
+                    pass
+            print(f"Warning: failed to download from {url}: {e}", file=sys.stderr)
+
+    raise RuntimeError(
+        f"Missing required archive '{GCC_ARM_ARCHIVE_NAME}' in {DOCKER_DIR} "
+        f"and automatic download failed. Last error: {last_error}"
+    )
 
 
 # Unified Platform Definition
@@ -281,12 +378,31 @@ def check_docker_running():
 
 def build_docker_image(no_cache=False):
     print("Building Docker image...")
+    ensure_gcc_arm_archive()
     cmd = ["docker", "build", "-t", "openbk_builder", "."]
     if no_cache:
         cmd.insert(2, "--no-cache")
     subprocess.run(cmd, cwd=DOCKER_DIR, check=True, encoding='utf-8', errors='replace')
 
-def run_docker_build(output_dir, platform, custom_config_path, version=None, clean=False, flash_size=None):
+def run_docker_build(
+    output_dir,
+    platform,
+    custom_config_path,
+    version=None,
+    clean=False,
+    flash_size=None,
+    volume_name=DEFAULT_BUILD_VOLUME,
+    rtk_toolchain_volume=DEFAULT_RTK_TOOLCHAIN_VOLUME,
+    espressif_tools_volume=DEFAULT_ESPRESSIF_TOOLS_VOLUME,
+    esp8266_tools_volume=DEFAULT_ESP8266_TOOLS_VOLUME,
+    mbedtls_cache_volume=DEFAULT_MBEDTLS_CACHE_VOLUME,
+    csky_w800_cache_volume=DEFAULT_CSKY_W800_CACHE_VOLUME,
+    csky_txw_cache_volume=DEFAULT_CSKY_TXW_CACHE_VOLUME,
+    pip_cache_volume=DEFAULT_PIP_CACHE_VOLUME,
+    log_file_path=None,
+    stream_output=True,
+    txw_packager=None,
+):
     # Resolve Make target (e.g., BK7231N -> OpenBK7231N)
     if platform in PLATFORMS:
         target_platform = PLATFORMS[platform]["target"]
@@ -303,8 +419,22 @@ def run_docker_build(output_dir, platform, custom_config_path, version=None, cle
         "-v", f"{REPO_ROOT}:/app/source:ro",
         "-v", f"{abs_output_dir}:/app/output",
         "-v", f"{custom_config_path}:/app/custom_config.h:ro",
-        "-v", "openbk_build_data:/app/build", # Named volume for caching
+        "-v", f"{volume_name}:/app/build", # Named volume for caching
     ]
+    if rtk_toolchain_volume:
+        cmd.extend(["-v", f"{rtk_toolchain_volume}:/opt/rtk-toolchain"])
+    if espressif_tools_volume:
+        cmd.extend(["-v", f"{espressif_tools_volume}:/app/espressif-cache"])
+    if esp8266_tools_volume:
+        cmd.extend(["-v", f"{esp8266_tools_volume}:/app/esp8266-cache"])
+    if mbedtls_cache_volume:
+        cmd.extend(["-v", f"{mbedtls_cache_volume}:/app/mbedtls-cache"])
+    if csky_w800_cache_volume:
+        cmd.extend(["-v", f"{csky_w800_cache_volume}:/app/csky-w800-cache"])
+    if csky_txw_cache_volume:
+        cmd.extend(["-v", f"{csky_txw_cache_volume}:/app/csky-txw-cache"])
+    if pip_cache_volume:
+        cmd.extend(["-v", f"{pip_cache_volume}:/app/pip-cache"])
 
     
     if version:
@@ -315,6 +445,9 @@ def run_docker_build(output_dir, platform, custom_config_path, version=None, cle
         
     if flash_size:
         cmd.extend(["-e", f"FLASH_SIZE={flash_size}"])
+
+    if txw_packager:
+        cmd.extend(["-e", f"TXW_PACKAGER_MODE={txw_packager}"])
 
     # Pass Host Timezone
     try:
@@ -330,10 +463,50 @@ def run_docker_build(output_dir, platform, custom_config_path, version=None, cle
     ])
     
     start_time = time.time() # Use time.time for wall clock, os.times is process time
-    subprocess.run(cmd, check=True, encoding='utf-8', errors='replace')
+    log_handle = None
+    if log_file_path:
+        abs_log_path = os.path.abspath(log_file_path)
+        os.makedirs(os.path.dirname(abs_log_path), exist_ok=True)
+        log_handle = open(abs_log_path, "w", encoding="utf-8", errors="replace")
+        log_handle.write(f"Command: {' '.join(cmd)}\n\n")
+
+    try:
+        process = subprocess.Popen(
+            cmd,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            encoding="utf-8",
+            errors="replace",
+            bufsize=1,
+            universal_newlines=True,
+        )
+
+        if process.stdout:
+            for line in process.stdout:
+                if stream_output:
+                    try:
+                        print(line, end="")
+                    except UnicodeEncodeError:
+                        # Some toolchains emit characters not representable in local console codepage.
+                        safe_line = line.encode(
+                            sys.stdout.encoding or "utf-8", errors="replace"
+                        ).decode(sys.stdout.encoding or "utf-8", errors="replace")
+                        print(safe_line, end="")
+                if log_handle:
+                    log_handle.write(line)
+                    log_handle.flush()
+
+        return_code = process.wait()
+        if return_code != 0:
+            raise subprocess.CalledProcessError(return_code, cmd)
+    finally:
+        if log_handle:
+            log_handle.close()
+
     end_time = time.time()
     
     print(f"Build task finished in {end_time - start_time:.2f} seconds.")
+    return end_time - start_time
 
 def get_default_flash_size(platform):
     """
@@ -352,6 +525,12 @@ def main():
     parser.add_argument("--clean", action="store_true", help="Perform a clean build (make clean) before building")
     parser.add_argument("--no-cache", action="store_true", help="Force rebuild of Docker image (ignore cache)")
     parser.add_argument("--flash-size", help="Flash size (e.g. 1MB, 2MB, 4MB)")
+    parser.add_argument(
+        "--txw-packager",
+        choices=["auto", "wine", "fallback"],
+        default="auto",
+        help="OpenTXW81X post-packager mode: auto, wine (CI-like), fallback (Linux emulation)",
+    )
     parser.add_argument("--src", help="Path to the repository root (needed if running from outside)")
     args = parser.parse_args()
 
@@ -450,6 +629,7 @@ def main():
     print(f"Output: {output_dir}")
     print(f"Platform: {selected_platform}")
     print(f"Flash Size: {selected_flash_size}")
+    print(f"TXW Packager Mode: {args.txw_packager}")
     print(f"Drivers: {selected_drivers_list if selected_drivers_list else 'None'}")
     if auto_added:
         print(f"Auto-enabled dependencies: {sorted(list(auto_added))}")
@@ -479,7 +659,15 @@ def main():
         build_docker_image(no_cache=args.no_cache)
         
         # Run Build
-        run_docker_build(output_dir, selected_platform, temp_config_path, version_input if version_input else None, clean=args.clean, flash_size=selected_flash_size)
+        run_docker_build(
+            output_dir,
+            selected_platform,
+            temp_config_path,
+            version_input if version_input else None,
+            clean=args.clean,
+            flash_size=selected_flash_size,
+            txw_packager=args.txw_packager,
+        )
         
     finally:
         # Cleanup
