@@ -482,13 +482,18 @@ class OBKBuildToolGUI(tk.Tk):
             with open(temp_config_path, "w", encoding="utf-8") as f:
                 f.write(cfg_text)
 
-            # 1) docker build image
+            # 1) Ensure required GCC archive is present (auto-download if missing)
+            if hasattr(bt, "ensure_gcc_arm_archive"):
+                self._log("Checking required GCC ARM archive...\n")
+                bt.ensure_gcc_arm_archive()
+
+            # 2) docker build image
             build_cmd = ["docker", "build", "-t", "openbk_builder", "."]
             if no_cache:
                 build_cmd.insert(2, "--no-cache")
             self._run_cmd_stream(build_cmd, cwd=bt.DOCKER_DIR)
 
-            # 2) docker run build
+            # 3) docker run build
             # Resolve target platform
             target_platform = bt.PLATFORMS.get(platform, {}).get("target", platform)
 
