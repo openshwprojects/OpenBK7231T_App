@@ -55,6 +55,7 @@ class OBKBuildToolGUI(tk.Tk):
         self.var_version = tk.StringVar(value="")
         self.var_clean = tk.BooleanVar(value=False)
         self.var_no_cache = tk.BooleanVar(value=False)
+        self.var_txw_packager = tk.StringVar(value="auto")
 
         # Build UI
         self._build_ui()
@@ -67,6 +68,7 @@ class OBKBuildToolGUI(tk.Tk):
 
         # Initialize defaults based on platform
         self._on_platform_change()
+        self._update_start_enabled()
 
         # Periodic log pumping
         self.after(50, self._pump_logs)
@@ -172,6 +174,7 @@ class OBKBuildToolGUI(tk.Tk):
         # Version/name
         ttk.Label(frm_settings, text="Version / Name:").grid(row=6, column=0, sticky="w", padx=8, pady=(6, 2))
         ent_ver = ttk.Entry(frm_settings, textvariable=self.var_version)
+        self.var_version.trace_add("write", lambda *_: self._update_start_enabled())
         ent_ver.grid(row=6, column=1, sticky="ew", padx=8, pady=(6, 2))
 
         hint_ver = ttk.Label(frm_settings, text="Hint: avoid whitespace. Allowed: A–Z a–z 0–9 . _ - (whitespace will be converted to '_').",
@@ -184,6 +187,15 @@ class OBKBuildToolGUI(tk.Tk):
         chk_clean.grid(row=0, column=0, sticky="w", padx=(0, 18))
         chk_nocache = ttk.Checkbutton(frm_opts, text="Rebuild Docker Image (no-cache)", variable=self.var_no_cache)
         chk_nocache.grid(row=0, column=1, sticky="w")
+        ttk.Label(frm_opts, text="TXW packager:").grid(row=0, column=2, sticky="w", padx=(18, 6))
+        self.cmb_txw = ttk.Combobox(
+            frm_opts,
+            textvariable=self.var_txw_packager,
+            state="readonly",
+            values=["auto", "wine", "fallback"],
+            width=10,
+        )
+        self.cmb_txw.grid(row=0, column=3, sticky="w")
         # --- Drivers frame ---
         frm_drivers = ttk.LabelFrame(self, text="Drivers (platform-aware)")
         frm_drivers.grid(row=1, column=0, sticky="nsew", padx=10, pady=(0, 10))
@@ -200,14 +212,11 @@ class OBKBuildToolGUI(tk.Tk):
         scr = ttk.Scrollbar(inner, orient="vertical", command=self.lst_drivers.yview)
         scr.grid(row=0, column=1, sticky="ns")
         self.lst_drivers.config(yscrollcommand=scr.set)
+        self.lst_drivers.bind("<<ListboxSelect>>", lambda _e: self._update_start_enabled())
         btns = ttk.Frame(frm_drivers)
         btns.grid(row=0, column=1, sticky="ns", padx=8, pady=8)
         btn_refresh = ttk.Button(btns, text="Refresh", command=self._refresh_drivers)
         btn_refresh.grid(row=0, column=0, sticky="ew", pady=(0, 6))
-        btn_all = ttk.Button(btns, text="Select All", command=self._select_all_drivers)
-        btn_all.grid(row=1, column=0, sticky="ew", pady=(0, 6))
-        btn_none = ttk.Button(btns, text="Select None", command=self._select_none_drivers)
-        btn_none.grid(row=2, column=0, sticky="ew", pady=(0, 6))
         # --- Actions row ---
         frm_actions = ttk.Frame(self)
         frm_actions.grid(row=2, column=0, sticky="ew", padx=10)
@@ -250,6 +259,12 @@ class OBKBuildToolGUI(tk.Tk):
     # ---------------- Helpers ----------------
     def _log(self, msg: str):
         self._log_queue.put(msg)
+
+    def _subprocess_env(self) -> dict[str, str]:
+        env = os.environ.copy()
+        env.setdefault("PYTHONIOENCODING", "utf-8")
+        env.setdefault("PYTHONUTF8", "1")
+        return env
 
     def _pump_logs(self):
         try:
@@ -294,6 +309,13 @@ class OBKBuildToolGUI(tk.Tk):
         if not current_flash:
             self.var_flash_size.set(default_flash)
 
+        # TXW packager is only relevant for TXW81X.
+        if plat == "TXW81X":
+            self.cmb_txw.config(state="readonly")
+        else:
+            self.var_txw_packager.set("auto")
+            self.cmb_txw.config(state="disabled")
+
         # Refresh drivers list
         self._refresh_drivers()
 
@@ -308,12 +330,22 @@ class OBKBuildToolGUI(tk.Tk):
 
         if not drivers:
             self._log(f"[Info] No drivers found (missing {bt.CONFIG_FILE}?)\n")
+        self._update_start_enabled()
 
-    def _select_all_drivers(self):
-        self.lst_drivers.select_set(0, "end")
+    def _update_start_enabled(self):
+        # Start Build is enabled only when:
+        # - at least one driver is selected
+        # - Version / Name is not empty
+        try:
+            has_driver = len(self._get_selected_drivers()) > 0
+        except Exception:
+            has_driver = False
 
-    def _select_none_drivers(self):
-        self.lst_drivers.select_clear(0, "end")
+        version_ok = bool(self.var_version.get().strip())
+
+        self.btn_start.config(
+            state=("normal" if (has_driver and version_ok) else "disabled")
+        )
 
     def _get_selected_drivers(self) -> list[str]:
         return [self.lst_drivers.get(i) for i in self.lst_drivers.curselection()]
@@ -378,8 +410,15 @@ class OBKBuildToolGUI(tk.Tk):
             return
 
         selected_drivers = self._get_selected_drivers()
+        if len(selected_drivers) == 0:
+            messagebox.showerror("No Drivers Selected", "Please select at least one driver before starting the build.")
+            self._update_start_enabled()
+            return
         clean = bool(self.var_clean.get())
         no_cache = bool(self.var_no_cache.get())
+        txw_packager = (self.var_txw_packager.get().strip() or "auto").lower()
+        if txw_packager not in {"auto", "wine", "fallback"}:
+            txw_packager = "auto"
 
         # Kick thread
         self._set_ui_busy(True)
@@ -396,11 +435,12 @@ class OBKBuildToolGUI(tk.Tk):
             self._log("Option: CLEAN BUILD enabled\n")
         if no_cache:
             self._log("Option: DOCKER IMAGE REBUILD (no-cache) enabled\n")
+        self._log(f"TXW Packager: {txw_packager}\n")
         self._log("\n")
 
         self._build_thread = threading.Thread(
             target=self._run_build_worker,
-            args=(out_dir, plat, selected_drivers, flash, version, clean, no_cache),
+            args=(out_dir, plat, selected_drivers, flash, version, clean, no_cache, txw_packager),
             daemon=True
         )
         self._build_thread.start()
@@ -414,6 +454,9 @@ class OBKBuildToolGUI(tk.Tk):
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
             text=True,
+            encoding="utf-8",
+            errors="replace",
+            env=self._subprocess_env(),
             bufsize=1
         )
         assert p.stdout is not None
@@ -424,7 +467,8 @@ class OBKBuildToolGUI(tk.Tk):
             raise RuntimeError(f"Command failed with exit code {rc}: {' '.join(cmd)}")
 
     def _run_build_worker(self, out_dir: str, platform: str, selected_drivers: list[str],
-                          flash_size: str, version: str | None, clean: bool, no_cache: bool):
+                          flash_size: str, version: str | None, clean: bool, no_cache: bool,
+                          txw_packager: str):
         start_time = time.time()
         temp_config_path = os.path.join(bt.REPO_ROOT, "temp_obk_config.h")
         try:
@@ -456,7 +500,14 @@ class OBKBuildToolGUI(tk.Tk):
                 "-v", f"{bt.REPO_ROOT}:/app/source:ro",
                 "-v", f"{abs_output_dir}:/app/output",
                 "-v", f"{temp_config_path}:/app/custom_config.h:ro",
-                "-v", "openbk_build_data:/app/build",
+                "-v", f"{bt.DEFAULT_BUILD_VOLUME}:/app/build",
+                "-v", f"{bt.DEFAULT_RTK_TOOLCHAIN_VOLUME}:/opt/rtk-toolchain",
+                "-v", f"{bt.DEFAULT_ESPRESSIF_TOOLS_VOLUME}:/app/espressif-cache",
+                "-v", f"{bt.DEFAULT_ESP8266_TOOLS_VOLUME}:/app/esp8266-cache",
+                "-v", f"{bt.DEFAULT_MBEDTLS_CACHE_VOLUME}:/app/mbedtls-cache",
+                "-v", f"{bt.DEFAULT_CSKY_W800_CACHE_VOLUME}:/app/csky-w800-cache",
+                "-v", f"{bt.DEFAULT_CSKY_TXW_CACHE_VOLUME}:/app/csky-txw-cache",
+                "-v", f"{bt.DEFAULT_PIP_CACHE_VOLUME}:/app/pip-cache",
             ]
 
             if version:
@@ -465,6 +516,8 @@ class OBKBuildToolGUI(tk.Tk):
                 cmd += ["-e", "CLEAN_BUILD=1"]
             if flash_size:
                 cmd += ["-e", f"FLASH_SIZE={flash_size}"]
+            if txw_packager:
+                cmd += ["-e", f"TXW_PACKAGER_MODE={txw_packager}"]
 
             # Pass timezone similar to your script
             try:
