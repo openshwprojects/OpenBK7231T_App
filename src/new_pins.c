@@ -1347,10 +1347,8 @@ static void Channel_OnChanged(int ch, int prevValue, int iFlags) {
 	Channel_SaveInFlashIfNeeded(ch);
 }
 void CFG_ApplyChannelStartValues() {
-	int i;
+	int i, iValue;
 	for (i = 0; i < CHANNEL_MAX; i++) {
-		int iValue;
-
 		iValue = g_cfg.startChannelValues[i];
 		if (iValue == -1) {
 			g_channelValuesFloats[i] = g_channelValues[i] = HAL_FlashVars_GetChannelValue(i);
@@ -1359,6 +1357,22 @@ void CFG_ApplyChannelStartValues() {
 		else {
 			g_channelValuesFloats[i] = g_channelValues[i] = iValue;
 			//addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "CFG_ApplyChannelStartValues: Channel %i is being set to constant state %i", i, g_channelValues[i]);
+		}
+	}
+	// preload pin values from channels for pin types that look at g_lastValidState
+	for (i = 0; i < PLATFORM_GPIO_MAX; i++) {
+		switch (g_cfg.pins.roles[i]) {
+		case IOR_DigitalInput:
+		case IOR_DigitalInput_n:
+		case IOR_ToggleChannelOnToggle:
+		case IOR_DigitalInput_NoPup:
+		case IOR_DigitalInput_NoPup_n:
+		case IOR_DoorSensorWithDeepSleep:
+		case IOR_DoorSensorWithDeepSleep_NoPup:
+		case IOR_DoorSensorWithDeepSleep_pd:
+			iValue = g_cfg.pins.channels[i];
+			g_lastValidState[i] = g_channelValues[iValue];
+			//addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "CFG_ApplyChannelStartValues: Pin %i is being set channel state %i", i, g_channelValues[iValue]);
 		}
 	}
 }

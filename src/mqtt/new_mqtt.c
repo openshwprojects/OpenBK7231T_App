@@ -12,7 +12,7 @@
 #include "../cmnds/cmd_public.h"
 #include "../hal/hal_wifi.h"
 #include "../driver/drv_public.h"
-#include "../driver/drv_ntp.h"
+//#include "../driver/drv_ntp.h"
 #include "../driver/drv_deviceclock.h"
 #include "../driver/drv_tuyaMCU.h"
 #include "../hal/hal_ota.h"
@@ -2590,20 +2590,20 @@ struct tm* cvt_date(char const* date, char const* time, struct tm* t)
 	return t;
 }
 struct tm* mbedtls_platform_gmtime_r(const mbedtls_time_t* tt, struct tm* tm_buf) {
-	// If NTP time not synced return compile time
+	// If time not synced return compile time
 	struct tm* ltm;
-	if (!NTP_IsTimeSynced()) {	
+	if (!TIME_IsTimeSynced()) {	
 		ltm = cvt_date(__DATE__, __TIME__, tm_buf);
 		if (log_gmtime_alt) {
-			addLogAdv(LOG_INFO, LOG_FEATURE_NTP, "MBEDTLS: NTP not synchronized. Using compile time: %04d/%02d/%02d %02d:%02d:%02d",
+			addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "MBEDTLS: TIME not synchronized. Using compile time: %04d/%02d/%02d %02d:%02d:%02d",
 				ltm->tm_year + 1900, ltm->tm_mon + 1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min, ltm->tm_sec);
 			log_gmtime_alt = false; 
 		}			
 		return ltm;
 	}
-	time_t ntpTime;
-	ntpTime=(time_t)TIME_GetCurrentTime();
-	return gmtime_r((time_t*)&ntpTime, tm_buf);
+	time_t devTime;
+	devTime=(time_t)TIME_GetCurrentTime();
+	return gmtime_r((time_t*)&devTime, tm_buf);
 }
 #endif  //MBEDTLS_PLATFORM_GMTIME_R_ALT
 

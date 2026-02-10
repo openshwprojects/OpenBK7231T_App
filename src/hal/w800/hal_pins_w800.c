@@ -213,7 +213,7 @@ void HAL_PIN_PWM_Start(int index, int freq) {
 		return;
 
 	pwm_demo_multiplex_config(channel, index);
-	ret = tls_pwm_init(channel, 1000, 0, 0);
+	ret = tls_pwm_init(channel, freq, 0, 0);
 	if (ret != WM_SUCCESS)
 		return;
 	tls_pwm_start(channel);

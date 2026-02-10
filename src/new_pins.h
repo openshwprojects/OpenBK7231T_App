@@ -1553,11 +1553,6 @@ typedef struct mainConfig_s {
 	char ping_host[64];
 	// ofs 0x000005E0 (dec 1504)
 	//char initCommandLine[512];
-#if PLATFORM_W600 || PLATFORM_W800
-#define ALLOW_SSID2 0
-#define ALLOW_WEB_PASSWORD 0
-	char initCommandLine[512];
-#else
 #define ALLOW_SSID2 1
 #define ALLOW_WEB_PASSWORD 1
 	char initCommandLine[1568];
@@ -1577,7 +1572,6 @@ typedef struct mainConfig_s {
 	byte disable_web_server;
 	// offset 0x00000CBC (3260 decimal)
 	char unused[324];
-#endif
 } mainConfig_t;
 
 // one sector is 4096 so it we still have some expand possibility
