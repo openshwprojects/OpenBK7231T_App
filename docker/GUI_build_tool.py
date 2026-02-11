@@ -53,6 +53,13 @@ class OBKBuildToolGUI(tk.Tk):
         self._build_thread: threading.Thread | None = None
         self._busy = False
 
+        # Caching for _validate_source_dir to avoid redundant Git calls
+        self._last_validated_dir: str | None = None
+        self._last_validation_res: tuple[bool, str] | None = None
+
+        # Suppress terminal windows for background subprocesses on Windows
+        self._creation_flags = 0x08000000 if sys.platform == "win32" else 0
+
         # Variables
         self.var_src_dir = tk.StringVar(value=bt.REPO_ROOT)
         self.var_output_dir = tk.StringVar(value="")
@@ -105,6 +112,7 @@ class OBKBuildToolGUI(tk.Tk):
             errors="replace",
             timeout=timeout_sec,
             env=self._subprocess_env(),
+            creationflags=self._creation_flags,
         )
 
     def _check_updates_worker(self):
@@ -322,7 +330,8 @@ class OBKBuildToolGUI(tk.Tk):
         self.cmb_platform = ttk.Combobox(frm_settings, textvariable=self.var_platform, state="readonly",
                                          values=bt.get_platforms())
         self.cmb_platform.grid(row=4, column=1, sticky="w", padx=8, pady=(6, 2))
-        self.cmb_platform.bind("<<ComboboxSelected>>", lambda _e: self._on_platform_change())
+        # Removed redundant bind: self.cmb_platform.bind("<<ComboboxSelected>>", ...) 
+        # as self.var_platform.trace_add already handles this.
         # Flash size (editable combo)
         ttk.Label(frm_settings, text="Flash Size:").grid(row=4, column=2, sticky="w", padx=(8, 2), pady=(6, 2))
         self.cmb_flash = ttk.Combobox(frm_settings, textvariable=self.var_flash_size, width=12)
@@ -507,10 +516,20 @@ class OBKBuildToolGUI(tk.Tk):
 
     def _validate_source_dir(self) -> tuple[bool, str]:
         src_dir = (self.var_src_dir.get().strip() or "").strip()
+
+        # Return cached result if directory hasn't changed to avoid slow Git calls in EXE
+        if src_dir == self._last_validated_dir and self._last_validation_res is not None:
+            return self._last_validation_res
+
+        self._last_validated_dir = src_dir
+
         if not src_dir:
-            return False, "Please select a source directory."
+            self._last_validation_res = (False, "Please select a source directory.")
+            return self._last_validation_res
+
         if not os.path.isdir(src_dir):
-            return False, f"Source directory does not exist:\n{src_dir}"
+            self._last_validation_res = (False, f"Source directory does not exist:\n{src_dir}")
+            return self._last_validation_res
 
         required_entries = ["docker", "src", "platforms", "Makefile"]
         missing = []
@@ -523,20 +542,25 @@ class OBKBuildToolGUI(tk.Tk):
                 if not os.path.isdir(p):
                     missing.append(entry)
         if missing:
-            return False, (
+            self._last_validation_res = (False, (
                 "Selected folder does not look like OpenBK repo root.\n"
                 f"Missing: {', '.join(missing)}"
-            )
+            ))
+            return self._last_validation_res
 
         if shutil.which("git"):
             probe = self._run_git(src_dir, ["rev-parse", "--is-inside-work-tree"])
             if probe.returncode != 0 or probe.stdout.strip().lower() != "true":
-                return False, "Selected folder is not a Git working tree."
+                self._last_validation_res = (False, "Selected folder is not a Git working tree.")
+            else:
+                self._last_validation_res = (True, "")
         else:
             if not os.path.isdir(os.path.join(src_dir, ".git")):
-                return False, "Selected folder is not a Git working tree (.git missing)."
+                self._last_validation_res = (False, "Selected folder is not a Git working tree (.git missing).")
+            else:
+                self._last_validation_res = (True, "")
 
-        return True, ""
+        return self._last_validation_res
 
     def _update_source_hint(self):
         if not hasattr(self, "lbl_source_hint"):
@@ -725,7 +749,8 @@ class OBKBuildToolGUI(tk.Tk):
             encoding="utf-8",
             errors="replace",
             env=self._subprocess_env(),
-            bufsize=1
+            bufsize=1,
+            creationflags=self._creation_flags,
         )
         assert p.stdout is not None
         for line in p.stdout:
