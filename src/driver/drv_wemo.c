@@ -154,6 +154,18 @@ const char *g_wemo_response_2_fmt =
 "</s:Body>"
 "</s:Envelope>\r\n";
 
+static const char *g_wemo_metainfo_resp_1 =
+"<s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\" s:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">"
+"<s:Body>"
+"<u:GetMetaInfoResponse xmlns:u=\"urn:Belkin:service:metainfo:1\">"
+"<MetaInfo>";
+
+static const char *g_wemo_metainfo_resp_2 =
+"</MetaInfo>"
+"</u:GetMetaInfoResponse>"
+"</s:Body>"
+"</s:Envelope>\r\n";
+
 static char *g_serial = 0;
 static char *g_uid = 0;
 static int outBufferLen = 0;
@@ -161,6 +173,8 @@ static char *buffer_out = 0;
 
 static int g_wemoChannels[WEMO_MAX_DEVICES];
 static int g_wemoDeviceCount = 0;
+static bool g_wemoRunning = false;
+
 
 static int stat_searchesReceived = 0;
 static int stat_setupXMLVisits = 0;
@@ -192,6 +206,9 @@ static int WEMO_ParseDeviceFromURL(const char *url, const char *suffix) {
 	if (url == NULL || suffix == NULL) {
 		return 0;
 	}
+	if (!g_wemoRunning) {
+		return 0;
+	}
 	if (WEMO_IsURLTailMatch(url, suffix)) {
 		return 1;
 	}
@@ -215,7 +232,7 @@ static int WEMO_ParseDeviceFromURL(const char *url, const char *suffix) {
 
 static const char *WEMO_GetFriendlyNameForDevice(int deviceId) {
 	int channel;
-	if (deviceId > 1 && deviceId <= g_wemoDeviceCount) {
+	if (deviceId >= 1 && deviceId <= g_wemoDeviceCount) {
 		channel = g_wemoChannels[deviceId - 1];
 		if (channel >= 0) {
 			const char *label = CHANNEL_GetLabel(channel);
@@ -229,7 +246,7 @@ static const char *WEMO_GetFriendlyNameForDevice(int deviceId) {
 
 static int WEMO_GetPowerStateByDevice(int deviceId) {
 	int channel;
-	if (deviceId <= 1 || deviceId > g_wemoDeviceCount) {
+	if (deviceId < 1 || deviceId > g_wemoDeviceCount) {
 		return Main_GetFirstPowerState();
 	}
 	channel = g_wemoChannels[deviceId - 1];
@@ -241,7 +258,7 @@ static int WEMO_GetPowerStateByDevice(int deviceId) {
 
 static void WEMO_SetPowerStateByDevice(int deviceId, int power) {
 	int channel;
-	if (deviceId <= 1 || deviceId > g_wemoDeviceCount) {
+	if (deviceId < 1 || deviceId > g_wemoDeviceCount) {
 		CMD_ExecuteCommand(power ? "POWER ON" : "POWER OFF", 0);
 		return;
 	}
@@ -281,26 +298,38 @@ static void WEMO_PostServiceList(http_request_t* request, int deviceId) {
 		poststr(request, g_wemo_setup_6);
 		return;
 	}
-	hprintf255(request,
+	// NOTE: Do not use a single hprintf255() with the full XML: it will truncate at ~255 chars
+	// and produce malformed setup.xml for virtual devices, causing discovery dedupe/failure.
+	poststr(request,
 		"<serviceList>"
 		"<service>"
 		"<serviceType>urn:Belkin:service:basicevent:1</serviceType>"
 		"<serviceId>urn:Belkin:serviceId:basicevent1</serviceId>"
-		"<controlURL>/wemo/%d/upnp/control/basicevent1</controlURL>"
-		"<eventSubURL>/wemo/%d/upnp/event/basicevent1</eventSubURL>"
-		"<SCPDURL>/wemo/%d/eventservice.xml</SCPDURL>"
-		"</service>"
+		"<controlURL>/wemo/");
+	hprintf255(request, "%d", deviceId);
+	poststr(request, "/upnp/control/basicevent1</controlURL><eventSubURL>/wemo/");
+	hprintf255(request, "%d", deviceId);
+	poststr(request, "/upnp/event/basicevent1</eventSubURL><SCPDURL>/wemo/");
+	hprintf255(request, "%d", deviceId);
+	poststr(request, "/eventservice.xml</SCPDURL></service>");
+
+	poststr(request,
 		"<service>"
 		"<serviceType>urn:Belkin:service:metainfo:1</serviceType>"
 		"<serviceId>urn:Belkin:serviceId:metainfo1</serviceId>"
-		"<controlURL>/wemo/%d/upnp/control/metainfo1</controlURL>"
-		"<eventSubURL>/wemo/%d/upnp/event/metainfo1</eventSubURL>"
-		"<SCPDURL>/wemo/%d/metainfoservice.xml</SCPDURL>"
+		"<controlURL>/wemo/");
+	hprintf255(request, "%d", deviceId);
+	poststr(request, "/upnp/control/metainfo1</controlURL><eventSubURL>/wemo/");
+	hprintf255(request, "%d", deviceId);
+	poststr(request, "/upnp/event/metainfo1</eventSubURL><SCPDURL>/wemo/");
+	hprintf255(request, "%d", deviceId);
+	poststr(request,
+		"/metainfoservice.xml</SCPDURL>"
 		"</service>"
 		"</serviceList>"
 		"</device>"
-		"</root>\r\n",
-		deviceId, deviceId, deviceId, deviceId, deviceId, deviceId);
+		"</root>
+");
 }
 
 static const char *WEMO_GetLocationPathForDevice(int deviceId, char *buffer, int bufferLen) {
@@ -323,7 +352,7 @@ void DRV_WEMO_Send_Advert_To(int mode, struct sockaddr_in *addr) {
 	const char *useType;
 	int i;
 
-	if (g_uid == 0) {
+	if (!g_wemoRunning || g_uid == 0) {
 		// not running
 		return;
 	}
@@ -384,6 +413,10 @@ bool Main_GetFirstPowerState() {
 }
 
 static int WEMO_BasicEvent1(http_request_t* request) {
+	if (!g_wemoRunning) {
+		return -1;
+	}
+
 	const char* cmd = request->bodystart;
 	int deviceId = WEMO_ParseDeviceFromURL(request->url, "upnp/control/basicevent1");
 
@@ -438,9 +471,60 @@ static int WEMO_BasicEvent1(http_request_t* request) {
 
 	return 0;
 }
+
+static int WEMO_MetaInfoControl(http_request_t* request) {
+	const char* cmd = request->bodystart;
+	int deviceId;
+
+	if (!g_wemoRunning) {
+		return -1;
+	}
+	deviceId = WEMO_ParseDeviceFromURL(request->url, "upnp/control/metainfo1");
+	if (deviceId <= 0) {
+		addLogAdv(LOG_WARN, LOG_FEATURE_HTTP, "Wemo invalid metainfo endpoint %s", request->url ? request->url : "(null)");
+		return -1;
+	}
+	if (cmd == NULL) {
+		addLogAdv(LOG_ERROR, LOG_FEATURE_HTTP, "Wemo metainfo request with empty body");
+		return -1;
+	}
+
+	addLogAdv(LOG_INFO, LOG_FEATURE_HTTP, "Wemo metainfo[%d] %s", deviceId, cmd);
+
+	// Many controllers never call metainfo, but we advertise the service in setup.xml.
+	// Return a minimal, stable response to satisfy callers that do.
+	http_setup(request, httpMimeTypeXML);
+	poststr(request, g_wemo_metainfo_resp_1);
+	hprintf255(request, "OpenBeken|%s|%d", g_serial ? g_serial : "", deviceId);
+	poststr(request, g_wemo_metainfo_resp_2);
+	poststr(request, NULL);
+
+	return 0;
+}
+
+static int WEMO_VirtualPost(http_request_t* request) {
+	int deviceId;
+	if (!g_wemoRunning) {
+		return -1;
+	}
+	deviceId = WEMO_ParseDeviceFromURL(request->url, "upnp/control/basicevent1");
+	if (deviceId > 0) {
+		return WEMO_BasicEvent1(request);
+	}
+	deviceId = WEMO_ParseDeviceFromURL(request->url, "upnp/control/metainfo1");
+	if (deviceId > 0) {
+		return WEMO_MetaInfoControl(request);
+	}
+	addLogAdv(LOG_WARN, LOG_FEATURE_HTTP, "Wemo invalid POST endpoint %s", request->url ? request->url : "(null)");
+	return -1;
+}
 static int WEMO_Setup(http_request_t* request);
 
 static int WEMO_EventService(http_request_t* request) {
+	if (!g_wemoRunning) {
+		return -1;
+	}
+
 
 	http_setup(request, httpMimeTypeXML);
 	poststr(request, g_wemo_eventService);
@@ -451,6 +535,10 @@ static int WEMO_EventService(http_request_t* request) {
 	return 0;
 }
 static int WEMO_MetaInfoService(http_request_t* request) {
+	if (!g_wemoRunning) {
+		return -1;
+	}
+
 
 	http_setup(request, httpMimeTypeXML);
 	poststr(request, g_wemo_metaService);
@@ -461,6 +549,10 @@ static int WEMO_MetaInfoService(http_request_t* request) {
 	return 0;
 }
 static int WEMO_VirtualGet(http_request_t* request) {
+	if (!g_wemoRunning) {
+		return -1;
+	}
+
 	int deviceId;
 	deviceId = WEMO_ParseDeviceFromURL(request->url, "eventservice.xml");
 	if (deviceId > 0) {
@@ -479,6 +571,10 @@ static int WEMO_VirtualGet(http_request_t* request) {
 }
 
 static int WEMO_Setup(http_request_t* request) {
+	if (!g_wemoRunning) {
+		return -1;
+	}
+
 	int deviceId = WEMO_ParseDeviceFromURL(request->url, "setup.xml");
 	if (deviceId <= 0) {
 		addLogAdv(LOG_WARN, LOG_FEATURE_HTTP, "Wemo invalid setup endpoint %s", request->url ? request->url : "(null)");
@@ -518,6 +614,10 @@ static int WEMO_Setup(http_request_t* request) {
 	return 0;
 }
 void WEMO_Shutdown() {
+	if (!g_wemoRunning) {
+		return;
+	}
+	g_wemoRunning = false;
 	if (g_serial) {
 		free(g_serial);
 		g_serial = 0;
@@ -535,6 +635,9 @@ void WEMO_Shutdown() {
 }
 
 void WEMO_Init() {
+	if (g_wemoRunning) {
+		return;
+	}
 	char uid[64];
 	char serial[32];
 	unsigned char mac[8];
@@ -547,6 +650,12 @@ void WEMO_Init() {
 	g_serial = strdup(serial);
 	g_uid = strdup(uid);
 
+	if (g_serial == 0 || g_uid == 0) {
+		if (g_serial) { free(g_serial); g_serial = 0; }
+		if (g_uid) { free(g_uid); g_uid = 0; }
+		return;
+	}
+
 	g_wemoDeviceCount = 0;
 	for (i = 0; i < CHANNEL_MAX && g_wemoDeviceCount < WEMO_MAX_DEVICES; i++) {
 		if (h_isChannelRelay(i) || CHANNEL_GetType(i) == ChType_Toggle) {
@@ -558,12 +667,15 @@ void WEMO_Init() {
 		g_wemoDeviceCount = 1;
 	}
 
+	g_wemoRunning = true;
+
 	HTTP_RegisterCallback("/upnp/control/basicevent1", HTTP_POST, WEMO_BasicEvent1, 0);
+	HTTP_RegisterCallback("/upnp/control/metainfo1", HTTP_POST, WEMO_MetaInfoControl, 0);
 	HTTP_RegisterCallback("/eventservice.xml", HTTP_GET, WEMO_EventService, 0);
 	HTTP_RegisterCallback("/metainfoservice.xml", HTTP_GET, WEMO_MetaInfoService, 0);
 	HTTP_RegisterCallback("/setup.xml", HTTP_GET, WEMO_Setup, 0);
 	// virtual devices (2..N) served under /wemo/{id}/...
-	HTTP_RegisterCallback("/wemo/", HTTP_POST, WEMO_BasicEvent1, 0);
+	HTTP_RegisterCallback("/wemo/", HTTP_POST, WEMO_VirtualPost, 0);
 	HTTP_RegisterCallback("/wemo/", HTTP_GET, WEMO_VirtualGet, 0);
 
 	//if (DRV_IsRunning("SSDP") == false) {
