@@ -16,9 +16,14 @@ try:
 except Exception as e:
     raise SystemExit(f"Failed to import build_tool.py: {e}")
 
+# Hardcoded upstream for update checks (repo-specific GUI behavior).
+UPSTREAM_REPO_URL = "https://github.com/openshwprojects/OpenBK7231T_App.git"
+UPSTREAM_BRANCH = "main"
+
 
 
 class OBKBuildToolGUI(tk.Tk):
+    SOURCE_HINT_TEXT = "Hint: repo root containing docker/, src/, platforms/ (leave as-is if script is inside repo)."
 
     def _on_close(self):
         self._cleanup_pycache()
@@ -46,10 +51,11 @@ class OBKBuildToolGUI(tk.Tk):
 
         self._log_queue: "queue.Queue[str]" = queue.Queue()
         self._build_thread: threading.Thread | None = None
+        self._busy = False
 
         # Variables
         self.var_src_dir = tk.StringVar(value=bt.REPO_ROOT)
-        self.var_output_dir = tk.StringVar(value="test_OUT")
+        self.var_output_dir = tk.StringVar(value="")
         self.var_platform = tk.StringVar(value=bt.get_platforms()[0] if bt.get_platforms() else "")
         self.var_flash_size = tk.StringVar(value="")
         self.var_version = tk.StringVar(value="")
@@ -65,13 +71,159 @@ class OBKBuildToolGUI(tk.Tk):
             self.var_platform.trace_add("write", lambda *_: self._on_platform_change())
         except Exception:
             pass
+        try:
+            self.var_src_dir.trace_add("write", lambda *_: self._on_source_change())
+        except Exception:
+            pass
+        try:
+            self.var_output_dir.trace_add("write", lambda *_: self._on_output_change())
+        except Exception:
+            pass
 
         # Initialize defaults based on platform
         self._on_platform_change()
+        self._on_output_change()
         self._update_start_enabled()
 
         # Periodic log pumping
         self.after(50, self._pump_logs)
+
+    def _check_main_clicked(self):
+        ok, err = self._validate_source_dir()
+        if not ok:
+            messagebox.showerror("Invalid Source Directory", err)
+            return
+        threading.Thread(target=self._check_updates_worker, daemon=True).start()
+
+    def _run_git(self, repo_dir: str, args: list[str], timeout_sec: int = 20) -> subprocess.CompletedProcess:
+        return subprocess.run(
+            ["git", "-C", repo_dir] + args,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            timeout=timeout_sec,
+            env=self._subprocess_env(),
+        )
+
+    def _check_updates_worker(self):
+        repo_dir = self.var_src_dir.get().strip() or bt.REPO_ROOT
+        if not repo_dir or not os.path.isdir(repo_dir):
+            return
+        if not shutil.which("git"):
+            return
+
+        try:
+            inside = self._run_git(repo_dir, ["rev-parse", "--is-inside-work-tree"])
+            if inside.returncode != 0 or inside.stdout.strip().lower() != "true":
+                self.after(
+                    0,
+                    lambda: messagebox.showwarning(
+                        "Check Main",
+                        "Selected source directory is not a Git working tree.",
+                    ),
+                )
+                return
+
+            fetch = self._run_git(
+                repo_dir,
+                ["fetch", "--quiet", UPSTREAM_REPO_URL, UPSTREAM_BRANCH],
+                timeout_sec=60,
+            )
+            if fetch.returncode != 0:
+                err = (fetch.stderr or "").strip() or "Unable to fetch upstream."
+                self.after(0, lambda: messagebox.showwarning("Check Main", f"Fetch failed:\n{err}"))
+                return
+
+            upstream_head = self._run_git(repo_dir, ["rev-parse", "FETCH_HEAD"])
+            if upstream_head.returncode != 0:
+                return
+
+            local_head = self._run_git(repo_dir, ["rev-parse", "HEAD"])
+            if local_head.returncode != 0:
+                return
+
+            local_sha = local_head.stdout.strip()
+            remote_sha = upstream_head.stdout.strip()
+            if not local_sha or not remote_sha:
+                return
+
+            status = self._run_git(repo_dir, ["status", "--porcelain"])
+            dirty = bool(status.stdout.strip()) if status.returncode == 0 else False
+
+            counts = self._run_git(repo_dir, ["rev-list", "--left-right", "--count", "HEAD...FETCH_HEAD"])
+            ahead = "?"
+            behind = "?"
+            if counts.returncode == 0:
+                parts = counts.stdout.strip().split()
+                if len(parts) == 2:
+                    ahead, behind = parts[0], parts[1]
+
+            current_branch = "?"
+            branch_probe = self._run_git(repo_dir, ["rev-parse", "--abbrev-ref", "HEAD"])
+            if branch_probe.returncode == 0:
+                current_branch = branch_probe.stdout.strip() or "?"
+
+            local_desc = local_sha[:10]
+            remote_desc = remote_sha[:10]
+            local_show = self._run_git(repo_dir, ["show", "-s", "--format=%h %ci %s", "HEAD"])
+            if local_show.returncode == 0 and local_show.stdout.strip():
+                local_desc = local_show.stdout.strip()
+            remote_show = self._run_git(repo_dir, ["show", "-s", "--format=%h %ci %s", "FETCH_HEAD"])
+            if remote_show.returncode == 0 and remote_show.stdout.strip():
+                remote_desc = remote_show.stdout.strip()
+
+            self.after(
+                0,
+                lambda: self._show_main_status(
+                    repo_dir=repo_dir,
+                    current_branch=current_branch,
+                    local_desc=local_desc,
+                    remote_desc=remote_desc,
+                    ahead=ahead,
+                    behind=behind,
+                    dirty=dirty,
+                ),
+            )
+        except Exception:
+            self.after(
+                0,
+                lambda: messagebox.showwarning(
+                    "Check Main",
+                    "Main status check failed unexpectedly. See console log for details.",
+                ),
+            )
+
+    def _show_main_status(
+        self,
+        repo_dir: str,
+        current_branch: str,
+        local_desc: str,
+        remote_desc: str,
+        ahead: str,
+        behind: str,
+        dirty: bool,
+    ):
+        dirty_text = "Yes" if dirty else "No"
+        if ahead == "0" and behind == "0":
+            sync_state = "Up to date with upstream main."
+        else:
+            sync_state = "Differs from upstream main."
+
+        msg = [
+            sync_state,
+            "",
+            f"Source: {UPSTREAM_REPO_URL}",
+            f"Repo dir: {repo_dir}",
+            f"Current branch: {current_branch}",
+            "",
+            f"Local HEAD:    {local_desc}",
+            f"Upstream main: {remote_desc}",
+            f"Ahead: {ahead}, Behind: {behind}",
+            f"Working tree dirty: {dirty_text}",
+        ]
+        messagebox.showinfo("Main Status", "\n".join(msg))
 
 
     def _clear_log(self):
@@ -142,10 +294,19 @@ class OBKBuildToolGUI(tk.Tk):
         ent_src.grid(row=0, column=1, sticky="ew", padx=8, pady=(6, 2))
         btn_src = ttk.Button(frm_settings, text="...", width=4, command=self._browse_src)
         btn_src.grid(row=0, column=2, padx=8, pady=(6, 2))
+        btn_check_main = ttk.Button(frm_settings, text="Check Main", command=self._check_main_clicked)
+        btn_check_main.grid(row=0, column=3, padx=(0, 8), pady=(6, 2), sticky="w")
+        self.btn_check_main = btn_check_main
 
-        hint_src = ttk.Label(frm_settings, text="Hint: repo root containing docker/, src/, platforms/ (leave as-is if script is inside repo).",
-                             foreground="#555")
-        hint_src.grid(row=1, column=1, columnspan=2, sticky="w", padx=8, pady=(0, 6))
+        hint_src = ttk.Label(
+            frm_settings,
+            text=self.SOURCE_HINT_TEXT,
+            foreground="#555",
+            wraplength=760,
+            justify="left",
+        )
+        hint_src.grid(row=1, column=1, columnspan=3, sticky="w", padx=8, pady=(0, 6))
+        self.lbl_source_hint = hint_src
         # Output folder
         ttk.Label(frm_settings, text="Output Folder:").grid(row=2, column=0, sticky="w", padx=8, pady=(6, 2))
         ent_out = ttk.Entry(frm_settings, textvariable=self.var_output_dir)
@@ -176,6 +337,7 @@ class OBKBuildToolGUI(tk.Tk):
         ent_ver = ttk.Entry(frm_settings, textvariable=self.var_version)
         self.var_version.trace_add("write", lambda *_: self._update_start_enabled())
         ent_ver.grid(row=6, column=1, sticky="ew", padx=8, pady=(6, 2))
+        self.ent_ver = ent_ver
 
         hint_ver = ttk.Label(frm_settings, text="Hint: avoid whitespace. Allowed: A–Z a–z 0–9 . _ - (whitespace will be converted to '_').",
                              foreground="#555")
@@ -187,6 +349,8 @@ class OBKBuildToolGUI(tk.Tk):
         chk_clean.grid(row=0, column=0, sticky="w", padx=(0, 18))
         chk_nocache = ttk.Checkbutton(frm_opts, text="Rebuild Docker Image (no-cache)", variable=self.var_no_cache)
         chk_nocache.grid(row=0, column=1, sticky="w")
+        self.chk_clean = chk_clean
+        self.chk_nocache = chk_nocache
         ttk.Label(frm_opts, text="TXW packager:").grid(row=0, column=2, sticky="w", padx=(18, 6))
         self.cmb_txw = ttk.Combobox(
             frm_opts,
@@ -217,6 +381,7 @@ class OBKBuildToolGUI(tk.Tk):
         btns.grid(row=0, column=1, sticky="ns", padx=8, pady=8)
         btn_refresh = ttk.Button(btns, text="Refresh", command=self._refresh_drivers)
         btn_refresh.grid(row=0, column=0, sticky="ew", pady=(0, 6))
+        self.btn_refresh = btn_refresh
         # --- Actions row ---
         frm_actions = ttk.Frame(self)
         frm_actions.grid(row=2, column=0, sticky="ew", padx=10)
@@ -231,6 +396,7 @@ class OBKBuildToolGUI(tk.Tk):
 
         btn_open = ttk.Button(frm_actions, text="Open Folder", command=self._open_output_folder)
         btn_open.grid(row=0, column=2, sticky="w", padx=(0, 10), pady=8)
+        self.btn_open = btn_open
 # --- Build output ---
         frm_log = ttk.LabelFrame(self, text="Build Output")
         frm_log.grid(row=3, column=0, sticky="nsew", padx=10, pady=10)
@@ -280,15 +446,23 @@ class OBKBuildToolGUI(tk.Tk):
         d = filedialog.askdirectory(title="Select repository root (where build_tool.py expects docker/, src/, etc.)")
         if d:
             self.var_src_dir.set(d)
-            self._on_platform_change()
+            self._on_source_change()
+            ok, err = self._validate_source_dir()
+            if not ok:
+                messagebox.showwarning("Source Folder Warning", err)
 
     def _browse_out(self):
         d = filedialog.askdirectory(title="Select output folder (host)")
         if d:
             self.var_output_dir.set(d)
+            self._on_output_change()
 
     def _open_output_folder(self):
-        out_dir = os.path.abspath(self.var_output_dir.get().strip() or "test_OUT")
+        raw_out = self.var_output_dir.get().strip()
+        if not raw_out:
+            messagebox.showerror("Missing Output Folder", "Please select an output folder first.")
+            return
+        out_dir = os.path.abspath(raw_out)
         os.makedirs(out_dir, exist_ok=True)
         if sys.platform.startswith("win"):
             os.startfile(out_dir)  # noqa: E1101
@@ -319,8 +493,92 @@ class OBKBuildToolGUI(tk.Tk):
         # Refresh drivers list
         self._refresh_drivers()
 
+    def _on_source_change(self):
+        src_dir = self.var_src_dir.get().strip()
+        bt.update_paths(src_dir if src_dir else None)
+        self._update_source_hint()
+        self._apply_output_gate()
+        self._refresh_drivers()
+        self._update_start_enabled()
+
+    def _on_output_change(self):
+        self._apply_output_gate()
+        self._update_start_enabled()
+
+    def _validate_source_dir(self) -> tuple[bool, str]:
+        src_dir = (self.var_src_dir.get().strip() or "").strip()
+        if not src_dir:
+            return False, "Please select a source directory."
+        if not os.path.isdir(src_dir):
+            return False, f"Source directory does not exist:\n{src_dir}"
+
+        required_entries = ["docker", "src", "platforms", "Makefile"]
+        missing = []
+        for entry in required_entries:
+            p = os.path.join(src_dir, entry)
+            if entry == "Makefile":
+                if not os.path.isfile(p):
+                    missing.append(entry)
+            else:
+                if not os.path.isdir(p):
+                    missing.append(entry)
+        if missing:
+            return False, (
+                "Selected folder does not look like OpenBK repo root.\n"
+                f"Missing: {', '.join(missing)}"
+            )
+
+        if shutil.which("git"):
+            probe = self._run_git(src_dir, ["rev-parse", "--is-inside-work-tree"])
+            if probe.returncode != 0 or probe.stdout.strip().lower() != "true":
+                return False, "Selected folder is not a Git working tree."
+        else:
+            if not os.path.isdir(os.path.join(src_dir, ".git")):
+                return False, "Selected folder is not a Git working tree (.git missing)."
+
+        return True, ""
+
+    def _update_source_hint(self):
+        if not hasattr(self, "lbl_source_hint"):
+            return
+        ok, err = self._validate_source_dir()
+        if ok:
+            self.lbl_source_hint.config(text=self.SOURCE_HINT_TEXT, foreground="#555")
+            return
+
+        # Keep warning short/clean for on-form display.
+        msg = (err or "Selected source directory is invalid.").replace("\n", " ")
+        self.lbl_source_hint.config(text=f"Warning: {msg}", foreground="#b00020")
+
+    def _apply_output_gate(self):
+        source_ok, _ = self._validate_source_dir()
+        output_set = bool(self.var_output_dir.get().strip())
+        enabled = output_set and source_ok and (not self._busy)
+
+        self.cmb_platform.config(state=("readonly" if enabled else "disabled"))
+        self.cmb_flash.config(state=("normal" if enabled else "disabled"))
+        self.ent_ver.config(state=("normal" if enabled else "disabled"))
+        self.chk_clean.config(state=("normal" if enabled else "disabled"))
+        self.chk_nocache.config(state=("normal" if enabled else "disabled"))
+        self.lst_drivers.config(state=("normal" if enabled else "disabled"))
+        self.btn_refresh.config(state=("normal" if enabled else "disabled"))
+        self.btn_open.config(state=("normal" if output_set else "disabled"))
+        self.btn_check_main.config(state=("normal" if source_ok and (not self._busy) else "disabled"))
+        if not enabled:
+            self.cmb_txw.config(state="disabled")
+        else:
+            # Restore TXW control state based on active platform.
+            self._on_platform_change()
+
     def _refresh_drivers(self):
         self.lst_drivers.delete(0, "end")
+        source_ok, _ = self._validate_source_dir()
+        if not source_ok:
+            self._update_start_enabled()
+            return
+        if not self.var_output_dir.get().strip():
+            self._update_start_enabled()
+            return
         plat = self.var_platform.get().strip()
         if not plat:
             return
@@ -343,9 +601,10 @@ class OBKBuildToolGUI(tk.Tk):
 
         version_ok = bool(self.var_version.get().strip())
 
-        self.btn_start.config(
-            state=("normal" if (has_driver and version_ok) else "disabled")
-        )
+        output_ok = bool(self.var_output_dir.get().strip())
+        source_ok, _ = self._validate_source_dir()
+        allow = has_driver and version_ok and output_ok and source_ok and (not self._busy)
+        self.btn_start.config(state=("normal" if allow else "disabled"))
 
     def _get_selected_drivers(self) -> list[str]:
         return [self.lst_drivers.get(i) for i in self.lst_drivers.curselection()]
@@ -373,8 +632,9 @@ class OBKBuildToolGUI(tk.Tk):
 
     # ---------------- Build logic ----------------
     def _set_ui_busy(self, busy: bool):
-        self.btn_start.config(state=("disabled" if busy else "normal"))
-        self.cmb_platform.config(state=("disabled" if busy else "readonly"))
+        self._busy = busy
+        self._apply_output_gate()
+        self._update_start_enabled()
 
     def _start_build_clicked(self):
         if self._build_thread and self._build_thread.is_alive():
@@ -383,9 +643,17 @@ class OBKBuildToolGUI(tk.Tk):
 
         # Validate minimal inputs
         src_dir = self.var_src_dir.get().strip()
-        out_dir = self.var_output_dir.get().strip() or "test_OUT"
+        out_dir = self.var_output_dir.get().strip()
         plat = self.var_platform.get().strip()
         flash = self._normalize_flash(self.var_flash_size.get())
+
+        if not out_dir:
+            messagebox.showerror("Missing Output Folder", "Please select an output folder before starting the build.")
+            return
+        source_ok, source_err = self._validate_source_dir()
+        if not source_ok:
+            messagebox.showerror("Invalid Source Directory", source_err)
+            return
 
         raw_version = self.var_version.get().strip()
         safe_version = self._sanitize_version(raw_version)
@@ -466,6 +734,19 @@ class OBKBuildToolGUI(tk.Tk):
         if rc != 0:
             raise RuntimeError(f"Command failed with exit code {rc}: {' '.join(cmd)}")
 
+    def _docker_image_exists(self, image_name: str) -> bool:
+        try:
+            probe = subprocess.run(
+                ["docker", "image", "inspect", image_name],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                check=False,
+                env=self._subprocess_env(),
+            )
+            return probe.returncode == 0
+        except Exception:
+            return False
+
     def _run_build_worker(self, out_dir: str, platform: str, selected_drivers: list[str],
                           flash_size: str, version: str | None, clean: bool, no_cache: bool,
                           txw_packager: str):
@@ -487,11 +768,20 @@ class OBKBuildToolGUI(tk.Tk):
                 self._log("Checking required GCC ARM archive...\n")
                 bt.ensure_gcc_arm_archive()
 
-            # 2) docker build image
-            build_cmd = ["docker", "build", "-t", "openbk_builder", "."]
-            if no_cache:
-                build_cmd.insert(2, "--no-cache")
-            self._run_cmd_stream(build_cmd, cwd=bt.DOCKER_DIR)
+            # 2) docker build image (reuse existing image unless forced)
+            image_name = "openbk_builder"
+            needs_build = no_cache or (not self._docker_image_exists(image_name))
+            if needs_build:
+                if no_cache:
+                    self._log("Building Docker image with --no-cache (forced rebuild)...\n")
+                else:
+                    self._log("Docker image not found; building openbk_builder...\n")
+                build_cmd = ["docker", "build", "-t", image_name, "."]
+                if no_cache:
+                    build_cmd.insert(2, "--no-cache")
+                self._run_cmd_stream(build_cmd, cwd=bt.DOCKER_DIR)
+            else:
+                self._log("Using existing Docker image 'openbk_builder' (skip rebuild).\n")
 
             # 3) docker run build
             # Resolve target platform
