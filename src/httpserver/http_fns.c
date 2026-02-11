@@ -136,7 +136,7 @@ void poststr_h4(http_request_t* request, const char* content) {
 	hprintf255(request, "<h4>%s</h4>", content);
 }
 
-/// @brief Generate a pair of label and field elements for Name type entry. The field is limited to entry of a-zA-Z0-9_- characters.
+/// @brief Generate a pair of label and field elements for Name type entry. The field is limited to entry of a-zA-Z0-9_- characters
 /// @param request 
 /// @param label 
 /// @param fieldId This also gets used as the field name
