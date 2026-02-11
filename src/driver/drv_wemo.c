@@ -328,8 +328,7 @@ static void WEMO_PostServiceList(http_request_t* request, int deviceId) {
 		"</service>"
 		"</serviceList>"
 		"</device>"
-		"</root>
-");
+		"</root>\r\n");
 }
 
 static const char *WEMO_GetLocationPathForDevice(int deviceId, char *buffer, int bufferLen) {
