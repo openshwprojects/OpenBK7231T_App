@@ -202,6 +202,7 @@ static int WEMO_IsURLTailMatch(const char *url, const char *suffix) {
 
 static int WEMO_ParseDeviceFromURL(const char *url, const char *suffix) {
 	const char *p;
+	const char *u;
 	int id = 0;
 	if (url == NULL || suffix == NULL) {
 		return 0;
@@ -209,23 +210,34 @@ static int WEMO_ParseDeviceFromURL(const char *url, const char *suffix) {
 	if (!g_wemoRunning) {
 		return 0;
 	}
-	if (WEMO_IsURLTailMatch(url, suffix)) {
-		return 1;
+
+	// Normalize optional leading slash.
+	u = url;
+	if (*u == '/') {
+		u++;
 	}
-	if (strncmp(url, "wemo/", 5)) {
-		return 0;
-	}
-	p = url + 5;
-	while (*p >= '0' && *p <= '9') {
-		id = id * 10 + (*p - '0');
+
+	// Virtual device endpoints are served under wemo/<id>/... and MUST win over tail-matching
+	// (otherwise /wemo/2/... would incorrectly be treated as device 1).
+	if (!strncmp(u, "wemo/", 5)) {
+		p = u + 5;
+		while (*p >= '0' && *p <= '9') {
+			id = id * 10 + (*p - '0');
+			p++;
+		}
+		if (*p != '/' || id < 1 || id > g_wemoDeviceCount) {
+			return 0;
+		}
 		p++;
-	}
-	if (*p != '/' || id < 1 || id > g_wemoDeviceCount) {
+		if (WEMO_IsURLTailMatch(p, suffix)) {
+			return id;
+		}
 		return 0;
 	}
-	p++;
-	if (WEMO_IsURLTailMatch(p, suffix)) {
-		return id;
+
+	// Root device endpoints.
+	if (WEMO_IsURLTailMatch(u, suffix) || WEMO_IsURLTailMatch(url, suffix)) {
+		return 1;
 	}
 	return 0;
 }
