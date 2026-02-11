@@ -136,7 +136,7 @@ void poststr_h4(http_request_t* request, const char* content) {
 	hprintf255(request, "<h4>%s</h4>", content);
 }
 
-/// @brief Generate a pair of label and field elements for Name type entry. The field is limited to entry of a-zA-Z0-9_- characters
+/// @brief Generate a pair of label and field elements for Name type entry. The field is limited to entry of a-zA-Z0-9_- characters.
 /// @param request 
 /// @param label 
 /// @param fieldId This also gets used as the field name
@@ -1347,7 +1347,7 @@ int http_fn_cfg_webapp(http_request_t* request) {
 #endif
 
 	poststr(request, "<br><input type=\"submit\" value=\"Submit\">");
-	poststr(request, "<br><input class=\"bgrn\" type=\"submit\" value=\"Reset to default\" onclick=\"if(!confirm('Reset Webapp URL to default?')) return false; document.getElementById('url').value='https://openbekeniot.github.io/webapp/'; return true;\">");
+	poststr(request, "<br><input class=\"bgrn\" type=\"submit\" value=\"Reset to default\" onclick=\"if(!confirm('Reset WebApp URL to default?')) return false; document.getElementById('url').value='https://openbekeniot.github.io/webapp/'; return true;\">");
 	poststr(request, "</form>");
 	poststr(request, htmlFooterReturnToCfgOrMainPage);
 	http_html_end(request);
