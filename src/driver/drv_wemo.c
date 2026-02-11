@@ -171,13 +171,28 @@ static int stat_eventServiceXMLVisits = 0;
 extern const char *CHANNEL_GetLabel(int ch);
 bool Main_GetFirstPowerState();
 
+static int WEMO_IsURLTailMatch(const char *url, const char *suffix) {
+	int suffixLen;
+	if (url == NULL || suffix == NULL) {
+		return 0;
+	}
+	suffixLen = strlen(suffix);
+	if (strncmp(url, suffix, suffixLen)) {
+		return 0;
+	}
+	if (url[suffixLen] == 0 || url[suffixLen] == '?') {
+		return 1;
+	}
+	return 0;
+}
+
 static int WEMO_ParseDeviceFromURL(const char *url, const char *suffix) {
 	const char *p;
 	int id = 0;
 	if (url == NULL || suffix == NULL) {
 		return 0;
 	}
-	if (!strcmp(url, suffix)) {
+	if (WEMO_IsURLTailMatch(url, suffix)) {
 		return 1;
 	}
 	if (strncmp(url, "wemo/", 5)) {
@@ -192,7 +207,7 @@ static int WEMO_ParseDeviceFromURL(const char *url, const char *suffix) {
 		return 0;
 	}
 	p++;
-	if (!strcmp(p, suffix)) {
+	if (WEMO_IsURLTailMatch(p, suffix)) {
 		return id;
 	}
 	return 0;
