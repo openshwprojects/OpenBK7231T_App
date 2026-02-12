@@ -201,9 +201,10 @@ static int WEMO_IsURLTailMatch(const char *url, const char *suffix) {
 }
 
 static int WEMO_ParseDeviceFromURL(const char *url, const char *suffix) {
-	const char *p;
 	const char *u;
-	int id = 0;
+	const char *p;
+	int id;
+
 	if (url == NULL || suffix == NULL) {
 		return 0;
 	}
@@ -211,15 +212,36 @@ static int WEMO_ParseDeviceFromURL(const char *url, const char *suffix) {
 		return 0;
 	}
 
-	// Normalize optional leading slash.
+	// Normalize leading slashes.
 	u = url;
-	if (*u == '/') {
+	while (*u == '/') {
 		u++;
 	}
 
-	// Virtual device endpoints are served under wemo/<id>/... and MUST win over tail-matching
-	// (otherwise /wemo/2/... would incorrectly be treated as device 1).
+	// IMPORTANT: when registered as HTTP_RegisterCallback("/wemo/", ...),
+	// the HTTP server passes request->url WITHOUT the "/wemo/" prefix.
+	// Example: "/wemo/2/upnp/control/basicevent1" may arrive as "2/upnp/control/basicevent1".
+	// We must parse that form BEFORE root tail-matching, otherwise everything becomes device 1.
+
+	// Case A: "<id>/...<suffix>"  (prefix stripped by router)
+	if (*u >= '0' && *u <= '9') {
+		id = 0;
+		p = u;
+		while (*p >= '0' && *p <= '9') {
+			id = id * 10 + (*p - '0');
+			p++;
+		}
+		if (*p == '/' && id >= 1 && id <= g_wemoDeviceCount) {
+			p++;
+			if (WEMO_IsURLTailMatch(p, suffix)) {
+				return id;
+			}
+		}
+	}
+
+	// Case B: "wemo/<id>/...<suffix>" (full path form)
 	if (!strncmp(u, "wemo/", 5)) {
+		id = 0;
 		p = u + 5;
 		while (*p >= '0' && *p <= '9') {
 			id = id * 10 + (*p - '0');
@@ -241,6 +263,7 @@ static int WEMO_ParseDeviceFromURL(const char *url, const char *suffix) {
 	}
 	return 0;
 }
+
 
 static const char *WEMO_GetFriendlyNameForDevice(int deviceId) {
 	int channel;
