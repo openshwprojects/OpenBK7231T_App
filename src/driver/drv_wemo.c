@@ -82,23 +82,40 @@ static const char *g_wemo_msearch =
 static const char *g_wemo_metaService =
 "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n"
 "<scpd xmlns=\"urn:Belkin:service-1-0\">\r\n"
-"<specVersion><major>1</major><minor>0</minor></specVersion>\r\n"
+"<specVersion>\r\n"
+"<major>1</major>\r\n"
+"<minor>0</minor>\r\n"
+"</specVersion>\r\n"
 "<actionList>\r\n"
 "<action>\r\n"
 "<name>GetMetaInfo</name>\r\n"
 "<argumentList>\r\n"
 "<argument>\r\n"
-"<retval />\r\n"
-"<name>GetMetaInfo</name>\r\n"
+"<name>MetaInfo</name>\r\n"
+"<direction>out</direction>\r\n"
 "<relatedStateVariable>MetaInfo</relatedStateVariable>\r\n"
-"<direction>in</direction>\r\n"
+"</argument>\r\n"
+"</argumentList>\r\n"
+"</action>\r\n"
+"<action>\r\n"
+"<name>GetExtMetaInfo</name>\r\n"
+"<argumentList>\r\n"
+"<argument>\r\n"
+"<name>ExtMetaInfo</name>\r\n"
+"<direction>out</direction>\r\n"
+"<relatedStateVariable>ExtMetaInfo</relatedStateVariable>\r\n"
 "</argument>\r\n"
 "</argumentList>\r\n"
 "</action>\r\n"
 "</actionList>\r\n"
 "<serviceStateTable>\r\n"
-"<stateVariable sendEvents=\"yes\">\r\n"
+"<stateVariable sendEvents=\"no\">\r\n"
 "<name>MetaInfo</name>\r\n"
+"<dataType>string</dataType>\r\n"
+"<defaultValue>0</defaultValue>\r\n"
+"</stateVariable>\r\n"
+"<stateVariable sendEvents=\"no\">\r\n"
+"<name>ExtMetaInfo</name>\r\n"
 "<dataType>string</dataType>\r\n"
 "<defaultValue>0</defaultValue>\r\n"
 "</stateVariable>\r\n"
@@ -158,6 +175,19 @@ static const char *g_wemo_response_2_fmt =
 "</u:%cetBinaryStateResponse>"
 "</s:Body>"
 "</s:Envelope>\r\n";
+
+// Minimal SOAP response templates for MetaInfo (used by /upnp/control/metainfo1)
+static const char *g_wemo_metainfo_response_1 =
+"<?xml version=\"1.0\" encoding=\"utf-8\"?>"
+"<s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\" s:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">"
+"<s:Body>";
+
+static const char *g_wemo_metainfo_response_2_fmt =
+"<u:%sResponse xmlns:u=\"urn:Belkin:service:metainfo:1\">"
+"<%s>%s</%s>"
+"</u:%sResponse>"
+"</s:Body>"
+"</s:Envelope>";
 
 // ------------------------------------------------------------
 // Globals / stats
@@ -384,6 +414,35 @@ static int WEMO_BasicEvent1(http_request_t* request) {
 	return 0;
 }
 
+static void WEMO_MetaInfo1(struct http_request_t *request)
+{
+	if (!g_wemo_enabled) {
+		http_rest_error(request, 404, "Not Found");
+		return;
+	}
+
+	const char *cmd = request->bodystart;
+	if (!cmd) {
+		http_rest_error(request, 400, "Bad Request");
+		return;
+	}
+
+	// Alexa typically doesn't call this, but some UPnP stacks will.
+	// We implement minimal GetMetaInfo / GetExtMetaInfo for correctness.
+	const char *action = "GetMetaInfo";
+	const char *tag = "MetaInfo";
+	if (strstr(cmd, "GetExtMetaInfo") != 0) {
+		action = "GetExtMetaInfo";
+		tag = "ExtMetaInfo";
+	}
+
+	http_setup(request, httpMimeTypeXML);
+	poststr(request, g_wemo_metainfo_response_1);
+	// Value kept intentionally simple; this endpoint is informational.
+	hprintf255(request, g_wemo_metainfo_response_2_fmt, action, tag, "0", tag, action);
+	poststr(request, NULL);
+}
+
 static int WEMO_EventService(http_request_t* request) {
 	if (!g_wemo_enabled) {
 		return http_rest_error(request, 404, "Not Found");
@@ -458,12 +517,13 @@ void WEMO_Init() {
 	g_uid = strdup(uid);
 
 	HTTP_RegisterCallback("/upnp/control/basicevent1", HTTP_POST, WEMO_BasicEvent1, 0);
+	HTTP_RegisterCallback("/upnp/control/metainfo1", HTTP_POST, WEMO_MetaInfo1, 0);
 	HTTP_RegisterCallback("/eventservice.xml", HTTP_GET, WEMO_EventService, 0);
 	HTTP_RegisterCallback("/metainfoservice.xml", HTTP_GET, WEMO_MetaInfoService, 0);
 	HTTP_RegisterCallback("/setup.xml", HTTP_GET, WEMO_Setup, 0);
 }
 
-void WEMO_Shutdown() {
+void WEMO_Shutdown(void) {
 	// OpenBeken cannot unregister HTTP callbacks at runtime.
 	// Disable responses/SSDP adverts without freeing identity strings (callbacks may still be hit).
 	g_wemo_enabled = 0;
