@@ -328,6 +328,94 @@ static int WEMO_TryExtractBinaryState(const char *cmd) {
 	return -1;
 }
 
+// For some firmware builds/HTTP routers, prefix callbacks may deliver request->url stripped down such that
+// the virtual device ID cannot be recovered by parsing the URL (everything looks like the root endpoint).
+// To make multi-device control robust, we register exact per-device control URLs and use fixed-id wrappers.
+
+static int WEMO_BasicEvent1_FixedId(http_request_t* request, int deviceId) {
+	if (!g_wemoRunning) {
+		return -1;
+	}
+	const char* cmd = request->bodystart;
+	if (cmd == NULL) {
+		addLogAdv(LOG_ERROR, LOG_FEATURE_HTTP, "Wemo post event with empty body");
+		return -1;
+	}
+
+	addLogAdv(LOG_INFO, LOG_FEATURE_HTTP, "Wemo post event[%d] %s", deviceId, cmd);
+
+	// Set and Get are the same so we can hack just one letter
+	char letter;
+	// is this a Set request?
+	if (strstr(cmd, "SetBinaryState")) {
+		int desiredState;
+		// set
+		letter = 'S';
+		desiredState = WEMO_TryExtractBinaryState(cmd);
+		if (desiredState == 1) {
+			WEMO_SetPowerStateByDevice(deviceId, 1);
+		}
+		else if (desiredState == 0) {
+			WEMO_SetPowerStateByDevice(deviceId, 0);
+		}
+		else {
+			addLogAdv(LOG_WARN, LOG_FEATURE_HTTP, "Wemo SetBinaryState with unknown payload");
+		}
+	}
+	else {
+		// get
+		letter = 'G';
+	}
+	int bMainPower = WEMO_GetPowerStateByDevice(deviceId);
+
+	http_setup(request, httpMimeTypeXML);
+	poststr(request, g_wemo_response_1);
+	hprintf255(request, g_wemo_response_2_fmt, letter, bMainPower, letter);
+	poststr(request, NULL);
+
+	stat_eventsReceived++;
+	return 0;
+}
+
+static int WEMO_MetaInfoControl_FixedId(http_request_t* request, int deviceId) {
+	const char* cmd = request->bodystart;
+
+	if (!g_wemoRunning) {
+		return -1;
+	}
+	if (cmd == NULL) {
+		addLogAdv(LOG_ERROR, LOG_FEATURE_HTTP, "Wemo metainfo request with empty body");
+		return -1;
+	}
+
+	addLogAdv(LOG_INFO, LOG_FEATURE_HTTP, "Wemo metainfo[%d] %s", deviceId, cmd);
+
+	http_setup(request, httpMimeTypeXML);
+	poststr(request, g_wemo_metainfo_resp_1);
+	hprintf255(request, g_wemo_metainfo_resp_2, deviceId);
+	poststr(request, NULL);
+
+	return 0;
+}
+
+// Fixed-id wrappers (2..WEMO_MAX_DEVICES)
+static int WEMO_BasicEvent1_2(http_request_t* request) { return WEMO_BasicEvent1_FixedId(request, 2); }
+static int WEMO_BasicEvent1_3(http_request_t* request) { return WEMO_BasicEvent1_FixedId(request, 3); }
+static int WEMO_BasicEvent1_4(http_request_t* request) { return WEMO_BasicEvent1_FixedId(request, 4); }
+static int WEMO_BasicEvent1_5(http_request_t* request) { return WEMO_BasicEvent1_FixedId(request, 5); }
+static int WEMO_BasicEvent1_6(http_request_t* request) { return WEMO_BasicEvent1_FixedId(request, 6); }
+static int WEMO_BasicEvent1_7(http_request_t* request) { return WEMO_BasicEvent1_FixedId(request, 7); }
+static int WEMO_BasicEvent1_8(http_request_t* request) { return WEMO_BasicEvent1_FixedId(request, 8); }
+
+static int WEMO_MetaInfoControl_2(http_request_t* request) { return WEMO_MetaInfoControl_FixedId(request, 2); }
+static int WEMO_MetaInfoControl_3(http_request_t* request) { return WEMO_MetaInfoControl_FixedId(request, 3); }
+static int WEMO_MetaInfoControl_4(http_request_t* request) { return WEMO_MetaInfoControl_FixedId(request, 4); }
+static int WEMO_MetaInfoControl_5(http_request_t* request) { return WEMO_MetaInfoControl_FixedId(request, 5); }
+static int WEMO_MetaInfoControl_6(http_request_t* request) { return WEMO_MetaInfoControl_FixedId(request, 6); }
+static int WEMO_MetaInfoControl_7(http_request_t* request) { return WEMO_MetaInfoControl_FixedId(request, 7); }
+static int WEMO_MetaInfoControl_8(http_request_t* request) { return WEMO_MetaInfoControl_FixedId(request, 8); }
+
+
 static void WEMO_PostServiceList(http_request_t* request, int deviceId) {
 	if (deviceId <= 1) {
 		poststr(request, g_wemo_setup_6);
@@ -708,8 +796,36 @@ void WEMO_Init() {
 	HTTP_RegisterCallback("/eventservice.xml", HTTP_GET, WEMO_EventService, 0);
 	HTTP_RegisterCallback("/metainfoservice.xml", HTTP_GET, WEMO_MetaInfoService, 0);
 	HTTP_RegisterCallback("/setup.xml", HTTP_GET, WEMO_Setup, 0);
+
+	// Exact virtual control URLs (2..N) for robust per-device control (avoid router prefix stripping issues).
+	if (g_wemoDeviceCount > 1) {
+		char path[64];
+		for (i = 2; i <= g_wemoDeviceCount; i++) {
+			int (*basicCb)(http_request_t*) = 0;
+			int (*metaCb)(http_request_t*) = 0;
+
+			switch (i) {
+				case 2: basicCb = WEMO_BasicEvent1_2; metaCb = WEMO_MetaInfoControl_2; break;
+				case 3: basicCb = WEMO_BasicEvent1_3; metaCb = WEMO_MetaInfoControl_3; break;
+				case 4: basicCb = WEMO_BasicEvent1_4; metaCb = WEMO_MetaInfoControl_4; break;
+				case 5: basicCb = WEMO_BasicEvent1_5; metaCb = WEMO_MetaInfoControl_5; break;
+				case 6: basicCb = WEMO_BasicEvent1_6; metaCb = WEMO_MetaInfoControl_6; break;
+				case 7: basicCb = WEMO_BasicEvent1_7; metaCb = WEMO_MetaInfoControl_7; break;
+				case 8: basicCb = WEMO_BasicEvent1_8; metaCb = WEMO_MetaInfoControl_8; break;
+				default: basicCb = 0; metaCb = 0; break;
+			}
+
+			if (basicCb) {
+				snprintf(path, sizeof(path), "/wemo/%d/upnp/control/basicevent1", i);
+				{ char *p = strdup(path); if (p) HTTP_RegisterCallback(p, HTTP_POST, basicCb, 0); }
+			}
+			if (metaCb) {
+				snprintf(path, sizeof(path), "/wemo/%d/upnp/control/metainfo1", i);
+				{ char *p = strdup(path); if (p) HTTP_RegisterCallback(p, HTTP_POST, metaCb, 0); }
+			}
+		}
+	}
 	// virtual devices (2..N) served under /wemo/{id}/...
-	HTTP_RegisterCallback("/wemo/", HTTP_POST, WEMO_VirtualPost, 0);
 	HTTP_RegisterCallback("/wemo/", HTTP_GET, WEMO_VirtualGet, 0);
 
 	//if (DRV_IsRunning("SSDP") == false) {
