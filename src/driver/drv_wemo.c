@@ -12,758 +12,438 @@
 #include "drv_ssdp.h"
 #include "../httpserver/new_http.h"
 
-// Wemo driver for Alexa, requiring btsimonh's SSDP to work
-// Based on Tasmota approach
-// The procedure is following:
-// 1. first MSEARCH over UDP is done
-// 2. then obk replies to MSEARCH with page details
-// 3. then alexa accesses our XML pages here with GET
-// 4. and can change the binary state (0 or 1) with POST
+// Wemo driver for Alexa, requiring btsimonh's SSDP to work.
+// Based on Tasmota-style local (non-skill) emulation.
+//
+// Notes / limitations in OpenBeken HTTP server:
+//  - Only GET/PUT/POST/OPTIONS are supported (no SUBSCRIBE/NOTIFY), so Alexa will not get
+//    asynchronous state updates when the relay changes outside of Alexa.
+//  - Alexa does call GetBinaryState during control interactions, so we always return the live state.
 
-#define WEMO_MAX_DEVICES 8
+// ------------------------------------------------------------
+// XML / SSDP templates
+// ------------------------------------------------------------
 
 static const char *g_wemo_setup_1 =
-"<?xml version=\"1.0\"?>"
-"<root xmlns=\"urn:Belkin:device-1-0\">"
-"<device>"
-"<deviceType>urn:Belkin:device:controllee:1</deviceType>"
+"<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n"
+"<root xmlns=\"urn:Belkin:device-1-0\">\r\n"
+"<device>\r\n"
+"<deviceType>urn:Belkin:device:controllee:1</deviceType>\r\n"
 "<friendlyName>";
 static const char *g_wemo_setup_2 =
-"</friendlyName>"
-"<manufacturer>Belkin International Inc.</manufacturer>"
-"<modelName>Socket</modelName>"
-"<modelNumber>3.1415</modelNumber>"
+"</friendlyName>\r\n"
+"<manufacturer>Belkin International Inc.</manufacturer>\r\n"
+"<modelName>Socket</modelName>\r\n"
+"<modelNumber>3.1415</modelNumber>\r\n"
 "<UDN>uuid:";
 static const char *g_wemo_setup_3 =
-"</UDN>"
+"</UDN>\r\n"
 "<serialNumber>";
 static const char *g_wemo_setup_4 =
-"</serialNumber>"
+"</serialNumber>\r\n"
 "<presentationURL>http://";
 static const char *g_wemo_setup_5 =
-":80/</presentationURL>"
-"<binaryState>0</binaryState>";
+":80/</presentationURL>\r\n"
+"<binaryState>0</binaryState>\r\n";
 static const char *g_wemo_setup_6 =
-	"<serviceList>"
-		"<service>"
-			"<serviceType>urn:Belkin:service:basicevent:1</serviceType>"
-			"<serviceId>urn:Belkin:serviceId:basicevent1</serviceId>"
-			"<controlURL>/upnp/control/basicevent1</controlURL>"
-			"<eventSubURL>/upnp/event/basicevent1</eventSubURL>"
-			"<SCPDURL>/eventservice.xml</SCPDURL>"
-		"</service>"
-		"<service>"
-			"<serviceType>urn:Belkin:service:metainfo:1</serviceType>"
-			"<serviceId>urn:Belkin:serviceId:metainfo1</serviceId>"
-			"<controlURL>/upnp/control/metainfo1</controlURL>"
-			"<eventSubURL>/upnp/event/metainfo1</eventSubURL>"
-			"<SCPDURL>/metainfoservice.xml</SCPDURL>"
-		"</service>"
-	"</serviceList>"
-	"</device>"
+	"<serviceList>\r\n"
+		"<service>\r\n"
+			"<serviceType>urn:Belkin:service:basicevent:1</serviceType>\r\n"
+			"<serviceId>urn:Belkin:serviceId:basicevent1</serviceId>\r\n"
+			"<controlURL>/upnp/control/basicevent1</controlURL>\r\n"
+			"<eventSubURL>/upnp/event/basicevent1</eventSubURL>\r\n"
+			"<SCPDURL>/eventservice.xml</SCPDURL>\r\n"
+		"</service>\r\n"
+		"<service>\r\n"
+			"<serviceType>urn:Belkin:service:metainfo:1</serviceType>\r\n"
+			"<serviceId>urn:Belkin:serviceId:metainfo1</serviceId>\r\n"
+			"<controlURL>/upnp/control/metainfo1</controlURL>\r\n"
+			"<eventSubURL>/upnp/event/metainfo1</eventSubURL>\r\n"
+			"<SCPDURL>/metainfoservice.xml</SCPDURL>\r\n"
+		"</service>\r\n"
+	"</serviceList>\r\n"
+	"</device>\r\n"
 "</root>\r\n";
 
-const char *g_wemo_msearch =
+// SSDP reply template (unicast reply to M-SEARCH)
+static const char *g_wemo_msearch =
 "HTTP/1.1 200 OK\r\n"
 "CACHE-CONTROL: max-age=86400\r\n"
-"DATE: Fri, 15 Apr 2016 04:56:29 GMT\r\n"
 "EXT:\r\n"
-"LOCATION: http://%s:80/%s\r\n"
+"LOCATION: http://%s:80/setup.xml\r\n"
 "OPT: \"http://schemas.upnp.org/upnp/1/0/\"; ns=01\r\n"
 "01-NLS: b9200ebb-736d-4b93-bf03-835149d13983\r\n"
 "SERVER: Unspecified, UPnP/1.0, Unspecified\r\n"
-"ST: %s\r\n"                // type1 = urn:Belkin:device:**, type2 = upnp:rootdevice
-"USN: uuid:%s::%s\r\n"      // type1 = urn:Belkin:device:**, type2 = upnp:rootdevice
+"ST: %s\r\n"
+"USN: uuid:%s::%s\r\n"
 "X-User-Agent: redsonic\r\n"
 "\r\n";
 
+static const char *g_wemo_metaService =
+"<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n"
+"<scpd xmlns=\"urn:Belkin:service-1-0\">\r\n"
+"<specVersion><major>1</major><minor>0</minor></specVersion>\r\n"
+"<actionList>\r\n"
+"<action>\r\n"
+"<name>GetMetaInfo</name>\r\n"
+"<argumentList>\r\n"
+"<argument>\r\n"
+"<retval />\r\n"
+"<name>GetMetaInfo</name>\r\n"
+"<relatedStateVariable>MetaInfo</relatedStateVariable>\r\n"
+"<direction>in</direction>\r\n"
+"</argument>\r\n"
+"</argumentList>\r\n"
+"</action>\r\n"
+"</actionList>\r\n"
+"<serviceStateTable>\r\n"
+"<stateVariable sendEvents=\"yes\">\r\n"
+"<name>MetaInfo</name>\r\n"
+"<dataType>string</dataType>\r\n"
+"<defaultValue>0</defaultValue>\r\n"
+"</stateVariable>\r\n"
+"</serviceStateTable>\r\n"
+"</scpd>\r\n";
 
-const char *g_wemo_metaService =
-"<scpd xmlns=\"urn:Belkin:service-1-0\">"
-"<specVersion>"
-"<major>1</major>"
-"<minor>0</minor>"
-"</specVersion>"
-"<actionList>"
-"<action>"
-"<name>GetMetaInfo</name>"
-"<argumentList>"
-"<retval />"
-"<name>GetMetaInfo</name>"
-"<relatedStateVariable>MetaInfo</relatedStateVariable>"
-"<direction>in</direction>"
-"</argumentList>"
-"</action>"
-"</actionList>"
-"<serviceStateTable>"
-"<stateVariable sendEvents=\"yes\">"
-"<name>MetaInfo</name>"
-"<dataType>string</dataType>"
-"<defaultValue>0</defaultValue>"
-"</stateVariable>"
-"</serviceStateTable>"
-"</scpd>\r\n\r\n";
+static const char *g_wemo_eventService =
+"<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n"
+"<scpd xmlns=\"urn:Belkin:service-1-0\">\r\n"
+"<specVersion><major>1</major><minor>0</minor></specVersion>\r\n"
+"<actionList>\r\n"
+"<action>\r\n"
+"<name>SetBinaryState</name>\r\n"
+"<argumentList>\r\n"
+"<argument>\r\n"
+"<retval/>\r\n"
+"<name>BinaryState</name>\r\n"
+"<relatedStateVariable>BinaryState</relatedStateVariable>\r\n"
+"<direction>in</direction>\r\n"
+"</argument>\r\n"
+"</argumentList>\r\n"
+"</action>\r\n"
+"<action>\r\n"
+"<name>GetBinaryState</name>\r\n"
+"<argumentList>\r\n"
+"<argument>\r\n"
+"<retval/>\r\n"
+"<name>BinaryState</name>\r\n"
+"<relatedStateVariable>BinaryState</relatedStateVariable>\r\n"
+"<direction>out</direction>\r\n"
+"</argument>\r\n"
+"</argumentList>\r\n"
+"</action>\r\n"
+"</actionList>\r\n"
+"<serviceStateTable>\r\n"
+"<stateVariable sendEvents=\"yes\">\r\n"
+"<name>BinaryState</name>\r\n"
+"<dataType>bool</dataType>\r\n"
+"<defaultValue>0</defaultValue>\r\n"
+"</stateVariable>\r\n"
+"</serviceStateTable>\r\n"
+"</scpd>\r\n";
 
-const char *g_wemo_eventService =
-"<scpd xmlns=\"urn:Belkin:service-1-0\">"
-"<actionList>"
-"<action>"
-"<name>SetBinaryState</name>"
-"<argumentList>"
-"<argument>"
-"<retval/>"
-"<name>BinaryState</name>"
-"<relatedStateVariable>BinaryState</relatedStateVariable>"
-"<direction>in</direction>"
-"</argument>"
-"</argumentList>"
-"</action>"
-"<action>"
-"<name>GetBinaryState</name>"
-"<argumentList>"
-"<argument>"
-"<retval/>"
-"<name>BinaryState</name>"
-"<relatedStateVariable>BinaryState</relatedStateVariable>"
-"<direction>out</direction>"
-"</argument>"
-"</argumentList>"
-"</action>"
-"</actionList>"
-"<serviceStateTable>"
-"<stateVariable sendEvents=\"yes\">"
-"<name>BinaryState</name>"
-"<dataType>bool</dataType>"
-"<defaultValue>0</defaultValue>"
-"</stateVariable>"
-"<stateVariable sendEvents=\"yes\">"
-"<name>level</name>"
-"<dataType>string</dataType>"
-"<defaultValue>0</defaultValue>"
-"</stateVariable>"
-"</serviceStateTable>"
-"</scpd>\r\n\r\n";
-const char *g_wemo_response_1 =
+static const char *g_wemo_response_1 =
+"<?xml version=\"1.0\" encoding=\"utf-8\"?>"
 "<s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\" s:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">"
 "<s:Body>";
 
-const char *g_wemo_response_2_fmt =
+static const char *g_wemo_response_2_fmt =
 "<u:%cetBinaryStateResponse xmlns:u=\"urn:Belkin:service:basicevent:1\">"
 "<BinaryState>%i</BinaryState>"
 "</u:%cetBinaryStateResponse>"
 "</s:Body>"
 "</s:Envelope>\r\n";
 
-static const char *g_wemo_metainfo_resp_1 =
-"<s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\" s:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">"
-"<s:Body>"
-"<u:GetMetaInfoResponse xmlns:u=\"urn:Belkin:service:metainfo:1\">"
-"<MetaInfo>";
-
-static const char *g_wemo_metainfo_resp_2 =
-"</MetaInfo>"
-"</u:GetMetaInfoResponse>"
-"</s:Body>"
-"</s:Envelope>\r\n";
+// ------------------------------------------------------------
+// Globals / stats
+// ------------------------------------------------------------
 
 static char *g_serial = 0;
 static char *g_uid = 0;
+static int g_wemo_enabled = 0;
 static int outBufferLen = 0;
 static char *buffer_out = 0;
 
-static int g_wemoChannels[WEMO_MAX_DEVICES];
-static int g_wemoDeviceCount = 0;
-static bool g_wemoRunning = false;
-
-
 static int stat_searchesReceived = 0;
 static int stat_setupXMLVisits = 0;
-static int stat_metaServiceXMLVisits = 0;
 static int stat_eventsReceived = 0;
+static int stat_metaServiceXMLVisits = 0;
 static int stat_eventServiceXMLVisits = 0;
 
-extern const char *CHANNEL_GetLabel(int ch);
-bool Main_GetFirstPowerState();
+// ------------------------------------------------------------
+// Helpers
+// ------------------------------------------------------------
 
-static int WEMO_IsURLTailMatch(const char *url, const char *suffix) {
-	int suffixLen;
-	if (url == NULL || suffix == NULL) {
-		return 0;
-	}
-	suffixLen = strlen(suffix);
-	if (strncmp(url, suffix, suffixLen)) {
-		return 0;
-	}
-	if (url[suffixLen] == 0 || url[suffixLen] == '?') {
-		return 1;
+static const char *WEMO_FindHeader(http_request_t *request, const char *namePrefix) {
+	int i;
+	if (!request || !namePrefix) return 0;
+	for (i = 0; i < request->numheaders; i++) {
+		const char *h = request->headers[i];
+		if (!h) continue;
+		if (!my_strnicmp(h, namePrefix, strlen(namePrefix))) {
+			return h;
+		}
 	}
 	return 0;
 }
 
-static int WEMO_ParseDeviceFromURL(const char *url, const char *suffix) {
-	const char *u;
+static void WEMO_PostXMLSafe(http_request_t *request, const char *s) {
 	const char *p;
-	int id;
-
-	if (url == NULL || suffix == NULL) {
-		return 0;
-	}
-	if (!g_wemoRunning) {
-		return 0;
-	}
-
-	// Normalize leading slashes.
-	u = url;
-	while (*u == '/') {
-		u++;
-	}
-
-	// IMPORTANT: when registered as HTTP_RegisterCallback("/wemo/", ...),
-	// the HTTP server passes request->url WITHOUT the "/wemo/" prefix.
-	// Example: "/wemo/2/upnp/control/basicevent1" may arrive as "2/upnp/control/basicevent1".
-	// We must parse that form BEFORE root tail-matching, otherwise everything becomes device 1.
-
-	// Case A: "<id>/...<suffix>"  (prefix stripped by router)
-	if (*u >= '0' && *u <= '9') {
-		id = 0;
-		p = u;
-		while (*p >= '0' && *p <= '9') {
-			id = id * 10 + (*p - '0');
-			p++;
-		}
-		if (*p == '/' && id >= 1 && id <= g_wemoDeviceCount) {
-			p++;
-			if (WEMO_IsURLTailMatch(p, suffix)) {
-				return id;
-			}
+	if (!s) return;
+	for (p = s; *p; p++) {
+		switch (*p) {
+			case '&': poststr(request, "&amp;"); break;
+			case '<': poststr(request, "&lt;"); break;
+			case '>': poststr(request, "&gt;"); break;
+			case '"': poststr(request, "&quot;"); break;
+			case '\'': poststr(request, "&apos;"); break;
+			default: {
+				char c[2];
+				c[0] = *p;
+				c[1] = 0;
+				poststr(request, c);
+			} break;
 		}
 	}
-
-	// Case B: "wemo/<id>/...<suffix>" (full path form)
-	if (!strncmp(u, "wemo/", 5)) {
-		id = 0;
-		p = u + 5;
-		while (*p >= '0' && *p <= '9') {
-			id = id * 10 + (*p - '0');
-			p++;
-		}
-		if (*p != '/' || id < 1 || id > g_wemoDeviceCount) {
-			return 0;
-		}
-		p++;
-		if (WEMO_IsURLTailMatch(p, suffix)) {
-			return id;
-		}
-		return 0;
-	}
-
-	// Root device endpoints.
-	if (WEMO_IsURLTailMatch(u, suffix) || WEMO_IsURLTailMatch(url, suffix)) {
-		return 1;
-	}
-	return 0;
 }
 
-
-static const char *WEMO_GetFriendlyNameForDevice(int deviceId) {
-	int channel;
-	if (deviceId >= 1 && deviceId <= g_wemoDeviceCount) {
-		channel = g_wemoChannels[deviceId - 1];
-		if (channel >= 0) {
-			const char *label = CHANNEL_GetLabel(channel);
-			if (label && *label) {
-				return label;
-			}
+static int WEMO_FindMainChannel(void) {
+	int i;
+	// Prefer a relay-type channel; fallback to toggle type.
+	for (i = 0; i < CHANNEL_MAX; i++) {
+		if (h_isChannelRelay(i) || CHANNEL_IsPowerRelayChannel(i)) {
+			return i;
 		}
 	}
-	return CFG_GetDeviceName();
-}
-
-static int WEMO_GetPowerStateByDevice(int deviceId) {
-	int channel;
-	if (deviceId < 1 || deviceId > g_wemoDeviceCount) {
-		return Main_GetFirstPowerState();
-	}
-	channel = g_wemoChannels[deviceId - 1];
-	if (channel < 0) {
-		return Main_GetFirstPowerState();
-	}
-	return CHANNEL_Get(channel) ? 1 : 0;
-}
-
-static void WEMO_SetPowerStateByDevice(int deviceId, int power) {
-	int channel;
-	if (deviceId < 1 || deviceId > g_wemoDeviceCount) {
-		CMD_ExecuteCommand(power ? "POWER ON" : "POWER OFF", 0);
-		return;
-	}
-	channel = g_wemoChannels[deviceId - 1];
-	if (channel < 0) {
-		CMD_ExecuteCommand(power ? "POWER ON" : "POWER OFF", 0);
-		return;
-	}
-	CHANNEL_Set(channel, power ? 1 : 0, false);
-}
-
-static int WEMO_TryExtractBinaryState(const char *cmd) {
-	const char *tag;
-
-	if (cmd == NULL) {
-		return -1;
-	}
-	tag = strstr(cmd, "<BinaryState>");
-	if (tag == NULL) {
-		return -1;
-	}
-	tag += strlen("<BinaryState>");
-	while (*tag == ' ' || *tag == '\t' || *tag == '\r' || *tag == '\n') {
-		tag++;
-	}
-	if (*tag == '1') {
-		return 1;
-	}
-	if (*tag == '0') {
-		return 0;
+	for (i = 0; i < CHANNEL_MAX; i++) {
+		if (CHANNEL_GetType(i) == ChType_Toggle) {
+			return i;
+		}
 	}
 	return -1;
 }
 
-// For some firmware builds/HTTP routers, prefix callbacks may deliver request->url stripped down such that
-// the virtual device ID cannot be recovered by parsing the URL (everything looks like the root endpoint).
-// To make multi-device control robust, we register exact per-device control URLs and use fixed-id wrappers.
-
-static int WEMO_BasicEvent1_FixedId(http_request_t* request, int deviceId) {
-	if (!g_wemoRunning) {
-		return -1;
+static int WEMO_GetMainPowerState(void) {
+	int ch;
+#if ENABLE_LED_BASIC
+	if (LED_IsLEDRunning()) {
+		return LED_GetEnableAll() ? 1 : 0;
 	}
-	const char* cmd = request->bodystart;
-	if (cmd == NULL) {
-		addLogAdv(LOG_ERROR, LOG_FEATURE_HTTP, "Wemo post event with empty body");
-		return -1;
+#endif
+	ch = WEMO_FindMainChannel();
+	if (ch >= 0) {
+		return CHANNEL_Get(ch) ? 1 : 0;
 	}
-
-	addLogAdv(LOG_INFO, LOG_FEATURE_HTTP, "Wemo post event[%d] %s", deviceId, cmd);
-
-	// Set and Get are the same so we can hack just one letter
-	char letter;
-	// is this a Set request?
-	if (strstr(cmd, "SetBinaryState")) {
-		int desiredState;
-		// set
-		letter = 'S';
-		desiredState = WEMO_TryExtractBinaryState(cmd);
-		if (desiredState == 1) {
-			WEMO_SetPowerStateByDevice(deviceId, 1);
-		}
-		else if (desiredState == 0) {
-			WEMO_SetPowerStateByDevice(deviceId, 0);
-		}
-		else {
-			addLogAdv(LOG_WARN, LOG_FEATURE_HTTP, "Wemo SetBinaryState with unknown payload");
-		}
-	}
-	else {
-		// get
-		letter = 'G';
-	}
-	int bMainPower = WEMO_GetPowerStateByDevice(deviceId);
-
-	http_setup(request, httpMimeTypeXML);
-	poststr(request, g_wemo_response_1);
-	hprintf255(request, g_wemo_response_2_fmt, letter, bMainPower, letter);
-	poststr(request, NULL);
-
-	stat_eventsReceived++;
 	return 0;
 }
 
-static int WEMO_MetaInfoControl_FixedId(http_request_t* request, int deviceId) {
-	const char* cmd = request->bodystart;
-
-	if (!g_wemoRunning) {
-		return -1;
-	}
-	if (cmd == NULL) {
-		addLogAdv(LOG_ERROR, LOG_FEATURE_HTTP, "Wemo metainfo request with empty body");
-		return -1;
-	}
-
-	addLogAdv(LOG_INFO, LOG_FEATURE_HTTP, "Wemo metainfo[%d] %s", deviceId, cmd);
-
-	http_setup(request, httpMimeTypeXML);
-	poststr(request, g_wemo_metainfo_resp_1);
-	hprintf255(request, g_wemo_metainfo_resp_2, deviceId);
-	poststr(request, NULL);
-
-	return 0;
-}
-
-// Fixed-id wrappers (2..WEMO_MAX_DEVICES)
-static int WEMO_BasicEvent1_2(http_request_t* request) { return WEMO_BasicEvent1_FixedId(request, 2); }
-static int WEMO_BasicEvent1_3(http_request_t* request) { return WEMO_BasicEvent1_FixedId(request, 3); }
-static int WEMO_BasicEvent1_4(http_request_t* request) { return WEMO_BasicEvent1_FixedId(request, 4); }
-static int WEMO_BasicEvent1_5(http_request_t* request) { return WEMO_BasicEvent1_FixedId(request, 5); }
-static int WEMO_BasicEvent1_6(http_request_t* request) { return WEMO_BasicEvent1_FixedId(request, 6); }
-static int WEMO_BasicEvent1_7(http_request_t* request) { return WEMO_BasicEvent1_FixedId(request, 7); }
-static int WEMO_BasicEvent1_8(http_request_t* request) { return WEMO_BasicEvent1_FixedId(request, 8); }
-
-static int WEMO_MetaInfoControl_2(http_request_t* request) { return WEMO_MetaInfoControl_FixedId(request, 2); }
-static int WEMO_MetaInfoControl_3(http_request_t* request) { return WEMO_MetaInfoControl_FixedId(request, 3); }
-static int WEMO_MetaInfoControl_4(http_request_t* request) { return WEMO_MetaInfoControl_FixedId(request, 4); }
-static int WEMO_MetaInfoControl_5(http_request_t* request) { return WEMO_MetaInfoControl_FixedId(request, 5); }
-static int WEMO_MetaInfoControl_6(http_request_t* request) { return WEMO_MetaInfoControl_FixedId(request, 6); }
-static int WEMO_MetaInfoControl_7(http_request_t* request) { return WEMO_MetaInfoControl_FixedId(request, 7); }
-static int WEMO_MetaInfoControl_8(http_request_t* request) { return WEMO_MetaInfoControl_FixedId(request, 8); }
-
-
-static void WEMO_PostServiceList(http_request_t* request, int deviceId) {
-	if (deviceId <= 1) {
-		poststr(request, g_wemo_setup_6);
+static void WEMO_SetMainPowerState(int v) {
+	int ch;
+#if ENABLE_LED_BASIC
+	if (LED_IsLEDRunning()) {
+		LED_SetEnableAll(v ? 1 : 0);
 		return;
 	}
-	// NOTE: Do not use a single hprintf255() with the full XML: it will truncate at ~255 chars
-	// and produce malformed setup.xml for virtual devices, causing discovery dedupe/failure.
-	poststr(request,
-		"<serviceList>"
-		"<service>"
-		"<serviceType>urn:Belkin:service:basicevent:1</serviceType>"
-		"<serviceId>urn:Belkin:serviceId:basicevent1</serviceId>"
-		"<controlURL>/wemo/");
-	hprintf255(request, "%d", deviceId);
-	poststr(request, "/upnp/control/basicevent1</controlURL><eventSubURL>/wemo/");
-	hprintf255(request, "%d", deviceId);
-	poststr(request, "/upnp/event/basicevent1</eventSubURL><SCPDURL>/wemo/");
-	hprintf255(request, "%d", deviceId);
-	poststr(request, "/eventservice.xml</SCPDURL></service>");
-
-	poststr(request,
-		"<service>"
-		"<serviceType>urn:Belkin:service:metainfo:1</serviceType>"
-		"<serviceId>urn:Belkin:serviceId:metainfo1</serviceId>"
-		"<controlURL>/wemo/");
-	hprintf255(request, "%d", deviceId);
-	poststr(request, "/upnp/control/metainfo1</controlURL><eventSubURL>/wemo/");
-	hprintf255(request, "%d", deviceId);
-	poststr(request, "/upnp/event/metainfo1</eventSubURL><SCPDURL>/wemo/");
-	hprintf255(request, "%d", deviceId);
-	poststr(request,
-		"/metainfoservice.xml</SCPDURL>"
-		"</service>"
-		"</serviceList>"
-		"</device>"
-		"</root>\r\n");
-}
-
-static const char *WEMO_GetLocationPathForDevice(int deviceId, char *buffer, int bufferLen) {
-	if (deviceId <= 1) {
-		return "setup.xml";
+#endif
+	ch = WEMO_FindMainChannel();
+	if (ch >= 0) {
+		CHANNEL_Set(ch, v ? 1 : 0, 0);
 	}
-	snprintf(buffer, bufferLen, "wemo/%d/setup.xml", deviceId);
-	return buffer;
 }
 
-static const char *WEMO_GetUIDForDevice(int deviceId, char *buffer, int bufferLen) {
-	if (deviceId <= 1) {
-		return g_uid;
+static int WEMO_ParseBinaryStateFromXML(const char *xml, int *outState) {
+	const char *p;
+	if (!xml || !outState) return 0;
+
+	// Common forms:
+	//  - <BinaryState>1</BinaryState>
+	//  - ...State>1</Binary...
+	p = strstr(xml, "<BinaryState>");
+	if (p) {
+		p += strlen("<BinaryState>");
+		*outState = atoi(p) ? 1 : 0;
+		return 1;
 	}
-	snprintf(buffer, bufferLen, "%s-%02d", g_uid, deviceId);
-	return buffer;
+	p = strstr(xml, "State>1</Binary");
+	if (p) { *outState = 1; return 1; }
+	p = strstr(xml, "State>0</Binary");
+	if (p) { *outState = 0; return 1; }
+
+	return 0;
 }
+
+static char WEMO_DetermineSoapVerb(http_request_t *request, const char *xmlBody) {
+	const char *soap = 0;
+	// Prefer body detection
+	if (xmlBody) {
+		if (strstr(xmlBody, "SetBinaryState")) return 'S';
+		if (strstr(xmlBody, "GetBinaryState")) return 'G';
+	}
+	// Fallback to SOAPAction header
+	soap = WEMO_FindHeader(request, "SOAPACTION:");
+	if (soap) {
+		if (strstr(soap, "SetBinaryState")) return 'S';
+		if (strstr(soap, "GetBinaryState")) return 'G';
+	}
+	// Default to Get
+	return 'G';
+}
+
+// ------------------------------------------------------------
+// SSDP integration
+// ------------------------------------------------------------
 
 void DRV_WEMO_Send_Advert_To(int mode, struct sockaddr_in *addr) {
 	const char *useType;
-	int i;
 
-	if (!g_wemoRunning || g_uid == 0) {
+	if (g_uid == 0) {
 		// not running
+		return;
+	}
+
+	if (!g_wemo_enabled) {
 		return;
 	}
 
 	stat_searchesReceived++;
 
+	// mode is decided by SSDP driver (historically: 1=Belkin device wildcard, 0=rootdevice).
+	// For compatibility, when asked for Belkin wildcard, also reply for explicit controllee.
 	if (mode == 1) {
+		// 1) urn:Belkin:device:**
 		useType = "urn:Belkin:device:**";
+
+		if (buffer_out == 0) {
+			outBufferLen = (int)strlen(g_wemo_msearch) + 256;
+			buffer_out = (char*)malloc(outBufferLen);
+		}
+		snprintf(buffer_out, outBufferLen, g_wemo_msearch, HAL_GetMyIPString(), useType, g_uid, useType);
+		DRV_SSDP_SendReply(addr, buffer_out);
+
+		// 2) urn:Belkin:device:controllee:1
+		useType = "urn:Belkin:device:controllee:1";
+		snprintf(buffer_out, outBufferLen, g_wemo_msearch, HAL_GetMyIPString(), useType, g_uid, useType);
+		DRV_SSDP_SendReply(addr, buffer_out);
 	}
 	else {
 		useType = "upnp:rootdevice";
-	}
 
-	addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_HTTP, "WEMO - sends reply %s", useType);
-
-	if (buffer_out == 0) {
-		outBufferLen = strlen(g_wemo_msearch) + 320;
-		buffer_out = (char*)malloc(outBufferLen);
-	}
-
-	for (i = 1; i <= g_wemoDeviceCount; i++) {
-		char locationPath[32];
-		char deviceUID[96];
-		const char *location = WEMO_GetLocationPathForDevice(i, locationPath, sizeof(locationPath));
-		const char *uid = WEMO_GetUIDForDevice(i, deviceUID, sizeof(deviceUID));
-		snprintf(buffer_out, outBufferLen, g_wemo_msearch, HAL_GetMyIPString(), location, useType, uid, useType);
-		addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_HTTP, "WEMO - Sending %s", buffer_out);
+		if (buffer_out == 0) {
+			outBufferLen = (int)strlen(g_wemo_msearch) + 256;
+			buffer_out = (char*)malloc(outBufferLen);
+		}
+		snprintf(buffer_out, outBufferLen, g_wemo_msearch, HAL_GetMyIPString(), useType, g_uid, useType);
 		DRV_SSDP_SendReply(addr, buffer_out);
 	}
+
+	addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_HTTP, "WEMO - sent SSDP reply %s", useType);
 }
 
 void WEMO_AppendInformationToHTTPIndexPage(http_request_t* request, int bPreState) {
-	if(bPreState)
+	if (bPreState)
 		return;
-	hprintf255(request, "<h4>WEMO: devices %i, searches %i, setup %i, events %i, mService %i, event %i </h4>",
-		g_wemoDeviceCount, stat_searchesReceived, stat_setupXMLVisits, stat_eventsReceived, stat_metaServiceXMLVisits, stat_eventServiceXMLVisits);
-
+	hprintf255(request, "<h4>WEMO: searches %i, setup %i, events %i, mService %i, event %i </h4>",
+		stat_searchesReceived, stat_setupXMLVisits, stat_eventsReceived, stat_metaServiceXMLVisits, stat_eventServiceXMLVisits);
 }
 
-
-bool Main_GetFirstPowerState() {
-	int i;
-#if ENABLE_LED_BASIC
-	if (LED_IsLEDRunning()) {
-		return LED_GetEnableAll();
-	}
-	else
-#endif
-	{
-		// relays driver
-		for (i = 0; i < CHANNEL_MAX; i++) {
-			if (h_isChannelRelay(i) || CHANNEL_GetType(i) == ChType_Toggle) {
-				return CHANNEL_Get(i);
-			}
-		}
-	}
-	return 0;
-}
+// ------------------------------------------------------------
+// HTTP callbacks
+// ------------------------------------------------------------
 
 static int WEMO_BasicEvent1(http_request_t* request) {
-	if (!g_wemoRunning) {
-		return -1;
+	if (!g_wemo_enabled) {
+		return http_rest_error(request, 404, "Not Found");
 	}
-
 	const char* cmd = request->bodystart;
-	int deviceId = WEMO_ParseDeviceFromURL(request->url, "upnp/control/basicevent1");
+	char verb;
+	int desiredState = -1;
 
-	if (deviceId <= 0) {
-		addLogAdv(LOG_WARN, LOG_FEATURE_HTTP, "Wemo invalid endpoint %s", request->url ? request->url : "(null)");
-		return -1;
-	}
-	if (cmd == NULL) {
-		addLogAdv(LOG_ERROR, LOG_FEATURE_HTTP, "Wemo post event with empty body");
-		return -1;
-	}
+	// Avoid log spam at INFO; SOAP bodies are large.
+	addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_HTTP, "Wemo post event %s", cmd ? cmd : "(null)");
 
-	addLogAdv(LOG_INFO, LOG_FEATURE_HTTP, "Wemo post event[%d] %s", deviceId, cmd);
-	// Sample event data taken by my user
-	/*
-	<?xml version="1.0" encoding="utf-8"?><s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/"s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"><s:Body><u:GetBinaryState xmlns:u="urn:Belkin:service:basicevent:1"><BinaryState>1</BinaryState></u:GetBinaryState></s:Body></s:Envelope>
-	*/
-	// Set and Get are the same so we can hack just one letter
-	char letter;
-	// is this a Set request?
-	if (strstr(cmd, "SetBinaryState")) {
-		int desiredState;
-		// set
-		letter = 'S';
-		desiredState = WEMO_TryExtractBinaryState(cmd);
-		if (desiredState == 1) {
-			WEMO_SetPowerStateByDevice(deviceId, 1);
-		}
-		else if (desiredState == 0) {
-			WEMO_SetPowerStateByDevice(deviceId, 0);
-		}
-		else {
-			addLogAdv(LOG_WARN, LOG_FEATURE_HTTP, "Wemo SetBinaryState with unknown payload");
+	verb = WEMO_DetermineSoapVerb(request, cmd);
+
+	if (verb == 'S') {
+		if (WEMO_ParseBinaryStateFromXML(cmd, &desiredState)) {
+			WEMO_SetMainPowerState(desiredState);
 		}
 	}
-	else {
-		// get
-		letter = 'G';
-	}
-	int bMainPower = WEMO_GetPowerStateByDevice(deviceId);
 
-	// We must send a SetBinaryState or GetBinaryState response depending on what
-	// was sent to us
+	// Always respond with the live state.
 	http_setup(request, httpMimeTypeXML);
 	poststr(request, g_wemo_response_1);
-	// letter is twice because we have two SetBinaryStateResponse tokens (opening and closing tag)
-	hprintf255(request, g_wemo_response_2_fmt, letter, bMainPower, letter);
+	hprintf255(request, g_wemo_response_2_fmt, verb, WEMO_GetMainPowerState(), verb);
 	poststr(request, NULL);
-
 
 	stat_eventsReceived++;
-
 	return 0;
 }
-
-static int WEMO_MetaInfoControl(http_request_t* request) {
-	const char* cmd = request->bodystart;
-	int deviceId;
-
-	if (!g_wemoRunning) {
-		return -1;
-	}
-	deviceId = WEMO_ParseDeviceFromURL(request->url, "upnp/control/metainfo1");
-	if (deviceId <= 0) {
-		addLogAdv(LOG_WARN, LOG_FEATURE_HTTP, "Wemo invalid metainfo endpoint %s", request->url ? request->url : "(null)");
-		return -1;
-	}
-	if (cmd == NULL) {
-		addLogAdv(LOG_ERROR, LOG_FEATURE_HTTP, "Wemo metainfo request with empty body");
-		return -1;
-	}
-
-	addLogAdv(LOG_INFO, LOG_FEATURE_HTTP, "Wemo metainfo[%d] %s", deviceId, cmd);
-
-	// Many controllers never call metainfo, but we advertise the service in setup.xml.
-	// Return a minimal, stable response to satisfy callers that do.
-	http_setup(request, httpMimeTypeXML);
-	poststr(request, g_wemo_metainfo_resp_1);
-	hprintf255(request, "OpenBeken|%s|%d", g_serial ? g_serial : "", deviceId);
-	poststr(request, g_wemo_metainfo_resp_2);
-	poststr(request, NULL);
-
-	return 0;
-}
-
-static int WEMO_VirtualPost(http_request_t* request) {
-	int deviceId;
-	if (!g_wemoRunning) {
-		return -1;
-	}
-	deviceId = WEMO_ParseDeviceFromURL(request->url, "upnp/control/basicevent1");
-	if (deviceId > 0) {
-		return WEMO_BasicEvent1(request);
-	}
-	deviceId = WEMO_ParseDeviceFromURL(request->url, "upnp/control/metainfo1");
-	if (deviceId > 0) {
-		return WEMO_MetaInfoControl(request);
-	}
-	addLogAdv(LOG_WARN, LOG_FEATURE_HTTP, "Wemo invalid POST endpoint %s", request->url ? request->url : "(null)");
-	return -1;
-}
-static int WEMO_Setup(http_request_t* request);
 
 static int WEMO_EventService(http_request_t* request) {
-	if (!g_wemoRunning) {
-		return -1;
+	if (!g_wemo_enabled) {
+		return http_rest_error(request, 404, "Not Found");
 	}
-
-
 	http_setup(request, httpMimeTypeXML);
 	poststr(request, g_wemo_eventService);
 	poststr(request, NULL);
 
 	stat_eventServiceXMLVisits++;
-
 	return 0;
 }
+
 static int WEMO_MetaInfoService(http_request_t* request) {
-	if (!g_wemoRunning) {
-		return -1;
+	if (!g_wemo_enabled) {
+		return http_rest_error(request, 404, "Not Found");
 	}
-
-
 	http_setup(request, httpMimeTypeXML);
 	poststr(request, g_wemo_metaService);
 	poststr(request, NULL);
 
 	stat_metaServiceXMLVisits++;
-
 	return 0;
-}
-static int WEMO_VirtualGet(http_request_t* request) {
-	if (!g_wemoRunning) {
-		return -1;
-	}
-
-	int deviceId;
-	deviceId = WEMO_ParseDeviceFromURL(request->url, "eventservice.xml");
-	if (deviceId > 0) {
-		return WEMO_EventService(request);
-	}
-	deviceId = WEMO_ParseDeviceFromURL(request->url, "metainfoservice.xml");
-	if (deviceId > 0) {
-		return WEMO_MetaInfoService(request);
-	}
-	deviceId = WEMO_ParseDeviceFromURL(request->url, "setup.xml");
-	if (deviceId > 0) {
-		return WEMO_Setup(request);
-	}
-	addLogAdv(LOG_WARN, LOG_FEATURE_HTTP, "Wemo invalid GET endpoint %s", request->url ? request->url : "(null)");
-	return -1;
 }
 
 static int WEMO_Setup(http_request_t* request) {
-	if (!g_wemoRunning) {
-		return -1;
+	if (!g_wemo_enabled) {
+		return http_rest_error(request, 404, "Not Found");
 	}
-
-	int deviceId = WEMO_ParseDeviceFromURL(request->url, "setup.xml");
-	if (deviceId <= 0) {
-		addLogAdv(LOG_WARN, LOG_FEATURE_HTTP, "Wemo invalid setup endpoint %s", request->url ? request->url : "(null)");
-		return -1;
-	}
-	char serial[64];
-	char uid[96];
-	const char *friendlyName = WEMO_GetFriendlyNameForDevice(deviceId);
+	const char *fname;
+	int ch;
 
 	http_setup(request, httpMimeTypeXML);
+
+	// Prefer the label of the main relay channel (if present); fallback to device name.
+	ch = WEMO_FindMainChannel();
+	fname = 0;
+	if (ch >= 0 && CHANNEL_HasLabel(ch)) {
+		fname = CHANNEL_GetLabel(ch);
+	}
+	if (!fname || !*fname) {
+		fname = CFG_GetDeviceName();
+	}
+
 	poststr(request, g_wemo_setup_1);
-	// friendly name
-	poststr(request, friendlyName);
+	WEMO_PostXMLSafe(request, fname);
 	poststr(request, g_wemo_setup_2);
-	// uuid
-	if (deviceId <= 1) {
-		poststr(request, g_uid);
-		poststr(request, g_wemo_setup_3);
-		poststr(request, g_serial);
-	}
-	else {
-		snprintf(uid, sizeof(uid), "%s-%02d", g_uid, deviceId);
-		snprintf(serial, sizeof(serial), "%s%02d", g_serial, deviceId);
-		poststr(request, uid);
-		poststr(request, g_wemo_setup_3);
-		poststr(request, serial);
-	}
+	poststr(request, g_uid);
+	poststr(request, g_wemo_setup_3);
+	poststr(request, g_serial);
 	poststr(request, g_wemo_setup_4);
-	// presentation URL host
 	poststr(request, HAL_GetMyIPString());
 	poststr(request, g_wemo_setup_5);
-	WEMO_PostServiceList(request, deviceId);
+	poststr(request, g_wemo_setup_6);
 	poststr(request, NULL);
 
 	stat_setupXMLVisits++;
-
 	return 0;
-}
-void WEMO_Shutdown() {
-	if (!g_wemoRunning) {
-		return;
-	}
-	g_wemoRunning = false;
-	if (g_serial) {
-		free(g_serial);
-		g_serial = 0;
-	}
-	if (g_uid) {
-		free(g_uid);
-		g_uid = 0;
-	}
-	if (buffer_out) {
-		free(buffer_out);
-		buffer_out = 0;
-	}
-	outBufferLen = 0;
-	g_wemoDeviceCount = 0;
 }
 
 void WEMO_Init() {
-	if (g_wemoRunning) {
-		return;
-	}
+	// (Re)enable Wemo emulation.
+	g_wemo_enabled = 1;
 	char uid[64];
 	char serial[32];
 	unsigned char mac[8];
-	int i;
 
 	WiFI_GetMacAddress((char*)mac);
 	snprintf(serial, sizeof(serial), "201612%02X%02X%02X%02X", mac[2], mac[3], mac[4], mac[5]);
@@ -772,63 +452,14 @@ void WEMO_Init() {
 	g_serial = strdup(serial);
 	g_uid = strdup(uid);
 
-	if (g_serial == 0 || g_uid == 0) {
-		if (g_serial) { free(g_serial); g_serial = 0; }
-		if (g_uid) { free(g_uid); g_uid = 0; }
-		return;
-	}
-
-	g_wemoDeviceCount = 0;
-	for (i = 0; i < CHANNEL_MAX && g_wemoDeviceCount < WEMO_MAX_DEVICES; i++) {
-		if (h_isChannelRelay(i) || CHANNEL_GetType(i) == ChType_Toggle) {
-			g_wemoChannels[g_wemoDeviceCount++] = i;
-		}
-	}
-	if (g_wemoDeviceCount == 0) {
-		g_wemoChannels[0] = -1;
-		g_wemoDeviceCount = 1;
-	}
-
-	g_wemoRunning = true;
-
 	HTTP_RegisterCallback("/upnp/control/basicevent1", HTTP_POST, WEMO_BasicEvent1, 0);
-	HTTP_RegisterCallback("/upnp/control/metainfo1", HTTP_POST, WEMO_MetaInfoControl, 0);
 	HTTP_RegisterCallback("/eventservice.xml", HTTP_GET, WEMO_EventService, 0);
 	HTTP_RegisterCallback("/metainfoservice.xml", HTTP_GET, WEMO_MetaInfoService, 0);
 	HTTP_RegisterCallback("/setup.xml", HTTP_GET, WEMO_Setup, 0);
+}
 
-	// Exact virtual control URLs (2..N) for robust per-device control (avoid router prefix stripping issues).
-	if (g_wemoDeviceCount > 1) {
-		char path[64];
-		for (i = 2; i <= g_wemoDeviceCount; i++) {
-			int (*basicCb)(http_request_t*) = 0;
-			int (*metaCb)(http_request_t*) = 0;
-
-			switch (i) {
-				case 2: basicCb = WEMO_BasicEvent1_2; metaCb = WEMO_MetaInfoControl_2; break;
-				case 3: basicCb = WEMO_BasicEvent1_3; metaCb = WEMO_MetaInfoControl_3; break;
-				case 4: basicCb = WEMO_BasicEvent1_4; metaCb = WEMO_MetaInfoControl_4; break;
-				case 5: basicCb = WEMO_BasicEvent1_5; metaCb = WEMO_MetaInfoControl_5; break;
-				case 6: basicCb = WEMO_BasicEvent1_6; metaCb = WEMO_MetaInfoControl_6; break;
-				case 7: basicCb = WEMO_BasicEvent1_7; metaCb = WEMO_MetaInfoControl_7; break;
-				case 8: basicCb = WEMO_BasicEvent1_8; metaCb = WEMO_MetaInfoControl_8; break;
-				default: basicCb = 0; metaCb = 0; break;
-			}
-
-			if (basicCb) {
-				snprintf(path, sizeof(path), "/wemo/%d/upnp/control/basicevent1", i);
-				{ char *p = strdup(path); if (p) HTTP_RegisterCallback(p, HTTP_POST, basicCb, 0); }
-			}
-			if (metaCb) {
-				snprintf(path, sizeof(path), "/wemo/%d/upnp/control/metainfo1", i);
-				{ char *p = strdup(path); if (p) HTTP_RegisterCallback(p, HTTP_POST, metaCb, 0); }
-			}
-		}
-	}
-	// virtual devices (2..N) served under /wemo/{id}/...
-	HTTP_RegisterCallback("/wemo/", HTTP_GET, WEMO_VirtualGet, 0);
-
-	//if (DRV_IsRunning("SSDP") == false) {
-//	ScheduleDriverStart("SSDP", 5);
-//	}
+void WEMO_Shutdown() {
+	// OpenBeken cannot unregister HTTP callbacks at runtime.
+	// Disable responses/SSDP adverts without freeing identity strings (callbacks may still be hit).
+	g_wemo_enabled = 0;
 }

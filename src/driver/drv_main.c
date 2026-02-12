@@ -849,7 +849,7 @@ static driver_t g_drivers[] = {
 	NULL,                                    // onEverySecond
 	WEMO_AppendInformationToHTTPIndexPage,   // appendInformationToHTTPIndexPage
 	NULL,                                    // runQuickTick
-	WEMO_Shutdown,                           // stopFunction
+	NULL,                                    // stopFunction
 	NULL,                                    // onChannelChanged
 	NULL,                                    // onHassDiscovery
 	false,                                   // loaded
