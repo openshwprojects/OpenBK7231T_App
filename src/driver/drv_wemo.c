@@ -12,17 +12,16 @@
 #include "drv_ssdp.h"
 #include "../httpserver/new_http.h"
 
-// Wemo driver for Alexa, requiring btsimonh's SSDP to work.
-// Based on Tasmota-style local (non-skill) emulation.
+// Wemo driver for Alexa, requiring btsimonh's SSDP to work
+// Based on Tasmota approach
+// The procedure is following:
+// 1. first MSEARCH over UDP is done
+// 2. then obk replies to MSEARCH with page details
+// 3. then alexa accesses our XML pages here with GET
+// 4. and can change the binary state (0 or 1) with POST
 //
-// Notes / limitations in OpenBeken HTTP server:
-//  - Only GET/PUT/POST/OPTIONS are supported (no SUBSCRIBE/NOTIFY), so Alexa will not get
-//    asynchronous state updates when the relay changes outside of Alexa.
-//  - Alexa does call GetBinaryState during control interactions, so we always return the live state.
-
-// ------------------------------------------------------------
-// XML / SSDP templates
-// ------------------------------------------------------------
+// Note: OpenBeken HTTP server does not support SUBSCRIBE/NOTIFY, so state changes made
+// outside Alexa may not update in Alexa until queried.
 
 static const char *g_wemo_setup_1 =
 "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n"
@@ -69,6 +68,7 @@ static const char *g_wemo_setup_6 =
 static const char *g_wemo_msearch =
 "HTTP/1.1 200 OK\r\n"
 "CACHE-CONTROL: max-age=86400\r\n"
+"DATE: Fri, 15 Apr 2016 04:56:29 GMT\r\n"
 "EXT:\r\n"
 "LOCATION: http://%s:80/setup.xml\r\n"
 "OPT: \"http://schemas.upnp.org/upnp/1/0/\"; ns=01\r\n"
@@ -137,6 +137,11 @@ static const char *g_wemo_eventService =
 "<stateVariable sendEvents=\"yes\">\r\n"
 "<name>BinaryState</name>\r\n"
 "<dataType>bool</dataType>\r\n"
+"<defaultValue>0</defaultValue>\r\n"
+"</stateVariable>\r\n"
+"<stateVariable sendEvents=\"yes\">\r\n"
+"<name>level</name>\r\n"
+"<dataType>string</dataType>\r\n"
 "<defaultValue>0</defaultValue>\r\n"
 "</stateVariable>\r\n"
 "</serviceStateTable>\r\n"
