@@ -786,7 +786,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 */
 #if PLATFORM_ECR6600
 			  // for ECR6000 printf("%+03i", 1); will not be "+01" but "0+1" ...
-            int ttm = TIME_GetTimesZoneOfsSeconds())/60;	// used to get +/- sign and minutes
+            int ttm = TIME_GetTimesZoneOfsSeconds()/60;	// used to get +/- sign and minutes
 			snprintf(datetime, sizeof(datetime), "%.16s%c%02i:%02i",TS2STR(ConsumptionResetTime, TIME_FORMAT_ISO_8601),
                 ttm < 0 ? '-': '+', abs(ttm/60), abs(ttm) % 60);
 #else
