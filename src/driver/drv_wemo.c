@@ -414,17 +414,15 @@ static int WEMO_BasicEvent1(http_request_t* request) {
 	return 0;
 }
 
-static void WEMO_MetaInfo1(struct http_request_t *request)
+static int WEMO_MetaInfo1(http_request_t* request)
 {
 	if (!g_wemo_enabled) {
-		http_rest_error(request, 404, "Not Found");
-		return;
+		return http_rest_error(request, 404, "Not Found");
 	}
 
 	const char *cmd = request->bodystart;
 	if (!cmd) {
-		http_rest_error(request, 400, "Bad Request");
-		return;
+		return http_rest_error(request, 400, "Bad Request");
 	}
 
 	// Alexa typically doesn't call this, but some UPnP stacks will.
@@ -441,6 +439,7 @@ static void WEMO_MetaInfo1(struct http_request_t *request)
 	// Value kept intentionally simple; this endpoint is informational.
 	hprintf255(request, g_wemo_metainfo_response_2_fmt, action, tag, "0", tag, action);
 	poststr(request, NULL);
+	return 0;
 }
 
 static int WEMO_EventService(http_request_t* request) {
