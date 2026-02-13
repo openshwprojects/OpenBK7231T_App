@@ -1346,7 +1346,9 @@ int http_fn_cfg_webapp(http_request_t* request) {
 	hprintf255(request, "<label for=\"enable_web_server\">Web Server Enabled</label><br>");
 #endif
 
-	poststr(request, SUBMIT_AND_END_FORM);
+	poststr(request, "<br><input type=\"submit\" value=\"Submit\">");
+	poststr(request, "<br><input class=\"bgrn\" type=\"submit\" value=\"Reset to default\" onclick=\"if(!confirm('Reset WebApp URL to default?')) return false; document.getElementById('url').value='https://openbekeniot.github.io/webapp/'; return true;\">");
+	poststr(request, "</form>");
 	poststr(request, htmlFooterReturnToCfgOrMainPage);
 	http_html_end(request);
 	poststr(request, NULL);
