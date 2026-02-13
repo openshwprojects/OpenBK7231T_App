@@ -5,6 +5,8 @@ ARG DEBIAN_FRONTEND=noninteractive
 ARG USERNAME=devuser
 ARG UID=1000
 ARG TZ="Etc/UTC"
+ENV LANG=C.UTF-8
+ENV LC_ALL=C.UTF-8
 
 RUN echo "$TZ" > /etc/timezone
 
