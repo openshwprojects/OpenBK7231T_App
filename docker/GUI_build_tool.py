@@ -1,4 +1,4 @@
-import os
+﻿import os
 import sys
 import threading
 import subprocess
@@ -60,8 +60,13 @@ class OBKBuildToolGUI(tk.Tk):
         # Suppress terminal windows for background subprocesses on Windows
         self._creation_flags = 0x08000000 if sys.platform == "win32" else 0
 
+        # Track build success for OTA gating
+        self._last_build_success = False
+        # Store driver variables {driver_name: BooleanVar}
+        self._driver_vars: dict[str, tk.BooleanVar] = {}
+
         # Variables
-        self.var_src_dir = tk.StringVar(value=bt.REPO_ROOT)
+        self.var_src_dir = tk.StringVar(value="")
         self.var_output_dir = tk.StringVar(value="")
         self.var_platform = tk.StringVar(value=bt.get_platforms()[0] if bt.get_platforms() else "")
         self.var_flash_size = tk.StringVar(value="")
@@ -69,6 +74,8 @@ class OBKBuildToolGUI(tk.Tk):
         self.var_clean = tk.BooleanVar(value=False)
         self.var_no_cache = tk.BooleanVar(value=False)
         self.var_txw_packager = tk.StringVar(value="auto")
+        self.var_ota_host = tk.StringVar(value="")
+        self.var_ota_auto = tk.BooleanVar(value=False)
 
         # Build UI
         self._build_ui()
@@ -86,10 +93,19 @@ class OBKBuildToolGUI(tk.Tk):
             self.var_output_dir.trace_add("write", lambda *_: self._on_output_change())
         except Exception:
             pass
+        try:
+            self.var_ota_host.trace_add("write", lambda *_: self._on_ota_settings_change())
+        except Exception:
+            pass
+        try:
+            self.var_ota_auto.trace_add("write", lambda *_: self._on_ota_settings_change())
+        except Exception:
+            pass
 
         # Initialize defaults based on platform
         self._on_platform_change()
         self._on_output_change()
+        self._on_ota_settings_change()
         self._update_start_enabled()
 
         # Periodic log pumping
@@ -380,22 +396,39 @@ class OBKBuildToolGUI(tk.Tk):
         inner.columnconfigure(0, weight=1)
         inner.rowconfigure(0, weight=1)
 
-        self.lst_drivers = tk.Listbox(inner, selectmode=tk.MULTIPLE, height=8)
-        self.lst_drivers.grid(row=0, column=0, sticky="nsew")
-        scr = ttk.Scrollbar(inner, orient="vertical", command=self.lst_drivers.yview)
-        scr.grid(row=0, column=1, sticky="ns")
-        self.lst_drivers.config(yscrollcommand=scr.set)
-        self.lst_drivers.bind("<<ListboxSelect>>", lambda _e: self._update_start_enabled())
+        # Scrollable canvas for checkboxes
+        self.can_drivers = tk.Canvas(inner, highlightthickness=0)
+        self.can_drivers.grid(row=0, column=0, sticky="nsew")
+        
+        self.scr_drivers = ttk.Scrollbar(inner, orient="vertical", command=self.can_drivers.yview)
+        self.scr_drivers.grid(row=0, column=1, sticky="ns")
+        self.can_drivers.config(yscrollcommand=self.scr_drivers.set)
+
+        self.frm_chk_drivers = ttk.Frame(self.can_drivers)
+        self.can_drivers.create_window((0, 0), window=self.frm_chk_drivers, anchor="nw")
+
+        def _on_frm_chk_configure(event):
+            self.can_drivers.configure(scrollregion=self.can_drivers.bbox("all"))
+        
+        self.frm_chk_drivers.bind("<Configure>", _on_frm_chk_configure)
+
         btns = ttk.Frame(frm_drivers)
         btns.grid(row=0, column=1, sticky="ns", padx=8, pady=8)
         btn_refresh = ttk.Button(btns, text="Refresh", command=self._refresh_drivers)
         btn_refresh.grid(row=0, column=0, sticky="ew", pady=(0, 6))
+        
+        btn_sel_all = ttk.Button(btns, text="Select All", command=self._select_all_drivers)
+        btn_sel_all.grid(row=1, column=0, sticky="ew", pady=(0, 6))
+        
+        btn_sel_none = ttk.Button(btns, text="Deselect All", command=self._select_none_drivers)
+        btn_sel_none.grid(row=2, column=0, sticky="ew")
+
         self.btn_refresh = btn_refresh
         # --- Actions row ---
         frm_actions = ttk.Frame(self)
         frm_actions.grid(row=2, column=0, sticky="ew", padx=10)
-        # Columns: Start | Clear | Open | spacer
-        frm_actions.columnconfigure(3, weight=1)
+        # Columns: Start | Clear | Open | OTA label | OTA host | OTA auto | OTA upload | spacer
+        frm_actions.columnconfigure(7, weight=1)
 
         self.btn_start = ttk.Button(frm_actions, text="Start Build", command=self._start_build_clicked)
         self.btn_start.grid(row=0, column=0, sticky="w", padx=(0, 10), pady=8)
@@ -406,6 +439,16 @@ class OBKBuildToolGUI(tk.Tk):
         btn_open = ttk.Button(frm_actions, text="Open Folder", command=self._open_output_folder)
         btn_open.grid(row=0, column=2, sticky="w", padx=(0, 10), pady=8)
         self.btn_open = btn_open
+
+        ttk.Label(frm_actions, text="OTA Host/IP:").grid(row=0, column=3, sticky="w", padx=(8, 6), pady=8)
+        self.ent_ota_host = ttk.Entry(frm_actions, textvariable=self.var_ota_host, width=18)
+        self.ent_ota_host.grid(row=0, column=4, sticky="w", padx=(0, 10), pady=8)
+
+        self.chk_ota_auto = ttk.Checkbutton(frm_actions, text="Auto-upload OTA", variable=self.var_ota_auto)
+        self.chk_ota_auto.grid(row=0, column=5, sticky="w", padx=(0, 10), pady=8)
+
+        self.btn_ota_upload = ttk.Button(frm_actions, text="Upload OTA", command=self._upload_ota_clicked)
+        self.btn_ota_upload.grid(row=0, column=6, sticky="w", padx=(0, 10), pady=8)
 # --- Build output ---
         frm_log = ttk.LabelFrame(self, text="Build Output")
         frm_log.grid(row=3, column=0, sticky="nsew", padx=10, pady=10)
@@ -485,6 +528,8 @@ class OBKBuildToolGUI(tk.Tk):
         src_dir = self.var_src_dir.get().strip()
         bt.update_paths(src_dir if src_dir else None)
 
+        self._last_build_success = False
+
         # Update default flash size for platform if empty
         plat = self.var_platform.get().strip()
         default_flash = bt.get_default_flash_size(plat) if plat else "2MB"
@@ -501,18 +546,25 @@ class OBKBuildToolGUI(tk.Tk):
 
         # Refresh drivers list
         self._refresh_drivers()
+        self._update_ota_controls()
 
     def _on_source_change(self):
         src_dir = self.var_src_dir.get().strip()
         bt.update_paths(src_dir if src_dir else None)
+        self._last_build_success = False
         self._update_source_hint()
         self._apply_output_gate()
         self._refresh_drivers()
+        self._update_ota_controls()
         self._update_start_enabled()
 
     def _on_output_change(self):
         self._apply_output_gate()
+        self._update_ota_controls()
         self._update_start_enabled()
+
+    def _on_ota_settings_change(self):
+        self._update_ota_controls()
 
     def _validate_source_dir(self) -> tuple[bool, str]:
         src_dir = (self.var_src_dir.get().strip() or "").strip()
@@ -584,7 +636,6 @@ class OBKBuildToolGUI(tk.Tk):
         self.ent_ver.config(state=("normal" if enabled else "disabled"))
         self.chk_clean.config(state=("normal" if enabled else "disabled"))
         self.chk_nocache.config(state=("normal" if enabled else "disabled"))
-        self.lst_drivers.config(state=("normal" if enabled else "disabled"))
         self.btn_refresh.config(state=("normal" if enabled else "disabled"))
         self.btn_open.config(state=("normal" if output_set else "disabled"))
         self.btn_check_main.config(state=("normal" if source_ok and (not self._busy) else "disabled"))
@@ -593,25 +644,74 @@ class OBKBuildToolGUI(tk.Tk):
         else:
             # Restore TXW control state based on active platform.
             self._on_platform_change()
+        self._update_ota_controls()
+
+    def _select_all_drivers(self):
+        for var in self._driver_vars.values():
+            var.set(True)
+        self._update_start_enabled()
+
+    def _select_none_drivers(self):
+        for var in self._driver_vars.values():
+            var.set(False)
+        self._update_start_enabled()
 
     def _refresh_drivers(self):
-        self.lst_drivers.delete(0, "end")
+        # Save previous selection
+        prev_selection = self._get_selected_drivers()
+
+        # Clear existing checkboxes
+        for widget in self.frm_chk_drivers.winfo_children():
+            widget.destroy()
+        self._driver_vars.clear()
+
         source_ok, _ = self._validate_source_dir()
         if not source_ok:
             self._update_start_enabled()
             return
+
         if not self.var_output_dir.get().strip():
             self._update_start_enabled()
             return
+
         plat = self.var_platform.get().strip()
         if not plat:
             return
+
         drivers = bt.get_available_drivers(plat)
+        # Sort drivers alphabetically
+        drivers.sort()
+        
+        row = 0
+        col = 0
+        max_cols = 5 # Display drivers in multiple columns
         for d in drivers:
-            self.lst_drivers.insert("end", d)
+            # Strip prefixes for display label
+            display_name = d
+            if display_name.startswith("ENABLE_DRIVER_"):
+                display_name = display_name[len("ENABLE_DRIVER_"):]
+            elif display_name.startswith("ENABLE_"):
+                display_name = display_name[len("ENABLE_"):]
+            
+            var = tk.BooleanVar(value=(d in prev_selection))
+            self._driver_vars[d] = var
+            chk = ttk.Checkbutton(
+                self.frm_chk_drivers, 
+                text=display_name, 
+                variable=var,
+                command=self._update_start_enabled
+            )
+            chk.grid(row=row, column=col, sticky="w", padx=5, pady=2)
+            col += 1
+            if col >= max_cols:
+                col = 0
+                row += 1
 
         if not drivers:
             self._log(f"[Info] No drivers found (missing {bt.CONFIG_FILE}?)\n")
+        
+        self.can_drivers.xview_moveto(0)
+        self.can_drivers.yview_moveto(0)
         self._update_start_enabled()
 
     def _update_start_enabled(self):
@@ -631,13 +731,142 @@ class OBKBuildToolGUI(tk.Tk):
         self.btn_start.config(state=("normal" if allow else "disabled"))
 
     def _get_selected_drivers(self) -> list[str]:
-        return [self.lst_drivers.get(i) for i in self.lst_drivers.curselection()]
+        return [name for name, var in self._driver_vars.items() if var.get()]
 
     def _normalize_flash(self, s: str) -> str:
         s = (s or "").strip()
         if s.isdigit():
             return f"{s}MB"
         return s
+
+    def _is_valid_ipv4(self, ip_str: str) -> bool:
+        """Checks if a string is a valid IPv4 address (4 parts, 0-255)."""
+        parts = ip_str.split('.')
+        if len(parts) != 4:
+            return False
+        for part in parts:
+            if not part.isdigit():
+                return False
+            val = int(part)
+            if val < 0 or val > 255:
+                return False
+        return True
+
+    def _update_ota_controls(self):
+        if not hasattr(self, "btn_ota_upload"):
+            return
+        source_ok, _ = self._validate_source_dir()
+        output_ok = bool(self.var_output_dir.get().strip())
+        platform = self.var_platform.get().strip()
+        ota_capable = bool(platform) and bt.is_platform_ota_capable(platform)
+        
+        # OTA controls are enabled if platform is OTA capable (gating by build success reverted per user request)
+        base_enabled = source_ok and output_ok and ota_capable and (not self._busy)
+
+        self.ent_ota_host.config(state=("normal" if base_enabled else "disabled"))
+        self.chk_ota_auto.config(state=("normal" if base_enabled else "disabled"))
+
+        manual_enabled = (
+            base_enabled
+            and (not self.var_ota_auto.get())
+            and bool(self.var_ota_host.get().strip())
+        )
+        self.btn_ota_upload.config(state=("normal" if manual_enabled else "disabled"))
+
+    def _perform_ota_upload(self, out_dir: str, platform: str, host: str) -> bool:
+        try:
+            target = bt.get_target_platform(platform)
+            ext = bt.get_ota_extension_for_platform(platform)
+            if not ext:
+                self._log(f"[OTA] Platform '{platform}' ({target}) is not marked OTA-capable.\n")
+                return False
+
+            ota_file = bt.find_ota_image_file(out_dir, platform)
+            self._log(f"[OTA] Selected artifact: {ota_file}\n")
+
+            info = bt.query_device_platform(host)
+            token = (info.get("token") or "").strip()
+            raw_platform = (info.get("raw_platform") or "").strip()
+            source = info.get("source") or "none"
+            
+            if source == "none" or not token:
+                self._log("[OTA] ERROR: Device platform probe failed. Check host/IP and connectivity.\n")
+                return False
+
+            compatible = bt.is_device_platform_compatible(platform, token)
+            self._log(
+                f"[OTA] Device platform ({source}): '{raw_platform}' -> '{token}', "
+                f"target '{target}', compatible={compatible}\n"
+            )
+            if not compatible:
+                self._log("[OTA] ERROR: Upload blocked due to platform mismatch.\n")
+                return False
+
+            result = bt.upload_ota_file(host, ota_file)
+            if result.get("ok"):
+                self._log(f"[OTA] Upload OK (HTTP {result.get('status', 0)}).\n")
+                body = (result.get("body") or "").strip()
+                if body:
+                    self._log(f"[OTA] Response: {body}\n")
+                restart = bt.restart_device(host)
+                if restart.get("ok"):
+                    self._log("[OTA] Restart command sent (Restart 1).\n")
+                    rbody = (restart.get("body") or "").strip()
+                    if rbody:
+                        self._log(f"[OTA] Restart response: {rbody}\n")
+                else:
+                    self._log(f"[OTA] Restart FAILED (HTTP {restart.get('status', 0)}).\n")
+                    rbody = (restart.get("body") or "").strip()
+                    if rbody:
+                        self._log(f"[OTA] Restart error: {rbody}\n")
+                return True
+            self._log(f"[OTA] Upload FAILED (HTTP {result.get('status', 0)}).\n")
+            body = (result.get("body") or "").strip()
+            if body:
+                self._log(f"[OTA] Error: {body}\n")
+            return False
+        except Exception as e:
+            self._log(f"[OTA] Upload failed: {e}\n")
+            return False
+
+    def _upload_ota_clicked(self):
+        if self._busy:
+            messagebox.showwarning("Busy", "Please wait for current operation to finish.")
+            return
+        source_ok, source_err = self._validate_source_dir()
+        if not source_ok:
+            messagebox.showerror("Invalid Source Directory", source_err)
+            return
+        out_dir = self.var_output_dir.get().strip()
+        if not out_dir:
+            messagebox.showerror("Missing Output Folder", "Please select an output folder first.")
+            return
+        platform = self.var_platform.get().strip()
+        if not platform:
+            messagebox.showerror("Missing Platform", "Please select a platform.")
+            return
+        if not bt.is_platform_ota_capable(platform):
+            messagebox.showerror("OTA Not Supported", f"Platform '{platform}' is not marked OTA-capable.")
+            return
+        host = self.var_ota_host.get().strip()
+        if not host:
+            messagebox.showerror("Missing OTA Host", "Please provide device host/IP.")
+            return
+        
+        if not self._is_valid_ipv4(host):
+            messagebox.showerror("Invalid IP", f"'{host}' is not a valid IPv4 address (e.g., 192.168.0.100).")
+            return
+
+        self._set_ui_busy(True)
+        self._log(f"[OTA] Manual upload requested for {platform} -> {host}\n")
+
+        def _worker():
+            try:
+                self._perform_ota_upload(out_dir, platform, host)
+            finally:
+                self._set_ui_busy(False)
+
+        threading.Thread(target=_worker, daemon=True).start()
 
     def _sanitize_version(self, s: str) -> str:
         """
@@ -711,6 +940,8 @@ class OBKBuildToolGUI(tk.Tk):
         txw_packager = (self.var_txw_packager.get().strip() or "auto").lower()
         if txw_packager not in {"auto", "wine", "fallback"}:
             txw_packager = "auto"
+        ota_auto = bool(self.var_ota_auto.get())
+        ota_host = self.var_ota_host.get().strip()
 
         # Kick thread
         self._set_ui_busy(True)
@@ -728,11 +959,13 @@ class OBKBuildToolGUI(tk.Tk):
         if no_cache:
             self._log("Option: DOCKER IMAGE REBUILD (no-cache) enabled\n")
         self._log(f"TXW Packager: {txw_packager}\n")
+        self._log(f"OTA Host/IP: {ota_host if ota_host else '(not set)'}\n")
+        self._log(f"OTA Auto-upload: {'enabled' if ota_auto else 'disabled'}\n")
         self._log("\n")
 
         self._build_thread = threading.Thread(
             target=self._run_build_worker,
-            args=(out_dir, plat, selected_drivers, flash, version, clean, no_cache, txw_packager),
+            args=(out_dir, plat, selected_drivers, flash, version, clean, no_cache, txw_packager, ota_auto, ota_host),
             daemon=True
         )
         self._build_thread.start()
@@ -767,6 +1000,7 @@ class OBKBuildToolGUI(tk.Tk):
                 stderr=subprocess.DEVNULL,
                 check=False,
                 env=self._subprocess_env(),
+                creationflags=self._creation_flags,
             )
             return probe.returncode == 0
         except Exception:
@@ -774,12 +1008,12 @@ class OBKBuildToolGUI(tk.Tk):
 
     def _run_build_worker(self, out_dir: str, platform: str, selected_drivers: list[str],
                           flash_size: str, version: str | None, clean: bool, no_cache: bool,
-                          txw_packager: str):
+                          txw_packager: str, ota_auto: bool, ota_host: str):
         start_time = time.time()
         temp_config_path = os.path.join(bt.REPO_ROOT, "temp_obk_config.h")
         try:
             # Docker daemon check (reuse your logic)
-            if not bt.check_docker_running():
+            if not bt.check_docker_running(creationflags=self._creation_flags):
                 self._log("\n❌ ERROR: Docker is not running!\nPlease start Docker Desktop and try again.\n")
                 return
 
@@ -852,11 +1086,31 @@ class OBKBuildToolGUI(tk.Tk):
 
             self._run_cmd_stream(cmd, cwd=None)
 
+            # verify output file presence
+            try:
+                bt.find_ota_image_file(out_dir, platform)
+                self._last_build_success = True
+            except Exception as ve:
+                self._log(f"\n[Warn] Build finished but OTA artifact not found: {ve}\n")
+                self._last_build_success = False
+
             elapsed = time.time() - start_time
-            self._log(f"\n✅ Build completed in {elapsed:.2f} seconds.\n")
+            self._log(f"\n[OK] Build completed in {elapsed:.2f} seconds.\n")
+
+            if ota_auto and self._last_build_success:
+                if not bt.is_platform_ota_capable(platform):
+                    self._log(f"[OTA] Auto-upload skipped: platform '{platform}' is not marked OTA-capable.\n")
+                elif not ota_host:
+                    self._log("[OTA] Auto-upload skipped: OTA host/IP is empty.\n")
+                elif not self._is_valid_ipv4(ota_host):
+                    self._log(f"[OTA] Auto-upload aborted: invalid IP address '{ota_host}'.\n")
+                else:
+                    self._log(f"[OTA] Auto-upload enabled. Uploading to {ota_host}...\n")
+                    self._perform_ota_upload(out_dir, platform, ota_host)
 
         except Exception as e:
-            self._log(f"\n❌ Build failed: {e}\n")
+            self._last_build_success = False
+            self._log(f"\n[ERR] Build failed: {e}\n")
         finally:
             # Cleanup temp config
             try:

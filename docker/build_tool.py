@@ -5,8 +5,10 @@ import sys
 import shutil
 import argparse
 import time
+import json
 import urllib.request
 import urllib.error
+import urllib.parse
 
 # Configuration
 # Auto-detect repository root based on script location
@@ -181,8 +183,239 @@ PLATFORMS = {
     "XR872":     {"target": "OpenXR872",     "macros": ["PLATFORM_XR872"]},
 }
 
+# OTA-capable targets and expected firmware file suffixes.
+# Keep this list conservative and explicit to prevent accidental cross-platform uploads.
+OTA_TARGET_EXTENSIONS = {
+    "OpenBK7231N": ".rbl",
+    "OpenBK7231T": ".rbl",
+    "OpenBK7238": ".rbl",
+    "OpenBL602": ".bin.xz.ota",
+    "OpenESP32": ".img",
+    "OpenESP32C2": ".img",
+    "OpenESP32C3": ".img",
+    "OpenESP32C6": ".img",
+    "OpenESP32S2": ".img",
+    "OpenESP32S3": ".img",
+    "OpenLN882H": "_OTA.bin",
+    "OpenTR6260": ".bin",
+    "OpenW600": ".img",
+    "OpenW800": ".img",
+    "OpenRTL87X0C": ".img",
+    "OpenRTL8710B": ".img",
+}
+
 def get_platforms():
     return sorted(PLATFORMS.keys())
+
+
+def get_target_platform(platform_name):
+    if platform_name in PLATFORMS:
+        return PLATFORMS[platform_name]["target"]
+    return platform_name
+
+
+def is_platform_ota_capable(platform_name):
+    target = get_target_platform(platform_name)
+    return target in OTA_TARGET_EXTENSIONS
+
+
+def get_ota_extension_for_platform(platform_name):
+    target = get_target_platform(platform_name)
+    return OTA_TARGET_EXTENSIONS.get(target)
+
+
+def _normalize_platform_token(value):
+    if not value:
+        return ""
+    token = re.sub(r"[^A-Za-z0-9]", "", str(value).upper())
+    if token.startswith("OPEN"):
+        token = token[4:]
+    return token
+
+
+def find_ota_image_file(output_dir, platform_name):
+    """
+    Finds the newest OTA artifact matching selected platform and configured extension.
+    Searches recursively under output_dir.
+    """
+    target = get_target_platform(platform_name)
+    ext = get_ota_extension_for_platform(platform_name)
+    if not ext:
+        raise RuntimeError(f"Platform '{platform_name}' ({target}) is not marked OTA-capable.")
+
+    root = os.path.abspath(output_dir)
+    if not os.path.isdir(root):
+        raise RuntimeError(f"Output directory does not exist: {root}")
+
+    target_lower = target.lower()
+    ext_lower = ext.lower()
+    matches = []
+    for dirpath, _, filenames in os.walk(root):
+        for name in filenames:
+            lname = name.lower()
+            if lname.startswith(target_lower) and lname.endswith(ext_lower):
+                full = os.path.join(dirpath, name)
+                try:
+                    mtime = os.path.getmtime(full)
+                except OSError:
+                    continue
+                matches.append((mtime, full))
+
+    if not matches:
+        raise RuntimeError(
+            f"No OTA file found for {target} with extension '{ext}' under:\n{root}"
+        )
+
+    matches.sort(key=lambda x: x[0], reverse=True)
+    return matches[0][1]
+
+
+def query_device_platform(host, timeout=8):
+    """
+    Queries OBK device for platform/chipset info.
+    Returns a dict with best-effort fields:
+      - source: status2|api_info|none
+      - raw_platform: e.g. BK7231N / OpenBK7231N
+      - token: normalized token, e.g. BK7231N
+      - raw: raw response snippet
+    """
+    host = (host or "").strip()
+    if not host:
+        raise RuntimeError("Device host is empty.")
+
+    base = f"http://{host}"
+
+    # 1) Tasmota-like status endpoint
+    try:
+        url = f"{base}/cm?cmnd=status%202"
+        with urllib.request.urlopen(url, timeout=timeout) as resp:
+            txt = resp.read().decode("utf-8", errors="replace")
+        obj = json.loads(txt)
+        statusfwr = obj.get("StatusFWR", {}) if isinstance(obj, dict) else {}
+        raw_platform = statusfwr.get("Hardware") or statusfwr.get("Build") or ""
+        return {
+            "source": "status2",
+            "raw_platform": raw_platform,
+            "token": _normalize_platform_token(raw_platform),
+            "raw": txt[:400],
+        }
+    except Exception:
+        pass
+
+    # 2) OBK REST info endpoint
+    try:
+        url = f"{base}/api/info"
+        with urllib.request.urlopen(url, timeout=timeout) as resp:
+            txt = resp.read().decode("utf-8", errors="replace")
+        obj = json.loads(txt)
+        raw_platform = ""
+        if isinstance(obj, dict):
+            raw_platform = obj.get("chipset") or obj.get("build") or ""
+        return {
+            "source": "api_info",
+            "raw_platform": raw_platform,
+            "token": _normalize_platform_token(raw_platform),
+            "raw": txt[:400],
+        }
+    except Exception:
+        pass
+
+    return {"source": "none", "raw_platform": "", "token": "", "raw": ""}
+
+
+def is_device_platform_compatible(platform_name, device_platform_token):
+    """
+    Basic compatibility check between selected target and detected device token.
+    """
+    target_token = _normalize_platform_token(get_target_platform(platform_name))
+    device_token = _normalize_platform_token(device_platform_token)
+    if not target_token or not device_token:
+        return False
+    return target_token == device_token
+
+
+def upload_ota_file(host, ota_file_path, timeout=30):
+    """
+    Uploads OTA image as raw binary body to /api/ota.
+    """
+    host = (host or "").strip()
+    if not host:
+        raise RuntimeError("Device host is empty.")
+    ota_file_path = os.path.abspath(ota_file_path)
+    if not os.path.isfile(ota_file_path):
+        raise RuntimeError(f"OTA file not found: {ota_file_path}")
+
+    with open(ota_file_path, "rb") as f:
+        data = f.read()
+
+    url = f"http://{host}/api/ota"
+    req = urllib.request.Request(url=url, data=data, method="POST")
+    req.add_header("Content-Type", "application/octet-stream")
+    req.add_header("Content-Length", str(len(data)))
+
+    try:
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
+            status = getattr(resp, "status", 200)
+            body = resp.read().decode("utf-8", errors="replace")
+        return {"ok": True, "status": status, "body": body[:500]}
+    except urllib.error.HTTPError as e:
+        try:
+            body = e.read().decode("utf-8", errors="replace")
+        except Exception:
+            body = str(e)
+        return {"ok": False, "status": getattr(e, "code", 0), "body": body[:500]}
+    except Exception as e:
+        return {"ok": False, "status": 0, "body": str(e)}
+
+
+def send_obk_command(host, command, timeout=10):
+    """
+    Sends a command using OBK command endpoint:
+      /cm?cmnd=<command>
+    """
+    host = (host or "").strip()
+    if not host:
+        raise RuntimeError("Device host is empty.")
+    command = str(command or "").strip()
+    if not command:
+        raise RuntimeError("Command is empty.")
+
+    encoded = urllib.parse.quote(command, safe="")
+    url = f"http://{host}/cm?cmnd={encoded}"
+    req = urllib.request.Request(url=url, method="GET")
+
+    try:
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
+            status = getattr(resp, "status", 200)
+            body = resp.read().decode("utf-8", errors="replace")
+        return {"ok": True, "status": status, "body": body[:500]}
+    except urllib.error.HTTPError as e:
+        try:
+            body = e.read().decode("utf-8", errors="replace")
+        except Exception:
+            body = str(e)
+        return {"ok": False, "status": getattr(e, "code", 0), "body": body[:500]}
+    except Exception as e:
+        return {"ok": False, "status": 0, "body": str(e)}
+
+
+def restart_device(host, timeout=10):
+    """
+    Sends 'Restart 1' command. Some firmware versions may reset the HTTP socket quickly;
+    in that case a connection error can still mean the reboot was accepted.
+    """
+    res = send_obk_command(host, "Restart 1", timeout=timeout)
+    if res.get("ok"):
+        return res
+
+    body = (res.get("body") or "").lower()
+    likely_reboot_disconnect = (
+        "connection" in body or "timed out" in body or "reset" in body
+    )
+    if likely_reboot_disconnect:
+        return {"ok": True, "status": res.get("status", 0), "body": res.get("body", "")}
+
+    return res
 
 def get_available_drivers(platform_name):
     """
@@ -359,7 +592,7 @@ def create_custom_config(selected_drivers):
             
     return "".join(new_lines)
 
-def check_docker_running():
+def check_docker_running(creationflags=0):
     """
     Checks if Docker daemon is running by attempting 'docker info'.
     Returns True if running, False otherwise.
@@ -370,19 +603,27 @@ def check_docker_running():
             capture_output=True,
             timeout=5,
             encoding='utf-8',
-            errors='replace'
+            errors='replace',
+            creationflags=creationflags
         )
         return result.returncode == 0
     except (subprocess.TimeoutExpired, FileNotFoundError):
         return False
 
-def build_docker_image(no_cache=False):
+def build_docker_image(no_cache=False, creationflags=0):
     print("Building Docker image...")
     ensure_gcc_arm_archive()
     cmd = ["docker", "build", "-t", "openbk_builder", "."]
     if no_cache:
         cmd.insert(2, "--no-cache")
-    subprocess.run(cmd, cwd=DOCKER_DIR, check=True, encoding='utf-8', errors='replace')
+    subprocess.run(
+        cmd, 
+        cwd=DOCKER_DIR, 
+        check=True, 
+        encoding='utf-8', 
+        errors='replace',
+        creationflags=creationflags
+    )
 
 def run_docker_build(
     output_dir,
@@ -402,6 +643,7 @@ def run_docker_build(
     log_file_path=None,
     stream_output=True,
     txw_packager=None,
+    creationflags=0,
 ):
     # Resolve Make target (e.g., BK7231N -> OpenBK7231N)
     if platform in PLATFORMS:
@@ -479,6 +721,7 @@ def run_docker_build(
             errors="replace",
             bufsize=1,
             universal_newlines=True,
+            creationflags=creationflags,
         )
 
         if process.stdout:
