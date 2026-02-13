@@ -95,11 +95,12 @@ static void tcp_client_thread(beken_thread_arg_t arg)
 		}
 		// grow by 1024
 		request.receivedLenmax += 1024;
-		request.received = (char*)realloc(request.received, request.receivedLenmax+2);
-		if (request.received == NULL) {
+		char *newbuf = (char*)realloc(request.received, request.receivedLenmax + 2);
+		if (newbuf == NULL) {
 			// no memory
-			return;
+			goto exit;
 		}
+		request.received = buf = newbuf;
 	}
 	request.received[request.receivedLen] = 0;
 #endif
