@@ -201,6 +201,9 @@ void Test_PartitionSearch()
 }
 void Win_DoUnitTests()
 {
+	Test_ChargingScript();
+	Test_LEDstrips();
+
 	// SELFTEST_ASSERT_EXPRESSION("sqrt(4)", 2)
 	SELFTEST_ASSERT(PIN_ParsePinRoleName("Btn_pd") == IOR_Button_pd);
 	SELFTEST_ASSERT(PIN_ParsePinRoleName("Btn_pd_n") == IOR_Button_pd_n);
@@ -215,7 +218,6 @@ void Win_DoUnitTests()
 	Test_OpenWeatherMap();
 	Test_MAX72XX();
 
-	Test_LEDstrips();
 	Test_Commands_Channels();
 
 	Test_Driver_TCL_AC();
