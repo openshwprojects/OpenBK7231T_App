@@ -184,6 +184,7 @@ void EEPROM_AppendInformationToHTTPIndexPage(http_request_t*r, int pre);
 void apply_smart_light();
 
 void WEMO_Init();
+void WEMO_Shutdown(void);
 void WEMO_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState);
 
 void HUE_Init();
