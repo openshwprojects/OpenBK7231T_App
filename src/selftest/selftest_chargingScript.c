@@ -35,14 +35,14 @@ void Test_ChargingScript() {
 	CMD_ExecuteCommand("SetupTestPower 230 0.5 100 50 0", 0);
 
 	// Upload autoexec.bat to LittleFS
-	Test_FakeHTTPClientPacket_POST("api/lfs/autoexec.bat", test_chargingScript);
+	Test_FakeHTTPClientPacket_POST("api/lfs/testCharge.bat", test_chargingScript);
 	// Verify it was stored
-	Test_FakeHTTPClientPacket_GET("api/lfs/autoexec.bat");
+	Test_FakeHTTPClientPacket_GET("api/lfs/testCharge.bat");
 	SELFTEST_ASSERT_HTML_REPLY(test_chargingScript);
 
 	SVM_FreeAllFiles();
 	// Start the script
-	CMD_ExecuteCommand("startScript autoexec.bat", 0);
+	CMD_ExecuteCommand("startScript testCharge.bat", 0);
 
 	Sim_RunSeconds(1.0f, false);
 	// Turn relay ON
