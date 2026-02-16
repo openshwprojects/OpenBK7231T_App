@@ -6,8 +6,6 @@ on:
   pull_request:
     branches: 
       - '**'
-
-
 env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   APP_NAME: ${{ github.event.repository.name }}
@@ -507,9 +505,9 @@ jobs:
           dry_run: false
           semantic_version: 21
           extra_plugins: |
-            # @semantic-release/changelog
+            @semantic-release/changelog
             @semantic-release/git
-            # conventional-changelog-conventionalcommits@7
+            conventional-changelog-conventionalcommits@7
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Echo Semantic Release Versions
