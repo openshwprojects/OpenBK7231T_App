@@ -678,13 +678,18 @@ class OBKBuildToolGUI(tk.Tk):
         if not plat:
             return
 
-        drivers = bt.get_available_drivers(plat)
+        drivers_dict = bt.get_available_drivers(plat)
         # Sort drivers alphabetically
-        drivers.sort()
+        drivers = sorted(drivers_dict.keys())
         
         row = 0
         col = 0
         max_cols = 5 # Display drivers in multiple columns
+
+        # If we have no previous selection (first load or platform switch),
+        # use the defaults from obk_config.h
+        use_defaults = (len(prev_selection) == 0)
+
         for d in drivers:
             # Strip prefixes for display label
             display_name = d
@@ -693,7 +698,15 @@ class OBKBuildToolGUI(tk.Tk):
             elif display_name.startswith("ENABLE_"):
                 display_name = display_name[len("ENABLE_"):]
             
-            var = tk.BooleanVar(value=(d in prev_selection))
+            if use_defaults:
+                # Use value from config (1=True, 0=False)
+                # is_checked = (drivers_dict[d] != 0)
+                is_checked = False
+            else:
+                # Maintain previous state
+                is_checked = (d in prev_selection)
+
+            var = tk.BooleanVar(value=is_checked)
             self._driver_vars[d] = var
             chk = ttk.Checkbutton(
                 self.frm_chk_drivers, 
@@ -1115,7 +1128,8 @@ class OBKBuildToolGUI(tk.Tk):
             # Cleanup temp config
             try:
                 if os.path.exists(temp_config_path):
-                    os.remove(temp_config_path)
+                    pass
+                    #os.remove(temp_config_path)
             except Exception:
                 pass
 
