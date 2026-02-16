@@ -28,7 +28,7 @@ jobs:
         if: github.ref == 'refs/heads/main' || github.ref_name == 'alpha'
         uses: cycjimmy/semantic-release-action@v4
         with:
-          dry_run: false
+          dry_run: true
           semantic_version: 21
           repository_url: ${{ github.event.repository.clone_url }}
           extra_plugins: |
