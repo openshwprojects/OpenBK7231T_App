@@ -30,7 +30,7 @@ jobs:
         with:
           dry_run: true
           semantic_version: 21
-          repository_url: https://github.com{{ github.repository }}.git
+          repository_url: https://github.com/{{ github.repository }}.git
           extra_plugins: |
             @semantic-release/changelog
             @semantic-release/git
