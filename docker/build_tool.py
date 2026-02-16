@@ -436,7 +436,7 @@ def get_available_drivers(platform_name):
         active_macros = set()
     active_macros.add("COMMON") # Virtual macro for root level
 
-    drivers = set()
+    drivers = {}
     
     # Parser State
     # Stack of active contexts. True = we are inside an active block. False = inactive.
@@ -453,11 +453,21 @@ def get_available_drivers(platform_name):
     endif_regex = re.compile(r'^\s*#\s*endif')
     else_regex = re.compile(r'^\s*#\s*else')
     
-    # Matches driver definitions: #define ENABLE_DRIVER_... 1  OR  #define ENABLE_NTP 1
-    driver_regex = re.compile(r'^\s*#\s*define\s+(ENABLE_\w+)\s+1')
+    # Matches driver definitions: #define ENABLE_DRIVER_... 1  OR  #define ENABLE_NTP 0
+    driver_regex = re.compile(r'^\s*#\s*define\s+(ENABLE_\w+)\s+(\d+)')
     
-    # Special non-driver names we want to capture
-    special_names = ["ENABLE_NTP", "ENABLE_I2C", "ENABLE_TASMOTADEVICEGROUPS"]
+    # Special non-driver names we want to capture (visible in GUI)
+    special_names = ["ENABLE_NTP", "ENABLE_I2C", "ENABLE_OBK_BERRY"]
+
+    # Features forced to 1 by default (Hidden from GUI, but managed)
+    FORCED_FEATURES = [
+        "ENABLE_OBK_SCRIPTING",
+        "ENABLE_LITTLEFS",
+        "ENABLE_MQTT",
+        "ENABLE_HA_DISCOVERY",
+        "ENABLE_TASMOTA_JSON",
+        "ENABLE_TASMOTADEVICEGROUPS"
+    ]
 
     for line in lines:
         line = line.strip()
@@ -469,7 +479,7 @@ def get_available_drivers(platform_name):
             if all(active_stack):
                 d_name = match.group(1)
                 if d_name.startswith("ENABLE_DRIVER_") or d_name in special_names:
-                    drivers.add(d_name)
+                    drivers[d_name] = int(match.group(2))
             continue
             
         # 2. Conditionals
@@ -522,7 +532,7 @@ def get_available_drivers(platform_name):
                     active_stack.pop()
                     active_stack.append(is_match)
             
-    return sorted(list(drivers))
+    return drivers
 
 # Dependency mapping for drivers that require other modules
 # Key: Driver name, Value: List of required dependencies
@@ -557,7 +567,7 @@ def resolve_dependencies(selected_drivers):
     return list(resolved)
 
 def create_custom_config(selected_drivers):
-    # Resolve all dependencies
+    # Return a dict {driver_name: int_value}
     all_drivers = resolve_dependencies(selected_drivers)
     
     # Read original config
@@ -567,20 +577,52 @@ def create_custom_config(selected_drivers):
     new_lines = []
     # Match any #define ENABLE_... or #define ENABLE_DRIVER_... followed by a number
     driver_regex = re.compile(r'#\s*define\s+(ENABLE_\w+)\s+(\d+)')
+    VARIANT_regex = re.compile(r'^#if \(OBK_VARIANT ==')
+    undef_regex = re.compile(r'^#undef ')
+    endif_regex = re.compile(r'^#endif')
+    VAR_found = 0
+
+    # Special non-driver names we want to capture (visible in GUI)
+    special_names = ["ENABLE_NTP", "ENABLE_I2C", "ENABLE_OBK_BERRY"]
+
+    # Features forced to 1 by default (Hidden from GUI, but managed)
+    FORCED_FEATURES = [
+        "ENABLE_OBK_SCRIPTING",
+        "ENABLE_LITTLEFS",
+        "ENABLE_MQTT",
+        "ENABLE_HA_DISCOVERY",
+        "ENABLE_TASMOTA_JSON",
+        "ENABLE_TASMOTADEVICEGROUPS"
+    ]
 
     for line in lines:
+        if VARIANT_regex.search(line):
+            VAR_found = 1
+            continue
+        if VAR_found == 1 and undef_regex.search(line):
+            continue
+        if VAR_found == 1 and endif_regex.search(line):
+            VAR_found = 0
+            continue
+
         match = driver_regex.search(line)
         if match:
             driver_name = match.group(1)
             
+            val = int(match.group(2))
+            
             # IS this a driver we are managing?
-            # We manage anything starting with ENABLE_DRIVER_ or our special list
+            # We manage anything starting with ENABLE_DRIVER_, or special list, or forced list
             is_managed = driver_name.startswith("ENABLE_DRIVER_") or \
-                         driver_name in ["ENABLE_NTP", "ENABLE_I2C", "ENABLE_TASMOTADEVICEGROUPS"]
+                         driver_name in special_names or \
+                         driver_name in FORCED_FEATURES
             
             if is_managed:
-                if driver_name in all_drivers:
-                    # Force enable
+                if driver_name in FORCED_FEATURES:
+                    # Always Force enable
+                    new_lines.append(f"#define {driver_name}\t1\n")
+                elif driver_name in all_drivers:
+                    # Force enable if selected
                     new_lines.append(f"#define {driver_name}\t1\n")
                 else:
                     # Force disable
@@ -808,7 +850,8 @@ def main():
     print(f"\nScanning available drivers for {selected_platform}...")
     
     # Use new parser
-    all_drivers = get_available_drivers(selected_platform)
+    drivers_dict = get_available_drivers(selected_platform)
+    all_drivers = sorted(drivers_dict.keys())
     
     selected_drivers = []
     selected_drivers_list = [] # Initialize to empty list to avoid UnboundLocalError
