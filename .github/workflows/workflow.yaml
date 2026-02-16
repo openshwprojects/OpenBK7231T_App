@@ -23,6 +23,9 @@ jobs:
     steps:
       - name: Source checkout
         uses: actions/checkout@v4
+        with:
+          # fetch-depth: 0 fetches all history for all branches and tags
+          fetch-depth: 0
       - name: Semantic Release
         id: semantic
         if: github.ref == 'refs/heads/main' || github.ref_name == 'alpha'
