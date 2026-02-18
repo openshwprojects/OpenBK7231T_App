@@ -114,7 +114,7 @@ void DoorDeepSleep_OnEverySecond() {
 		// update active
 		g_noChangeTimePassed = 0;
 		g_emergencyTimeWithNoConnection = 0;
-	} else if (Main_HasMQTTConnected() && Main_HasWiFiConnected()) { // executes every second when connection is established
+	} else if (Main_HasMQTTConnected() && Main_IsConnectedToWiFi()) { // executes every second when connection is established
 			
 			DoorDeepSleep_QueueNewEvents();
 #if ENABLE_MQTT

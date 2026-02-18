@@ -1082,7 +1082,7 @@ void TuyaMCU_SendNetworkStatus()
 	if (Main_IsOpenAccessPointMode() != 0) {
 		state = TUYA_NETWORK_STATUS_AP_MODE;
 	}
-	else if (Main_HasWiFiConnected() != 0) {
+	else if (Main_IsConnectedToWiFi() != 0) {
 		if (g_cfg.mqtt_host[0] == 0) {
 			// if not MQTT configured at all
 			state = TUYA_NETWORK_STATUS_CONNECTED_TO_CLOUD;
@@ -2288,7 +2288,7 @@ void TuyaMCU_RunWiFiUpdateAndPackets() {
 	//addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"WifiCheck %d ", wifi_state_timer);
 	/* Monitor WIFI and MQTT connection and apply Wifi state
 	 * State is updated when change is detected or after timeout */
-	if ((Main_HasWiFiConnected() != 0) && (Main_HasMQTTConnected() != 0))
+	if ((Main_IsConnectedToWiFi() != 0) && (Main_HasMQTTConnected() != 0))
 	{
 		if ((wifi_state == false) || (wifi_state_timer == 0))
 		{

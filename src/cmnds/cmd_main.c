@@ -611,6 +611,22 @@ static commandResult_t CMD_PingHost(const void* context, const char* cmd, const 
 
 	return CMD_RES_OK;
 }
+static commandResult_t CMD_FallbackToOpenAP(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	Tokenizer_TokenizeString(args, 0);
+
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+
+	extern int g_SecsToFallbackToOpenAP, act_SecsToFallbackToOpenAP;
+	g_SecsToFallbackToOpenAP = Tokenizer_GetArgInteger(0);
+	act_SecsToFallbackToOpenAP = g_SecsToFallbackToOpenAP;
+
+	return CMD_RES_OK;
+}
 static commandResult_t CMD_PingInterval(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	Tokenizer_TokenizeString(args, 0);
 
@@ -1099,6 +1115,11 @@ void CMD_Init_Early() {
 	//cmddetail:"fn":"CMD_SafeMode","file":"cmnds/cmd_main.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("SafeMode", CMD_SafeMode, NULL);
+	//cmddetail:{"name":"FallbackToOpenAP","args":"[IntegerSeconds]",
+	//cmddetail:"descr":"If set, after this time device will fallback to OpenAP if WiFi is not connected",
+	//cmddetail:"fn":"CMD_FallbackToOpenAP","file":"cmnds/cmd_main.c","requires":"",
+	//cmddetail:"examples":"FallbackToOpenAP 120"}
+	CMD_RegisterCommand("FallbackToOpenAP", CMD_FallbackToOpenAP, NULL);
 #if ENABLE_PING_WATCHDOG
 	//cmddetail:{"name":"PingInterval","args":"[IntegerSeconds]",
 	//cmddetail:"descr":"Sets the interval between ping attempts for ping watchdog mechanism",

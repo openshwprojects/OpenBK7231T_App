@@ -21,7 +21,7 @@
 #else
 #define STACK_SIZE				3584
 #endif
-extern int Main_HasWiFiConnected();
+extern int Main_IsConnectedToWiFi();
 static uint16_t buf_size = DEFAULT_BUF_SIZE;
 static int g_conn_channel = -1;
 static int g_baudRate = 115200;
@@ -246,7 +246,7 @@ void UART_TCP_TRX_Thread()
 				}
 				else
 				{
-					if(!Main_HasWiFiConnected()) goto error;
+					if(!Main_IsConnectedToWiFi()) goto error;
 					rtos_delay_milliseconds(10);
 				}
 			}
