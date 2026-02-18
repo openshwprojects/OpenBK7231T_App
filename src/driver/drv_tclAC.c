@@ -2,6 +2,7 @@
 
 #include "../obk_config.h"
 
+#if ENABLE_DRIVER_TCL
 
 #include "../logging/logging.h"
 #include "../new_cfg.h"
@@ -875,3 +876,4 @@ void TCL_DoDiscovery(const char *topic) {
 
 }
 
+#endif // ENABLE_DRIVER_TCL
