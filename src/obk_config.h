@@ -35,7 +35,7 @@
 
 #if PLATFORM_XRADIO
 
-// #define ENABLE_SEND_POSTANDGET				1
+#define ENABLE_SEND_POSTANDGET				1
 #define ENABLE_MQTT								1
 #define NO_CHIP_TEMPERATURE						1
 #define ENABLE_HA_DISCOVERY						1
@@ -199,7 +199,7 @@
 
 #elif PLATFORM_BL602
 
-// #define ENABLE_SEND_POSTANDGET				1
+#define ENABLE_SEND_POSTANDGET				1
 #define ENABLE_HA_DISCOVERY 					1
 #define ENABLE_MQTT								1
 #define ENABLE_TASMOTADEVICEGROUPS				1
@@ -387,7 +387,7 @@
 
 #elif PLATFORM_LN882H
 
-//#define ENABLE_SEND_POSTANDGET				1
+#define ENABLE_SEND_POSTANDGET				1
 #define	ENABLE_HA_DISCOVERY						1
 #define ENABLE_MQTT								1
 #define ENABLE_TASMOTADEVICEGROUPS				1
@@ -459,7 +459,7 @@
 
 #elif PLATFORM_TR6260
 
-// #define ENABLE_SEND_POSTANDGET				1
+#define ENABLE_SEND_POSTANDGET				1
 #define ENABLE_HA_DISCOVERY						1
 #define ENABLE_MQTT								1
 #define NO_CHIP_TEMPERATURE						1
@@ -526,7 +526,7 @@
 #elif PLATFORM_ECR6600
 
 #define ENABLE_HA_DISCOVERY						1
-// #define ENABLE_SEND_POSTANDGET				1
+#define ENABLE_SEND_POSTANDGET				1
 #define ENABLE_MQTT								1
 #define ENABLE_LITTLEFS							1
 #define NEW_TCP_SERVER							1
