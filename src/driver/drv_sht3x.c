@@ -152,7 +152,7 @@ static sensor_type_t SHT_DetectSensorType() {
 		// Check for GXHTV4 constant dummy pattern
 		// GXHTV4 returns: SNB_3=0x00, SNB_2=0x00, CRC1=0x81, SNB_1=0x00, SNB_0=0x00, CRC1=0x81
 		if (data[0] == 0x00 && data[1] == 0x00 && data[2] == 0x81 && data[3] == 0x00 && data[4] == 0x00 && data[5] == 0x81) {
-			ADDLOG_INFO(LOG_FEATURE_SENSOR, "SHT: Detected serial \"00000000\" in SHT3X cmd - assuming GXHTV4)");
+			ADDLOG_INFO(LOG_FEATURE_SENSOR, "SHT: Detected serial \"00000000\" in SHT3X cmd - assuming GXHTV4");
 			is_GXHTV4 = true;
 			// Will read 0x89 serial below for confirmation
 		} else {
