@@ -1655,6 +1655,7 @@ const char* CHANNEL_GetLabel(int ch);
 void CHANNEL_SetLabel(int ch, const char *s, int bHideTogglePrefix);
 bool CHANNEL_ShouldAddTogglePrefixToUI(int ch);
 bool CHANNEL_HasNeverPublishFlag(int ch);
+bool CHANNEL_PublishLabel(int ch);	// use channels label instead of channel id when publishing
 //ledRemap_t *CFG_GetLEDRemap();
 
 void PIN_get_Relay_PWM_Count(int* relayCount, int* pwmCount, int* dInputCount);
