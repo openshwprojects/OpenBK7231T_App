@@ -196,6 +196,7 @@ void SHT3X_StopPer() {
 	Soft_I2C_Start(&g_softI2C, SHT3X_I2C_ADDR);
 	// Stop Periodic Data
 	Soft_I2C_WriteByte(&g_softI2C, 0x30);
+	// medium repeteability
 	Soft_I2C_WriteByte(&g_softI2C, 0x93);
 	Soft_I2C_Stop(&g_softI2C);
 	g_shtper = false;
