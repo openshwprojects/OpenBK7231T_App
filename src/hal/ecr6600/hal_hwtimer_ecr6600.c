@@ -4,9 +4,10 @@
 
 #include "hal_timer.h"
 
-int8_t HAL_RequestHWTimer(uint32_t period_us, HWTimerCB callback, void* arg)
+int8_t HAL_RequestHWTimer(float requestPeriodUs, float* realPeriodUs, HWTimerCB callback, void* arg)
 {
-	return hal_timer_create(period_us, callback, arg, 0);
+	if(realPeriodUs) *realPeriodUs = requestPeriodUs;
+	return hal_timer_create((uint32_t)requestPeriodUs, callback, arg, 0);
 }
 
 void HAL_HWTimerStart(int8_t timer)

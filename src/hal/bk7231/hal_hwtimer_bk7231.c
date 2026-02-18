@@ -24,8 +24,9 @@ static void BK_ISR_CB(UINT8 t)
 	if(t >= FIRST_TIMER && t <= MAX_TIMER && timerHandlers[t]) timerHandlers[t](timerArguments[t]);
 }
 
-int8_t HAL_RequestHWTimer(uint32_t period_us, HWTimerCB callback, void* arg)
+int8_t HAL_RequestHWTimer(float requestPeriodUs, float* realPeriodUs, HWTimerCB callback, void* arg)
 {
+	if(realPeriodUs) *realPeriodUs = requestPeriodUs;
 	if(callback == NULL) return -1;
 	uint8_t freetimer;
 	for(freetimer = FIRST_TIMER; freetimer <= MAX_TIMER; freetimer++)
@@ -39,7 +40,7 @@ int8_t HAL_RequestHWTimer(uint32_t period_us, HWTimerCB callback, void* arg)
 	timer_param_t params = {
 		(unsigned char)freetimer,
 		(unsigned char)1, // div
-		period_us, // us
+		(UINT32)requestPeriodUs, // us
 		BK_ISR_CB
 	};
 	if(arg == NULL)

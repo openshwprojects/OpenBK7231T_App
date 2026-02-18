@@ -866,13 +866,9 @@ volatile long g_micros = 0;
 volatile int rc_triggers = 0;
 int prev = 0;
 int g_rcpin = 0;
-static const uint32_t ir_periodus = 50;
+static float ir_periodus = 50;
 void RC_ISR(void* arg) {
-#if PLATFORM_RTL8720D || PLATFORM_RTL8710B
-	g_micros += 61;
-#else
-	g_micros += ir_periodus;
-#endif
+	g_micros += (long)ir_periodus;
 	int n = HAL_PIN_ReadDigitalInput(g_rcpin);
 	if (n != prev) {
 		prev = n;
@@ -881,7 +877,7 @@ void RC_ISR(void* arg) {
 	}
 }
 void obk_startTimer() {
-	RCSwitch::rc_chan = HAL_RequestHWTimer(ir_periodus, RC_ISR, NULL);
+	RCSwitch::rc_chan = HAL_RequestHWTimer(ir_periodus, &ir_periodus, RC_ISR, NULL);
 	HAL_HWTimerStart(RCSwitch::rc_chan);
 }
 void RCSwitch::enableReceive() {

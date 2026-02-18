@@ -34,10 +34,15 @@ static void* timerArguments[MAX_TIMER + 1];
 static uint32_t timerPeriods[MAX_TIMER + 1];
 static uint16_t g_used_timers = 0b0;
 
-int8_t HAL_RequestHWTimer(uint32_t period_us, HWTimerCB callback, void* arg)
+int8_t HAL_RequestHWTimer(float requestPeriodUs, float* realPeriodUs, HWTimerCB callback, void* arg)
 {
-#if PLATFORM_RTL8720D //|| PLATFORM_RTL8710B //on B too, but this is not needed
-	if(period_us < 62) period_us = 62; // timers are using 32khz clock
+#if PLATFORM_RTL8720D || PLATFORM_RTL8710B
+	if(realPeriodUs) *realPeriodUs = ((float)((uint32_t)(requestPeriodUs * 32768.0f / 1000000.0f)) * 1000000U / 32768U) + ((1.0f / 32768.0f) * 1000000U);
+#else
+	if(realPeriodUs) *realPeriodUs = requestPeriodUs;
+#endif
+#if PLATFORM_RTL8720D
+	if(requestPeriodUs < 62) requestPeriodUs = 62; // timers are using 32khz clock
 #endif
 	if(callback == NULL) return -1;
 	uint8_t freetimer;
@@ -49,7 +54,7 @@ int8_t HAL_RequestHWTimer(uint32_t period_us, HWTimerCB callback, void* arg)
 
 	timerHandlers[freetimer] = callback;
 	timerArguments[freetimer] = arg;
-	timerPeriods[freetimer] = period_us;
+	timerPeriods[freetimer] = (uint32_t)requestPeriodUs;
 	gtimer_init(&hw_timers[freetimer], freetimer);
 
 	return freetimer;
