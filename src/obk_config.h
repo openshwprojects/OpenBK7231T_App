@@ -650,9 +650,15 @@
 // #define ENABLE_BL_MOVINGAVG					1
 #endif
 
+// just for testing: enable SHT3x driver for all plattforms
+#define ENABLE_DRIVER_SHT3X						1
+
+
 // ensure that there would be no conflicts
 #if ENABLE_DRIVER_IRREMOTEESP
 #undef ENABLE_DRIVER_IR
+
+
 #endif
 
 // closing OBK_CONFIG_H
