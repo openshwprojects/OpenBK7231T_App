@@ -2178,6 +2178,39 @@ void MQTT_BroadcastTasmotaTeleSTATE() {
 	MQTT_ProcessCommandReplyJSON("STATE", "", COMMAND_FLAG_SOURCE_TELESENDER);
 #endif
 }
+
+
+
+static void MQTT_OnGEN(const char *topic, const char *payload) {
+	int mode = GEN_100;
+
+	if (!strcmp(payload, "1") || !stricmp(payload, "gen1") || strstr(payload, "30"))
+	mode = GEN_30;
+    	else if (!strcmp(payload, "2") || !stricmp(payload, "gen2") || strstr(payload, "50"))
+        mode = GEN_50;
+    	else if (!strcmp(payload, "3") || !stricmp(payload, "gen3") || strstr(payload, "80"))
+        mode = GEN_80;
+
+	TCL_AC_SetGENMode(mode);
+
+    	MQTT_PublishMain_String("stat/GEN",
+        	(mode == GEN_30) ? "GEN1_30%" :
+        	(mode == GEN_50) ? "GEN2_50%" :
+        	(mode == GEN_80) ? "GEN3_80%" :
+                           "GEN0_100%",
+        1
+    );
+}
+@@
+MQTT_PublishMain_String("stat/GEN",
+	(g_gen_mode == GEN_30) ? "GEN1_30%" :
+	(g_gen_mode == GEN_50) ? "GEN2_50%" :
+	(g_gen_mode == GEN_80) ? "GEN3_80%" :
+                                 "GEN0_100%",
+        1
+    );
+
+
 // called from user timer.
 int MQTT_RunEverySecondUpdate()
 {
