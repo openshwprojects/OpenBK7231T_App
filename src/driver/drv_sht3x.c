@@ -194,15 +194,9 @@ void SHT3X_StopPer() {
 	// test is SHT3x or return logging the error
 	CHECK_SHT3X_SENSOR();
 	Soft_I2C_Start(&g_softI2C, SHT3X_I2C_ADDR);
-	// MODIFIED: Sensor-specific stop commands
-	if (g_sensor_type == SENSOR_TYPE_SHT4X) {
-		Soft_I2C_WriteByte(&g_softI2C, 0x3F);
-		Soft_I2C_WriteByte(&g_softI2C, 0x86);
-	} else {
-		// Stop Periodic Data
-		Soft_I2C_WriteByte(&g_softI2C, 0x30);
-		Soft_I2C_WriteByte(&g_softI2C, 0x93);
-	}
+	// Stop Periodic Data
+	Soft_I2C_WriteByte(&g_softI2C, 0x30);
+	Soft_I2C_WriteByte(&g_softI2C, 0x93);
 	Soft_I2C_Stop(&g_softI2C);
 	g_shtper = false;
 }
@@ -212,16 +206,10 @@ void SHT3X_StartPer(uint8_t msb, uint8_t lsb) {
 	CHECK_SHT3X_SENSOR();
 	// Start Periodic Data capture
 	Soft_I2C_Start(&g_softI2C, SHT3X_I2C_ADDR);
-	// MODIFIED: Sensor-specific start commands
-	if (g_sensor_type == SENSOR_TYPE_SHT4X) {
-		Soft_I2C_WriteByte(&g_softI2C, 0x60);
-		Soft_I2C_WriteByte(&g_softI2C, 0x00);
-	} else {
-		// Measure per seconds
-		Soft_I2C_WriteByte(&g_softI2C, msb);
-		// repeteability
-		Soft_I2C_WriteByte(&g_softI2C, lsb);
-	}
+	// Measure per seconds
+	Soft_I2C_WriteByte(&g_softI2C, msb);
+	// repeteability
+	Soft_I2C_WriteByte(&g_softI2C, lsb);
 	Soft_I2C_Stop(&g_softI2C);
 	g_shtper = true;
 }
