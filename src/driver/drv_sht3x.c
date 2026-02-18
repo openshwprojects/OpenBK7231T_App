@@ -340,9 +340,12 @@ void SHT3X_Measurecmd() {
 	// on my Windows machine
 	g_temp = 23.4f;
 	g_humid = 56.7f;
+	// no real sensor, no CRC check, no possible CRC mismatch
+	const char errstr = "";
 #else
 	uint8_t buff[6];
 //	uint8_t th, tl, hh, hl,crc1,crc2;
+	uint8_t crc1,crc2;
 
 	Soft_I2C_Start(&g_softI2C, SHT3X_I2C_ADDR);
 	// MODIFIED: Sensor-specific measurement commands
@@ -368,13 +371,32 @@ void SHT3X_Measurecmd() {
 	Soft_I2C_Start(&g_softI2C, SHT3X_I2C_ADDR | 1);
 	Soft_I2C_ReadBytes(&g_softI2C, buff, 6);
 	Soft_I2C_Stop(&g_softI2C);
+	
+	crc1=SHT_CalcCrc(buff[0], buff[1]);
+	crc2=SHT_CalcCrc(buff[3], buff[4]);
 
+	
+	// test for crc - build error string in case of mismatch
+	char errstr[128] = {0};
 
-	addLogAdv(LOG_DEBUG, LOG_FEATURE_SENSOR, "SHT3X : Read: temp=0X%02X%02X (CRC1=0X%02X - calculated:0X%02X) hum=0X%02X%02X (CRC2=0X%02X - calculated:0X%02X)",
+	if (crc1 != buff[2] || crc2 != buff[5]) {
+	    int offset = 0;
+	    offset += snprintf(errstr + offset, sizeof(errstr) - offset, "  ! CRC mismatch read(calculated)!");
+	    
+	    if (crc1 != buff[2]) {
+		offset += snprintf(errstr + offset, sizeof(errstr) - offset, 
+		                  " Temp CRC 0X%02X(0X%02X).", buff[2], crc1);
+	    }
+	    if (crc2 != buff[5]) {
+		offset += snprintf(errstr + offset, sizeof(errstr) - offset, 
+		                  " Hum CRC 0X%02X(0X%02X).", buff[5], crc2);
+	    }
+	}
+
+	addLogAdv(LOG_DEBUG, LOG_FEATURE_SENSOR, "SHT3X : Read: temp=0X%02X%02X (CRC1=0X%02X) hum=0X%02X%02X (CRC2=0X%02X).%s",
 		buff[0], buff[1], buff[2],
-		SHT_CalcCrc(buff[0], buff[1]),
 		buff[3],buff[4], buff[5],
-		SHT_CalcCrc(buff[3], buff[4])
+		errstr
 		);
 	if (g_sensor_type == SENSOR_TYPE_GXHTV4) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_SENSOR, "GXHTV4 - try CHTX style calculation: Temp=%.2f - Hum=%.2f",
@@ -410,7 +432,9 @@ void SHT3X_Measurecmd() {
 	CHANNEL_Set(channel_temp, (int)(g_temp * 10), 0);
 	CHANNEL_Set(channel_humid, (int)(g_humid), 0);
 
-	addLogAdv(LOG_INFO, LOG_FEATURE_SENSOR, "SHT3X_Measure: Temperature:%.1fC Humidity:%.0f%%", g_temp, g_humid);
+	addLogAdv(LOG_INFO, LOG_FEATURE_SENSOR, 
+		  "SHT3X_Measure: Temperature:%.1fC Humidity:%.0f%%%s", 
+		  g_temp, g_humid, errstr);
 
 }
 
