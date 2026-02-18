@@ -60,7 +60,7 @@
 #if PLATFORM_XR806
 #define ENABLE_DRIVER_TUYAMCU					1
 #define ENABLE_DRIVER_DS1820					1
-#define ENABLE_DRIVER_DHT						1
+#define ENABLE_DRIVER_DHT						0
 #define ENABLE_DRIVER_AHT2X						1
 #define ENABLE_DRIVER_SSDP						1
 #define ENABLE_OBK_BERRY						1
@@ -294,7 +294,7 @@
 #define ENABLE_EXPAND_CONSTANT					1
 #define ENABLE_DRIVER_DHT						1
 #define ENABLE_DRIVER_AHT2X						1
-#define ENABLE_DRIVER_TMGN						0
+#define ENABLE_DRIVER_TMGN						1
 #define ENABLE_DRIVER_DRAWERS					0
 #define ENABLE_TASMOTA_JSON						1
 // #define ENABLE_DRIVER_BMPI2C					1
