@@ -330,7 +330,7 @@ void SHT3X_Measurecmd() {
 	g_temp = 23.4f;
 	g_humid = 56.7f;
 	// no real sensor, no CRC check, no possible CRC mismatch
-	const char errstr = "";
+	const char errstr[] = "";
 #else
 	uint8_t buff[6];
 //	uint8_t th, tl, hh, hl,crc1,crc2;
