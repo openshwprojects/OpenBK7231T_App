@@ -99,7 +99,7 @@ static int g_extraSocketToSendLOG = 0;
 static char g_loggingBuffer[LOGGING_BUFFER_SIZE];
 
 #define MAX_TCP_LOG_PORTS 2
-int tcp_log_ports[MAX_TCP_LOG_PORTS] = {-1};
+int tcp_log_ports[MAX_TCP_LOG_PORTS] = {-1, -1};
 
 
 void LOG_SetRawSocketCallback(int newFD)
