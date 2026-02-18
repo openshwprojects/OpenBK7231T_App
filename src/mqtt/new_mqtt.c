@@ -929,10 +929,12 @@ static OBK_Publish_Result MQTT_PublishTopicToClient(mqtt_client_t* client, const
 		}
 		if (sVal_len < 128)
 		{
-			addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "Publishing val %s to %s retain=%i\n", sVal, pub_topic, retain);
+			ADDLOGF_TIMING("%i - %s - Publishing val %s to %s retain=%i", xTaskGetTickCount(), __func__, sVal, pub_topic, retain);
+			ADDLOG_INFO(LOG_FEATURE_MQTT, "Publishing val %s to %s retain=%i\n", sVal, pub_topic, retain);
 		}
 		else {
-			addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "Publishing val (%d bytes) to %s retain=%i\n", sVal_len, pub_topic, retain);
+			ADDLOGF_TIMING("%i - %s - Publishing val (%d bytes) to %s retain=%i", xTaskGetTickCount(), __func__,  sVal_len, pub_topic, retain);
+			ADDLOG_INFO(LOG_FEATURE_MQTT, "Publishing val (%d bytes) to %s retain=%i\n", sVal_len, pub_topic, retain);
 		}
 
 
@@ -1122,6 +1124,7 @@ static void mqtt_connection_cb(mqtt_client_t* client, void* arg, mqtt_connection
 	err_t err = ERR_OK;
 	const struct mqtt_connect_client_info_t* client_info = (const struct mqtt_connect_client_info_t*)arg;
 	LWIP_UNUSED_ARG(client);
+	ADDLOGF_TIMING("%i - %s - Status: %i", xTaskGetTickCount(), __func__, status);
 
 	//   addLogAdv(LOG_INFO,LOG_FEATURE_MQTT,"MQTT client < removed name > connection cb: status %d\n",  (int)status);
 	 //  addLogAdv(LOG_INFO,LOG_FEATURE_MQTT,"MQTT client \"%s\" connection cb: status %d\n", client_info->client_id, (int)status);
@@ -1233,6 +1236,7 @@ static int MQTT_do_connect(mqtt_client_t* client)
 		snprintf(mqtt_status_message, sizeof(mqtt_status_message), "mqtt_host empty, not starting mqtt");
 		return 0;
 	}
+	ADDLOGF_TIMING("%i - %s", xTaskGetTickCount(), __func__);
 
 	mqtt_userName = CFG_GetMQTTUserName();
 	mqtt_pass = CFG_GetMQTTPass();
