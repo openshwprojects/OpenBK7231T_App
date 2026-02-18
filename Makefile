@@ -45,6 +45,17 @@ OBK_VARIANT = 0
 endif
 $(info VARIANT is $(VARIANT), OBK_VARIANT is $(OBK_VARIANT))
 
+# run python script to build src/platformdefines.h header file which generates a string "platformdefines" with all defines in this build
+PYTHON_PRESENT := $(shell command -v python3 2> /dev/null)
+GENDEF_PRESENT := $(shell [ -e src/gendefines.py ] && echo "yes" || echo "no")
+ifneq ($(PYTHON_PRESENT),)
+    ifeq ($(GENDEF_PRESENT),yes)
+        $(shell python3 src/gendefines.py src/obk_config.h > src/platformdefines.h)
+    else
+	$(shell echo "//ERROR\nchar platformdefines[]=\"ERROR\";"  > src/platformdefines.h)
+    endif
+endif
+
 #TARGET_PLATFORM ?= bk7231t
 #APPS_BUILD_PATH ?= ../bk7231t_os
 APPS_BUILD_CMD ?= build.sh
