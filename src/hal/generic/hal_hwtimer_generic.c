@@ -1,7 +1,8 @@
 #include "../hal_hwtimer.h"
 
-int8_t __attribute__((weak)) HAL_RequestHWTimer(uint32_t period_us, HWTimerCB callback, void* arg)
+int8_t __attribute__((weak)) HAL_RequestHWTimer(float requestPeriodUs, float* realPeriodUs, HWTimerCB callback, void* arg)
 {
+	if(realPeriodUs) *realPeriodUs = requestPeriodUs;
 	return -1;
 }
 

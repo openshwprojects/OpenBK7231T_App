@@ -9,8 +9,9 @@
 
 static uint16_t g_used_timers = 0b0;
 
-int8_t HAL_RequestHWTimer(uint32_t period_us, HWTimerCB callback, void* arg)
+int8_t HAL_RequestHWTimer(float requestPeriodUs, float* realPeriodUs, HWTimerCB callback, void* arg)
 {
+	if(realPeriodUs) *realPeriodUs = requestPeriodUs;
 	if(callback == NULL) return -1;
 	uint8_t freetimer;
 	for(freetimer = FIRST_TIMER; freetimer <= MAX_TIMER; freetimer++)
@@ -25,7 +26,7 @@ int8_t HAL_RequestHWTimer(uint32_t period_us, HWTimerCB callback, void* arg)
 	param.cfg = HAL_TIMER_MakeInitCfg(TIMER_MODE_REPEAT,
 		TIMER_CLK_SRC_HFCLK, TIMER_CLK_PRESCALER_4);
 	param.isEnableIRQ = 1;
-	param.period = 6 * period_us;
+	param.period = (uint32_t)(6.0f * requestPeriodUs);
 
 	HAL_Status status = HAL_TIMER_Init(freetimer, &param);
 	if(status != HAL_OK)

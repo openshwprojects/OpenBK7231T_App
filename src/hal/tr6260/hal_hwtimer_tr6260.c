@@ -7,13 +7,15 @@
 
 static bool isTimerInit = false;
 
-int8_t HAL_RequestHWTimer(uint32_t period_us, HWTimerCB callback, void* arg)
+int8_t HAL_RequestHWTimer(float requestPeriodUs, float* realPeriodUs, HWTimerCB callback, void* arg)
 {
+	if(realPeriodUs) *realPeriodUs = requestPeriodUs;
 	if(isTimerInit) return -1;
 	isTimerInit = true;
 	hal_timer_init();
-	hal_timer_config(period_us, 1);
+	hal_timer_config((uint32_t)requestPeriodUs, 1);
 	hal_timer_callback_register(callback, arg);
+	return 0;
 }
 
 void HAL_HWTimerStart(int8_t timer)

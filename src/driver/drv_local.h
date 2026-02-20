@@ -300,3 +300,7 @@ void Bridge_driver_OnChannelChanged(int ch, int value);
 void LTR_Init();
 void LTR_OnEverySecond();
 void LTR_AppendInformationToHTTPIndexPage(http_request_t* request, int bPreState);
+
+void TinyIR_NEC_Init();
+void TinyIR_NEC_Deinit();
+void TinyIR_NEC_RunFrame();
