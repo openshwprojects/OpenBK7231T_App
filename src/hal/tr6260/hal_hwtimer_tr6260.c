@@ -15,6 +15,7 @@ int8_t HAL_RequestHWTimer(float requestPeriodUs, float* realPeriodUs, HWTimerCB 
 	hal_timer_init();
 	hal_timer_config((uint32_t)requestPeriodUs, 1);
 	hal_timer_callback_register(callback, arg);
+	return 0;
 }
 
 void HAL_HWTimerStart(int8_t timer)
