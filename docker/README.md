@@ -1,61 +1,100 @@
-# Docker Files for OpenBK7231T_App
+# OpenBeken Build System - Replication Guide
 
-This docker will build all or some of the platforms that OpenBeken supports. To use, first build the docker image:
+NOTE!! - `build_tool.py` goes in the **root** folder, while the other two go in the `docker` folder.
 
-```sh
-docker build -t openbk_build --build-arg UID=$UID --build-arg USERNAME=$USER .
-```
+## Prerequisites
 
-Note that the current user name and user ID is passed through to the docker image build.
-This is to preserve local file permissions when OpenBeken is built.
+Before you start, ensure you have:
 
-If you want to change the timezone you can use the argument TZ for that like
+1.  **Docker Desktop** (Installed and running)
+2.  **Python 3.x** (Installed and added to PATH)
+3.  **Git** (Installed and added to PATH)
 
-```sh
-docker build -t openbk_build --build-arg UID=$UID --build-arg USERNAME=$USER --build-arg TZ="Etc/UTC" .
-```
+## Step-by-Step Instructions
 
-or
+1.  **Create & Open Folder**:
+    Create a new folder (e.g., `MyBuildEnv`), right-click inside it, and select "Open Terminal Here".
 
-```sh
-docker build -t openbk_build --build-arg UID=$UID --build-arg USERNAME=$USER --build-arg TZ="Asia/Tokyo" .
-```
+2.  **Clone Repository**:
 
+    in powershell type the following command:
+    git clone --recursive https://github.com/openshwprojects/OpenBK7231T_App.git
 
-Once the docker image is build, you can use it to build the SDKs as follows (assumed you are in the current `docker` directory):
+3.  **Enter Repository**:
 
-```sh
-docker run -it -v "$(pwd)/..":/OpenBK7231T_App  openbk_build
-```
+    in powershell change directory to the repository folder
+    cd OpenBK7231T_App
 
-When complete, all target platform builds with be present in the repository's `output` directory.
+4.  **Copy Files** (Crucial Step):
+    - Copy/replace `Dockerfile`, `build_tool.py` and `entrypoint.sh` to: `OpenBK7231T_App\docker\`
+	- (The `docker` folder is already present in the repository).
 
-When running the docker image, you may pass the following environment variables with the `--env` option:
+    **Final Structure must look like this:**
 
-* `APP_VERSION` - The version identifier for the build. If not provided, a default version will be used based on the time of the build.
-* `TARGET_SDKS` - A comma-separated list of platforms (with no spaces) that should be built. If not present, all platforms will be built. The supported platform identifiers are:
-  * `OpenBK7231T`
-  * `OpenBK7231N`
-  * `OpenXR809`
-  * `OpenBL602`
-  * `OpenW800`
-  * `OpenW600`
-  * `OpenLN882H`
+    ```
+    OpenBK7231T_App\
+    
+    ├── docker\
+    │   ├── Dockerfile         <-- Docker config is HERE
+    │   ├── entrypoint.sh      <-- Entry script is HERE
+	│   └── build_tool.py      <-- Script is HERE
+    ├── platforms\
+    ├── src\
+    └── ... (other git files)
+    ```
 
-  For example, to build `OpenBK7231T` and `OpenXR809`, the options should be `-env TARGET_SDKS="OpenBK7231T,OpenXR809"`
-* `MAKEFLAGS` - This is the standard `make` environment variable for setting default `make` flags. It is recommended to use this to configure `make` to use multiple cores. for example, to use 8 cores: `--env MAKEFLAGS="-j 8"`
+5.  **Run Tool**:
+    Run the script from the root folder:
 
-## Building on a Apple Silicon Macs
-The software that the build process uses to compile the binaries is for the `x86` platform and can only be run by `x86` CPUs. Fortunately, this does not mean you cannot build OpenBeken on Apple Silicon (ARM) Macintosh computers. Docker is able to run `x86` docker images on Apple Silicon Macs through the Rosetta emulator. To do this, you need to enable running `x86` images in docker by following [the instructions outlined in this article](https://blog.jaimyn.dev/how-to-build-multi-architecture-docker-images-on-an-m1-mac/) (or [this article](https://levelup.gitconnected.com/docker-on-apple-silicon-mac-how-to-run-x86-containers-with-rosetta-2-4a679913a0d5)).
+    ```powershell
+    python build_tool.py
+    ```
 
-Once you have set up your Apple Silicon Mac to run `x86` docker images, build the OpenBeken build environment docker image with this command from within the `docker` directory of this repository:
-```sh
-docker buildx build --platform linux/amd64 --load -t openbk_build --build-arg USERNAME=$USER .
-```
+6.  **Follow Prompts**:
+    Select your platform, drivers, and version. The tool will handle the rest
+    (building the Docker image automatically on the first run which will take some time on the first run only,
+    subsequent runs will be much faster).
 
-Once the docker image is built, you can run the OpenBeken build with this instruction:
-```sh
-docker run --platform linux/amd64 -it -v "$(pwd)/..":/OpenBK7231T_App  openbk_build
-```
+## Advanced Usage
 
-All the same environment variable options described above work here too. Sometimes builds will not be successful using this approach as `x86` emulation can have occasional glitches. Retrying the build for the OpenBeken platforms that failed usually works on the second try.
+The tool also supports command-line arguments for advanced control:
+
+- **Check Commands**:
+
+    ```powershell
+    python build_tool.py --help
+    ```
+
+- **Force Clean Build**:
+  Use this to delete temporary files and force a full rebuild (simulates `make clean`):
+
+    ```powershell
+    python build_tool.py --clean
+    ```
+
+- **Specify Flash Size**:
+  Force a specific flash size (automatically adds "MB" suffix if only numbers are provided):
+
+    ```powershell
+    python build_tool.py --flash-size 4MB
+    ```
+
+- **Run from Anywhere (External Folder)**:
+  If the script is not in the repo root, specify the path to the repository source:
+
+    ```powershell
+    python build_tool.py --src "C:\Users\user\Desktop\OpenBK7231T_App"
+    ```
+
+- **Rebuild Docker Image**:
+  Force a rebuild of the Docker environment (e.g., after updating `entrypoint.sh` or `Dockerfile`):
+    ```powershell
+    python build_tool.py --no-cache
+    ```
+
+## Custom Output Paths
+
+When prompted for the "Output Folder", you can provide:
+
+1.  **A name**: Creates a folder inside the current directory (e.g., `test_OUT`).
+2.  **An absolute path**: Saves artifacts to any external folder (e.g., `C:\Users\user\Desktop\FirmwareBuilds`).
