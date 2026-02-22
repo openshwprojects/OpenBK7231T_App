@@ -1618,6 +1618,15 @@ void TuyaMCU_ParseStateMessage(const byte* data, int len) {
 		sectorLen = data[ofs + 2] << 8 | data[ofs + 3];
 		dpId = data[ofs];
 		dataType = data[ofs + 1];
+		// Guard against malformed/truncated STATE payloads (prevents OOB reads/copies)
+		int remaining = len - (ofs + 4);
+		if (sectorLen > remaining) {
+			addLogAdv(LOG_ERROR, LOG_FEATURE_TUYAMCU,
+				"ParseState: ERROR: STATE payload truncated (dpId=%i type=%i-%s sectorLen=%i remaining=%i ofs=%i total=%i)\n",
+				dpId, dataType, TuyaMCU_GetDataTypeString(dataType), sectorLen, remaining, ofs, len);
+			break;
+		}
+
 		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "ParseState: id %i type %i-%s len %i\n",
 			dpId, dataType, TuyaMCU_GetDataTypeString(dataType), sectorLen);
 
