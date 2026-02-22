@@ -88,7 +88,7 @@ function submitTemperature(slider) {
 
 window.addEventListener("load", onLoad);
 // I have modified below to use slice on window.location instead of hardcoded index because it was breaking "back" function of web page
-history.pushState(null, "", window.location.pathname.slice(1)); // drop actions like 'toggle' from URL
+history.replaceState(null, "", window.location.pathname.slice(1)); // drop actions like 'toggle' from URL
 
 setTimeout(() => {
 	var changedEl = getElement("changed");
