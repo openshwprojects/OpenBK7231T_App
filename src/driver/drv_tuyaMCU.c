@@ -1648,13 +1648,24 @@ void TuyaMCU_ParseStateMessage(const byte* data, int len) {
 				// add space for NULL terminating character
 				int useLen = sectorLen + 1;
 				if (mapping->rawBufferSize < useLen) {
-					mapping->rawData = realloc(mapping->rawData, useLen);
-					mapping->rawBufferSize = useLen;
+					byte *tmp = (byte*)realloc(mapping->rawData, useLen);
+					if (tmp == NULL) {
+						addLogAdv(LOG_ERROR, LOG_FEATURE_TUYAMCU,
+							"ParseState: ERROR: realloc failed for rawData (dpId=%i type=%i-%s need=%i)\n",
+							dpId, dataType, TuyaMCU_GetDataTypeString(dataType), useLen);
+					} else {
+						mapping->rawData = tmp;
+						mapping->rawBufferSize = useLen;
+					}
 				}
-				mapping->rawDataLen = sectorLen;
-				memcpy(mapping->rawData, data + ofs + 4, sectorLen);
-				// TuyaMCU strings are without NULL terminating character
-				mapping->rawData[sectorLen] = 0;
+				if (mapping->rawData && mapping->rawBufferSize >= useLen) {
+					mapping->rawDataLen = sectorLen;
+					memcpy(mapping->rawData, data + ofs + 4, sectorLen);
+					// TuyaMCU strings are without NULL terminating character
+					mapping->rawData[sectorLen] = 0;
+				} else {
+					mapping->rawDataLen = 0;
+				}
 			}
 		}
 
