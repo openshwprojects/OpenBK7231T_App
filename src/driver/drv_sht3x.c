@@ -56,6 +56,7 @@ typedef struct {
 	bool            active;          // slot in use
 } sht_sensor_t;
 
+static byte usedchannels[SHT_MAX_SENSORS*2]={0};
 
 static sht_sensor_t g_sensors[SHT_MAX_SENSORS];
 static int          g_sensor_count = 0;
@@ -266,8 +267,8 @@ static void SHT3X_MeasurePercmd_S(sht_sensor_t* s) {
 	s->temp  = (int)((s->temp  + s->caltemp) * 10.0f) / 10.0f;
 	s->humid = (int)( s->humid + s->calhum);
 
-	s->channel_temp  = g_cfg.pins.channels [s->softI2C.pin_data];
-	s->channel_humid = g_cfg.pins.channels2[s->softI2C.pin_data];
+//	s->channel_temp  = g_cfg.pins.channels [s->softI2C.pin_data];
+//	s->channel_humid = g_cfg.pins.channels2[s->softI2C.pin_data];
 	CHANNEL_Set(s->channel_temp,  (int)(s->temp * 10), 0);
 	CHANNEL_Set(s->channel_humid, (int)(s->humid),     0);
 	addLogAdv(LOG_INFO, LOG_FEATURE_SENSOR,
@@ -325,8 +326,8 @@ static void SHT3X_Measurecmd_S(sht_sensor_t* s) {
 	s->temp  = (int)((s->temp  + s->caltemp) * 10.0f) / 10.0f;
 	s->humid = (int)( s->humid + s->calhum);
 
-	s->channel_temp  = g_cfg.pins.channels [s->softI2C.pin_data];
-	s->channel_humid = g_cfg.pins.channels2[s->softI2C.pin_data];
+//	s->channel_temp  = g_cfg.pins.channels [s->softI2C.pin_data];
+//	s->channel_humid = g_cfg.pins.channels2[s->softI2C.pin_data];
 	CHANNEL_Set(s->channel_temp,  (int)(s->temp * 10), 0);
 	CHANNEL_Set(s->channel_humid, (int)(s->humid),     0);
 
@@ -384,7 +385,8 @@ commandResult_t SHT_AddSensor(const void* context, const char* cmd, const char* 
 	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 2)) {
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
-	int type_hint = 0, chan_h = 0, chan_t = 0;
+	int type_hint = 0;
+	byte chan_h = 0, chan_t = 0;
 	int pin_sda   = Tokenizer_GetArgInteger(0);
 	int pin_scl   = Tokenizer_GetArgInteger(1);
 	if (g_sensor_count >= SHT_MAX_SENSORS) {
@@ -425,6 +427,14 @@ commandResult_t SHT_AddSensor(const void* context, const char* cmd, const char* 
 
 	s->channel_temp = chan_t;
 	s->channel_humid = chan_h;
+	if (s->channel_temp != 0) {
+//		g_cfg.pins.channels[pin_sda]=s->channel_temp;
+		usedchannels[(g_sensor_count-1)*2]=s->channel_temp;
+	}
+	if (s->channel_humid != 0) {
+//		g_cfg.pins.channels2[pin_sda]=s->channel_humid;
+		usedchannels[(g_sensor_count-1)*2 +1]=s->channel_humid;
+	}
 	ADDLOG_INFO(LOG_FEATURE_SENSOR,
 	            "SHT_AddSensor: Added sensor[%i] SDA=%i SCL=%i type=%s serial=%08X T-Channel=%i H-Channel=%i",
 	            g_sensor_count - 1, pin_sda, pin_scl, typeName[s->sensor_type], s->serial, s->channel_temp, s->channel_humid);
@@ -445,14 +455,16 @@ commandResult_t SHT_ListSensors(const void* context, const char* cmd, const char
 	for (int i = 0; i < g_sensor_count; i++) {
 		sht_sensor_t* s = &g_sensors[i];
 		ADDLOG_INFO(LOG_FEATURE_SENSOR,
-		            "  [%i] SDA=%i SCL=%i type=%-7s serial=%08X  last T=%.1fC H=%.0f%%",
+		            "  [%i] SDA=%i SCL=%i type=%-7s serial=%08X  last T=%.1fC H=%.0f%% T-Channel=%i H-Channel=",
 		            i,
 		            s->softI2C.pin_data,
 		            s->softI2C.pin_clk,
 		            typeName[s->sensor_type],
 		            s->serial,
 		            s->temp,
-		            s->humid);
+		            s->humid,
+		            s->channel_temp,
+		            s->channel_humid);
 	}
 	return CMD_RES_OK;
 }
@@ -699,6 +711,12 @@ commandResult_t SHT3X_ClearStatusCmd(const void* context, const char* cmd, const
 	return CMD_RES_OK;
 }
 
+bool SHT3X_IsUsedChannel(int c){
+	for (int i=2; c>0 && i<SHT_MAX_SENSORS*2; i++){
+		if (usedchannels[i] == c) return true;
+	}
+	return false;
+}
 
 // --------------------------------------------------------------------------
 // Alert helpers (primary sensor / SHT3x only)
@@ -852,8 +870,11 @@ void SHT3X_Init() {
 	// Set up the primary (index 0) sensor using configured pins
 	int pin_scl = PIN_FindPinIndexForRole(IOR_SHT3X_CLK, 9);
 	int pin_sda = PIN_FindPinIndexForRole(IOR_SHT3X_DAT, 14);
-	SHT_InitSlot(pin_sda, pin_scl, 0 /* auto-detect */);
-
+	sht_sensor_t* s = SHT_InitSlot(pin_sda, pin_scl, 0 /* auto-detect */);
+	if (s) {
+		s->channel_temp  = g_cfg.pins.channels[s->softI2C.pin_data];
+		s->channel_humid = g_cfg.pins.channels2[s->softI2C.pin_data];
+	}
 	//cmddetail:{"name":"SHT_cycle","args":"[int]",
 	//cmddetail:"descr":"Interval between measurements in seconds (default 10, max 255).",
 	//cmddetail:"fn":"SHT_cycle","file":"driver/drv_sht3x.c","requires":"",

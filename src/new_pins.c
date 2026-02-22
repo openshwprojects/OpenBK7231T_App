@@ -1872,6 +1872,12 @@ bool CHANNEL_IsInUse(int ch) {
 #include "driver/drv_ds1820_full.h"
 	return ds18b20_used_channel(ch);
 #endif
+#ifdef ENABLE_DRIVER_SHT3X
+#include "driver/drv_sht3x.h"
+	if (SHT3X_IsUsedChannel(ch)) {
+		return true;
+	}
+#endif
 	return false;
 }
 
@@ -1937,7 +1943,6 @@ bool CHANNEL_ShouldBePublished(int ch) {
 		return true;
 	}
 #endif
-
 	if (CFG_HasFlag(OBK_FLAG_MQTT_PUBLISH_ALL_CHANNELS)) {
 		return true;
 	}
