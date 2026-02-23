@@ -1,7 +1,7 @@
 #include "../new_common.h"
 #include "../logging/logging.h"
 #include "drv_bt_proxy.h"
-#include "drv_bt_proxy_api.h"
+#include "drv_esphome_api.h"
 #include "../hal/hal_bt_proxy.h"
 #include <lwip/sockets.h>
 
@@ -169,7 +169,9 @@ void DRV_BT_Proxy_Init() {
         rtos_delete_thread(&s_BTProxy_thread);
         s_BTProxy_thread = NULL;
     }
-
+#if !PLATFORM_ESPIDF
+    HAL_BTProxy_PreInit();
+#endif
     err = rtos_create_thread(&s_BTProxy_thread, BEKEN_APPLICATION_PRIORITY - 1,
                              "BTProxy_Srv",
                              (beken_thread_function_t)BTProxy_TCP_Server_Thread,

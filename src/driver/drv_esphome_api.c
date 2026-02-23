@@ -1,8 +1,9 @@
 #include "../new_common.h"
 #include "../logging/logging.h"
-#include "drv_bt_proxy_api.h"
+#include "drv_esphome_api.h"
 #include "../hal/hal_wifi.h"
 #include <lwip/sockets.h>
+#include "../new_cfg.h"
 
 #if ENABLE_DRIVER_BT_PROXY
 
@@ -83,7 +84,7 @@ void BTProxy_Send_HelloResponse(int client_sock) {
     pb_encode_varint_field(&ptr, 1, 1); // API Version Major
     pb_encode_varint_field(&ptr, 2, 9); // API Version Minor
     pb_encode_string_field(&ptr, 3, "OpenBeken"); // Server Info
-    pb_encode_string_field(&ptr, 4, "BTProxy");   // Name
+    pb_encode_string_field(&ptr, 4, CFG_GetDeviceName());   // Name
     
     PB_SendFrame(client_sock, ESPHOME_MSG_HelloResponse, payload, ptr - payload);
 }
@@ -108,18 +109,22 @@ void BTProxy_Send_DeviceInfoResponse(int client_sock) {
     // Retrieve device MAC address dynamically
     HAL_GetMACStr(mac_str);
     
-    pb_encode_string_field(&ptr, 2, "OpenBeken BT Proxy"); // Name
+    pb_encode_string_field(&ptr, 2, CFG_GetDeviceName()); // Name
     pb_encode_string_field(&ptr, 3, mac_str); // Mac address
-    pb_encode_string_field(&ptr, 4, "1.0.0"); // Firmware Version
-    pb_encode_string_field(&ptr, 6, "ESP32C3"); // Model
-    pb_encode_string_field(&ptr, 12, "OpenBeken"); // Manufacturer
+    pb_encode_string_field(&ptr, 4, USER_SW_VER); // Firmware Version
+    pb_encode_string_field(&ptr, 6, PLATFORM_MCU_NAME); // Model
+    pb_encode_string_field(&ptr, 12, MANUFACTURER); // Manufacturer
+    pb_encode_string_field(&ptr, 13, CFG_GetDeviceName()); // friendly_name
     
+#if ENABLE_BT_PROXY
     // Feature flags (ESPHome 2024.1+):
     // 1 (Passive Scan), 2 (Active Connections), 32 (Raw Advertisements), 64 (State and Mode)
     // 1 | 2 | 32 | 64  = 99
     pb_encode_varint_field(&ptr, 15, 99); // bluetooth_proxy_feature_flags
+    // replace mac_str with hal bt mac
     pb_encode_string_field(&ptr, 18, mac_str); // bluetooth_mac_address
-    
+#endif
+
     PB_SendFrame(client_sock, ESPHOME_MSG_DeviceInfoResponse, payload, ptr - payload);
 }
 
@@ -159,40 +164,40 @@ void BTProxy_Send_ConnectionsFreeResponse(int client_sock) {
 }
 
 void BTProxy_Process_Packet(int client_sock, uint32_t type, uint8_t *payload, uint32_t size) {
-    ADDLOG_INFO(LOG_FEATURE_DRV, "BTProxy: Received API Msg %d (Len: %d)", type, size);
+    ADDLOG_INFO(LOG_FEATURE_DRV, "ESPHomeAPI: Received API Msg %d (Len: %d)", type, size);
     switch (type) {
         case ESPHOME_MSG_HelloRequest:
-            ADDLOG_INFO(LOG_FEATURE_DRV, "BTProxy: Handshake -> HelloRequest");
+            ADDLOG_INFO(LOG_FEATURE_DRV, "ESPHomeAPI: Handshake -> HelloRequest");
             BTProxy_Send_HelloResponse(client_sock);
             break;
         case ESPHOME_MSG_ConnectRequest:
-            ADDLOG_INFO(LOG_FEATURE_DRV, "BTProxy: Handshake -> ConnectRequest");
+            ADDLOG_INFO(LOG_FEATURE_DRV, "ESPHomeAPI: Handshake -> ConnectRequest");
             BTProxy_Send_ConnectResponse(client_sock);
             break;
         case ESPHOME_MSG_PingRequest:
             BTProxy_Send_PingResponse(client_sock);
             break;
         case ESPHOME_MSG_DeviceInfoRequest:
-            ADDLOG_INFO(LOG_FEATURE_DRV, "BTProxy: Handshake -> DeviceInfoRequest");
+            ADDLOG_INFO(LOG_FEATURE_DRV, "ESPHomeAPI: Handshake -> DeviceInfoRequest");
             BTProxy_Send_DeviceInfoResponse(client_sock);
             break;
         case ESPHOME_MSG_ListEntitiesRequest:
-            ADDLOG_INFO(LOG_FEATURE_DRV, "BTProxy: Handshake -> ListEntitiesRequest (Sending Done)");
+            ADDLOG_INFO(LOG_FEATURE_DRV, "ESPHomeAPI: Handshake -> ListEntitiesRequest (Sending Done)");
             // We only expose BT Proxy, no manual entities right now. Just send Done.
             BTProxy_Send_ListEntitiesDoneResponse(client_sock);
             break;
         case ESPHOME_MSG_DisconnectRequest:
-            ADDLOG_INFO(LOG_FEATURE_DRV, "BTProxy: Handshake -> DisconnectRequest");
+            ADDLOG_INFO(LOG_FEATURE_DRV, "ESPHomeAPI: Handshake -> DisconnectRequest");
             BTProxy_Send_DisconnectResponse(client_sock);
             break;
         case ESPHOME_MSG_SubscribeStatesRequest:
         case ESPHOME_MSG_SubscribeLogsRequest:
         case ESPHOME_MSG_SubscribeHomeassistantServicesRequest:
         case ESPHOME_MSG_SubscribeHomeAssistantStatesRequest:
-            ADDLOG_EXTRADEBUG(LOG_FEATURE_DRV, "BTProxy: Handshake -> Ignored basic HA Subscribe form (%d)", type);
+            ADDLOG_EXTRADEBUG(LOG_FEATURE_DRV, "ESPHomeAPI: Handshake -> Ignored basic HA Subscribe form (%d)", type);
             break;
         case ESPHOME_MSG_SubscribeBluetoothLEAdvertisementsRequest:
-            ADDLOG_INFO(LOG_FEATURE_DRV, "BTProxy: SUCCESS! Home Assistant wants BLE Packets now!");
+            ADDLOG_INFO(LOG_FEATURE_DRV, "ESPHomeAPI: SUCCESS! Home Assistant wants BLE Packets now!");
             g_bt_proxy_forwarding_active = 1;
 
             // Immediately follow up with ScannerStateResponse (Msg 126) to tell HA we are actively scanning
@@ -200,7 +205,7 @@ void BTProxy_Process_Packet(int client_sock, uint32_t type, uint8_t *payload, ui
             BTProxy_Send_ScannerStateResponse(client_sock);
             break;
         case ESPHOME_MSG_SubscribeBluetoothConnectionsFreeRequest:
-            ADDLOG_INFO(LOG_FEATURE_DRV, "BTProxy: Handshake -> SubscribeBluetoothConnectionsFreeRequest");
+            ADDLOG_INFO(LOG_FEATURE_DRV, "ESPHomeAPI: Handshake -> SubscribeBluetoothConnectionsFreeRequest");
             BTProxy_Send_ConnectionsFreeResponse(client_sock);
             break;
         case ESPHOME_MSG_BluetoothDeviceRequest: {
@@ -230,14 +235,14 @@ void BTProxy_Process_Packet(int client_sock, uint32_t type, uint8_t *payload, ui
                     l -= skip;
                 }
             }
-            ADDLOG_INFO(LOG_FEATURE_DRV, "BTProxy: HA DeviceRequest MAC: %02X:%02X:%02X:%02X:%02X:%02X Type: %d", 
+            ADDLOG_INFO(LOG_FEATURE_DRV, "ESPHomeAPI: HA DeviceRequest MAC: %02X:%02X:%02X:%02X:%02X:%02X Type: %d", 
                 (uint8_t)(address >> 40), (uint8_t)(address >> 32), (uint8_t)(address >> 24),
                 (uint8_t)(address >> 16), (uint8_t)(address >> 8), (uint8_t)address,
                 (int)request_type);
             break;
         }
         default:
-            ADDLOG_DEBUG(LOG_FEATURE_DRV, "BTProxy: Unhandled message type %d", type);
+            ADDLOG_DEBUG(LOG_FEATURE_DRV, "ESPHomeAPI: Unhandled message type %d", type);
             break;
     }
 }

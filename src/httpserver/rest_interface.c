@@ -157,7 +157,7 @@ static int http_rest_get(http_request_t* request) {
 	if (!strcmp(request->url, "api/info")) {
 		return http_rest_get_info(request);
 	}
-#if PLATFORM_ESPIDF && ENABLE_BT_PROXY
+#if ENABLE_BT_PROXY
 	if (!strcmp(request->url, "api/bt_scan")) {
 		return http_rest_get_bt_scan(request);
 	}
@@ -1065,7 +1065,7 @@ static int http_rest_get_info(http_request_t* request) {
 	return 0;
 }
 
-#if PLATFORM_ESPIDF && ENABLE_BT_PROXY
+#if ENABLE_BT_PROXY
 static int http_rest_get_bt_scan(http_request_t* request) {
 	int init_done = 0;
 	int scan_active = 0;

@@ -85,7 +85,7 @@ set(OBKM_SRC
 	${OBK_SRCS}driver/drv_ds1820_simple.c
 	${OBK_SRCS}driver/drv_ds1820_full.c
 	${OBK_SRCS}driver/drv_bt_proxy.c
-	${OBK_SRCS}driver/drv_bt_proxy_api.c
+	${OBK_SRCS}driver/drv_esphome_api.c
 	${OBK_SRCS}driver/drv_freeze.c
 	${OBK_SRCS}driver/drv_gn6932.c
 	${OBK_SRCS}driver/drv_hd2015.c
