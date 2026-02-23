@@ -1,0 +1,43 @@
+Info:MAIN:Time 84, idle 120/s, free 164580, MQTT 0(5), bWifi 1, secondsWithNoPing 16, socks 0/0 
+Info:MAIN:Time 85, idle 112/s, free 164580, MQTT 0(5), bWifi 1, secondsWithNoPing 17, socks 0/0 
+Info:MAIN:Time 86, idle 120/s, free 164580, MQTT 0(5), bWifi 1, secondsWithNoPing 18, socks 0/0 
+Info:MAIN:Time 87, idle 117/s, free 164580, MQTT 0(5), bWifi 1, secondsWithNoPing 19, socks 0/0 
+Info:MAIN:Time 88, idle 132/s, free 164580, MQTT 0(5), bWifi 1, secondsWithNoPing 20, socks 0/0 
+Info:MAIN:Time 89, idle 115/s, free 164580, MQTT 0(5), bWifi 1, secondsWithNoPing 21, socks 0/0 
++--------------- net device info ------------+
+|netif type    : STA                         |
+|netif rssi    = -48                         |
+|netif ip      = 192.168.0.65                |
+|netif mask    = 255.255.255.0               |
+Info:MAIN:Time 90, idle 118/s, free 164580, MQTT 0(5), bWifi 1, secondsWithNoPing 22, socks 0/0 
+|netif gateway = 192.168.0.1                 |
+|netif mac     : [8c:d0:b2:a8:7a:52]         |
++--------------------------------------------+
+Info:MQTT:mqtt_host empty, not starting mqtt
+Info:MAIN:Time 91, idle 110/s, free 164580, MQTT 0(6), bWifi 1, secondsWithNoPing 23, socks 0/0 
+Info:MAIN:Time 92, idle 121/s, free 164544, MQTT 0(6), bWifi 1, secondsWithNoPing 24, socks 0/0 
+Info:MAIN:Time 93, idle 112/s, free 164580, MQTT 0(6), bWifi 1, secondsWithNoPing 25, socks 0/0 
+Info:MAIN:Time 94, idle 124/s, free 164580, MQTT 0(6), bWifi 1, secondsWithNoPing 26, socks 0/0 
+Info:MAIN:Time 95, idle 116/s, free 164580, MQTT 0(6), bWifi 1, secondsWithNoPing 27, socks 0/0 
+Info:MAIN:Time 96, idle 117/s, free 164580, MQTT 0(6), bWifi 1, secondsWithNoPing 28, socks 0/0 
+Info:MAIN:Time 97, idle 111/s, free 164580, MQTT 0(6), bWifi 1, secondsWithNoPing 29, socks 0/0 
+Info:MAIN:Time 98, idle 116/s, free 164544, MQTT 0(6), bWifi 1, secondsWithNoPing 30, socks 0/0 
+Info:MAIN:Time 99, idle 114/s, free 164580, MQTT 0(6), bWifi 1, secondsWithNoPing 31, socks 0/0 
++--------------- net device info ------------+
+|netif type    : STA                         |
+|netif rssi    = -49                         |
+|netif ip      = 192.168.0.65                |
+|netif mask    = 255.255.255.0               |
+Info:MAIN:Time 100, idle 122/s, free 164580, MQTT 0(6), bWifi 1, secondsWithNoPing 32, socks 0/0 
+|netif gateway = 192.168.0.1                 |
+|netif mac     : [8c:d0:b2:a8:7a:52]         |
++--------------------------------------------+
+Info:MAIN:Time 101, idle 112/s, free 164580, MQTT 0(6), bWifi 1, secondsWithNoPing 33, socks 0/0 
+Info:MAIN:Time 102, idle 120/s, free 164544, MQTT 0(6), bWifi 1, secondsWithNoPing 34, socks 0/0 
+Info:MAIN:Time 103, idle 114/s, free 164580, MQTT 0(6), bWifi 1, secondsWithNoPing 35, socks 0/0 
+Info:MAIN:Time 104, idle 119/s, free 164580, MQTT 0(6), bWifi 1, secondsWithNoPing 36, socks 0/0 
+Info:MAIN:Time 105, idle 110/s, free 164580, MQTT 0(6), bWifi 1, secondsWithNoPing 37, socks 0/0 
+Info:MAIN:Time 106, idle 122/s, free 164580, MQTT 0(6), bWifi 1, secondsWithNoPing 38, socks 0/0 
+Info:MQTT:mqtt_host empty, not starting mqtt
+Info:MAIN:Time 107, idle 110/s, free 164580, MQTT 0(7), bWifi 1, secondsWithNoPing 39, socks 0/0 
+Info:MAIN:Time 108, idle 119/s, free 164544, MQTT 0(7), bWifi 1, secondsWithNoPing 40, socks 0/0 

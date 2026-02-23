@@ -21,6 +21,7 @@
 #include "drv_ds1820_common.h"
 #include "drv_ds3231.h"
 #include "drv_hlw8112.h"
+#include "drv_bt_proxy.h"
 
 
 typedef struct driver_s {
@@ -129,6 +130,22 @@ static driver_t g_drivers[] = {
 	Freeze_OnEverySecond,                    // onEverySecond
 	NULL,                                    // appendInformationToHTTPIndexPage
 	Freeze_RunFrame,                         // runQuickTick
+	NULL,                                    // stopFunction
+	NULL,                                    // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
+	},
+#endif
+#if ENABLE_DRIVER_BT_PROXY
+	//drvdetail:{"name":"BTProxy",
+	//drvdetail:"title":"ESPHome Protocol Bridge",
+	//drvdetail:"descr":"Native ESPHome API server (port 6053) for discovering and controlling BT Proxy and other entities seamlessly in Home Assistant.",
+	//drvdetail:"requires":"BT Proxy"}
+	{ "BTProxy",                             // Driver Name
+	DRV_BT_Proxy_Init,                        // Init
+	NULL,                                    // onEverySecond
+	NULL,                                    // appendInformationToHTTPIndexPage
+	NULL,                                    // runQuickTick
 	NULL,                                    // stopFunction
 	NULL,                                    // onChannelChanged
 	NULL,                                    // onHassDiscovery
@@ -1554,6 +1571,7 @@ void DRV_StartDriver(const char* name) {
 
 			}
 			else {
+				addLogAdv(LOG_INFO, LOG_FEATURE_MAIN, "Starting %s.\n", name);
 				if (g_drivers[i].initFunc) {
 					g_drivers[i].initFunc();
 				}

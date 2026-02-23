@@ -10,6 +10,9 @@
 #include "../hal/hal_flashVars.h"
 #include "../littlefs/our_lfs.h"
 #include "lwip/sockets.h"
+#if PLATFORM_ESPIDF && ENABLE_BT_PROXY
+#include "../hal/espidf/hal_bt_proxy_espidf.h"
+#endif
 
 #define DEFAULT_FLASH_LEN 0x200000
 
@@ -64,6 +67,7 @@ static int http_rest_get_flash_advanced(http_request_t* request);
 static int http_rest_post_flash_advanced(http_request_t* request);
 
 static int http_rest_get_info(http_request_t* request);
+static int http_rest_get_bt_scan(http_request_t* request);
 
 static int http_rest_post_channels(http_request_t* request);
 static int http_rest_get_channels(http_request_t* request);
@@ -153,6 +157,11 @@ static int http_rest_get(http_request_t* request) {
 	if (!strcmp(request->url, "api/info")) {
 		return http_rest_get_info(request);
 	}
+#if PLATFORM_ESPIDF && ENABLE_BT_PROXY
+	if (!strcmp(request->url, "api/bt_scan")) {
+		return http_rest_get_bt_scan(request);
+	}
+#endif
 
 	if (!strncmp(request->url, "api/flash/", 10)) {
 		return http_rest_get_flash_advanced(request);
@@ -1055,6 +1064,45 @@ static int http_rest_get_info(http_request_t* request) {
 	poststr(request, NULL);
 	return 0;
 }
+
+#if PLATFORM_ESPIDF && ENABLE_BT_PROXY
+static int http_rest_get_bt_scan(http_request_t* request) {
+	int init_done = 0;
+	int scan_active = 0;
+	int total_packets = 0;
+	int dropped_packets = 0;
+	int buffered_packets = 0;
+	int limit;
+	int i;
+	int first = 1;
+	char mac[18];
+	int rssi, adv_len, evt_type, age_ms;
+
+	HAL_BTProxy_GetScanStats(&init_done, &scan_active, &total_packets, &dropped_packets, &buffered_packets);
+	http_setup(request, httpMimeTypeJson);
+	hprintf255(request, "{\"init\":%d,\"scan\":%d,\"total\":%d,\"dropped\":%d,\"buffered\":%d,\"entries\":[",
+		init_done, scan_active, total_packets, dropped_packets, buffered_packets);
+
+	limit = buffered_packets;
+	if (limit > 10) {
+		limit = 10;
+	}
+	for (i = 0; i < limit; i++) {
+		if (!HAL_BTProxy_GetScanEntry(i, mac, sizeof(mac), &rssi, &adv_len, &evt_type, &age_ms)) {
+			continue;
+		}
+		if (!first) {
+			poststr(request, ",");
+		}
+		first = 0;
+		hprintf255(request, "{\"mac\":\"%s\",\"rssi\":%d,\"adv_len\":%d,\"evt_type\":%d,\"age_ms\":%d}",
+			mac, rssi, adv_len, evt_type, age_ms);
+	}
+	poststr(request, "]}");
+	poststr(request, NULL);
+	return 0;
+}
+#endif
 
 static int http_rest_post_pins(http_request_t* request) {
 	int i;
