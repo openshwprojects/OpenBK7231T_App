@@ -143,13 +143,13 @@ static void BTProxy_TCP_Server_Thread(void* param) {
                     int data_len_buf;
                     
                     // Pop up to 10 packets per loop iteration to drain the ringbuffer quickly
-                    for(int i = 0; i < 10; i++) {
-                        if (HAL_BTProxy_PopScanResult(mac_buf, &rssi_buf, &addr_type_buf, data_buf, &data_len_buf)) {
+                    //for(int i = 0; i < 10; i++) {
+                        while (HAL_BTProxy_PopScanResult(mac_buf, &rssi_buf, &addr_type_buf, data_buf, &data_len_buf)) {
                             BTProxy_Hook_ScanResult(client_sock, mac_buf, rssi_buf, addr_type_buf, data_buf, data_len_buf);
-                        } else {
-                            break; // Ring buffer empty
-                        }
-                    }
+                        } //else {
+                           // break; // Ring buffer empty
+                        //}
+                    //}
                 }
             }
         disconnect:

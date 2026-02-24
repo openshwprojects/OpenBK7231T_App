@@ -28,7 +28,7 @@
 
 #if ENABLE_BT_PROXY
 
-#define BT_SCAN_RING_SIZE 32
+#define BT_SCAN_RING_SIZE 128
 #define BT_CMD_QUEUE_SIZE 10
 /** @brief Default scan window (units of 0.625ms, 0x520=820ms) */
 #define DEFAULT_SCAN_INTERVAL     0x520
@@ -66,6 +66,25 @@ static hal_bt_state_t g_bt_proxy = { 0 };
 static void* _evtQueueHandle;
 static void* _ioQueueHandle;
 
+static int scan_entry_matches(bt_scan_entry_t* e, T_LE_SCAN_INFO* info)
+{
+	uint8_t tmp_mac[6];
+
+	for(int i = 0; i < 6; i++)
+		tmp_mac[i] = info->bd_addr[5 - i];
+
+	if(memcmp(e->bda, tmp_mac, 6) != 0)
+		return 0;
+
+	if(e->adv_len != info->data_len)
+		return 0;
+
+	if(e->evt_type != info->adv_type)
+		return 0;
+
+	return 1;
+}
+
 static void hal_bt_gap_callback(uint8_t cb_type, void* p_cb_data)
 {
 	T_LE_CB_DATA* p_data = (T_LE_CB_DATA*)p_cb_data;
@@ -73,10 +92,51 @@ static void hal_bt_gap_callback(uint8_t cb_type, void* p_cb_data)
 
 	if(cb_type == GAP_MSG_LE_SCAN_INFO)
 	{
-		int pos = g_bt_proxy.scan_head;
 		T_LE_SCAN_INFO* info = p_data->p_le_scan_info;
+		int found = -1;
 
-		memcpy(g_bt_proxy.scan_ring[pos].bda, info->bd_addr, 6);
+		for(int i = 0; i < g_bt_proxy.scan_count; i++)
+		{
+			int idx = g_bt_proxy.scan_tail + i;
+			if(idx >= BT_SCAN_RING_SIZE)
+				idx -= BT_SCAN_RING_SIZE;
+
+			if(scan_entry_matches(&g_bt_proxy.scan_ring[idx], info))
+			{
+				found = idx;
+				break;
+			}
+		}
+
+		int pos;
+
+		if(found >= 0)
+		{
+			pos = found;
+		}
+		else
+		{
+			pos = g_bt_proxy.scan_head;
+
+			g_bt_proxy.scan_head = (g_bt_proxy.scan_head + 1) % BT_SCAN_RING_SIZE;
+
+			if(g_bt_proxy.scan_count < BT_SCAN_RING_SIZE)
+			{
+				g_bt_proxy.scan_count++;
+			}
+			else
+			{
+				g_bt_proxy.scan_tail = (g_bt_proxy.scan_tail + 1) % BT_SCAN_RING_SIZE;
+				g_bt_proxy.scan_dropped_packets++;
+			}
+		}
+
+		//memcpy(g_bt_proxy.scan_ring[pos].bda, info->bd_addr, 6);
+		// reverse mac bytes
+		for(int i = 0; i < 6; i++)
+		{
+			g_bt_proxy.scan_ring[pos].bda[i] = info->bd_addr[5 - i];
+		}
 		g_bt_proxy.scan_ring[pos].rssi = info->rssi;
 		g_bt_proxy.scan_ring[pos].addr_type = info->remote_addr_type;
 		g_bt_proxy.scan_ring[pos].adv_len = info->data_len;
@@ -87,17 +147,6 @@ static void hal_bt_gap_callback(uint8_t cb_type, void* p_cb_data)
 
 		g_bt_proxy.scan_ring[pos].ts_ms = g_timeMs;
 
-		g_bt_proxy.scan_head = (g_bt_proxy.scan_head + 1) % BT_SCAN_RING_SIZE;
-
-		if(g_bt_proxy.scan_count < BT_SCAN_RING_SIZE)
-		{
-			g_bt_proxy.scan_count++;
-		}
-		else
-		{
-			g_bt_proxy.scan_tail = (g_bt_proxy.scan_tail + 1) % BT_SCAN_RING_SIZE;
-			g_bt_proxy.scan_dropped_packets++;
-		}
 		g_bt_proxy.scan_total_packets++;
 	}
 }
@@ -185,7 +234,7 @@ static void hal_bt_task(void* p_param)
 	uint16_t scan_interval = DEFAULT_SCAN_INTERVAL;
 	uint16_t scan_window = DEFAULT_SCAN_WINDOW;
 	uint8_t  scan_filter_policy = GAP_SCAN_FILTER_ANY;
-	uint8_t  scan_filter_duplicate = GAP_SCAN_FILTER_DUPLICATE_ENABLE;
+	uint8_t  scan_filter_duplicate = GAP_SCAN_FILTER_DUPLICATE_DISABLE;
 
 	le_set_gap_param(GAP_PARAM_DEVICE_NAME, GAP_DEVICE_NAME_LEN, device_name);
 	le_set_gap_param(GAP_PARAM_APPEARANCE, sizeof(appearance), &appearance);

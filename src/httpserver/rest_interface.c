@@ -1084,9 +1084,9 @@ static int http_rest_get_bt_scan(http_request_t* request) {
 		init_done, scan_active, total_packets, dropped_packets, buffered_packets);
 
 	limit = buffered_packets;
-	if (limit > 10) {
-		limit = 10;
-	}
+	//if (limit > 10) {
+	//	limit = 10;
+	//}
 	for (i = 0; i < limit; i++) {
 		if (!HAL_BTProxy_GetScanEntry(i, mac, sizeof(mac), &rssi, &adv_len, &evt_type, &age_ms)) {
 			continue;
