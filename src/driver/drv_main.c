@@ -23,7 +23,9 @@
 #include "drv_hlw8112.h"
 
 void DRV_MQTTServer_Init();
+void DRV_MQTTServer_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState);
 void DRV_MQTTServer_RunEverySecond();
+void DRV_MQTTServer_RunQuickTick();
 void DRV_MQTTServer_Stop();
 
 
@@ -1414,8 +1416,8 @@ static driver_t g_drivers[] = {
 	{ "mqttServer",                          // Driver Name
 	DRV_MQTTServer_Init,                     // Init
 	DRV_MQTTServer_RunEverySecond,           // onEverySecond
-	NULL,                                    // appendInformationToHTTPIndexPage
-	NULL,                                    // runQuickTick
+	DRV_MQTTServer_AppendInformationToHTTPIndexPage, // appendInformationToHTTPIndexPage
+	DRV_MQTTServer_RunQuickTick,             // runQuickTick
 	DRV_MQTTServer_Stop,                     // stopFunction
 	NULL,                                    // onChannelChanged
 	NULL,                                    // onHassDiscovery
