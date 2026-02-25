@@ -18,8 +18,9 @@
     end)
 
 
-NOTE: you don't need to manually call init.
-Sample module (save as autoexec.be):
+// ============================================
+// NOTE: you don't need to manually call init.
+// Sample module (save as autoexec.be):
 
 autoexec = module('autoexec')
 
@@ -50,8 +51,9 @@ end
 return autoexec
 
 
-NOTE: you don't need to manually call init.
-Smaller sample:
+// ============================================
+// NOTE: you don't need to manually call init.
+// Smaller sample:
 
 
 autoexec = module('autoexec')
@@ -65,9 +67,9 @@ end
 return autoexec
 
 
-
-NOTE: you don't need to manually call init.
-Tasmota power sample:
+// ============================================
+// NOTE: you don't need to manually call init.
+// Tasmota power sample:
 
 
 autoexec = module('autoexec')
@@ -86,6 +88,23 @@ end
 
 return autoexec
 
+
+// ============================================
+// NOTE: you don't need to manually call init.
+// Tasmota power sample:
+
+
+
+autoexec = module('autoexec')
+
+autoexec.init = def()
+	autoexec.power_state_sub = ms_subscribe("stat/tasmota_476739/POWER2", def (topic, payload)
+		ms_publish("cmnd/obk_n_rgbcw_e27/POWER",payload);
+		print("Berry POWER STATE: " + topic + " = " + payload)
+	end)
+end
+
+return autoexec
 
 
 */

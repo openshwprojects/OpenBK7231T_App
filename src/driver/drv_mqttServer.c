@@ -267,9 +267,8 @@ int MQTTS_TopicMatch(const char *topic, const char *filter) {
 }
 
 // Forward a PUBLISH to all subscribed clients
-static void MQTTS_ForwardPublish(const byte *topicData, int topicLen,
-                                 const byte *payload, int payloadLen,
-                                 mqttClient_t *sender) {
+void MQTTS_ForwardPublish(const byte *topicData, int topicLen,
+                          const byte *payload, int payloadLen, void *sender) {
   char topicStr[128];
   int copyLen = topicLen < 127 ? topicLen : 127;
   memcpy(topicStr, topicData, copyLen);
