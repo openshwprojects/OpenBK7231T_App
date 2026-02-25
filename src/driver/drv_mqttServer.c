@@ -692,8 +692,26 @@ void DRV_MQTTServer_AppendInformationToHTTPIndexPage(http_request_t *request,
         hprintf255(request,
                    "<button "
                    "onclick=\"fetch('/cm?cmnd='+encodeURIComponent('ms_publish "
-                   "cmnd/%s/POWER TOGGLE'))\">Send Toggle</button><br>",
+                   "cmnd/%s/POWER TOGGLE'))\">Send Toggle</button> ",
                    devName);
+        hprintf255(request,
+                   "<button "
+                   "onclick=\"fetch('/cm?cmnd='+encodeURIComponent('ms_publish "
+                   "cmnd/%s/POWER2 TOGGLE'))\">Send Toggle 2</button> ",
+                   devName);
+        hprintf255(request,
+                   "<button "
+                   "onclick=\"fetch('/cm?cmnd='+encodeURIComponent('ms_publish "
+                   "cmnd/%s/Color FF0000'))\">Send Color Red</button> ",
+                   devName);
+        hprintf255(request,
+                   "<button "
+                   "onclick=\"fetch('/cm?cmnd='+encodeURIComponent('ms_publish "
+                   "cmnd/%s/Color 00FF00'))\">Send Color Green</button>",
+                   devName);
+        hprintf255(request,
+                   "<br><i>Development test commands, may not work on some "
+                   "device types</i><br>");
       }
     }
   }

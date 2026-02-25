@@ -76,6 +76,12 @@ autoexec.init = def()
 	autoexec.power_state_sub = ms_subscribe("stat/+/POWER", def (topic, payload)
 		print("Berry POWER STATE: " + topic + " = " + payload)
 	end)
+	autoexec.power_state_sub = ms_subscribe("stat/+/POWER1", def (topic, payload)
+		print("Berry POWER1 STATE: " + topic + " = " + payload)
+	end)
+	autoexec.power_state_sub = ms_subscribe("stat/+/POWER2", def (topic, payload)
+		print("Berry POWER2 STATE: " + topic + " = " + payload)
+	end)
 end
 
 return autoexec
