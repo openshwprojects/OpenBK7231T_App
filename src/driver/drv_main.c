@@ -22,6 +22,10 @@
 #include "drv_ds3231.h"
 #include "drv_hlw8112.h"
 
+void DRV_MQTTServer_Init();
+void DRV_MQTTServer_RunEverySecond();
+void DRV_MQTTServer_Stop();
+
 
 typedef struct driver_s {
 	const char* name;
@@ -1400,6 +1404,22 @@ static driver_t g_drivers[] = {
 	NULL,                                 // onChannelChanged
 	NULL,                                 // onHassDiscovery
 	false,                                // loaded
+	},
+#endif
+#if ENABLE_DRIVER_MQTTSERVER
+	//drvdetail:{"name":"mqttServer",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"MQTT Server driver.",
+	//drvdetail:"requires":""}
+	{ "mqttServer",                          // Driver Name
+	DRV_MQTTServer_Init,                     // Init
+	DRV_MQTTServer_RunEverySecond,           // onEverySecond
+	NULL,                                    // appendInformationToHTTPIndexPage
+	NULL,                                    // runQuickTick
+	DRV_MQTTServer_Stop,                     // stopFunction
+	NULL,                                    // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
 	},
 #endif
 	//{ "", NULL, NULL, NULL, NULL, NULL, NULL, NULL, false },
