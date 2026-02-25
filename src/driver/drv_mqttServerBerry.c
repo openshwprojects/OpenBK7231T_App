@@ -64,6 +64,24 @@ end
 
 return autoexec
 
+
+
+NOTE: you don't need to manually call init.
+Tasmota power sample:
+
+
+autoexec = module('autoexec')
+
+autoexec.init = def()
+	autoexec.power_state_sub = ms_subscribe("stat/+/POWER", def (topic, payload)
+		print("Berry POWER STATE: " + topic + " = " + payload)
+	end)
+end
+
+return autoexec
+
+
+
 */
 
 #include "../new_common.h"

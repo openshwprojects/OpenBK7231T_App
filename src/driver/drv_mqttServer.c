@@ -22,6 +22,7 @@ void MQTTS_Berry_Shutdown();
 
 #define MQTT_SERVER_PORT_DEFAULT 1883
 #define MQTT_RECV_BUF_SIZE 2048
+#define MQTT_RECV_BUF_INITIAL 128
 #define MQTT_MAX_CLIENTS 8
 
 // MQTT packet types
@@ -60,12 +61,14 @@ typedef struct mqttClient_s {
   int bytesSent;
   int packetsRecv;
   int packetsSent;
+  byte *recvBuf;
+  int recvBufUsed;
+  int recvBufCap;
   struct mqttClient_s *next;
 } mqttClient_t;
 
 static int g_listenSocket = -1;
 static mqttClient_t *g_clientList = NULL;
-static byte g_recvBuf[MQTT_RECV_BUF_SIZE];
 
 // Decode MQTT remaining length (variable-length encoding)
 static int MQTTS_DecodeRemainingLength(const byte *buf, int bufLen,
@@ -123,14 +126,20 @@ static void MQTTS_SendConnack(mqttClient_t *c, byte returnCode) {
   c->packetsSent++;
 }
 
-static void MQTTS_SendSuback(mqttClient_t *c, int packetID, byte grantedQoS) {
-  byte pkt[5];
+static void MQTTS_SendSuback(mqttClient_t *c, int packetID, int topicCount) {
+  // SUBACK: fixed header + packetID + one return code per topic
+  int totalLen = 2 + topicCount; // packetID(2) + N return codes
+  byte pkt[2 + 2 + 16];          // header(2) + packetID(2) + up to 16 topics
+  if (topicCount > 16)
+    topicCount = 16;
   pkt[0] = (MQTT_SUBACK << 4);
-  pkt[1] = 3;
+  pkt[1] = (byte)totalLen;
   pkt[2] = (packetID >> 8) & 0xFF;
   pkt[3] = packetID & 0xFF;
-  pkt[4] = grantedQoS;
-  MQTTS_SendToClient(c, pkt, 5);
+  for (int i = 0; i < topicCount; i++) {
+    pkt[4 + i] = 0x00; // granted QoS 0 for each
+  }
+  MQTTS_SendToClient(c, pkt, 4 + topicCount);
   c->packetsSent++;
 }
 
@@ -190,6 +199,8 @@ static void MQTTS_FreeClient(mqttClient_t *c) {
     close(c->socket);
   }
   MQTTS_FreeSubs(c);
+  if (c->recvBuf)
+    free(c->recvBuf);
   free(c);
 }
 
@@ -431,6 +442,7 @@ static void MQTTS_HandlePacket(mqttClient_t *client, const byte *buf,
     int pos = 0;
     int packetID = MQTTS_ReadUint16(payload + pos);
     pos += 2;
+    int topicCount = 0;
     while (pos < remainLen) {
       int topicLen;
       const byte *topicData =
@@ -444,10 +456,11 @@ static void MQTTS_HandlePacket(mqttClient_t *client, const byte *buf,
       memcpy(tmp, topicData, cLen);
       tmp[cLen] = 0;
       MQTTS_AddSub(client, tmp);
+      topicCount++;
       addLogAdv(LOG_DEBUG, LOG_FEATURE_GENERAL,
                 "MQTTS: client '%s' subscribed to '%s'", client->clientID, tmp);
     }
-    MQTTS_SendSuback(client, packetID, 0);
+    MQTTS_SendSuback(client, packetID, topicCount);
     break;
   }
   case MQTT_UNSUBSCRIBE: {
@@ -472,6 +485,9 @@ static void MQTTS_HandlePacket(mqttClient_t *client, const byte *buf,
     MQTTS_SendUnsuback(client, packetID);
     break;
   }
+  case MQTT_PUBACK:
+    // QoS 1 ack from client, nothing to do
+    break;
   case MQTT_PINGREQ:
     MQTTS_SendPingresp(client);
     break;
@@ -632,6 +648,13 @@ void DRV_MQTTServer_AppendInformationToHTTPIndexPage(http_request_t *request,
       }
       hprintf255(request, "<br>");
     }
+    if (c->clientID[0]) {
+      hprintf255(
+          request,
+          "<button onclick=\"fetch('/cm?cmnd='+encodeURIComponent('ms_publish "
+          "cmnd/%s/POWER TOGGLE'))\">Send Toggle</button><br>",
+          c->clientID);
+    }
   }
   if (cnt == 0) {
     hprintf255(request, "No clients connected.<br>");
@@ -699,6 +722,8 @@ void DRV_MQTTServer_RunQuickTick() {
       } else {
         memset(c, 0, sizeof(mqttClient_t));
         c->socket = newSock;
+        c->recvBuf = (byte *)malloc(MQTT_RECV_BUF_INITIAL);
+        c->recvBufCap = c->recvBuf ? MQTT_RECV_BUF_INITIAL : 0;
         strncpy(c->ipAddr, inet_ntoa(clientAddr.sin_addr),
                 sizeof(c->ipAddr) - 1);
         c->ipAddr[sizeof(c->ipAddr) - 1] = 0;
@@ -716,23 +741,58 @@ void DRV_MQTTServer_RunQuickTick() {
   mqttClient_t *c = g_clientList;
   while (c) {
     mqttClient_t *next = c->next; // save next before possible free
-    int nbytes = recv(c->socket, (char *)g_recvBuf, MQTT_RECV_BUF_SIZE, 0);
+    if (!c->recvBuf || c->recvBufCap == 0) {
+      c = next;
+      continue;
+    }
+    int space = c->recvBufCap - c->recvBufUsed;
+    if (space <= 0) {
+      // Buffer full with no complete packet — drop data
+      c->recvBufUsed = 0;
+      space = c->recvBufCap;
+    }
+    int nbytes =
+        recv(c->socket, (char *)(c->recvBuf + c->recvBufUsed), space, 0);
     if (nbytes > 0) {
       c->bytesRecv += nbytes;
+      c->recvBufUsed += nbytes;
+      int total = c->recvBufUsed;
       int offset = 0;
-      while (offset < nbytes) {
-        if (nbytes - offset < 2)
+      while (offset < total) {
+        if (total - offset < 2)
           break;
         int lenBytes = 0;
         int remainLen = MQTTS_DecodeRemainingLength(
-            g_recvBuf + offset + 1, nbytes - offset - 1, &lenBytes);
+            c->recvBuf + offset + 1, total - offset - 1, &lenBytes);
         if (remainLen < 0)
-          break;
+          break; // incomplete remaining-length encoding
         int pktTotalLen = 1 + lenBytes + remainLen;
-        if (offset + pktTotalLen > nbytes)
-          break;
-        MQTTS_HandlePacket(c, g_recvBuf + offset, pktTotalLen);
+        if (offset + pktTotalLen > total) {
+          // Need more space? Grow buffer if current capacity is too small
+          if (pktTotalLen > c->recvBufCap &&
+              pktTotalLen <= MQTT_RECV_BUF_SIZE) {
+            int newCap = c->recvBufCap;
+            while (newCap < pktTotalLen)
+              newCap *= 2;
+            if (newCap > MQTT_RECV_BUF_SIZE)
+              newCap = MQTT_RECV_BUF_SIZE;
+            byte *nb = (byte *)realloc(c->recvBuf, newCap);
+            if (nb) {
+              c->recvBuf = nb;
+              c->recvBufCap = newCap;
+            }
+          }
+          break; // incomplete packet, wait for more data
+        }
+        MQTTS_HandlePacket(c, c->recvBuf + offset, pktTotalLen);
         offset += pktTotalLen;
+      }
+      // Shift unconsumed bytes to front of buffer
+      if (offset > 0 && offset < total) {
+        memmove(c->recvBuf, c->recvBuf + offset, total - offset);
+        c->recvBufUsed = total - offset;
+      } else if (offset >= total) {
+        c->recvBufUsed = 0;
       }
     } else if (nbytes == 0) {
       addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "MQTTS: client '%s' TCP closed",
