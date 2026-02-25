@@ -605,17 +605,18 @@ void DRV_MQTTServer_AppendInformationToHTTPIndexPage(http_request_t *request,
   int cnt;
   if (bPreState)
     return;
-  hprintf255(request, "<h5>MQTT Server (port %d, uptime %ds, %d fwd)</h5>",
+  hprintf255(request, "<h5>MQTT Server (port %d, uptime %ds, %d fwd, %d devices)</h5>",
              g_mqttServerPort, g_mqttServer_secondsElapsed,
              g_totalPublishForwarded);
   cnt = 0;
   mqttClient_t *c;
   for (c = g_clientList; c; c = c->next) {
     cnt++;
-    hprintf255(request, "<b>%s %s %s In %d/%d Out %d/%d</b><br>",
+    hprintf255(request, "<hr>");
+    hprintf255(request, "<b>%s %s <a href='http://%s'>%s</a> In %d/%d Out %d/%d</b><br>",
                c->clientID[0] ? c->clientID : "(no id)",
-               c->bConnected ? "Connected" : "TCP", c->ipAddr, c->bytesRecv,
-               c->packetsRecv, c->bytesSent, c->packetsSent);
+               c->bConnected ? "Connected" : "TCP", c->ipAddr, c->ipAddr,
+               c->bytesRecv, c->packetsRecv, c->bytesSent, c->packetsSent);
     if (c->subs) {
       hprintf255(request, "&nbsp;&nbsp;Subs: ");
       int first = 1;
