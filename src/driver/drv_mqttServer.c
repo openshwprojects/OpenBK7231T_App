@@ -14,6 +14,11 @@ ms_publish cmnd/obk174083A4/POWER TOGGLE
 
 #if ENABLE_DRIVER_MQTTSERVER
 
+// drv_mqttServerBerry.c
+int MQTTS_Berry_OnPublish(const char *topic, const byte *payload, int payloadLen);
+void MQTTS_Berry_Init();
+void MQTTS_Berry_Shutdown();
+
 #define MQTT_SERVER_PORT_DEFAULT 1883
 #define MQTT_RECV_BUF_SIZE 2048
 #define MQTT_MAX_CLIENTS 8
@@ -225,7 +230,7 @@ static int MQTTS_ClientCount() {
 }
 
 // Match topic against subscription filter with + and # wildcards
-static int MQTTS_TopicMatch(const char *topic, const char *filter) {
+int MQTTS_TopicMatch(const char *topic, const char *filter) {
   while (*filter) {
     if (*filter == '#') {
       return 1;
@@ -412,15 +417,7 @@ static void MQTTS_HandlePacket(mqttClient_t *client, const byte *buf,
     MQTTS_ForwardPublish(topicData, topicLen, pubPayload, pubPayloadLen,
                          client);
 #if ENABLE_OBK_BERRY
-    {
-      // fire OnMQTTS event to Berry: (topic, payload)
-      // payload needs null-termination for Berry string
-      char payloadStr[256];
-      int pLen = pubPayloadLen < 255 ? pubPayloadLen : 255;
-      memcpy(payloadStr, pubPayload, pLen);
-      payloadStr[pLen] = 0;
-      CMD_Berry_RunEventHandlers_Str(CMD_EVENT_ON_MQTTS, topicStr, payloadStr);
-    }
+    MQTTS_Berry_OnPublish(topicStr, pubPayload, pubPayloadLen);
 #endif
     if (qos == 1) {
       MQTTS_SendPuback(client, packetID);
@@ -746,6 +743,9 @@ void DRV_MQTTServer_RunQuickTick() {
 void DRV_MQTTServer_RunEverySecond() { g_mqttServer_secondsElapsed++; }
 
 void DRV_MQTTServer_Stop() {
+#if ENABLE_OBK_BERRY
+  MQTTS_Berry_Shutdown();
+#endif
   while (g_clientList) {
     MQTTS_FreeClient(g_clientList);
   }

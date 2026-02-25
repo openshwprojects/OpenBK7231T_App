@@ -25,6 +25,10 @@
 #include "../driver/drv_deviceclock.h"
 bvm *g_vm = NULL;
 
+#if ENABLE_DRIVER_MQTTSERVER
+void MQTTS_Berry_Init();
+#endif
+
 typedef struct berryInstance_s
 {
 	int uniqueID;
@@ -442,6 +446,9 @@ static int BasicInit() {
 		be_regfunc(g_vm, "rtosDelayMs", be_rtosDelayMs);
 		be_regfunc(g_vm, "delayUs", be_delayUs);
 		be_regfunc(g_vm, "cancel", be_CancelThread);
+#if ENABLE_DRIVER_MQTTSERVER
+		MQTTS_Berry_Init();
+#endif
 		if (!berryRun(g_vm, berryPrelude)) {
 			return 0;
 		}

@@ -245,6 +245,7 @@
     <ClCompile Include="src\driver\drv_max72xx_single.c" />
     <ClCompile Include="src\driver\drv_mcp9808.c" />
     <ClCompile Include="src\driver\drv_mqttServer.c" />
+    <ClCompile Include="src\driver\drv_mqttServerBerry.c" />
     <ClCompile Include="src\driver\drv_multiPinI2CScanner.c" />
     <ClCompile Include="src\driver\drv_ntp.c" />
     <ClCompile Include="src\driver\drv_deviceclock.c" />
