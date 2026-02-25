@@ -202,7 +202,7 @@ void MQTTS_Berry_Shutdown() {
 
 // Stubs when Berry or MQTT server is disabled
 int MQTTS_Berry_OnPublish(const char *topic, const byte *payload,
-                           int payloadLen) {}
+                           int payloadLen) { return 0; }
 void MQTTS_Berry_Init() {}
 void MQTTS_Berry_Shutdown() {}
 
