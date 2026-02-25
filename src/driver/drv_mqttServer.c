@@ -15,7 +15,8 @@ ms_publish cmnd/obk174083A4/POWER TOGGLE
 #if ENABLE_DRIVER_MQTTSERVER
 
 // drv_mqttServerBerry.c
-int MQTTS_Berry_OnPublish(const char *topic, const byte *payload, int payloadLen);
+int MQTTS_Berry_OnPublish(const char *topic, const byte *payload,
+                          int payloadLen);
 void MQTTS_Berry_Init();
 void MQTTS_Berry_Shutdown();
 
@@ -605,15 +606,17 @@ void DRV_MQTTServer_AppendInformationToHTTPIndexPage(http_request_t *request,
   int cnt;
   if (bPreState)
     return;
-  hprintf255(request, "<h5>MQTT Server (port %d, uptime %ds, %d fwd, %d devices)</h5>",
+  hprintf255(request,
+             "<h5>MQTT Server (port %d, uptime %ds, %d fwd, %d devices)</h5>",
              g_mqttServerPort, g_mqttServer_secondsElapsed,
-             g_totalPublishForwarded);
+             g_totalPublishForwarded, MQTTS_ClientCount());
   cnt = 0;
   mqttClient_t *c;
   for (c = g_clientList; c; c = c->next) {
     cnt++;
     hprintf255(request, "<hr>");
-    hprintf255(request, "<b>%s %s <a href='http://%s'>%s</a> In %d/%d Out %d/%d</b><br>",
+    hprintf255(request,
+               "<b>%s %s <a href='http://%s'>%s</a> In %d/%d Out %d/%d</b><br>",
                c->clientID[0] ? c->clientID : "(no id)",
                c->bConnected ? "Connected" : "TCP", c->ipAddr, c->ipAddr,
                c->bytesRecv, c->packetsRecv, c->bytesSent, c->packetsSent);
