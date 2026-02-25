@@ -648,12 +648,53 @@ void DRV_MQTTServer_AppendInformationToHTTPIndexPage(http_request_t *request,
       }
       hprintf255(request, "<br>");
     }
-    if (c->clientID[0]) {
-      hprintf255(
-          request,
-          "<button onclick=\"fetch('/cm?cmnd='+encodeURIComponent('ms_publish "
-          "cmnd/%s/POWER TOGGLE'))\">Send Toggle</button><br>",
-          c->clientID);
+    // Extract per-device command topic from subscriptions like "cmnd/XXX/#"
+    // Prefer topics containing '_' (device-specific e.g. tasmota_476739)
+    // over group topics (e.g. tasmotas, bekens)
+    {
+      const char *bestTopic = NULL;
+      int bestScore = -1;
+      mqttSubscription_t *s;
+      for (s = c->subs; s; s = s->next) {
+        if (!s->topic || strncmp(s->topic, "cmnd/", 5) != 0)
+          continue;
+        const char *devStart = s->topic + 5;
+        const char *slash = strchr(devStart, '/');
+        if (!slash || slash == devStart)
+          continue;
+        int devLen = (int)(slash - devStart);
+        // Score: higher = better. Prefer names with '_' (device-specific)
+        int score = 1;
+        if (memchr(devStart, '_', devLen))
+          score += 10;
+        // Deprioritize short generic group topics
+        if (devLen <= 7)
+          score -= 5;
+        if (score > bestScore) {
+          bestScore = score;
+          bestTopic = devStart;
+        }
+      }
+      char devName[64];
+      devName[0] = 0;
+      if (bestTopic) {
+        const char *slash = strchr(bestTopic, '/');
+        int devLen = (int)(slash - bestTopic);
+        if (devLen > 63)
+          devLen = 63;
+        memcpy(devName, bestTopic, devLen);
+        devName[devLen] = 0;
+      } else if (c->clientID[0]) {
+        strncpy(devName, c->clientID, 63);
+        devName[63] = 0;
+      }
+      if (devName[0]) {
+        hprintf255(request,
+                   "<button "
+                   "onclick=\"fetch('/cm?cmnd='+encodeURIComponent('ms_publish "
+                   "cmnd/%s/POWER TOGGLE'))\">Send Toggle</button><br>",
+                   devName);
+      }
     }
   }
   if (cnt == 0) {
