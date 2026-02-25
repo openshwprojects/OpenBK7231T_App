@@ -640,7 +640,8 @@ int __cdecl main(int argc, char **argv)
 #if ENABLE_SDL_WINDOW
 	SIM_CreateWindow(argc, argv);
 #endif
-
+	
+	CMD_ExecuteCommand("startDriver MQTTServer", 0);
 #if 1
 	CMD_ExecuteCommand("MQTTHost 192.168.0.113", 0);
 	CMD_ExecuteCommand("MqttPassword ma1oovoo0pooTie7koa8Eiwae9vohth1vool8ekaej8Voohi7beif5uMuph9Diex", 0);

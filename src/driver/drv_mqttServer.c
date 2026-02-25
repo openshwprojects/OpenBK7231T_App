@@ -12,6 +12,7 @@ void DRV_MQTTServer_Init() {
 }
 void DRV_MQTTServer_RunEverySecond() {
 	g_mqttServer_secondsElapsed++;
+	ADDLOG_INFO(LOG_FEATURE_GENERAL, "DRV_MQTTServer_RunEverySecond");
 }
 void DRV_MQTTServer_Stop() {
 	ADDLOG_INFO(LOG_FEATURE_GENERAL, "DRV_MQTTServer_Stop: MQTT Server driver stopped");
