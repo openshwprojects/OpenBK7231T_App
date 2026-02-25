@@ -1,11 +1,6 @@
 /*
 ms_publish cmnd/obkLEDstripWindow/POWER TOGGLE
 ms_publish cmnd/obk174083A4/POWER TOGGLE
-
-
-
-
-
 */
 
 #include "../cmnds/cmd_public.h"
@@ -19,10 +14,9 @@ ms_publish cmnd/obk174083A4/POWER TOGGLE
 
 #if ENABLE_DRIVER_MQTTSERVER
 
-#define MQTT_SERVER_PORT 1883
-#define MQTT_MAX_CLIENTS 4
+#define MQTT_SERVER_PORT_DEFAULT 1883
 #define MQTT_RECV_BUF_SIZE 2048
-#define MQTT_MAX_SUBSCRIPTIONS 16
+#define MQTT_MAX_CLIENTS 8
 
 // MQTT packet types
 #define MQTT_CONNECT 1
@@ -39,13 +33,15 @@ ms_publish cmnd/obk174083A4/POWER TOGGLE
 
 static int g_mqttServer_secondsElapsed = 0;
 static int g_totalPublishForwarded = 0;
+static int g_mqttServerPort = MQTT_SERVER_PORT_DEFAULT;
 
 // single user only
 static char g_password[128];
 static char g_user[128];
 
 typedef struct mqttSubscription_s {
-  char topic[128];
+  char *topic;
+  struct mqttSubscription_s *next;
 } mqttSubscription_t;
 
 typedef struct mqttClient_s {
@@ -53,16 +49,16 @@ typedef struct mqttClient_s {
   int bConnected;
   char clientID[64];
   char ipAddr[20];
-  mqttSubscription_t subs[MQTT_MAX_SUBSCRIPTIONS];
-  int numSubs;
+  mqttSubscription_t *subs;
   int bytesRecv;
   int bytesSent;
   int packetsRecv;
   int packetsSent;
+  struct mqttClient_s *next;
 } mqttClient_t;
 
 static int g_listenSocket = -1;
-static mqttClient_t g_clients[MQTT_MAX_CLIENTS];
+static mqttClient_t *g_clientList = NULL;
 static byte g_recvBuf[MQTT_RECV_BUF_SIZE];
 
 // Decode MQTT remaining length (variable-length encoding)
@@ -93,7 +89,6 @@ static int MQTTS_DecodeRemainingLength(const byte *buf, int bufLen,
 static int MQTTS_ReadUint16(const byte *buf) { return (buf[0] << 8) | buf[1]; }
 
 // Read an MQTT UTF-8 string (2-byte length prefix + data)
-// Returns pointer to string start (NOT null-terminated), sets outLen
 static const byte *MQTTS_ReadString(const byte *buf, int bufLen, int *outLen) {
   if (bufLen < 2)
     return NULL;
@@ -104,86 +99,148 @@ static const byte *MQTTS_ReadString(const byte *buf, int bufLen, int *outLen) {
   return buf + 2;
 }
 
-// Helper: send and track bytes for a specific client index
-static void MQTTS_SendToClient(int clientIdx, const byte *data, int len) {
-  int r = send(g_clients[clientIdx].socket, (const char *)data, len, 0);
+// Helper: send and track bytes
+static void MQTTS_SendToClient(mqttClient_t *c, const byte *data, int len) {
+  int r = send(c->socket, (const char *)data, len, 0);
   if (r > 0) {
-    g_clients[clientIdx].bytesSent += r;
+    c->bytesSent += r;
   }
 }
 
-static void MQTTS_SendConnack(int clientIdx, byte returnCode) {
+static void MQTTS_SendConnack(mqttClient_t *c, byte returnCode) {
   byte pkt[4];
   pkt[0] = (MQTT_CONNACK << 4);
-  pkt[1] = 2; // remaining length
-  pkt[2] = 0; // session present = 0
+  pkt[1] = 2;
+  pkt[2] = 0;
   pkt[3] = returnCode;
-  MQTTS_SendToClient(clientIdx, pkt, 4);
-  g_clients[clientIdx].packetsSent++;
+  MQTTS_SendToClient(c, pkt, 4);
+  c->packetsSent++;
 }
 
-static void MQTTS_SendSuback(int clientIdx, int packetID, byte grantedQoS) {
+static void MQTTS_SendSuback(mqttClient_t *c, int packetID, byte grantedQoS) {
   byte pkt[5];
   pkt[0] = (MQTT_SUBACK << 4);
-  pkt[1] = 3; // remaining length
+  pkt[1] = 3;
   pkt[2] = (packetID >> 8) & 0xFF;
   pkt[3] = packetID & 0xFF;
   pkt[4] = grantedQoS;
-  MQTTS_SendToClient(clientIdx, pkt, 5);
-  g_clients[clientIdx].packetsSent++;
+  MQTTS_SendToClient(c, pkt, 5);
+  c->packetsSent++;
 }
 
-static void MQTTS_SendUnsuback(int clientIdx, int packetID) {
+static void MQTTS_SendUnsuback(mqttClient_t *c, int packetID) {
   byte pkt[4];
   pkt[0] = (MQTT_UNSUBACK << 4);
   pkt[1] = 2;
   pkt[2] = (packetID >> 8) & 0xFF;
   pkt[3] = packetID & 0xFF;
-  MQTTS_SendToClient(clientIdx, pkt, 4);
-  g_clients[clientIdx].packetsSent++;
+  MQTTS_SendToClient(c, pkt, 4);
+  c->packetsSent++;
 }
 
-static void MQTTS_SendPingresp(int clientIdx) {
+static void MQTTS_SendPingresp(mqttClient_t *c) {
   byte pkt[2];
   pkt[0] = (MQTT_PINGRESP << 4);
   pkt[1] = 0;
-  MQTTS_SendToClient(clientIdx, pkt, 2);
-  g_clients[clientIdx].packetsSent++;
+  MQTTS_SendToClient(c, pkt, 2);
+  c->packetsSent++;
 }
 
-static void MQTTS_SendPuback(int clientIdx, int packetID) {
+static void MQTTS_SendPuback(mqttClient_t *c, int packetID) {
   byte pkt[4];
   pkt[0] = (MQTT_PUBACK << 4);
   pkt[1] = 2;
   pkt[2] = (packetID >> 8) & 0xFF;
   pkt[3] = packetID & 0xFF;
-  MQTTS_SendToClient(clientIdx, pkt, 4);
-  g_clients[clientIdx].packetsSent++;
+  MQTTS_SendToClient(c, pkt, 4);
+  c->packetsSent++;
+}
+
+// Free all subscription nodes
+static void MQTTS_FreeSubs(mqttClient_t *c) {
+  mqttSubscription_t *s = c->subs;
+  while (s) {
+    mqttSubscription_t *next = s->next;
+    if (s->topic)
+      free(s->topic);
+    free(s);
+    s = next;
+  }
+  c->subs = NULL;
+}
+
+// Unlink client from list, close socket, free subs, free client
+static void MQTTS_FreeClient(mqttClient_t *c) {
+  // unlink from g_clientList
+  mqttClient_t **pp = &g_clientList;
+  while (*pp) {
+    if (*pp == c) {
+      *pp = c->next;
+      break;
+    }
+    pp = &(*pp)->next;
+  }
+  if (c->socket >= 0) {
+    close(c->socket);
+  }
+  MQTTS_FreeSubs(c);
+  free(c);
+}
+
+// Add a subscription to client (prepend)
+static void MQTTS_AddSub(mqttClient_t *c, const char *topic) {
+  mqttSubscription_t *s =
+      (mqttSubscription_t *)malloc(sizeof(mqttSubscription_t));
+  if (!s)
+    return;
+  s->topic = strdup(topic);
+  s->next = c->subs;
+  c->subs = s;
+}
+
+// Remove a subscription by topic
+static void MQTTS_RemoveSub(mqttClient_t *c, const char *topic) {
+  mqttSubscription_t **pp = &c->subs;
+  while (*pp) {
+    if ((*pp)->topic && !strcmp((*pp)->topic, topic)) {
+      mqttSubscription_t *victim = *pp;
+      *pp = victim->next;
+      free(victim->topic);
+      free(victim);
+      return;
+    }
+    pp = &(*pp)->next;
+  }
+}
+
+// Count clients in list
+static int MQTTS_ClientCount() {
+  int n = 0;
+  mqttClient_t *c = g_clientList;
+  while (c) {
+    n++;
+    c = c->next;
+  }
+  return n;
 }
 
 // Match topic against subscription filter with + and # wildcards
-// + matches exactly one level, # matches remaining levels (must be last)
 static int MQTTS_TopicMatch(const char *topic, const char *filter) {
   while (*filter) {
     if (*filter == '#') {
-      // # must be last char and matches everything remaining
       return 1;
     }
     if (*filter == '+') {
-      // + matches one level: skip topic chars until / or end
       while (*topic && *topic != '/')
         topic++;
       filter++;
-      // both should now be at / or end
       if (*topic == '/' && *filter == '/') {
         topic++;
         filter++;
         continue;
       }
-      // both at end = match, otherwise mismatch
       return (*topic == 0 && *filter == 0) ? 1 : 0;
     }
-    // literal compare
     if (*topic != *filter)
       return 0;
     topic++;
@@ -195,25 +252,26 @@ static int MQTTS_TopicMatch(const char *topic, const char *filter) {
 // Forward a PUBLISH to all subscribed clients
 static void MQTTS_ForwardPublish(const byte *topicData, int topicLen,
                                  const byte *payload, int payloadLen,
-                                 int senderIdx) {
-  int i, s;
+                                 mqttClient_t *sender) {
   char topicStr[128];
   int copyLen = topicLen < 127 ? topicLen : 127;
   memcpy(topicStr, topicData, copyLen);
   topicStr[copyLen] = 0;
 
-  for (i = 0; i < MQTT_MAX_CLIENTS; i++) {
-    if (g_clients[i].socket < 0 || !g_clients[i].bConnected)
+  mqttClient_t *c;
+  for (c = g_clientList; c; c = c->next) {
+    if (!c->bConnected || c == sender)
       continue;
-    for (s = 0; s < g_clients[i].numSubs; s++) {
-      int match = MQTTS_TopicMatch(topicStr, g_clients[i].subs[s].topic);
-      if (match) {
+    mqttSubscription_t *s;
+    for (s = c->subs; s; s = s->next) {
+      if (!s->topic)
+        continue;
+      if (MQTTS_TopicMatch(topicStr, s->topic)) {
         // Build PUBLISH packet: fixed header + topic + payload
         byte hdr[5];
         int totalPayload = 2 + topicLen + payloadLen;
         int hdrLen = 1;
         hdr[0] = (MQTT_PUBLISH << 4); // QoS 0, no retain
-        // encode remaining length
         int rl = totalPayload;
         do {
           byte eb = rl % 128;
@@ -222,18 +280,16 @@ static void MQTTS_ForwardPublish(const byte *topicData, int topicLen,
             eb |= 0x80;
           hdr[hdrLen++] = eb;
         } while (rl > 0);
-        MQTTS_SendToClient(i, hdr, hdrLen);
-        // topic length + topic
+        MQTTS_SendToClient(c, hdr, hdrLen);
         byte topicHdr[2];
         topicHdr[0] = (topicLen >> 8) & 0xFF;
         topicHdr[1] = topicLen & 0xFF;
-        MQTTS_SendToClient(i, topicHdr, 2);
-        MQTTS_SendToClient(i, topicData, topicLen);
-        // payload
+        MQTTS_SendToClient(c, topicHdr, 2);
+        MQTTS_SendToClient(c, topicData, topicLen);
         if (payloadLen > 0) {
-          MQTTS_SendToClient(i, payload, payloadLen);
+          MQTTS_SendToClient(c, payload, payloadLen);
         }
-        g_clients[i].packetsSent++;
+        c->packetsSent++;
         g_totalPublishForwarded++;
         break; // only send once per client
       }
@@ -241,7 +297,8 @@ static void MQTTS_ForwardPublish(const byte *topicData, int topicLen,
   }
 }
 
-static void MQTTS_HandlePacket(int clientIdx, const byte *buf, int totalLen) {
+static void MQTTS_HandlePacket(mqttClient_t *client, const byte *buf,
+                               int totalLen) {
   if (totalLen < 2)
     return;
 
@@ -254,38 +311,31 @@ static void MQTTS_HandlePacket(int clientIdx, const byte *buf, int totalLen) {
 
   int headerSize = 1 + lenBytes;
   const byte *payload = buf + headerSize;
-  mqttClient_t *client = &g_clients[clientIdx];
   client->packetsRecv++;
 
   switch (pktType) {
   case MQTT_CONNECT: {
-    // Variable header: protocol name + level + flags + keepalive
     if (remainLen < 10) {
-      MQTTS_SendConnack(clientIdx, 1);
+      MQTTS_SendConnack(client, 1);
       return;
     }
     int pos = 0;
-    // protocol name
     int protoNameLen;
     MQTTS_ReadString(payload + pos, remainLen - pos, &protoNameLen);
     pos += 2 + protoNameLen;
-    // protocol level
     pos++; // skip level byte
-    // connect flags
     byte connectFlags = payload[pos++];
     int hasUsername = (connectFlags >> 7) & 1;
     int hasPassword = (connectFlags >> 6) & 1;
-    // keepalive
     pos += 2; // skip keepalive
 
-    // Client ID
     int clientIDLen;
     const byte *clientIDData =
         MQTTS_ReadString(payload + pos, remainLen - pos, &clientIDLen);
     if (clientIDData) {
-      int copyLen = clientIDLen < 63 ? clientIDLen : 63;
-      memcpy(client->clientID, clientIDData, copyLen);
-      client->clientID[copyLen] = 0;
+      int cLen = clientIDLen < 63 ? clientIDLen : 63;
+      memcpy(client->clientID, clientIDData, cLen);
+      client->clientID[cLen] = 0;
       pos += 2 + clientIDLen;
     }
 
@@ -309,7 +359,7 @@ static void MQTTS_HandlePacket(int clientIdx, const byte *buf, int totalLen) {
           memcmp(usernameData, g_user, usernameLen)) {
         addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "MQTTS: bad username from %s",
                   client->clientID);
-        MQTTS_SendConnack(clientIdx, 4); // bad username
+        MQTTS_SendConnack(client, 4);
         return;
       }
       if (hasPassword && g_password[0]) {
@@ -321,15 +371,15 @@ static void MQTTS_HandlePacket(int clientIdx, const byte *buf, int totalLen) {
             memcmp(passwordData, g_password, passwordLen)) {
           addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,
                     "MQTTS: bad password from %s", client->clientID);
-          MQTTS_SendConnack(clientIdx, 5); // bad password
+          MQTTS_SendConnack(client, 5);
           return;
         }
       }
     }
 
     client->bConnected = 1;
-    client->numSubs = 0;
-    MQTTS_SendConnack(clientIdx, 0); // accepted
+    MQTTS_FreeSubs(client);
+    MQTTS_SendConnack(client, 0);
     addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "MQTTS: client '%s' connected",
               client->clientID);
     break;
@@ -350,22 +400,30 @@ static void MQTTS_HandlePacket(int clientIdx, const byte *buf, int totalLen) {
       packetID = MQTTS_ReadUint16(payload + pos);
       pos += 2;
     }
-    int payloadLen = remainLen - pos;
+    int pubPayloadLen = remainLen - pos;
     const byte *pubPayload = payload + pos;
-    // Log it
     char topicStr[128];
-    int copyLen = topicLen < 127 ? topicLen : 127;
-    memcpy(topicStr, topicData, copyLen);
-    topicStr[copyLen] = 0;
+    int cLen = topicLen < 127 ? topicLen : 127;
+    memcpy(topicStr, topicData, cLen);
+    topicStr[cLen] = 0;
     addLogAdv(LOG_DEBUG, LOG_FEATURE_GENERAL,
-              "MQTTS: PUBLISH '%s' (%d bytes) from '%s'", topicStr, payloadLen,
-              client->clientID);
-    // Forward to subscribers
-    MQTTS_ForwardPublish(topicData, topicLen, pubPayload, payloadLen,
-                         clientIdx);
-    // Send PUBACK for QoS 1
+              "MQTTS: PUBLISH '%s' (%d bytes) from '%s'", topicStr,
+              pubPayloadLen, client->clientID);
+    MQTTS_ForwardPublish(topicData, topicLen, pubPayload, pubPayloadLen,
+                         client);
+#if ENABLE_OBK_BERRY
+    {
+      // fire OnMQTTS event to Berry: (topic, payload)
+      // payload needs null-termination for Berry string
+      char payloadStr[256];
+      int pLen = pubPayloadLen < 255 ? pubPayloadLen : 255;
+      memcpy(payloadStr, pubPayload, pLen);
+      payloadStr[pLen] = 0;
+      CMD_Berry_RunEventHandlers_Str(CMD_EVENT_ON_MQTTS, topicStr, payloadStr);
+    }
+#endif
     if (qos == 1) {
-      MQTTS_SendPuback(clientIdx, packetID);
+      MQTTS_SendPuback(client, packetID);
     }
     break;
   }
@@ -375,8 +433,7 @@ static void MQTTS_HandlePacket(int clientIdx, const byte *buf, int totalLen) {
     int pos = 0;
     int packetID = MQTTS_ReadUint16(payload + pos);
     pos += 2;
-    // Parse topic filters
-    while (pos < remainLen && client->numSubs < MQTT_MAX_SUBSCRIPTIONS) {
+    while (pos < remainLen) {
       int topicLen;
       const byte *topicData =
           MQTTS_ReadString(payload + pos, remainLen - pos, &topicLen);
@@ -384,15 +441,15 @@ static void MQTTS_HandlePacket(int clientIdx, const byte *buf, int totalLen) {
         break;
       pos += 2 + topicLen;
       byte requestedQoS = payload[pos++];
-      int copyLen = topicLen < 127 ? topicLen : 127;
-      memcpy(client->subs[client->numSubs].topic, topicData, copyLen);
-      client->subs[client->numSubs].topic[copyLen] = 0;
-      client->numSubs++;
+      char tmp[128];
+      int cLen = topicLen < 127 ? topicLen : 127;
+      memcpy(tmp, topicData, cLen);
+      tmp[cLen] = 0;
+      MQTTS_AddSub(client, tmp);
       addLogAdv(LOG_DEBUG, LOG_FEATURE_GENERAL,
-                "MQTTS: client '%s' subscribed to '%s'", client->clientID,
-                client->subs[client->numSubs - 1].topic);
+                "MQTTS: client '%s' subscribed to '%s'", client->clientID, tmp);
     }
-    MQTTS_SendSuback(clientIdx, packetID, 0); // granted QoS 0
+    MQTTS_SendSuback(client, packetID, 0);
     break;
   }
   case MQTT_UNSUBSCRIBE: {
@@ -409,36 +466,21 @@ static void MQTTS_HandlePacket(int clientIdx, const byte *buf, int totalLen) {
         break;
       pos += 2 + topicLen;
       char topicStr[128];
-      int copyLen = topicLen < 127 ? topicLen : 127;
-      memcpy(topicStr, topicData, copyLen);
-      topicStr[copyLen] = 0;
-      // Remove matching subscription
-      int s;
-      for (s = 0; s < client->numSubs; s++) {
-        if (!strcmp(client->subs[s].topic, topicStr)) {
-          // shift remaining subs down
-          if (s < client->numSubs - 1) {
-            memmove(&client->subs[s], &client->subs[s + 1],
-                    (client->numSubs - s - 1) * sizeof(mqttSubscription_t));
-          }
-          client->numSubs--;
-          break;
-        }
-      }
+      int cLen = topicLen < 127 ? topicLen : 127;
+      memcpy(topicStr, topicData, cLen);
+      topicStr[cLen] = 0;
+      MQTTS_RemoveSub(client, topicStr);
     }
-    MQTTS_SendUnsuback(clientIdx, packetID);
+    MQTTS_SendUnsuback(client, packetID);
     break;
   }
   case MQTT_PINGREQ:
-    MQTTS_SendPingresp(clientIdx);
+    MQTTS_SendPingresp(client);
     break;
   case MQTT_DISCONNECT:
     addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "MQTTS: client '%s' disconnected",
               client->clientID);
-    close(client->socket);
-    client->socket = -1;
-    client->bConnected = 0;
-    client->numSubs = 0;
+    MQTTS_FreeClient(client);
     break;
   default:
     addLogAdv(LOG_DEBUG, LOG_FEATURE_GENERAL,
@@ -466,11 +508,11 @@ static void MQTTS_CreateListenSocket() {
   memset(&addr, 0, sizeof(addr));
   addr.sin_family = AF_INET;
   addr.sin_addr.s_addr = htonl(INADDR_ANY);
-  addr.sin_port = htons(MQTT_SERVER_PORT);
+  addr.sin_port = htons(g_mqttServerPort);
 
   if (bind(g_listenSocket, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
     addLogAdv(LOG_ERROR, LOG_FEATURE_GENERAL, "MQTTS: bind failed on port %d",
-              MQTT_SERVER_PORT);
+              g_mqttServerPort);
     close(g_listenSocket);
     g_listenSocket = -1;
     return;
@@ -486,8 +528,56 @@ static void MQTTS_CreateListenSocket() {
   lwip_fcntl(g_listenSocket, F_SETFL, O_NONBLOCK);
 
   addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "MQTTS: listening on port %d",
-            MQTT_SERVER_PORT);
+            g_mqttServerPort);
 }
+
+static commandResult_t Cmd_MQTTServer_User(const void *context, const char *cmd,
+                                           const char *args, int cmdFlags) {
+  Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES);
+  if (Tokenizer_GetArgsCount() == 0) {
+    ADDLOG_INFO(LOG_FEATURE_GENERAL, "MQTTS user: %s", g_user);
+  } else {
+    strncpy(g_user, Tokenizer_GetArg(0), sizeof(g_user) - 1);
+    g_user[sizeof(g_user) - 1] = 0;
+    ADDLOG_INFO(LOG_FEATURE_GENERAL, "MQTTS user set to: %s", g_user);
+  }
+  return CMD_RES_OK;
+}
+
+static commandResult_t Cmd_MQTTServer_Pass(const void *context, const char *cmd,
+                                           const char *args, int cmdFlags) {
+  Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES);
+  if (Tokenizer_GetArgsCount() == 0) {
+    ADDLOG_INFO(LOG_FEATURE_GENERAL, "MQTTS pass: %s", g_password);
+  } else {
+    strncpy(g_password, Tokenizer_GetArg(0), sizeof(g_password) - 1);
+    g_password[sizeof(g_password) - 1] = 0;
+    ADDLOG_INFO(LOG_FEATURE_GENERAL, "MQTTS pass set");
+  }
+  return CMD_RES_OK;
+}
+
+static commandResult_t Cmd_MQTTServer_Port(const void *context, const char *cmd,
+                                           const char *args, int cmdFlags) {
+  Tokenizer_TokenizeString(args, 0);
+  if (Tokenizer_GetArgsCount() == 0) {
+    ADDLOG_INFO(LOG_FEATURE_GENERAL, "MQTTS port: %d", g_mqttServerPort);
+    return CMD_RES_OK;
+  }
+  int newPort = Tokenizer_GetArgInteger(0);
+  if (newPort < 1 || newPort > 65535) {
+    ADDLOG_INFO(LOG_FEATURE_GENERAL, "MQTTS: invalid port %d", newPort);
+    return CMD_RES_BAD_ARGUMENT;
+  }
+  g_mqttServerPort = newPort;
+  if (g_listenSocket >= 0) {
+    close(g_listenSocket);
+    g_listenSocket = -1;
+  }
+  MQTTS_CreateListenSocket();
+  return CMD_RES_OK;
+}
+
 static commandResult_t Cmd_MQTTServer_Publish(const void *context,
                                               const char *cmd, const char *args,
                                               int cmdFlags) {
@@ -496,9 +586,6 @@ static commandResult_t Cmd_MQTTServer_Publish(const void *context,
   int topicLen, payloadLen;
 
   Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES);
-  // following check must be done after 'Tokenizer_TokenizeString',
-  // so we know arguments count in Tokenizer. 'cmd' argument is
-  // only for warning display
   if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 2)) {
     return CMD_RES_NOT_ENOUGH_ARGUMENTS;
   }
@@ -511,36 +598,36 @@ static commandResult_t Cmd_MQTTServer_Publish(const void *context,
   addLogAdv(LOG_DEBUG, LOG_FEATURE_GENERAL, "MQTTS: ms_publish '%s' '%s'",
             topic, payload);
   MQTTS_ForwardPublish((const byte *)topic, topicLen, (const byte *)payload,
-                       payloadLen, -1);
+                       payloadLen, NULL);
 
   return CMD_RES_OK;
 }
 
 void DRV_MQTTServer_AppendInformationToHTTPIndexPage(http_request_t *request,
                                                      int bPreState) {
-  int i, s, cnt;
+  int cnt;
   if (bPreState)
     return;
   hprintf255(request, "<h5>MQTT Server (port %d, uptime %ds, %d fwd)</h5>",
-             MQTT_SERVER_PORT, g_mqttServer_secondsElapsed,
+             g_mqttServerPort, g_mqttServer_secondsElapsed,
              g_totalPublishForwarded);
   cnt = 0;
-  for (i = 0; i < MQTT_MAX_CLIENTS; i++) {
-    if (g_clients[i].socket < 0)
-      continue;
+  mqttClient_t *c;
+  for (c = g_clientList; c; c = c->next) {
     cnt++;
-    hprintf255(request, "<b>#%d %s %s %s In %d/%d Out %d/%d</b><br>", i,
-               g_clients[i].clientID[0] ? g_clients[i].clientID : "(no id)",
-               g_clients[i].bConnected ? "Connected" : "TCP",
-               g_clients[i].ipAddr, g_clients[i].bytesRecv,
-               g_clients[i].packetsRecv, g_clients[i].bytesSent,
-               g_clients[i].packetsSent);
-    if (g_clients[i].numSubs > 0) {
+    hprintf255(request, "<b>%s %s %s In %d/%d Out %d/%d</b><br>",
+               c->clientID[0] ? c->clientID : "(no id)",
+               c->bConnected ? "Connected" : "TCP", c->ipAddr, c->bytesRecv,
+               c->packetsRecv, c->bytesSent, c->packetsSent);
+    if (c->subs) {
       hprintf255(request, "&nbsp;&nbsp;Subs: ");
-      for (s = 0; s < g_clients[i].numSubs; s++) {
-        if (s > 0)
+      int first = 1;
+      mqttSubscription_t *s;
+      for (s = c->subs; s; s = s->next) {
+        if (!first)
           hprintf255(request, ", ");
-        hprintf255(request, "%s", g_clients[i].subs[s].topic);
+        hprintf255(request, "%s", s->topic ? s->topic : "?");
+        first = 0;
       }
       hprintf255(request, "<br>");
     }
@@ -551,22 +638,11 @@ void DRV_MQTTServer_AppendInformationToHTTPIndexPage(http_request_t *request,
 }
 
 void DRV_MQTTServer_Init() {
-  int i;
   strcpy(g_password,
          "ma1oovoo0pooTie7koa8Eiwae9vohth1vool8ekaej8Voohi7beif5uMuph9Diex");
   strcpy(g_user, "homeassistant");
 
-  for (i = 0; i < MQTT_MAX_CLIENTS; i++) {
-    g_clients[i].socket = -1;
-    g_clients[i].bConnected = 0;
-    g_clients[i].numSubs = 0;
-    g_clients[i].clientID[0] = 0;
-    g_clients[i].bytesRecv = 0;
-    g_clients[i].bytesSent = 0;
-    g_clients[i].packetsRecv = 0;
-    g_clients[i].packetsSent = 0;
-  }
-
+  g_clientList = NULL;
   g_mqttServer_secondsElapsed = 0;
   g_totalPublishForwarded = 0;
   MQTTS_CreateListenSocket();
@@ -576,12 +652,29 @@ void DRV_MQTTServer_Init() {
   // cmddetail:"fn":"Cmd_MQTTServer_Publish","file":"driver/drv_mqttServer.c","requires":"MQTTSERVER",
   // cmddetail:"examples":""}
   CMD_RegisterCommand("ms_publish", Cmd_MQTTServer_Publish, NULL);
+  // cmddetail:{"name":"ms_user","args":"[Username]",
+  // cmddetail:"descr":"Set or get the MQTT server username for client
+  // authentication.",
+  // cmddetail:"fn":"Cmd_MQTTServer_User","file":"driver/drv_mqttServer.c","requires":"MQTTSERVER",
+  // cmddetail:"examples":""}
+  CMD_RegisterCommand("ms_user", Cmd_MQTTServer_User, NULL);
+  // cmddetail:{"name":"ms_pass","args":"[Password]",
+  // cmddetail:"descr":"Set or get the MQTT server password for client
+  // authentication.",
+  // cmddetail:"fn":"Cmd_MQTTServer_Pass","file":"driver/drv_mqttServer.c","requires":"MQTTSERVER",
+  // cmddetail:"examples":""}
+  CMD_RegisterCommand("ms_pass", Cmd_MQTTServer_Pass, NULL);
+  // cmddetail:{"name":"ms_port","args":"[PortNumber]",
+  // cmddetail:"descr":"Set or get the MQTT server listen port. Setting a new
+  // port closes and recreates the listener.",
+  // cmddetail:"fn":"Cmd_MQTTServer_Port","file":"driver/drv_mqttServer.c","requires":"MQTTSERVER",
+  // cmddetail:"examples":""}
+  CMD_RegisterCommand("ms_port", Cmd_MQTTServer_Port, NULL);
   addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,
             "DRV_MQTTServer_Init: MQTT Server driver started");
 }
 
 void DRV_MQTTServer_RunQuickTick() {
-  int i;
   if (g_listenSocket < 0)
     return;
 
@@ -591,44 +684,40 @@ void DRV_MQTTServer_RunQuickTick() {
   int newSock =
       accept(g_listenSocket, (struct sockaddr *)&clientAddr, &addrLen);
   if (newSock >= 0) {
-    lwip_fcntl(newSock, F_SETFL, O_NONBLOCK);
-    // Find free client slot
-    int found = 0;
-    for (i = 0; i < MQTT_MAX_CLIENTS; i++) {
-      if (g_clients[i].socket < 0) {
-        g_clients[i].socket = newSock;
-        g_clients[i].bConnected = 0;
-        g_clients[i].numSubs = 0;
-        g_clients[i].clientID[0] = 0;
-        g_clients[i].bytesRecv = 0;
-        g_clients[i].bytesSent = 0;
-        g_clients[i].packetsRecv = 0;
-        g_clients[i].packetsSent = 0;
-        strncpy(g_clients[i].ipAddr, inet_ntoa(clientAddr.sin_addr),
-                sizeof(g_clients[i].ipAddr) - 1);
-        g_clients[i].ipAddr[sizeof(g_clients[i].ipAddr) - 1] = 0;
-        addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,
-                  "MQTTS: new TCP connection from %s", g_clients[i].ipAddr);
-        found = 1;
-        break;
-      }
-    }
-    if (!found) {
+    if (MQTTS_ClientCount() >= MQTT_MAX_CLIENTS) {
       addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,
                 "MQTTS: max clients reached, rejecting");
       close(newSock);
+    } else {
+      lwip_fcntl(newSock, F_SETFL, O_NONBLOCK);
+      mqttClient_t *c = (mqttClient_t *)malloc(sizeof(mqttClient_t));
+      if (!c) {
+        addLogAdv(LOG_ERROR, LOG_FEATURE_GENERAL,
+                  "MQTTS: malloc failed for client");
+        close(newSock);
+      } else {
+        memset(c, 0, sizeof(mqttClient_t));
+        c->socket = newSock;
+        strncpy(c->ipAddr, inet_ntoa(clientAddr.sin_addr),
+                sizeof(c->ipAddr) - 1);
+        c->ipAddr[sizeof(c->ipAddr) - 1] = 0;
+        // prepend to list
+        c->next = g_clientList;
+        g_clientList = c;
+        addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,
+                  "MQTTS: new TCP connection from %s", c->ipAddr);
+      }
     }
   }
 
   // Poll each connected client for data
-  for (i = 0; i < MQTT_MAX_CLIENTS; i++) {
-    if (g_clients[i].socket < 0)
-      continue;
-    int nbytes =
-        recv(g_clients[i].socket, (char *)g_recvBuf, MQTT_RECV_BUF_SIZE, 0);
+  // Use safe iteration since HandlePacket/FreeClient can remove from list
+  mqttClient_t *c = g_clientList;
+  while (c) {
+    mqttClient_t *next = c->next; // save next before possible free
+    int nbytes = recv(c->socket, (char *)g_recvBuf, MQTT_RECV_BUF_SIZE, 0);
     if (nbytes > 0) {
-      g_clients[i].bytesRecv += nbytes;
-      // Process all complete packets in buffer
+      c->bytesRecv += nbytes;
       int offset = 0;
       while (offset < nbytes) {
         if (nbytes - offset < 2)
@@ -641,33 +730,24 @@ void DRV_MQTTServer_RunQuickTick() {
         int pktTotalLen = 1 + lenBytes + remainLen;
         if (offset + pktTotalLen > nbytes)
           break;
-        MQTTS_HandlePacket(i, g_recvBuf + offset, pktTotalLen);
+        MQTTS_HandlePacket(c, g_recvBuf + offset, pktTotalLen);
         offset += pktTotalLen;
       }
     } else if (nbytes == 0) {
-      // Connection closed by peer
       addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "MQTTS: client '%s' TCP closed",
-                g_clients[i].clientID);
-      close(g_clients[i].socket);
-      g_clients[i].socket = -1;
-      g_clients[i].bConnected = 0;
-      g_clients[i].numSubs = 0;
+                c->clientID);
+      MQTTS_FreeClient(c);
     }
     // nbytes < 0 means EWOULDBLOCK, ignore
+    c = next;
   }
 }
 
 void DRV_MQTTServer_RunEverySecond() { g_mqttServer_secondsElapsed++; }
 
 void DRV_MQTTServer_Stop() {
-  int i;
-  for (i = 0; i < MQTT_MAX_CLIENTS; i++) {
-    if (g_clients[i].socket >= 0) {
-      close(g_clients[i].socket);
-      g_clients[i].socket = -1;
-      g_clients[i].bConnected = 0;
-      g_clients[i].numSubs = 0;
-    }
+  while (g_clientList) {
+    MQTTS_FreeClient(g_clientList);
   }
   if (g_listenSocket >= 0) {
     close(g_listenSocket);
