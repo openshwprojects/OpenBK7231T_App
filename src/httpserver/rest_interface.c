@@ -10,8 +10,8 @@
 #include "../hal/hal_flashVars.h"
 #include "../littlefs/our_lfs.h"
 #include "lwip/sockets.h"
-#if PLATFORM_ESPIDF && ENABLE_BT_PROXY
-#include "../hal/espidf/hal_bt_proxy_espidf.h"
+#if ENABLE_BT_PROXY
+#include "../hal/hal_bt_proxy.h"
 #endif
 
 #define DEFAULT_FLASH_LEN 0x200000
@@ -1078,6 +1078,7 @@ static int http_rest_get_bt_scan(http_request_t* request) {
 	char mac[18];
 	int rssi, adv_len, evt_type, age_ms;
 
+	HAL_BTProxy_Lock();
 	HAL_BTProxy_GetScanStats(&init_done, &scan_active, &total_packets, &dropped_packets, &buffered_packets);
 	http_setup(request, httpMimeTypeJson);
 	hprintf255(request, "{\"init\":%d,\"scan\":%d,\"total\":%d,\"dropped\":%d,\"buffered\":%d,\"entries\":[",
@@ -1098,6 +1099,7 @@ static int http_rest_get_bt_scan(http_request_t* request) {
 		hprintf255(request, "{\"mac\":\"%s\",\"rssi\":%d,\"adv_len\":%d,\"evt_type\":%d,\"age_ms\":%d}",
 			mac, rssi, adv_len, evt_type, age_ms);
 	}
+	HAL_BTProxy_Unlock();
 	poststr(request, "]}");
 	poststr(request, NULL);
 	return 0;

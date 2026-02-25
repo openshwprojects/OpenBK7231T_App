@@ -300,3 +300,7 @@ void Bridge_driver_OnChannelChanged(int ch, int value);
 void LTR_Init();
 void LTR_OnEverySecond();
 void LTR_AppendInformationToHTTPIndexPage(http_request_t* request, int bPreState);
+
+void DRV_ESPHome_API_Init();
+void DRV_ESPHome_API_Deinit();
+void DRV_ESPHome_API_OnEverySecond();

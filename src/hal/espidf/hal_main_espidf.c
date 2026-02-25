@@ -60,18 +60,12 @@ void app_main(void)
     }
 #endif
 
-#if !PLATFORM_ESP8266
-    HAL_BTProxy_PreInit();
-#endif
     Main_Init();
 
     while(1)
     {
         sys_delay_ms(1000);
         Main_OnEverySecond();
-#if !PLATFORM_ESP8266
-        HAL_BTProxy_OnEverySecond();
-#endif
     }
 }
 

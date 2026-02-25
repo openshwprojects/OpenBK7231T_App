@@ -22,7 +22,7 @@ set(PROJ_ALL_SRC
 	../../../libraries/mqtt_patched.c
 )
 idf_component_register(SRCS ${PROJ_ALL_SRC} WHOLE_ARCHIVE
-			PRIV_REQUIRES mqtt lwip esp_wifi nvs_flash bt esp_driver_tsens esp_driver_gpio esp_pm esp_partition app_update esp_adc esp_driver_uart esp_driver_ledc spi_flash esp_driver_spi esp_driver_gptimer)
+			PRIV_REQUIRES mqtt lwip esp_wifi nvs_flash esp_driver_tsens esp_driver_gpio esp_pm esp_partition app_update esp_adc esp_driver_uart esp_driver_ledc spi_flash esp_driver_spi esp_driver_gptimer)
 
 target_compile_definitions(${COMPONENT_LIB} PRIVATE USER_SW_VER="$ENV{APP_VERSION}")
 target_compile_definitions(${COMPONENT_LIB} PRIVATE OBK_VARIANT=$ENV{OBK_VARIANT})

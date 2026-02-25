@@ -1438,9 +1438,6 @@ void Main_Init_BeforeDelay_Unsafe(bool bAutoRunScripts) {
 //			{
 //				DRV_StartDriver("TM1638");
 //			}
-#if ENABLE_DRIVER_BT_PROXY
-			DRV_StartDriver("BTProxy");
-#endif
 		}
 #endif
 	}

@@ -1,8 +1,7 @@
-#if PLATFORM_ESPIDF
+#if 0 //PLATFORM_ESPIDF
 
 #include "../../new_common.h"
 #include "../../logging/logging.h"
-#include "hal_bt_proxy_espidf.h"
 #include "../hal_bt_proxy.h"
 
 // FreeRTOS includes for queue management

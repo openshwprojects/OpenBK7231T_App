@@ -32,13 +32,13 @@
 #define ESPHOME_MSG_BluetoothScannerStateResponse 126
 
 // API Handlers (Called by TCP Server Thread)
-void BTProxy_Process_Packet(int client_sock, uint32_t type, uint8_t *payload, uint32_t size);
-void BTProxy_Send_HelloResponse(int client_sock);
-void BTProxy_Send_ConnectResponse(int client_sock);
-void BTProxy_Send_PingResponse(int client_sock);
-void BTProxy_Send_DeviceInfoResponse(int client_sock);
-void BTProxy_Send_ListEntitiesDoneResponse(int client_sock);
+void ESPHome_API_Process_Packet(int client_sock, uint32_t type, uint8_t *payload, uint32_t size);
+void ESPHome_API_Send_HelloResponse(int client_sock);
+void ESPHome_API_Send_ConnectResponse(int client_sock);
+void ESPHome_API_Send_PingResponse(int client_sock);
+void ESPHome_API_Send_DeviceInfoResponse(int client_sock);
+void ESPHome_API_Send_ListEntitiesDoneResponse(int client_sock);
 
-void BTProxy_Hook_ScanResult(int client_sock, const uint8_t *mac, int rssi, uint8_t addr_type, const uint8_t *data, int data_len);
+void ESPHome_API_Hook_ScanResult(int client_sock, const uint8_t *mac, int rssi, uint8_t addr_type, const uint8_t *data, int data_len);
 
 #endif // __DRV_BT_PROXY_API_H__
