@@ -1049,7 +1049,7 @@ void Main_Init();
 bool Main_HasFastConnect();
 void Main_OnEverySecond();
 int Main_HasMQTTConnected();
-int Main_HasWiFiConnected();
+// int Main_HasWiFiConnected();		// use identical function Main_IsConnectedToWiFi() instead
 void Main_OnPingCheckerReply(int ms);
 
 // new_ping.c
