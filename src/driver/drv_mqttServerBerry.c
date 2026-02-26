@@ -31,21 +31,24 @@ autoexec.init = def()
         autoexec.get_sub = ms_subscribe("+/+/get", def (topic, payload)
                 print("Berry GET: " + topic + " = " + payload)
         end)
-		autoexec.ip_sub = ms_subscribe("+/ip", def (topic, payload)
-				print("Berry Got IP Report: " + topic + " = " + payload)
-		end)
+         autoexec.ip_sub = ms_subscribe("+/ip", def (topic, payload)
+                 print("Berry Got IP Report: " + topic + " = " + payload)
+		end) 
 		autoexec.uptime_sub = ms_subscribe("+/uptime", def (topic, payload)
-				print("Berry Got UpTime Report: " + topic + " = " + payload)
+			print("Berry Got UpTime Report: " + topic + " = " + payload)
 		end)
-		autoexec.ha_sub = ms_subscribe("homeassistant/+", def (topic, payload)
-				print("Berry HA Discovery: " + topic + " = " + payload)
+        autoexec.ha_sub = ms_subscribe("homeassistant/+", def (topic,payload) 
+			print("Berry HA Discovery: " + topic + " = " + payload)
 		end)
-		autoexec.con_sub = ms_subscribe("+/connected", def (topic, payload)
-				print("Berry Connected: " + topic + " = " + payload)
+        autoexec.con_sub = ms_subscribe("+/connected", def (topic, payload)
+			print("Berry Connected: " + topic + " = " + payload)
 		end)
         autoexec.sensor_sub = ms_subscribe("stat/+/SENSOR", def (topic, payload)
                 print("Berry SENSOR: " + topic + " = " + payload)
         end)
+        autoexec.stat_sub = ms_subscribe("stat/+/+", def (topic,payload)
+			print("Berry STAT: " + topic + " = " + payload)
+		end)
 end
 
 return autoexec
@@ -59,32 +62,32 @@ return autoexec
 autoexec = module('autoexec')
 
 autoexec.init = def()
-		autoexec.get_sub = ms_subscribe("+/+/get", def (topic, payload)
-				print("Berry GET: " + topic + " = " + payload)
+                autoexec.get_sub = ms_subscribe("+/+/get", def (topic, payload)
+                                print("Berry GET: " + topic + " = " + payload)
+                end)
+end
+
+return autoexec
+
+
+// ============================================
+// NOTE: you don't need to manually call init.
+// Tasmota power sample:
+
+
+autoexec = module('autoexec')
+
+autoexec.init = def()
+        autoexec.power_state_sub = ms_subscribe("stat/+/POWER", def (topic,payload)
+			print("Berry POWER STATE: " + topic + " = " + payload)
 		end)
-end
-
-return autoexec
-
-
-// ============================================
-// NOTE: you don't need to manually call init.
-// Tasmota power sample:
-
-
-autoexec = module('autoexec')
-
-autoexec.init = def()
-	autoexec.power_state_sub = ms_subscribe("stat/+/POWER", def (topic, payload)
-		print("Berry POWER STATE: " + topic + " = " + payload)
-	end)
-	autoexec.power_state_sub = ms_subscribe("stat/+/POWER1", def (topic, payload)
-		print("Berry POWER1 STATE: " + topic + " = " + payload)
-	end)
-	autoexec.power_state_sub = ms_subscribe("stat/+/POWER2", def (topic, payload)
-		print("Berry POWER2 STATE: " + topic + " = " + payload)
-	end)
-end
+        autoexec.power_state_sub = ms_subscribe("stat/+/POWER1", def (topic,payload) 
+			print("Berry POWER1 STATE: " + topic + " = " + payload)
+		end)
+        autoexec.power_state_sub = ms_subscribe("stat/+/POWER2", def (topic,payload)
+			print("Berry POWER2 STATE: " + topic + " = " + payload)
+		end)
+	end
 
 return autoexec
 
@@ -98,10 +101,10 @@ return autoexec
 autoexec = module('autoexec')
 
 autoexec.init = def()
-	autoexec.power_state_sub = ms_subscribe("stat/tasmota_476739/POWER2", def (topic, payload)
-		ms_publish("cmnd/obk_n_rgbcw_e27/POWER",payload);
-		print("Berry POWER STATE: " + topic + " = " + payload)
-	end)
+        autoexec.power_state_sub = ms_subscribe("stat/tasmota_476739/POWER2", def (topic, payload) 
+				ms_publish("cmnd/obk174083A4/POWER",payload);
+                print("Berry POWER STATE: " + topic + " = " + payload)
+        end)
 end
 
 return autoexec
@@ -133,7 +136,7 @@ extern int MQTTS_TopicMatch(const char *topic, const char *filter);
 
 // Called from drv_mqttServer.c on every incoming PUBLISH
 int MQTTS_Berry_OnPublish(const char *topic, const byte *payload,
-                           int payloadLen) {
+                          int payloadLen) {
   if (!g_vm || !g_berrySubs)
     return 0;
 
@@ -148,7 +151,7 @@ int MQTTS_Berry_OnPublish(const char *topic, const byte *payload,
   for (s = g_berrySubs; s; s = s->next) {
     if (MQTTS_TopicMatch(topic, s->topicFilter)) {
       berryRunClosureStr(g_vm, s->closureId, topic, payloadStr);
-	  ran++;
+      ran++;
     }
   }
   return ran;
@@ -220,12 +223,34 @@ static int be_ms_unsubscribe(bvm *vm) {
   be_return(vm);
 }
 
+// Forward-declare from drv_mqttServer.c (non-static for Berry access)
+extern void MQTTS_ForwardPublish(const byte *topicData, int topicLen,
+                                 const byte *payload, int payloadLen,
+                                 void *sender);
+
+// Berry native: ms_publish(topic, payload)
+static int be_ms_publish(bvm *vm) {
+  int top = be_top(vm);
+  if (top < 2 || !be_isstring(vm, 1) || !be_isstring(vm, 2)) {
+    be_return_nil(vm);
+  }
+  const char *topic = be_tostring(vm, 1);
+  const char *payload = be_tostring(vm, 2);
+  int topicLen = strlen(topic);
+  int payloadLen = strlen(payload);
+  MQTTS_ForwardPublish((const byte *)topic, topicLen, (const byte *)payload,
+                       payloadLen, NULL);
+  be_pushbool(vm, btrue);
+  be_return(vm);
+}
+
 // Register Berry native functions
 void MQTTS_Berry_Init() {
   if (!g_vm)
     return;
   be_regfunc(g_vm, "ms_subscribe", be_ms_subscribe);
   be_regfunc(g_vm, "ms_unsubscribe", be_ms_unsubscribe);
+  be_regfunc(g_vm, "ms_publish", be_ms_publish);
   addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "MQTTS Berry: bindings registered");
 }
 
@@ -245,7 +270,9 @@ void MQTTS_Berry_Shutdown() {
 
 // Stubs when Berry or MQTT server is disabled
 int MQTTS_Berry_OnPublish(const char *topic, const byte *payload,
-                           int payloadLen) { return 0; }
+                          int payloadLen) {
+  return 0;
+}
 void MQTTS_Berry_Init() {}
 void MQTTS_Berry_Shutdown() {}
 
