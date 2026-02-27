@@ -284,11 +284,13 @@
 #define ENABLE_DRIVER_HUE						1
 // #define ENABLE_DRIVER_CHARGINGLIMIT			1
 #define ENABLE_DRIVER_BATTERY					1
+#define ENABLE_DRIVER_CHARTS					1
 #if PLATFORM_BK7231N || PLATFORM_BEKEN_NEW
 // #define ENABLE_DRIVER_PWM_GROUP				1
 #define ENABLE_DRIVER_SM16703P					1
 #define ENABLE_DRIVER_PIXELANIM					1
 #define ENABLE_DRIVER_SM15155E					1
+#define ENABLE_DRIVER_CHARTS					1
 
 #endif
 // parse things like $CH1 or $hour etc
