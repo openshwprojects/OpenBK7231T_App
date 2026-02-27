@@ -51,13 +51,17 @@
 
 void HAL_BTProxy_Init(void);
 void HAL_BTProxy_Deinit(void);
+void HAL_BTProxy_StartScan();
+void HAL_BTProxy_StopScan();
 void HAL_BTProxy_GetMAC(uint8_t* mac);
 void HAL_BTProxy_SetScanMode(bool isActive);
 // true - active, false - passive
 bool HAL_BTProxy_GetScanMode(void);
 // in ms
 void HAL_BTProxy_SetWindowInterval(uint16_t window, uint16_t interval);
+void HAL_BTProxy_SetScanRingBufSize(uint16_t new_size);
 
+void HAL_BTProxy_OnEverySecond(void);
 // Send a command to the proxy core queue
 // Returns 0 on success, or an error code if the queue is full
 //int HAL_BTProxy_EnqueueCommand(bt_proxy_cmd_t *cmd);

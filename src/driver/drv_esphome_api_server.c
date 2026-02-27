@@ -228,6 +228,16 @@ static commandResult_t CMD_StopScan(const void* context, const char* cmd, const 
 	return CMD_RES_OK;
 }
 
+static commandResult_t CMD_SetScanRingBufSize(const void* context, const char* cmd, const char* args, int cmdFlags)
+{
+	Tokenizer_TokenizeString(args, 0);
+	int new_size = Tokenizer_GetArgIntegerDefault(0, 32);
+	if(new_size <= 0 || new_size > 0xFFFF)
+		return CMD_RES_BAD_ARGUMENT;
+	HAL_BTProxy_SetScanRingBufSize(new_size & 0xFFFF);
+	return CMD_RES_OK;
+}
+
 #endif
 
 void DRV_ESPHome_API_Init()
@@ -254,6 +264,11 @@ void DRV_ESPHome_API_Init()
 	//cmddetail:"fn":"CMD_StopScan","file":"driver/drv_esphome_api_server.c","requires":"ENABLE_DRIVER_ESPHOME_API && ENABLE_BT_PROXY",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("BTStopScan", CMD_StopScan, NULL);
+	//cmddetail:{"name":"BTSetBufSize","args":"[size]",
+	//cmddetail:"descr":"BT set scan ring buffer size. Will consume 85 bytes of heap for 1 entry",
+	//cmddetail:"fn":"CMD_SetScanRingBufSize","file":"driver/drv_esphome_api_server.c","requires":"ENABLE_DRIVER_ESPHOME_API && ENABLE_BT_PROXY",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("BTSetBufSize", CMD_SetScanRingBufSize, NULL);
 #endif
 
 	OSStatus err = rtos_create_thread(&s_esphome_api_thread, BEKEN_APPLICATION_PRIORITY - 1,

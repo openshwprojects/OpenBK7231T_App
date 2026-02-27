@@ -1,4 +1,4 @@
-#ifdef PLATFORM_RTL8720D
+#if PLATFORM_RTL8720D || PLATFORM_RTL87X0C
 
 #include "../../../new_common.h"
 #include "../../../new_pins.h"
@@ -29,7 +29,11 @@
 
 #if ENABLE_BT_PROXY
 
+#if PLATFORM_RTL8720D
 #define BT_SCAN_RING_SIZE 128
+#else
+#define BT_SCAN_RING_SIZE 16
+#endif
 #define BT_CMD_QUEUE_SIZE 10
 /** @brief Default scan window (units of 0.625ms, 0x520=820ms) */
 #define DEFAULT_SCAN_INTERVAL     0x520
@@ -53,7 +57,8 @@ typedef struct
 	int scan_total_packets;
 	int scan_dropped_packets;
 
-	bt_scan_entry_t scan_ring[BT_SCAN_RING_SIZE];
+	uint16_t scan_ring_size;
+	bt_scan_entry_t* scan_ring;
 	int scan_head;
 	int scan_tail;
 	int scan_count;
@@ -105,8 +110,8 @@ static T_APP_RESULT hal_bt_gap_callback(uint8_t cb_type, void* p_cb_data)
 		for(int i = 0; i < g_bt_proxy.scan_count; i++)
 		{
 			int idx = g_bt_proxy.scan_tail + i;
-			if(idx >= BT_SCAN_RING_SIZE)
-				idx -= BT_SCAN_RING_SIZE;
+			if(idx >= g_bt_proxy.scan_ring_size)
+				idx -= g_bt_proxy.scan_ring_size;
 
 			if(scan_entry_matches(&g_bt_proxy.scan_ring[idx], info))
 			{
@@ -125,15 +130,15 @@ static T_APP_RESULT hal_bt_gap_callback(uint8_t cb_type, void* p_cb_data)
 		{
 			pos = g_bt_proxy.scan_head;
 
-			g_bt_proxy.scan_head = (g_bt_proxy.scan_head + 1) % BT_SCAN_RING_SIZE;
+			g_bt_proxy.scan_head = (g_bt_proxy.scan_head + 1) % g_bt_proxy.scan_ring_size;
 
-			if(g_bt_proxy.scan_count < BT_SCAN_RING_SIZE)
+			if(g_bt_proxy.scan_count < g_bt_proxy.scan_ring_size)
 			{
 				g_bt_proxy.scan_count++;
 			}
 			else
 			{
-				g_bt_proxy.scan_tail = (g_bt_proxy.scan_tail + 1) % BT_SCAN_RING_SIZE;
+				g_bt_proxy.scan_tail = (g_bt_proxy.scan_tail + 1) % g_bt_proxy.scan_ring_size;
 				g_bt_proxy.scan_dropped_packets++;
 			}
 		}
@@ -279,8 +284,10 @@ static void hal_bt_task(void* p_param)
 void HAL_BTProxy_Init(void)
 {
 	if(g_bt_proxy.init_done) return;
+	HAL_BTProxy_Lock();
 	memset(&g_bt_proxy, 0, sizeof(g_bt_proxy));
-
+	g_bt_proxy.scan_ring_size = BT_SCAN_RING_SIZE;
+	g_bt_proxy.scan_ring = os_malloc(sizeof(bt_scan_entry_t) * g_bt_proxy.scan_ring_size);
 	//g_bt_proxy.cmd_queue = xQueueCreate(BT_CMD_QUEUE_SIZE, sizeof(bt_proxy_cmd_t));
 	//if(!g_bt_proxy.cmd_queue)
 	//{
@@ -289,6 +296,8 @@ void HAL_BTProxy_Init(void)
 	//}
 	btq_task_running = true;
 	xTaskCreate(hal_bt_task, "HAL_BT_Task", 1024, NULL, 1, NULL);
+
+	HAL_BTProxy_Unlock();
 
 	g_bt_proxy.init_done = true;
 }
@@ -317,6 +326,8 @@ void HAL_BTProxy_Deinit(void)
 
 	//bte_deinit(); // causes crash
 	bt_trace_uninit();
+
+	if(g_bt_proxy.scan_ring) os_free(g_bt_proxy.scan_ring);
 
 	g_bt_proxy.init_done = false;
 }
@@ -357,6 +368,18 @@ void HAL_BTProxy_SetWindowInterval(uint16_t window, uint16_t interval)
 	le_scan_set_param(GAP_PARAM_SCAN_WINDOW, sizeof(scan_window), &scan_window);
 }
 
+void HAL_BTProxy_SetScanRingBufSize(uint16_t new_size)
+{
+	HAL_BTProxy_Lock();
+	g_bt_proxy.scan_ring_size = new_size;
+	g_bt_proxy.scan_head = 0;
+	g_bt_proxy.scan_tail = 0;
+	g_bt_proxy.scan_count = 0;
+	if(g_bt_proxy.scan_ring) os_free(g_bt_proxy.scan_ring);
+	g_bt_proxy.scan_ring = os_malloc(sizeof(bt_scan_entry_t) * g_bt_proxy.scan_ring_size);
+	HAL_BTProxy_Unlock();
+}
+
 void HAL_BTProxy_OnEverySecond(void)
 {
 	// add check if there were no scan results in 60 seconds, if so - restart scan
@@ -384,7 +407,7 @@ int HAL_BTProxy_PopScanResult(uint8_t* mac, int* rssi, uint8_t* addr_type, uint8
 	if(data_len) *data_len = g_bt_proxy.scan_ring[pos].adv_len > 62 ? 62 : g_bt_proxy.scan_ring[pos].adv_len;
 	if(data && data_len) memcpy(data, g_bt_proxy.scan_ring[pos].data, *data_len);
 
-	g_bt_proxy.scan_tail = (g_bt_proxy.scan_tail + 1) % BT_SCAN_RING_SIZE;
+	g_bt_proxy.scan_tail = (g_bt_proxy.scan_tail + 1) % g_bt_proxy.scan_ring_size;
 	g_bt_proxy.scan_count--;
 
 	return 1;
@@ -419,9 +442,9 @@ int HAL_BTProxy_GetScanEntry(int newest_index, char* mac_buf, int mac_buf_len, i
 	idx = g_bt_proxy.scan_head - 1 - newest_index;
 	while(idx < 0)
 	{
-		idx += BT_SCAN_RING_SIZE;
+		idx += g_bt_proxy.scan_ring_size;
 	}
-	pos = idx % BT_SCAN_RING_SIZE;
+	pos = idx % g_bt_proxy.scan_ring_size;
 	e = g_bt_proxy.scan_ring[pos];
 
 	snprintf(mac_buf, mac_buf_len, MACSTR, MAC2STR(e.bda));

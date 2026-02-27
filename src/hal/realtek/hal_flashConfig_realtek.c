@@ -26,7 +26,7 @@ int HAL_Configuration_SaveConfigMemory(void* src, int dataLen)
 	return 1;
 }
 
-#if PLATFORM_RTL8720D
+#if PLATFORM_RTL8720D || PLATFORM_RTL87X0C
 
 uint32_t ftl_save_to_storage(void* pdata_tmp, uint16_t offset, uint16_t size)
 {
