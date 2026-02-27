@@ -267,8 +267,8 @@ jobs:
 
           # bt proxy
           - platform: OpenBK7238
-            variant: berry
-            gcc: btproxy
+            variant: btproxy
+            gcc: apt
           - platform: OpenBK7231N_ALT
             variant: btproxy
             gcc: apt

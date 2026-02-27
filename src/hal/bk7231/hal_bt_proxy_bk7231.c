@@ -9,14 +9,15 @@
 #include <stdio.h>
 
 #include "include.h"
+
+#if ENABLE_BT_PROXY
+
 #include "ble_api.h"
 
 #if !PLATFORM_BK7238
 #include "common_bt_defines.h"
 extern struct bd_addr common_default_bdaddr;
 #endif
-
-#if ENABLE_BT_PROXY
 
 #define BT_SCAN_RING_SIZE 16
 
