@@ -8,6 +8,8 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#define MAC2STRINV(a) (a)[5], (a)[4], (a)[3], (a)[2], (a)[1], (a)[0]
+
 // Max simultaneous connections (typical constraints: ESP32 ~3-5, ESP32-C3 ~4)
 #define BT_PROXY_MAX_CONNECTIONS 3
 

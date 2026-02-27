@@ -4,6 +4,7 @@
 #include "../hal/hal_wifi.h"
 #include <lwip/sockets.h>
 #include "../new_cfg.h"
+#include "../hal/hal_bt_proxy.h"
 
 #if ENABLE_DRIVER_ESPHOME_API
 
@@ -141,7 +142,7 @@ void ESPHome_API_Send_DeviceInfoResponse(int client_sock)
 #endif
 	flags |= HAL_BTProxy_GetScanMode();
 	pb_encode_varint_field(&ptr, 15, flags); // bluetooth_proxy_feature_flags
-	char btmac[6];
+	uint8_t btmac[6];
 	HAL_BTProxy_GetMAC(btmac);
 	sprintf(mac_str, MACSTR, MAC2STR(btmac));
 	pb_encode_string_field(&ptr, 18, mac_str); // bluetooth_mac_address

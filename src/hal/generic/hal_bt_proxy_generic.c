@@ -45,6 +45,11 @@ void __attribute__((weak)) HAL_BTProxy_SetWindowInterval(uint16_t window, uint16
 
 }
 
+void __attribute__((weak)) HAL_BTProxy_SetScanRingBufSize(uint16_t new_size)
+{
+
+}
+
 void __attribute__((weak)) HAL_BTProxy_OnEverySecond(void)
 {
 

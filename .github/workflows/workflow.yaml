@@ -264,6 +264,17 @@ jobs:
           - platform: OpenBK7238
             variant: battery
             gcc: apt
+
+          # bt proxy
+          - platform: OpenBK7238
+            variant: berry
+            gcc: btproxy
+          - platform: OpenBK7231N_ALT
+            variant: btproxy
+            gcc: apt
+          - platform: OpenRTL87X0C
+            variant: btproxy
+            gcc: apt
     steps:
       - name: Source checkout
         uses: actions/checkout@v4
