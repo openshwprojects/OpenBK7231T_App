@@ -600,5 +600,12 @@
     "descr": "LTR-303/329 ambient light sensor driver.",
     "requires": "",
     "define": "Enabled by defining \"<b>ENABLE_DRIVER_LTR_ALS</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
+  },
+  {
+    "name": "mqttServer",
+    "title": "TODO",
+    "descr": "MQTT Server driver.",
+    "requires": "",
+    "define": "Enabled by defining \"<b>ENABLE_DRIVER_MQTTSERVER</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
   }
 ]

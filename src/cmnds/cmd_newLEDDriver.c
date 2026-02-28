@@ -339,10 +339,16 @@ void LED_RunQuickColorLerp(int deltaMS) {
 	}
 
 	for(i = 0; i < 5; i++) {
-		float ch_rgb_cal = (i < 3)? rgb_used_corr[i] : 1.0f; // adjust change rate with RGB correction in use
-		// This is the most silly and primitive approach, but it works
-		// In future we might implement better lerp algorithms, use HUE, etc
-		led_rawLerpCurrent[i] = Mathf_MoveTowards(led_rawLerpCurrent[i],finalColors[i], deltaSeconds * led_lerpSpeedUnitsPerSecond * ch_rgb_cal);
+		// Directional lerp: apply rgb calibration correction to the step size only when ramping UP.
+		// This keeps channels visually tracking together during fade-in (corrected channel raw value
+		// moves faster to compensate for the cal multiply applied at output time).
+		// When ramping DOWN we use a plain (uncorrected) step so all channels converge to their
+		// target at the same rate - preventing a lower-calibrated channel from lingering visible
+		// after others have reached zero (e.g. red staying on after green/blue go dark).
+		float ch_rgb_cal = (i < 3) ? rgb_used_corr[i] : 1.0f;
+		float bRampingUp = (led_rawLerpCurrent[i] < finalColors[i]) ? 1.0f : 0.0f;
+		float directedCal = 1.0f + (ch_rgb_cal - 1.0f) * bRampingUp; // = ch_rgb_cal when up, = 1.0 when down
+		led_rawLerpCurrent[i] = Mathf_MoveTowards(led_rawLerpCurrent[i], finalColors[i], deltaSeconds * led_lerpSpeedUnitsPerSecond * directedCal);
 	}
 
 	target_value_cold_or_warm = LED_GetTemperature0to1Range() * 100.0f;
