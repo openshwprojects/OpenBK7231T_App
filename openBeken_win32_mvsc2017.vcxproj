@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -244,6 +244,8 @@
     <ClCompile Include="src\driver\drv_max72xx_internal.c" />
     <ClCompile Include="src\driver\drv_max72xx_single.c" />
     <ClCompile Include="src\driver\drv_mcp9808.c" />
+    <ClCompile Include="src\driver\drv_mqttServer.c" />
+    <ClCompile Include="src\driver\drv_mqttServerBerry.c" />
     <ClCompile Include="src\driver\drv_multiPinI2CScanner.c" />
     <ClCompile Include="src\driver\drv_ntp.c" />
     <ClCompile Include="src\driver\drv_deviceclock.c" />
