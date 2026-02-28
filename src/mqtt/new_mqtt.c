@@ -1094,7 +1094,7 @@ static void mqtt_incoming_publish_cb(void* arg, const char* topic, u32_t tot_len
 	for (i = 0; i < numCallbacks; i++)
 	{
 		char* cbtopic = callbacks[i]->topic;
-		if (strncmp(topic, cbtopic, strlen(cbtopic)))
+		if (!strncmp(topic, cbtopic, strlen(cbtopic)))
 		{
 			strncpy(g_mqtt_request.topic, topic, sizeof(g_mqtt_request.topic) - 1);
 			g_mqtt_request.topic[sizeof(g_mqtt_request.topic) - 1] = 0;
