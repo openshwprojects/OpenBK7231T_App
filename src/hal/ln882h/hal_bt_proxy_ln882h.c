@@ -1,4 +1,4 @@
-#if PLATFORM_BEKEN_NEW
+#if PLATFORM_LN882H
 
 #include "../../new_common.h"
 #include "../../new_pins.h"
@@ -8,16 +8,25 @@
 #include <string.h>
 #include <stdio.h>
 
-#include "include.h"
-
 #if ENABLE_BT_PROXY
 
-#include "ble_api.h"
+#include "ln_utils.h"
+#include "ln_misc.h"
+#include "utils/power_mgmt/ln_pm.h"
+#include "gapm_task.h"
+#include "gapc_task.h"
+#include "gattc_task.h"
+#include "gattm_task.h"
+#include "gap.h"
 
-#if !PLATFORM_BK7238
-#include "common_bt_defines.h"
-extern struct bd_addr common_default_bdaddr;
-#endif
+#include "ln_ble_gap.h"
+#include "ln_ble_gatt.h"
+#include "ln_ble_scan.h"
+#include "ln_ble_rw_app_task.h"
+#include "ln_ble_app_kv.h"
+#include "ln_ble_connection_manager.h"
+#include "ln_ble_event_manager.h"
+#include "ln_ble_smp.h"
 
 #define BT_SCAN_RING_SIZE 64
 
@@ -55,89 +64,84 @@ extern unsigned int g_timeMs;
 static hal_bt_state_t g_bt_proxy = { 0 };
 
 static int g_bleStackReady = 0;
-static uint8_t g_bleScanActvIdx = 0xFF;
-static uint16_t g_bleScanInterval = 100;
-static uint16_t g_bleScanWindow = 30;
+static uint16_t g_bleScanInterval = 0x80;//= 0x63; // 100.8ms
+static uint16_t g_bleScanWindow = 0x40;//= 0x25; // 40ms
 static bool scan_mode = false; // passive - false, active - true
 
-static int scan_entry_matches(bt_scan_entry_t* e, recv_adv_t* info)
+static int scan_entry_matches(bt_scan_entry_t* e, ble_evt_scan_report_t* info)
 {
-	if(memcmp(e->bda, info->adv_addr, 6) != 0)
+	if(memcmp(e->bda, info->trans_addr, 6) != 0)
 		return 0;
 
-	if(e->adv_len != info->data_len)
+	if(e->adv_len != info->length)
 		return 0;
 
-	if(e->evt_type != info->evt_type)
+	if(e->evt_type != info->info)
 		return 0;
 
-	if(memcmp(e->data, info->data, info->data_len) != 0)
+	if(memcmp(e->data, info->data, info->length) != 0)
 		return 0;
 
 	return 1;
 }
 
-static void hal_bt_gap_callback(ble_notice_t notice, void* param)
+static void hal_bt_gap_callback(void* param)
 {
-	if(!param) return;
-	if(notice == BLE_5_REPORT_ADV)
+	ble_evt_scan_report_t* info = (ble_evt_scan_report_t*)param;
+	HAL_BTProxy_Lock();
+
+	int found = -1;
+	
+	for(int i = 0; i < g_bt_proxy.scan_count; i++)
 	{
-		recv_adv_t* info = (recv_adv_t*)param;
-		HAL_BTProxy_Lock();
-
-		int found = -1;
-
-		for(int i = 0; i < g_bt_proxy.scan_count; i++)
+		int idx = g_bt_proxy.scan_tail + i;
+		if(idx >= g_bt_proxy.scan_ring_size)
+			idx -= g_bt_proxy.scan_ring_size;
+	
+		if(scan_entry_matches(&g_bt_proxy.scan_ring[idx], info))
 		{
-			int idx = g_bt_proxy.scan_tail + i;
-			if(idx >= g_bt_proxy.scan_ring_size)
-				idx -= g_bt_proxy.scan_ring_size;
-
-			if(scan_entry_matches(&g_bt_proxy.scan_ring[idx], info))
-			{
-				found = idx;
-				break;
-			}
+			found = idx;
+			break;
 		}
+	}
+	
+	int pos;
+	
+	if(found >= 0)
+	{
+		pos = found;
+	}
+	else
+	{
+		pos = g_bt_proxy.scan_head;
 
-		int pos;
+		g_bt_proxy.scan_head = (g_bt_proxy.scan_head + 1) % g_bt_proxy.scan_ring_size;
 
-		if(found >= 0)
+		if(g_bt_proxy.scan_count < g_bt_proxy.scan_ring_size)
 		{
-			pos = found;
+			g_bt_proxy.scan_count++;
 		}
 		else
 		{
-			pos = g_bt_proxy.scan_head;
-
-			g_bt_proxy.scan_head = (g_bt_proxy.scan_head + 1) % g_bt_proxy.scan_ring_size;
-
-			if(g_bt_proxy.scan_count < g_bt_proxy.scan_ring_size)
-			{
-				g_bt_proxy.scan_count++;
-			}
-			else
-			{
-				g_bt_proxy.scan_tail = (g_bt_proxy.scan_tail + 1) % g_bt_proxy.scan_ring_size;
-				g_bt_proxy.scan_dropped_packets++;
-			}
+			g_bt_proxy.scan_tail = (g_bt_proxy.scan_tail + 1) % g_bt_proxy.scan_ring_size;
+			g_bt_proxy.scan_dropped_packets++;
 		}
-
-		memcpy(g_bt_proxy.scan_ring[pos].bda, info->adv_addr, 6);
-		g_bt_proxy.scan_ring[pos].rssi = (int)(int8_t)info->rssi;
-		g_bt_proxy.scan_ring[pos].addr_type = info->adv_addr_type;
-		g_bt_proxy.scan_ring[pos].adv_len = info->data_len;
-		g_bt_proxy.scan_ring[pos].evt_type = info->evt_type;
-
-		int copy_len = info->data_len > 31 ? 31 : info->data_len;
-		memcpy(g_bt_proxy.scan_ring[pos].data, info->data, copy_len);
-
-		g_bt_proxy.scan_ring[pos].ts_ms = g_timeMs;
-
-		g_bt_proxy.scan_total_packets++;
-
-		HAL_BTProxy_Unlock();
 	}
+
+	memcpy(g_bt_proxy.scan_ring[pos].bda, info->trans_addr, 6);
+	g_bt_proxy.scan_ring[pos].rssi = info->rssi  -128;
+	g_bt_proxy.scan_ring[pos].addr_type = info->trans_addr_type;
+	g_bt_proxy.scan_ring[pos].adv_len = info->length;
+	g_bt_proxy.scan_ring[pos].evt_type = info->info;
+
+	int copy_len = info->length > 31 ? 31 : info->length;
+	memcpy(g_bt_proxy.scan_ring[pos].data, info->data, copy_len);
+
+	g_bt_proxy.scan_ring[pos].ts_ms = g_timeMs;
+
+	g_bt_proxy.scan_total_packets++;
+
+	HAL_BTProxy_Unlock();
 }
 
 static void HAL_BTScan_EnsureStackReady()
@@ -146,18 +150,58 @@ static void HAL_BTScan_EnsureStackReady()
 	{
 		return;
 	}
-
+	ln_kv_ble_app_init();
+	*(volatile int*)(0x400121F8) = 0x003F; // BLE default PTI == 0, wifi first
+	soc_module_clk_gate_enable(CLK_G_BLE);
 	extern void ble_entry(void);
-	ble_set_notice_cb(hal_bt_gap_callback);
-	ble_entry();
+	ln_bd_addr_t bt_addr = { 0 };
+	ln_bd_addr_t* kv_addr = ln_kv_ble_pub_addr_get();
+	memcpy(&bt_addr, kv_addr, sizeof(ln_bd_addr_t));
+	ln_bd_addr_t static_addr = { BLE_DEFAULT_PUBLIC_ADDR };
+	
+	if(!memcmp(kv_addr->addr, static_addr.addr, LN_BD_ADDR_LEN))
+	{
+		ln_generate_random_mac(bt_addr.addr);
+		bt_addr.addr[5] |= 0xC0;
+		ln_kv_ble_addr_store(bt_addr);
+	}
+	//sysparam_sta_mac_get(bt_addr.addr);
+
+	extern void rw_init(uint8_t mac[6]);
+	rw_init(bt_addr.addr);
+
+	ln_gap_app_init();
+	ln_gatt_app_init();
+
+	ln_ble_conn_mgr_init();
+	ln_ble_evt_mgr_init();
+	ln_ble_smp_init();
+
+	//ln_ble_adv_mgr_init();
+	//ln_ble_trans_svr_init();
+	ln_ble_scan_mgr_init();
+
+	ln_rw_app_task_init();
+
+	ln_gap_reset();
+
+	ln_ble_evt_mgr_reg_evt(BLE_EVT_ID_SCAN_REPORT, hal_bt_gap_callback);
+
+	rtos_delay_milliseconds(100);
+
+	ln_ble_scan_actv_creat();
+	//ln_ble_init_actv_creat();
+
+	rtos_delay_milliseconds(10);
+	ln_ble_scan_start(&le_scan_mgr_info_get()->scan_param);
+	rtos_delay_milliseconds(10);
+	ln_ble_scan_stop();
 	g_bleStackReady = 1;
 	ADDLOG_INFO(LOG_FEATURE_GENERAL, "BLE scan stack initialized");
 }
 
 void HAL_BTProxy_StartScan()
 {
-	struct scan_param scan;
-	ble_err_t ret;
 	if(g_bt_proxy.scan_active)
 	{
 		ADDLOG_INFO(LOG_FEATURE_GENERAL, "Scan is processing, please stop it first");
@@ -165,44 +209,27 @@ void HAL_BTProxy_StartScan()
 	else
 	{
 		HAL_BTScan_EnsureStackReady();
-		memset(&scan, 0, sizeof(scan));
-		//scan.filter_en = SCAN_FILT_DUPLIC_EN;
-		scan.channel_map = 7;
-		scan.interval = g_bleScanInterval;
-		scan.window = g_bleScanWindow;
-		scan.active = (uint8_t)scan_mode;
+		le_scan_parameters_t* scan_p = &le_scan_mgr_info_get()->scan_param;
 
-		g_bleScanActvIdx = app_ble_get_idle_actv_idx_handle(SCAN_ACTV);
-		if(g_bleScanActvIdx == 0xFF)
+		//scan_p->dup_filt_pol = GAPM_DUP_FILT_EN;
+		scan_p->scan_intv = g_bleScanInterval;
+		scan_p->scan_wd = g_bleScanWindow;
+		scan_p->type = GAPM_SCAN_TYPE_OBSERVER;
+		scan_p->prop = GAPM_SCAN_PROP_PHY_1M_BIT | GAPM_SCAN_PROP_PHY_CODED_BIT;
+		if(scan_mode)
 		{
-			ADDLOG_ERROR(LOG_FEATURE_GENERAL, "BLE scan failed - no idle activity");
-			return;
+			scan_p->prop |= GAPM_SCAN_PROP_ACTIVE_1M_BIT | GAPM_SCAN_PROP_ACTIVE_CODED_BIT;
 		}
-
-		ret = bk_ble_scan_start(g_bleScanActvIdx, &scan, NULL);
-		if(ret != ERR_SUCCESS)
-		{
-			ADDLOG_ERROR(LOG_FEATURE_GENERAL, "BLE scan start failed (err %d)", ret);
-			g_bleScanActvIdx = 0xFF;
-			return;
-		}
-
+		ln_ble_scan_start(&le_scan_mgr_info_get()->scan_param);
 		g_bt_proxy.scan_active = true;
 	}
 }
 
 void HAL_BTProxy_StopScan()
 {
-	ble_err_t ret;
 	if(g_bt_proxy.scan_active)
 	{
-		ret = bk_ble_scan_stop(g_bleScanActvIdx, NULL);
-		if(ret != ERR_SUCCESS)
-		{
-			ADDLOG_ERROR(LOG_FEATURE_GENERAL, "BLE scan stop failed (err %d)", ret);
-			return;
-		}
-		g_bleScanActvIdx = 0xFF;
+		ln_ble_scan_stop();
 		g_bt_proxy.scan_active = false;
 	}
 	else
@@ -239,11 +266,8 @@ void HAL_BTProxy_Deinit(void)
 
 void HAL_BTProxy_GetMAC(uint8_t* mac)
 {
-	uint8_t* btmac = &common_default_bdaddr.addr[0];
-	for(int i = 0; i < 6; i++)
-	{
-		mac[i] = btmac[5 - i];
-	}
+	ln_bd_addr_t* kv_addr = ln_kv_ble_pub_addr_get();
+	memcpy(mac, kv_addr->addr, 6);
 	uint8_t zero_mac[6] = { 0 };
 	uint8_t ff_mac[6] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
 	if(memcmp(mac, zero_mac, 6) == 0 || memcmp(mac, ff_mac, 6) == 0)
@@ -256,7 +280,7 @@ void HAL_BTProxy_SetScanMode(bool isActive)
 {
 	scan_mode = isActive;
 	HAL_BTProxy_StopScan();
-	delay_ms(1);
+	rtos_delay_milliseconds(10);
 	HAL_BTProxy_StartScan();
 }
 
@@ -267,10 +291,11 @@ bool HAL_BTProxy_GetScanMode(void)
 
 void HAL_BTProxy_SetWindowInterval(uint16_t window, uint16_t interval)
 {
-	g_bleScanInterval = interval;
-	g_bleScanWindow = window;
+	// convert from ms
+	g_bleScanInterval =  (uint16_t)((interval * 16) / 10);
+	g_bleScanWindow = (uint16_t)((window * 16) / 10);
 	HAL_BTProxy_StopScan();
-	delay_ms(1);
+	rtos_delay_milliseconds(10);
 	HAL_BTProxy_StartScan();
 }
 

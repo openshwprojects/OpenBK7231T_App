@@ -87,6 +87,9 @@ static int scan_entry_matches(bt_scan_entry_t* e, T_LE_SCAN_INFO* info)
 	if(e->evt_type != info->adv_type)
 		return 0;
 
+	if(memcmp(e->data, info->data, info->data_len) != 0)
+		return 0;
+
 	return 1;
 }
 
