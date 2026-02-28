@@ -58,7 +58,7 @@ static int g_bleStackReady = 0;
 static uint8_t g_bleScanActvIdx = 0xFF;
 static uint16_t g_bleScanInterval = 100;
 static uint16_t g_bleScanWindow = 30;
-static bool scan_mode = false;
+static bool scan_mode = false; // passive - false, active - true
 
 static int scan_entry_matches(bt_scan_entry_t* e, recv_adv_t* info)
 {
@@ -166,7 +166,7 @@ void HAL_BTProxy_StartScan()
 		scan.channel_map = 7;
 		scan.interval = g_bleScanInterval;
 		scan.window = g_bleScanWindow;
-		//scan.scan_type = scan_mode;
+		scan.active = (uint8_t)scan_mode;
 
 		g_bleScanActvIdx = app_ble_get_idle_actv_idx_handle(SCAN_ACTV);
 		if(g_bleScanActvIdx == 0xFF)
@@ -182,6 +182,7 @@ void HAL_BTProxy_StartScan()
 			g_bleScanActvIdx = 0xFF;
 			return;
 		}
+
 		g_bt_proxy.scan_active = true;
 	}
 }
@@ -251,6 +252,7 @@ void HAL_BTProxy_SetScanMode(bool isActive)
 {
 	scan_mode = isActive;
 	HAL_BTProxy_StopScan();
+	delay_ms(1);
 	HAL_BTProxy_StartScan();
 }
 
@@ -264,6 +266,7 @@ void HAL_BTProxy_SetWindowInterval(uint16_t window, uint16_t interval)
 	g_bleScanInterval = interval;
 	g_bleScanWindow = window;
 	HAL_BTProxy_StopScan();
+	delay_ms(1);
 	HAL_BTProxy_StartScan();
 }
 
