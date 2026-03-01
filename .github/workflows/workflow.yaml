@@ -275,6 +275,9 @@ jobs:
           - platform: OpenRTL87X0C
             variant: btproxy
             gcc: apt
+          - platform: OpenLN882H
+            variant: btproxy
+            gcc: 10.3-2021.10
     steps:
       - name: Source checkout
         uses: actions/checkout@v4

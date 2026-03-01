@@ -8,6 +8,7 @@
 #include "serial_hw.h"
 #include "hal/hal_misc.h"
 #include "hal_pinmap_ln882h.h"
+#include "utils/power_mgmt/ln_pm.h"
 
 static bool isInitialized;
 int g_urx_pin = 3;
@@ -26,6 +27,10 @@ int HAL_UART_Init(int baud, int parity, bool hwflowc, int txOverride, int rxOver
 		hal_misc_reset_uart2();
 		NVIC_ClearPendingIRQ(UART2_IRQn);
 		NVIC_DisableIRQ(UART2_IRQn);
+	}
+	else
+	{
+		soc_module_clk_gate_enable(CLK_G_UART2);
 	}
 
 	uart_init_t_def uart_init_struct;

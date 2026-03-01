@@ -46,7 +46,7 @@ typedef struct
 	int adv_len;
 	uint8_t addr_type;
 	int evt_type;
-	uint8_t data[62];
+	uint8_t data[31];
 	uint32_t ts_ms;
 } bt_scan_entry_t;
 
@@ -147,7 +147,7 @@ static T_APP_RESULT hal_bt_gap_callback(uint8_t cb_type, void* p_cb_data)
 		g_bt_proxy.scan_ring[pos].adv_len = info->data_len;
 		g_bt_proxy.scan_ring[pos].evt_type = info->adv_type;
 
-		int copy_len = info->data_len > 62 ? 62 : info->data_len;
+		int copy_len = info->data_len > 31 ? 31 : info->data_len;
 		memcpy(g_bt_proxy.scan_ring[pos].data, info->data, copy_len);
 
 		g_bt_proxy.scan_ring[pos].ts_ms = g_timeMs;

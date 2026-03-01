@@ -265,7 +265,7 @@ void DRV_ESPHome_API_Init()
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("BTStopScan", CMD_StopScan, NULL);
 	//cmddetail:{"name":"BTSetBufSize","args":"[size]",
-	//cmddetail:"descr":"BT set scan ring buffer size. Will consume 85 bytes of heap for 1 entry",
+	//cmddetail:"descr":"BT set scan ring buffer size. Will consume 54 bytes of heap for 1 entry",
 	//cmddetail:"fn":"CMD_SetScanRingBufSize","file":"driver/drv_esphome_api_server.c","requires":"ENABLE_DRIVER_ESPHOME_API && ENABLE_BT_PROXY",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("BTSetBufSize", CMD_SetScanRingBufSize, NULL);
