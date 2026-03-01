@@ -269,17 +269,17 @@ tuyaMCUPacket_t *TUYAMCU_AddToQueue(int len) {
 		tm_emptyPackets = toUse->next;
 
 		if (len > toUse->allocated) {
-			toUse->data = os_realloc(toUse->data, len);
+			toUse->data = realloc(toUse->data, len);
 			toUse->allocated = len;
 		}
 	}
 	else {
-		toUse = os_malloc(sizeof(tuyaMCUPacket_t));
+		toUse = malloc(sizeof(tuyaMCUPacket_t));
 		int toAlloc = 128;
 		if (len > toAlloc)
 			toAlloc = len;
 		toUse->allocated = toAlloc;
-		toUse->data = os_malloc(toUse->allocated);
+		toUse->data = malloc(toUse->allocated);
 	}
 	toUse->size = len;
 	if (tm_sendPackets == 0) {
@@ -344,7 +344,7 @@ tuyaMCUMapping_t* TuyaMCU_MapIDToChannel(int dpId, int dpType, int channel, int 
 	cur = TuyaMCU_FindDefForID(dpId);
 
 	if (cur == 0) {
-		cur = (tuyaMCUMapping_t*)os_malloc(sizeof(tuyaMCUMapping_t));
+		cur = (tuyaMCUMapping_t*)malloc(sizeof(tuyaMCUMapping_t));
 		cur->next = g_tuyaMappings;
 		cur->rawData = 0;
 		cur->rawDataLen = 0;
@@ -1504,7 +1504,7 @@ void TuyaMCU_PublishDPToMQTT(const byte *data, int ofs) {
 	// really it's just +1 for NULL character but let's keep more space
 	strLen = sectorLen * 2 + 16;
 	if (g_tuyaMCUpayloadBufferSize < strLen) {
-		g_tuyaMCUpayloadBuffer = os_realloc(g_tuyaMCUpayloadBuffer, strLen);
+		g_tuyaMCUpayloadBuffer = realloc(g_tuyaMCUpayloadBuffer, strLen);
 		g_tuyaMCUpayloadBufferSize = strLen;
 	}
 	s = (char*)g_tuyaMCUpayloadBuffer;
@@ -1582,7 +1582,7 @@ void TuyaMCU_PublishDPToBerry(const byte *data, int ofs) {
 	// really it's just +1 for NULL character but let's keep more space
 	strLen = sectorLen * 2 + 16;
 	if (g_tuyaMCUpayloadBufferSize < strLen) {
-		g_tuyaMCUpayloadBuffer = os_realloc(g_tuyaMCUpayloadBuffer, strLen);
+		g_tuyaMCUpayloadBuffer = realloc(g_tuyaMCUpayloadBuffer, strLen);
 		g_tuyaMCUpayloadBufferSize = strLen;
 	}
 	s = (char*)g_tuyaMCUpayloadBuffer;
@@ -1667,7 +1667,7 @@ void TuyaMCU_ParseStateMessage(const byte* data, int len) {
 				// add space for NULL terminating character
 				int useLen = sectorLen + 1;
 				if (mapping->rawBufferSize < useLen) {
-					byte *tmp = (byte*)os_realloc(mapping->rawData, useLen);
+					byte *tmp = (byte*)realloc(mapping->rawData, useLen);
 					if (tmp == NULL) {
 						addLogAdv(LOG_ERROR, LOG_FEATURE_TUYAMCU,
 							"ParseState: ERROR: realloc failed for rawData (dpId=%i type=%i-%s need=%i)\n",
@@ -2707,19 +2707,19 @@ void TuyaMCU_Shutdown() {
 		nxt = tmp->next;
 		// free rawData if allocated
 		if (tmp->rawData) {
-			os_free(tmp->rawData);
+			free(tmp->rawData);
 			tmp->rawData = NULL;
 			tmp->rawBufferSize = 0;
 			tmp->rawDataLen = 0;
 		}
-		os_free(tmp);
+		free(tmp);
 		tmp = nxt;
 	}
 	g_tuyaMappings = NULL;
 
 	// free the tuyaMCUpayloadBuffer
 	if (g_tuyaMCUpayloadBuffer) {
-		os_free(g_tuyaMCUpayloadBuffer);
+		free(g_tuyaMCUpayloadBuffer);
 		g_tuyaMCUpayloadBuffer = NULL;
 		g_tuyaMCUpayloadBufferSize = 0;
 	}
@@ -2729,12 +2729,12 @@ void TuyaMCU_Shutdown() {
 	while (packet) {
 		next_packet = packet->next;
 		if (packet->data) {
-			os_free(packet->data);
+			free(packet->data);
 			packet->data = NULL;
 			packet->allocated = 0;
 			packet->size = 0;
 		}
-		os_free(packet);
+		free(packet);
 		packet = next_packet;
 	}
 	tm_emptyPackets = NULL;
@@ -2744,12 +2744,12 @@ void TuyaMCU_Shutdown() {
 	while (packet) {
 		next_packet = packet->next;
 		if (packet->data) {
-			os_free(packet->data);
+			free(packet->data);
 			packet->data = NULL;
 			packet->allocated = 0;
 			packet->size = 0;
 		}
-		os_free(packet);
+		free(packet);
 		packet = next_packet;
 	}
 	tm_sendPackets = NULL;
@@ -2769,7 +2769,7 @@ void TuyaMCU_Init()
 	g_tuyaMCUConfirmationsToSend_0x08 = 0;
 	if (g_tuyaMCUpayloadBuffer == 0) {
 		g_tuyaMCUpayloadBufferSize = TUYAMCU_BUFFER_SIZE;
-		g_tuyaMCUpayloadBuffer = (byte*)os_malloc(TUYAMCU_BUFFER_SIZE);
+		g_tuyaMCUpayloadBuffer = (byte*)malloc(TUYAMCU_BUFFER_SIZE);
 	}
 
 	UART_InitUART(g_baudRate, 0, false);
