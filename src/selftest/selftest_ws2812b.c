@@ -585,7 +585,23 @@ void Test_WS2812B() {
 #endif
 }
 
+void Test_WS2812B_misc() {
+	// reset whole device
+	SIM_ClearOBK(0);
+
+	CMD_ExecuteCommand("startDriver SM16703P", 0);
+	CMD_ExecuteCommand("setChannel 6 60", 0);
+	CMD_ExecuteCommand("SM16703P_Init $CH6", 0);
+	CMD_ExecuteCommand("SM16703P_SetPixel all 255 0 128", 0);
+	for(int i = 0; i < 60; i++) {
+		SELFTEST_ASSERT_PIXEL(i, 255, 0, 128);
+	}
+
+
+}
+
 void Test_LEDstrips() {
+	Test_WS2812B_misc();
 	Test_DMX_RGB();
 	Test_DMX_RGBC();
 	Test_DMX_RGBW();

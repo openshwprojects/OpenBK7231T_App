@@ -988,7 +988,7 @@ typedef enum {
 	char reason[26];
 	bl_sys_rstinfo_getsting(reason);
 	hprintf255(request, "<h5>Reboot reason: %s</h5>", reason);
-#elif PLATFORM_LN882H
+#elif PLATFORM_LN882H || PLATFORM_LN8825
 	// type is chip_reboot_cause_t
 	g_rebootReason = ln_chip_get_reboot_cause();
 	{
@@ -1346,7 +1346,9 @@ int http_fn_cfg_webapp(http_request_t* request) {
 	hprintf255(request, "<label for=\"enable_web_server\">Web Server Enabled</label><br>");
 #endif
 
-	poststr(request, SUBMIT_AND_END_FORM);
+	poststr(request, "<br><input type=\"submit\" value=\"Submit\">");
+	poststr(request, "<br><input class=\"bgrn\" type=\"submit\" value=\"Reset to default\" onclick=\"if(!confirm('Reset WebApp URL to default?')) return false; document.getElementById('url').value='https://openbekeniot.github.io/webapp/'; return true;\">");
+	poststr(request, "</form>");
 	poststr(request, htmlFooterReturnToCfgOrMainPage);
 	http_html_end(request);
 	poststr(request, NULL);
@@ -1565,14 +1567,14 @@ int http_fn_cfg_wifi(http_request_t* request) {
 </form>");
 	poststr_h2(request, "Use this to connect to your WiFi");
 	add_label_text_field(request, "SSID", "ssid", CFG_GetWiFiSSID(), "<form action=\"/cfg_wifi_set\">");
-	add_label_password_field(request, "", "pass", CFG_GetWiFiPass(), "<br>Password<span  style=\"float:right;\"><input type=\"checkbox\" onclick=\"e=getElement('pass');if(this.checked){e.value='';e.type='text'}else e.type='password'\" > enable clear text password (clears existing)</span>");
+	add_label_password_field(request, "", "pass", CFG_GetWiFiPass(), "<br>Password<span  style=\"float:right;\"><input type=\"checkbox\" onclick=\"e=getElement('pass');if(this.checked){e.type='text'}else e.type='password'\" > enable clear text password</span>");
 	poststr_h2(request, "Alternate WiFi (used when first one is not responding)");
 	poststr(request, "Note: It is possible to retain used SSID using command setStartupSSIDChannel in early.bat");
 #ifndef PLATFORM_BEKEN
 	poststr_h2(request, "SSID2 only on Beken Platform (BK7231T, BK7231N)");
 #endif
 	add_label_text_field(request, "SSID2", "ssid2", CFG_GetWiFiSSID2(), "");
-	add_label_password_field(request, "", "pass2", CFG_GetWiFiPass2(), "<br>Password2<span  style=\"float:right;\"><input type=\"checkbox\" onclick=\"e=getElement('pass2');if(this.checked){e.value='';e.type='text'}else e.type='password'\" > enable clear text password (clears existing)</span>");
+	add_label_password_field(request, "", "pass2", CFG_GetWiFiPass2(), "<br>Password2<span  style=\"float:right;\"><input type=\"checkbox\" onclick=\"e=getElement('pass2');if(this.checked){e.type='text'}else e.type='password'\" > enable clear text password</span>");
 #if ALLOW_WEB_PASSWORD
 	int web_password_enabled = strcmp(CFG_GetWebPassword(), "") == 0 ? 0 : 1;
 	poststr_h2(request, "Web Authentication");
@@ -2384,6 +2386,11 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 			case ChType_Enum:
 			{			
 				dev_info = hass_createEnumChannelInfo(i);
+			}
+			break;
+			case ChType_Illuminance_div10:
+			{
+				dev_info = hass_init_sensor_device_info(ILLUMINANCE_SENSOR, i, 2, 1, 1);
 			}
 			break;
 			default:

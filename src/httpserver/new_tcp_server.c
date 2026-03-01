@@ -85,12 +85,13 @@ static void tcp_client_thread(tcp_thread_t* arg)
 		}
 		// grow by INCOMING_BUFFER_SIZE
 		request.receivedLenmax += INCOMING_BUFFER_SIZE;
-		request.received = (char*)realloc(request.received, request.receivedLenmax + 2);
-		if(request.received == NULL)
+		char *newbuf = (char*)realloc(request.received, request.receivedLenmax + 2);
+		if(newbuf == NULL)
 		{
 			// no memory
 			goto exit;
 		}
+		request.received = buf = newbuf;
 	}
 	request.received[request.receivedLen] = 0;
 

@@ -493,7 +493,47 @@ void Test_EnergyMeter_Limits() {
 	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_FLOAT("powerDevice/power_apparent/get", 696.0f, false);
 
 }
+void Test_EnergyMeter_ResetBug() {
+	SIM_ClearOBK(0);
+	SIM_ClearAndPrepareForMQTTTesting("miscDevice", "bekens");
+
+	PIN_SetPinRoleForPinIndex(9, IOR_Relay);
+	PIN_SetPinChannelForPinIndex(9, 1);
+
+	CMD_ExecuteCommand("startDriver TESTPOWER", 0);
+	// 230V, 10A, 2300W, 50Hz
+	CMD_ExecuteCommand("SetupTestPower 230 10 2300 50 0", 0);
+	CMD_ExecuteCommand("SetupEnergyStats 1 60 60 0", 0);
+
+	// Run for a while to accumulate energy
+	// 100 seconds at 2300W
+	// 2300W * 100s = 230,000 Joules
+	// 230,000 / 3600 = 63.88 Wh
+	Sim_RunSeconds(100, false);
+
+	// Verify we have some energy
+	// $energy is in kWh for TOTAL
+	// 63.88 Wh = 0.06388 kWh
+	// So $energy is > 0.06 but < 0.07
+	SELFTEST_ASSERT_EXPRESSION("$energy>0.06", 1);
+	SELFTEST_ASSERT_EXPRESSION("$energy<0.07", 1);
+	SELFTEST_ASSERT_EXPRESSION("$today>0.06", 1);
+	SELFTEST_ASSERT_EXPRESSION("$yesterday==0", 1);
+
+	// reset with 0???
+	CMD_ExecuteCommand("EnergyCntReset", 0);
+
+	// Verify TOTAL is 0
+	SELFTEST_ASSERT_EXPRESSION("$energycounter", 0);
+
+	// Verify TODAY is 0
+	SELFTEST_ASSERT_EXPRESSION("$today", 0);
+	SELFTEST_ASSERT_EXPRESSION("$yesterday", 0);
+
+	SIM_ClearMQTTHistory();
+}
 void Test_EnergyMeter() {
+	Test_EnergyMeter_ResetBug();
 	Test_EnergyMeter_CSE7766();
 #ifndef LINUX
 	// TODO: fix on Linux

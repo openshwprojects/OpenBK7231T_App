@@ -51,6 +51,8 @@ int main(void)
 	wlan_network();
 	//sys_jtag_off();
 
+	__libc_init_array();
+
 	xTaskCreate(
 		obk_task,
 		"OpenBeken",

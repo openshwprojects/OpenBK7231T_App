@@ -13,6 +13,7 @@ SRC_C  += $(OBK_DIR)/src/hal/realtek/rtl87x0c/hal_uart_rtl87x0c.c
 SRC_C  += $(OBK_DIR)/src/hal/realtek/hal_flashConfig_realtek.c
 SRC_C  += $(OBK_DIR)/src/hal/realtek/hal_flashVars_realtek.c
 SRC_C  += $(OBK_DIR)/src/hal/realtek/hal_generic_realtek.c
+SRC_C  += $(OBK_DIR)/src/hal/realtek/hal_hwtimer_realtek.c
 SRC_C  += $(OBK_DIR)/src/hal/realtek/hal_pins_realtek.c
 SRC_C  += $(OBK_DIR)/src/hal/realtek/hal_wifi_realtek.c
 SRC_C  += $(OBK_DIR)/src/hal/realtek/hal_ota_realtek.c
@@ -21,7 +22,7 @@ OBK_SRCS = $(OBK_DIR)/src/
 include $(OBK_DIR)/platforms/obk_main.mk
 SRC_C += $(OBKM_SRC)
 SRC_CPP += $(OBKM_SRC_CXX)
-CFLAGS += $(OBK_CFLAGS)
+CFLAGS += $(OBK_CFLAGS) -D__FILE__=\"\" -Wno-builtin-macro-redefined
 CPPFLAGS += $(INCLUDES) -fpermissive
 
 SRC_C += $(OBK_DIR)/libraries/easyflash/ports/ef_port.c

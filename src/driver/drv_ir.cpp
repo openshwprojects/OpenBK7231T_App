@@ -6,19 +6,19 @@
 extern "C" {
     // these cause error: conflicting declaration of 'int bk_wlan_mcu_suppress_and_sleep(unsigned int)' with 'C' linkage
     #include "../new_common.h"
-
+#include "../new_pins.h"
+#include "../new_cfg.h"
+#include "../logging/logging.h"
+#include "../obk_config.h"
+#include "../cmnds/cmd_public.h"
+#include "../hal/hal_hwtimer.h"
+#include "../hal/hal_pins.h"
+#include "../mqtt/new_mqtt.h"
+#if PLATFORM_BEKEN
     #include "include.h"
     #include "arm_arch.h"
-    #include "../new_pins.h"
-    #include "../new_cfg.h"
-    #include "../logging/logging.h"
-    #include "../obk_config.h"
-    #include "../cmnds/cmd_public.h"
     #include "bk_timer_pub.h"
     #include "drv_model_pub.h"
-
-    // why can;t I call this?
-    #include "../mqtt/new_mqtt.h"
 
     #include <gpio_pub.h>
     //#include "pwm.h"
@@ -26,10 +26,18 @@ extern "C" {
 
     #include "../../beken378/func/include/net_param_pub.h"
     #include "../../beken378/func/user_driver/BkDriverPwm.h"
-    #include "../../beken378/func/user_driver/BkDriverI2c.h"
-    #include "../../beken378/driver/i2c/i2c1.h"
     #include "../../beken378/driver/gpio/gpio.h"
-
+#elif PLATFORM_BL602
+#include "bl602_glb.h"
+#elif PLATFORM_LN882H || PLATFORM_LN8825
+#define delay_ms OS_MsDelay
+#elif PLATFORM_RTL8710B
+    int __wrap_atoi(const char* str);
+    char* _strncpy(char* dest, const char* src, size_t count);
+    int _sscanf_patch(const char* buf, const char* fmt, ...);
+    //#undef sscanf
+#undef strlen
+#endif
     #include <ctype.h>
 
     unsigned long ir_counter = 0;
@@ -89,32 +97,86 @@ class Print {
 Print Serial;
 
 
-#define INPUT 0
-#define OUTPUT 1
-#define HIGH 1
-#define LOW 1
+typedef enum
+{
+    LOW = 0,
+    HIGH = 1,
+    CHANGE = 2,
+    FALLING = 3,
+    RISING = 4,
+} PinStatus;
+
+typedef enum
+{
+    INPUT = 0x0,
+    OUTPUT = 0x1,
+    INPUT_PULLUP = 0x2,
+    INPUT_PULLDOWN = 0x3,
+} PinModeOBK;
 
 
-void digitalToggleFast(unsigned char P) {
+void digitalToggleFast(unsigned char P)
+{
+#if PLATFORM_BEKEN
     bk_gpio_output((GPIO_INDEX)P, !bk_gpio_input((GPIO_INDEX)P));
+#else
+    HAL_PIN_SetOutputValue(P, !HAL_PIN_ReadDigitalInput(P));
+#endif
 }
 
-unsigned char digitalReadFast(unsigned char P) { 
-	return bk_gpio_input((GPIO_INDEX)P);
+unsigned char digitalReadFast(unsigned char P)
+{
+#if PLATFORM_BEKEN
+    return bk_gpio_input((GPIO_INDEX)P);
+#elif PLATFORM_BL602
+    return GLB_GPIO_Read((GLB_GPIO_Type)P);
+#else
+    return HAL_PIN_ReadDigitalInput(P);
+#endif
 }
 
-void digitalWriteFast(unsigned char P, unsigned char V) {
+void digitalWriteFast(unsigned char P, unsigned char V)
+{
     //RAW_SetPinValue(P, V);
     //HAL_PIN_SetOutputValue(index, iVal);
+#if PLATFORM_BEKEN
     bk_gpio_output((GPIO_INDEX)P, V);
+#elif PLATFORM_BL602
+    GLB_GPIO_Write((GLB_GPIO_Type)P, V ? 1 : 0);
+#else
+    HAL_PIN_SetOutputValue(P, V);
+#endif
 }
 
-void pinModeFast(unsigned char P, unsigned char V) {
-    if (V == INPUT){
+void pinModeFast(unsigned char P, unsigned char V)
+{
+#if PLATFORM_BEKEN
+    if(V == INPUT_PULLUP)
+    {
         bk_gpio_config_input_pup((GPIO_INDEX)P);
     }
+    else if(V == INPUT_PULLDOWN)
+    {
+        bk_gpio_config_input_pdwn((GPIO_INDEX)P);
+    }
+    else if(V == INPUT)
+    {
+        bk_gpio_config_input((GPIO_INDEX)P);
+    }
+    else if(V == OUTPUT)
+    {
+        bk_gpio_config_output((GPIO_INDEX)P);
+    }
+#else
+    switch(V)
+    {
+        case INPUT_PULLUP: HAL_PIN_Setup_Input_Pulldown(P); break;
+        case INPUT_PULLDOWN: HAL_PIN_Setup_Input_Pullup(P); break;
+        case INPUT: HAL_PIN_Setup_Input(P); break;
+        case OUTPUT: HAL_PIN_Setup_Output(P); break;
+    }
+#endif
 }
-
 
 #define EXTERNAL_IR_TIMER_ISR
 
@@ -128,11 +190,10 @@ void pinModeFast(unsigned char P, unsigned char V) {
 #undef ISR
 #  endif
 #define ISR void IR_ISR
-extern "C" void DRV_IR_ISR(UINT8 t);
+extern "C" void DRV_IR_ISR(void* arg);
 
-static UINT32 ir_chan = BKTIMER0;
-static UINT32 ir_div = 1;
-static UINT32 ir_periodus = 50;
+static int8_t ir_chan = -1;
+static uint32_t ir_periodus = 50;
 
 void timerConfigForReceive(){
     // nothing here`
@@ -141,40 +202,8 @@ void timerConfigForReceive(){
 void _timerConfigForReceive() {
     ir_counter = 0;
 
-    timer_param_t params = {
-        (unsigned char) ir_chan,
-        (unsigned char) ir_div, // div
-        ir_periodus, // us
-        DRV_IR_ISR
-    };
-    //GLOBAL_INT_DECLARATION();
-
-
-    UINT32 res;
-    // test what error we get with an invalid command
-    res = sddev_control((char *)TIMER_DEV_NAME, -1, nullptr);
-
-    if (res == 1){
-    	ADDLOG_INFO(LOG_FEATURE_IR, (char *)"bk_timer already initialised");
-    } else {
-    	ADDLOG_ERROR(LOG_FEATURE_IR, (char *)"bk_timer driver not initialised?");
-        if ((int)res == -5){
-            ADDLOG_INFO(LOG_FEATURE_IR, (char *)"bk_timer sddev not found - not initialised?");
-            return;
-        }
-        return;
-    }
-
-
-	//ADDLOG_INFO(LOG_FEATURE_IR, (char *)"ir timer init");
-    // do not need to do this
-    //bk_timer_init();
-	//ADDLOG_INFO(LOG_FEATURE_IR, (char *)"ir timer init done");
-	ADDLOG_INFO(LOG_FEATURE_IR, (char *)"will ir timer setup %u", res);
-    res = sddev_control((char *)TIMER_DEV_NAME, CMD_TIMER_INIT_PARAM_US, &params);
-	ADDLOG_INFO(LOG_FEATURE_IR, (char *)"ir timer setup %u", res);
-    res = sddev_control((char *)TIMER_DEV_NAME, CMD_TIMER_UNIT_ENABLE, &ir_chan);
-	ADDLOG_INFO(LOG_FEATURE_IR, (char *)"ir timer enabled %u", res);
+    ir_chan = HAL_RequestHWTimer(ir_periodus, DRV_IR_ISR, NULL);
+    ADDLOG_INFO(LOG_FEATURE_IR, (char*)"ir timer enabled %u", ir_chan);
 }
 
 static void timer_enable(){
@@ -182,14 +211,12 @@ static void timer_enable(){
 static void timer_disable(){
 }
 static void _timer_enable(){
-    UINT32 res;
-    res = sddev_control((char *)TIMER_DEV_NAME, CMD_TIMER_UNIT_ENABLE, &ir_chan);
-	ADDLOG_INFO(LOG_FEATURE_IR, (char *)"ir timer enabled %u", res);
+    HAL_HWTimerStart(ir_chan);
+    ADDLOG_INFO(LOG_FEATURE_IR, (char*)"ir timer enabled %u", ir_chan);
 }
 static void _timer_disable(){
-    UINT32 res;
-    res = sddev_control((char *)TIMER_DEV_NAME, CMD_TIMER_UNIT_DISABLE, &ir_chan);
-	ADDLOG_INFO(LOG_FEATURE_IR, (char *)"ir timer disabled %u", res);
+    HAL_HWTimerStop(ir_chan);
+    ADDLOG_INFO(LOG_FEATURE_IR, (char*)"ir timer disabled %u", ir_chan);
 }
 
 #define TIMER_ENABLE_RECEIVE_INTR timer_enable();
@@ -230,6 +257,7 @@ class myIRsend : public IRsend {
     public:
         myIRsend(uint_fast8_t aSendPin){
             //IRsend::IRsend(aSendPin); - has been called already?
+            sendPin = aSendPin;
             our_us = 0;
             our_ms = 0;
             resetsendqueue();
@@ -238,9 +266,15 @@ class myIRsend : public IRsend {
 
         void enableIROut(uint_fast8_t aFrequencyKHz){
             // just setup variables for use in ISR
+#if PLATFORM_BEKEN
             pwmfrequency = ((uint32_t)aFrequencyKHz) * 1000;
         	pwmperiod = (26000000 / pwmfrequency);
             pwmduty = pwmperiod/2;
+#else
+            HAL_PIN_PWM_Start(sendPin, ((uint32_t)aFrequencyKHz) * 1000);
+            pwmduty = 50;
+            HAL_PIN_PWM_Update(sendPin, pwmduty);
+#endif
         }
 
         uint32_t millis(){
@@ -311,9 +345,11 @@ class myIRsend : public IRsend {
         int currentbitval;
 
         uint8_t sendPin;
+#if PLATFORM_BEKEN
         uint8_t pwmIndex;
         uint32_t pwmfrequency;
         uint32_t pwmperiod;
+#endif
         uint32_t pwmduty;
 
         uint32_t our_ms;
@@ -363,9 +399,13 @@ IRrecv *ourReceiver = NULL;
 
 // this is our ISR.
 // it is called every 50us, so we need to work on making it as efficient as possible.
-extern "C" void DRV_IR_ISR(UINT8 t){
+extern "C" void DRV_IR_ISR(void* arg){
     int sending = 0;
-    if (pIRsend && (pIRsend->pwmIndex >= 0)){
+    if (pIRsend
+#if PLATFORM_BEKEN
+        && (pIRsend->pwmIndex >= 0)
+#endif
+        ){
         pIRsend->our_us += 50;
         if (pIRsend->our_us > 1000){
             pIRsend->our_ms++;
@@ -410,15 +450,23 @@ extern "C" void DRV_IR_ISR(UINT8 t){
         uint32_t duty = pIRsend->pwmduty;
         if (!pinval){
             if (gIRPinPolarity){
+#if PLATFORM_BEKEN
                 duty = pIRsend->pwmperiod;
+#else
+                duty = 50;
+#endif
             } else {
                 duty = 0;
             }
         }
+#if PLATFORM_BEKEN
 #if PLATFORM_BK7231N && !PLATFORM_BEKEN_NEW
         bk_pwm_update_param((bk_pwm_t)pIRsend->pwmIndex, pIRsend->pwmperiod, duty,0,0);
 #else
         bk_pwm_update_param((bk_pwm_t)pIRsend->pwmIndex, pIRsend->pwmperiod, duty);
+#endif
+#else
+        HAL_PIN_PWM_Update(pIRsend->sendPin, duty);
 #endif
     }
 
@@ -606,10 +654,16 @@ extern "C" void DRV_IR_Init(){
 
 	int pin = -1; //9;// PWM3/25
     int txpin = -1; //24;// PWM3/25
+    bool pup = true;
 
 	// allow user to change them
-	pin = PIN_FindPinIndexForRole(IOR_IRRecv,pin);
-	txpin = PIN_FindPinIndexForRole(IOR_IRSend,txpin);
+    pin = PIN_FindPinIndexForRole(IOR_IRRecv, pin);
+    if(pin == -1)
+    {
+        pin = PIN_FindPinIndexForRole(IOR_IRRecv_nPup, pin);
+        if(pin >= 0) pup = false;
+    }
+    txpin = PIN_FindPinIndexForRole(IOR_IRSend, txpin);
 
     if (ourReceiver){
         IRrecv *temp = ourReceiver;
@@ -625,7 +679,8 @@ extern "C" void DRV_IR_Init(){
 
     if (pin > 0){
         // setup IRrecv pin as input
-        bk_gpio_config_input_pup((GPIO_INDEX)pin);
+        //bk_gpio_config_input_pup((GPIO_INDEX)pin);
+        pinModeFast(pin, pup == true ? INPUT_PULLUP : INPUT);
 
         ourReceiver = new IRrecv(pin);
         ourReceiver->start();
@@ -638,37 +693,33 @@ extern "C" void DRV_IR_Init(){
     }
 
     if (txpin > 0){
-        int pwmIndex = PIN_GetPWMIndexForPinIndex(txpin);
         // is this pin capable of PWM?
-        if(pwmIndex != -1) {
+        if(HAL_PIN_CanThisPinBePWM(txpin)) {
             uint32_t pwmfrequency = 38000;
+            myIRsend* pIRsendTemp = new myIRsend((uint_fast8_t)txpin);
+            pIRsendTemp->resetsendqueue();
+            HAL_PIN_PWM_Start(txpin, pwmfrequency);
+#if PLATFORM_BEKEN
+            int pwmIndex = PIN_GetPWMIndexForPinIndex(txpin);
             uint32_t period = (26000000 / pwmfrequency);
             uint32_t duty = period/2;
-    #if PLATFORM_BK7231N && !PLATFORM_BEKEN_NEW
-            // OSStatus bk_pwm_initialize(bk_pwm_t pwm, uint32_t frequency, uint32_t duty_cycle);
-            bk_pwm_initialize((bk_pwm_t)pwmIndex, period, duty, 0, 0);
-    #else
-            bk_pwm_initialize((bk_pwm_t)pwmIndex, period, duty);
-    #endif
-            bk_pwm_start((bk_pwm_t)pwmIndex);
-            myIRsend *pIRsendTemp = new myIRsend((uint_fast8_t) txpin);
-            pIRsendTemp->resetsendqueue();
             pIRsendTemp->pwmIndex = pwmIndex;
             pIRsendTemp->pwmfrequency = pwmfrequency;
             pIRsendTemp->pwmperiod = period;
             pIRsendTemp->pwmduty = duty;
-
+#else
+            pIRsendTemp->pwmduty = 50;
+#endif
             pIRsend = pIRsendTemp;
-            //bk_pwm_stop((bk_pwm_t)pIRsend->pwmIndex);
 
 	//cmddetail:{"name":"IRSend","args":"[PROT-ADDR-CMD-REP-BITS]",
 	//cmddetail:"descr":"Sends IR commands in the form PROT-ADDR-CMD-REP-BITS, e.g. NEC-1-1A-0-0, note that -BITS is optional, it can be 0 for default one, so you can just do NEC-1-1A-0",
-	//cmddetail:"fn":"IR_Send_Cmd","file":"driver/drv_ir.cpp","requires":"",
+	//cmddetail:"fn":"IR_Send_Cmd","file":"driver/drv_ir.cpp","requires":"ENABLE_DRIVER_IR (Arduino-IRremote)",
 	//cmddetail:"examples":""}
             CMD_RegisterCommand("IRSend",IR_Send_Cmd, NULL);
 	//cmddetail:{"name":"IREnable","args":"[Str][1or0]",
 	//cmddetail:"descr":"Enable/disable aspects of IR.  IREnable RXTX 0/1 - enable Rx whilst Tx.  IREnable [protocolname] 0/1 - enable/disable a specified protocol",
-	//cmddetail:"fn":"IR_Enable","file":"driver/drv_ir.cpp","requires":"",
+	//cmddetail:"fn":"IR_Enable","file":"driver/drv_ir.cpp","requires":"ENABLE_DRIVER_IR (Arduino-IRremote)",
 	//cmddetail:"examples":""}
             CMD_RegisterCommand("IREnable", IR_Enable, NULL);
         }
@@ -678,6 +729,12 @@ extern "C" void DRV_IR_Init(){
         _timerConfigForReceive();
         _timer_enable();
     }
+}
+
+extern "C" void DRV_IR_Deinit()
+{
+    _timer_disable();
+    HAL_HWTimerDeinit(ir_chan);
 }
 
 

@@ -929,6 +929,9 @@ void httpclient_freeMemory(httprequest_t *request)
 	if(request->flags & HTTPREQUEST_FLAG_FREE_URLONDONE) {
 		free((void*)request->url);
 	}
+	if (request->flags & HTTPREQUEST_FLAG_FREE_CMDONDONE) {
+		free((void*)request->cmdToRun);
+	}
 	if (request->flags & HTTPREQUEST_FLAG_FREE_RESPONSEBUF) {
 		free((void*)request->client_data.response_buf);
 	}
@@ -1194,16 +1197,19 @@ int HTTPClient_CB_Data(struct httprequest_t_tag *request) {
 
 			request->client_data.userCounter++;
 		}
+		if (request->cmdToRun && *request->cmdToRun) {
+			CMD_ExecuteCommand(request->cmdToRun, 0);
+		}
 		return 0;
 	}
 	return 0;
 }
-int HTTPClient_Async_SendGet(const char *url_in, const char *tgFile){
+int HTTPClient_Async_SendGet(const char *url_in, const char *tgFile, const char *postGetCommand) {
 	httprequest_t *request;
 	httpclient_t *client;
 	httpclient_data_t *client_data;
 	char *url;
-
+	char *cmd = 0;
 	// TEST
 	//url_in = "http://192.168.0.104/cm?cmnd=POWER%20TOGGLE";
 
@@ -1217,27 +1223,29 @@ int HTTPClient_Async_SendGet(const char *url_in, const char *tgFile){
 	url = CMD_ExpandingStrdup(url_in);
 	//url = strdup(url_in);
 #endif
-	if(url==0) {
+	if(url == 0) {
 		ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT, "HTTPClient_Async_SendGet for %s, failed to alloc URL memory\r\n");
 		return 1;
 	}
-
+	if (postGetCommand && *postGetCommand) {
+		cmd = strdup(postGetCommand);
+	}
 #if DBG_HTTPCLIENT_MEMLEAK
 	request = &testreq;
 #else
 	request = (httprequest_t *) malloc(sizeof(httprequest_t));
 #endif
-	if(url==0) {
+	if(request == 0) {
 		ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT, "HTTPClient_Async_SendGet for %s, failed to alloc request memory\r\n");
 		return 1;
 	}
-
     ADDLOG_INFO(LOG_FEATURE_HTTP_CLIENT, "HTTPClient_Async_SendGet for %s, sizeof(httprequest_t) == %i!\r\n",
 		url_in,sizeof(httprequest_t));
 
 	memset(request, 0, sizeof(*request));
 	request->flags |= HTTPREQUEST_FLAG_FREE_SELFONDONE;
 	request->flags |= HTTPREQUEST_FLAG_FREE_URLONDONE;
+	request->flags |= HTTPREQUEST_FLAG_FREE_CMDONDONE;
 	client = &request->client;
 	client_data = &request->client_data;
 
@@ -1250,6 +1258,7 @@ int HTTPClient_Async_SendGet(const char *url_in, const char *tgFile){
 	request->data_callback = 0;
 	request->port = 80;//HTTP_PORT;
 	request->url = url;
+	request->cmdToRun = cmd;
 	request->method = HTTPCLIENT_GET;
 	request->timeout = 10000;
 	if (tgFile && *tgFile) {
@@ -1291,6 +1300,7 @@ int HTTPClient_Async_SendPost(const char *url_in, int http_port, const char *con
 	memset(request, 0, sizeof(*request));
 	request->flags |= HTTPREQUEST_FLAG_FREE_SELFONDONE;
 	request->flags |= HTTPREQUEST_FLAG_FREE_URLONDONE;
+	request->flags |= HTTPREQUEST_FLAG_FREE_CMDONDONE;
 	client = &request->client;
 	client_data = &request->client_data;
 

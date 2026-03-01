@@ -10,8 +10,9 @@ extern "C" {
 #include "../logging/logging.h"
 #include "../new_pins.h"
 #include "../new_cfg.h"
+#include "../mqtt/new_mqtt.h"
 #include "../cmnds/cmd_public.h"
-
+#include "../hal/hal_hwtimer.h"
 }
 
 #include "drv_rc.h"
@@ -31,6 +32,12 @@ void DRV_RC_Init() {
 	}
 	ADDLOG_INFO(LOG_FEATURE_IR, "DRV_RC_Init: passing pin %i\n", pin);
 	mySwitch.enableReceive(pin, pup);  // Receiver on interrupt 0 => that is pin #2
+}
+
+void DRV_RC_Deinit()
+{
+	HAL_HWTimerStop(mySwitch.rc_chan);
+	HAL_HWTimerDeinit(mySwitch.rc_chan);
 }
 //extern long g_micros;
 //extern int rc_triggers;
@@ -88,6 +95,18 @@ void DRV_RC_RunFrame() {
 			mySwitch.getReceivedBitlength(),
 			mySwitch.getReceivedProtocol(),
 			bHold);
+
+		{
+			char s[128];
+			snprintf(s, sizeof(s), "{\"RfReceived\":{\"Protocol\":%u,\"Bits\":%u,\"Data\":\"0x%lX\",\"Pulse\":%u,\"Hold\":%i}}",
+				mySwitch.getReceivedProtocol(),
+				mySwitch.getReceivedBitlength(),
+				mySwitch.getReceivedValue(),
+				mySwitch.getReceivedDelay(),
+				bHold);
+			MQTT_PublishMain_StringString("RESULT", s, 0);
+		}
+
 		EventHandlers_FireEvent2(CMD_EVENT_RC, mySwitch.getReceivedValue(), bHold);
 
 

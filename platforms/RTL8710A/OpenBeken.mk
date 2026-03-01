@@ -1,6 +1,7 @@
 OBK_DIR = ../../../../..
 
 CFLAGS +=  -DPLATFORM_RTL8710A -DPLATFORM_REALTEK
+CXXFLAGS +=  -DPLATFORM_RTL8710A -DPLATFORM_REALTEK
 
 INCLUDES += -I$(OBK_DIR)/libraries/easyflash/inc
 
@@ -14,6 +15,7 @@ SRC_C  += $(OBK_DIR)/src/hal/realtek/rtl8710a/hal_pins_rtl8710a.c
 SRC_C  += $(OBK_DIR)/src/hal/realtek/hal_flashConfig_realtek.c
 SRC_C  += $(OBK_DIR)/src/hal/realtek/hal_flashVars_realtek.c
 SRC_C  += $(OBK_DIR)/src/hal/realtek/hal_generic_realtek.c
+SRC_C  += $(OBK_DIR)/src/hal/realtek/hal_hwtimer_realtek.c
 SRC_C  += $(OBK_DIR)/src/hal/realtek/hal_pins_realtek.c
 SRC_C  += $(OBK_DIR)/src/hal/realtek/hal_wifi_realtek.c
 SRC_C  += $(OBK_DIR)/src/hal/realtek/hal_ota_realtek.c
@@ -21,6 +23,7 @@ SRC_C  += $(OBK_DIR)/src/hal/realtek/hal_ota_realtek.c
 OBK_SRCS = $(OBK_DIR)/src/
 include $(OBK_DIR)/platforms/obk_main.mk
 SRC_C += $(OBKM_SRC)
+SRC_CPP += $(OBKM_SRC_CXX)
 CFLAGS += $(OBK_CFLAGS)
 
 SRC_C += $(OBK_DIR)/libraries/easyflash/ports/ef_port.c

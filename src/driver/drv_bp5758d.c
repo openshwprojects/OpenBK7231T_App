@@ -59,6 +59,7 @@ static void BP5758D_SetCurrent(byte curValRGB, byte curValCW) {
 	BP5758D_WriteCurrents();
     Soft_I2C_Stop(&g_softI2C);
 	usleep(SM2135_DELAY);
+	LED_ResendCurrentColors();
 }
 static void BP5758D_PreInit() {
 	HAL_PIN_Setup_Output(g_softI2C.pin_clk);

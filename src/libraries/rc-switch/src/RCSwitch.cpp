@@ -57,35 +57,14 @@
 
 
 
-#if PLATFORM_BEKEN
 
 extern "C" {
+#if PLATFORM_BEKEN
 #include "include.h"
 #include "arm_arch.h"
-#include "bk_timer_pub.h"
-#include "drv_model_pub.h"
-
-#include <gpio_pub.h>
-//#include "pwm.h"
-#include "pwm_pub.h"
-
-#include "../../beken378/func/include/net_param_pub.h"
-#include "../../beken378/func/user_driver/BkDriverPwm.h"
-#include "../../beken378/func/user_driver/BkDriverI2c.h"
-#include "../../beken378/driver/i2c/i2c1.h"
-#include "../../beken378/driver/gpio/gpio.h"
-#include "../../beken378/driver/pwm/pwm.h"
-#if PLATFORM_BK7231N
-#if PLATFORM_BEKEN_NEW
-#include "pwm_bk7231n.h"
-#else
-#include "../../beken378/driver/pwm/pwm_new.h"
 #endif
-#endif
+#include "../../../hal/hal_hwtimer.h"
 }
-
-
-#endif
 
 
 /* Protocol description format
@@ -204,6 +183,8 @@ unsigned int RCSwitch::nSeparationLimit = RCSWITCH_SEPARATION_LIMIT;
 unsigned int RCSwitch::timings[RCSWITCH_MAX_CHANGES];
 unsigned int RCSwitch::buftimings[4];
 #endif
+
+int8_t RCSwitch::rc_chan = -1;
 
 RCSwitch::RCSwitch() {
   this->nTransmitterPin = -1;
@@ -886,8 +867,12 @@ volatile int rc_triggers = 0;
 int prev = 0;
 int g_rcpin = 0;
 static const uint32_t ir_periodus = 50;
-void RC_ISR(uint8_t t) {
+void RC_ISR(void* arg) {
+#if PLATFORM_RTL8720D || PLATFORM_RTL8710B
+	g_micros += 61;
+#else
 	g_micros += ir_periodus;
+#endif
 	int n = HAL_PIN_ReadDigitalInput(g_rcpin);
 	if (n != prev) {
 		prev = n;
@@ -895,40 +880,9 @@ void RC_ISR(uint8_t t) {
 		RCSwitch::handleInterrupt(0);
 	}
 }
-static uint32_t ir_chan
-#if PLATFORM_BEKEN
-= BKTIMER0
-#endif
-;
-static uint32_t ir_div = 1;
 void obk_startTimer() {
-#if PLATFORM_BEKEN
-	timer_param_t params = {
-	 (unsigned char)ir_chan,
-	 (unsigned char)ir_div, // div
-	 ir_periodus, // us
-	RC_ISR
-	};
-	//GLOBAL_INT_DECLARATION();
-
-
-	UINT32 res;
-	// test what error we get with an invalid command
-	res = sddev_control((char *)TIMER_DEV_NAME, -1, 0);
-
-
-
-
-	//ADDLOG_INFO(LOG_FEATURE_IR, (char *)"ir timer init");
-	// do not need to do this
-	//bk_timer_init();
-	//ADDLOG_INFO(LOG_FEATURE_IR, (char *)"ir timer init done");
-	//ADDLOG_INFO(LOG_FEATURE_IR, (char *)"will ir timer setup %u", res);
-	res = sddev_control((char *)TIMER_DEV_NAME, CMD_TIMER_INIT_PARAM_US, &params);
-	//ADDLOG_INFO(LOG_FEATURE_IR, (char *)"ir timer setup %u", res);
-	res = sddev_control((char *)TIMER_DEV_NAME, CMD_TIMER_UNIT_ENABLE, &ir_chan);
-	//ADDLOG_INFO(LOG_FEATURE_IR, (char *)"ir timer enabled %u", res);
-#endif
+	RCSwitch::rc_chan = HAL_RequestHWTimer(ir_periodus, RC_ISR, NULL);
+	HAL_HWTimerStart(RCSwitch::rc_chan);
 }
 void RCSwitch::enableReceive() {
 	if (this->nReceiverInterrupt != -1) {

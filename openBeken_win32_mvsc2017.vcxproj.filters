@@ -277,6 +277,7 @@
     <ClCompile Include="src\selftest\selftest_multiplePinsOnChannel.c" />
     <ClCompile Include="src\selftest\selftest_ntp.c" />
     <ClCompile Include="src\selftest\selftest_ntp_DST.c" />
+    <ClCompile Include="src\selftest\selftest_pins.c" />
     <ClCompile Include="src\selftest\selftest_repeatingEvents.c" />
     <ClCompile Include="src\selftest\selftest_role_toggleAll.c" />
     <ClCompile Include="src\selftest\selftest_script.c" />
