@@ -671,7 +671,7 @@ static commandResult_t CMD_WPA_AP(const void* context, const char* cmd, const ch
 	const char* arg;
 	const char* search=NULL;
 	uint8_t chan = 1;
-	uint8_t mac_clients = WPA_AP_STA_CLIENTS;
+	uint8_t mac_clients = AP_STA_CLIENTS;
 	
 	
 	if (argnum > 2){

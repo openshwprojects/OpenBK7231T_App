@@ -284,10 +284,10 @@ int HAL_SetupWiFiAccessPoint(const char* ssid, const char* key)
 		{
 			.ssid_len = strlen(ssid),
 			.channel = HAL_AP_Wifi_Channel,
-#ifndef WPA_AP_STA_CLIENTS
-#define WPA_AP_STA_CLIENTS 1
+#ifndef AP_STA_CLIENTS
+#define AP_STA_CLIENTS 1
 #endif
-			.max_connection = WPA_AP_STA_CLIENTS,
+			.max_connection = AP_STA_CLIENTS,
 			.authmode = (! key || key[0] == 0) ? WIFI_AUTH_OPEN : WIFI_AUTH_WPA_PSK,
 //			.authmode =  WIFI_AUTH_OPEN,
 #if !PLATFORM_ESP8266
