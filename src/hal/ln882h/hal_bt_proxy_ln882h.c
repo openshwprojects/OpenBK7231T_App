@@ -211,7 +211,7 @@ void HAL_BTProxy_StartScan()
 		HAL_BTScan_EnsureStackReady();
 		le_scan_parameters_t* scan_p = &le_scan_mgr_info_get()->scan_param;
 
-		//scan_p->dup_filt_pol = GAPM_DUP_FILT_EN;
+		scan_p->dup_filt_pol = GAPM_DUP_FILT_DIS;
 		scan_p->scan_intv = g_bleScanInterval;
 		scan_p->scan_wd = g_bleScanWindow;
 		scan_p->type = GAPM_SCAN_TYPE_OBSERVER;
