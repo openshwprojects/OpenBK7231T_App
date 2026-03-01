@@ -764,9 +764,9 @@ void Test_TuyaMCU_Robustness() {
 	// Part 1: Truncated STATE packet (v3, cmd 0x07)
 	//
 	// Malformed packet: 55AA030700060102000400172D
-	//   version=3, cmd=STATE(0x07), payload_len=7
-	//   payload: dpId=1 type=2(value) sectorLen=4, data bytes present=3
-	//   remaining after header = 3, so 4 > 3 => guard fires, break.
+	//   version=3, cmd=STATE(0x07), payload_len=6
+	//   payload: dpId=1 type=2(value) sectorLen=4, data bytes present=2
+	//   remaining after header = 2, so 4 > 2 => guard fires, break.
 	// -----------------------------------------------------------------------
 	SIM_ClearOBK(0);
 	SIM_UART_InitReceiveRingBuffer(2048);
@@ -792,9 +792,9 @@ void Test_TuyaMCU_Robustness() {
 	// Part 2: Truncated V0 cmd 0x05 packet (no datetime prefix)
 	//
 	// Malformed packet: 55AA0005000601020004001223
-	//   version=0, cmd=0x05(TUYA_CMD_WIFI_SELECT), payload_len=7
-	//   payload: dpId=1 type=2(value) sectorLen=4, data bytes present=3
-	//   remaining=3, guard fires.
+	//   version=0, cmd=0x05(TUYA_CMD_WIFI_SELECT), payload_len=6
+	//   payload: dpId=1 type=2(value) sectorLen=4, data bytes present=2
+	//   remaining=2, guard fires.
 	// -----------------------------------------------------------------------
 	SIM_ClearOBK(0);
 	SIM_UART_InitReceiveRingBuffer(2048);
@@ -821,7 +821,7 @@ void Test_TuyaMCU_Robustness() {
 	// Malformed packet: 55AA0008000D0000000000000001020004001C37
 	//   version=0, cmd=0x08(TUYA_CMD_QUERY_STATE), payload_len=14
 	//   7 datetime bytes (all zero) + dpId=1 type=2(value) sectorLen=4
-	//   data bytes present=3, so remaining=3 and the guard fires.
+	//   data bytes present=2, so remaining=2 and the guard fires.
 	// -----------------------------------------------------------------------
 	SIM_ClearOBK(0);
 	SIM_UART_InitReceiveRingBuffer(2048);
