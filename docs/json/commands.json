@@ -1908,6 +1908,42 @@
     "examples": ""
   },
   {
+    "name": "ms_pass",
+    "args": "TODO",
+    "descr": "",
+    "fn": "Cmd_MQTTServer_Pass",
+    "file": "driver/drv_mqttServer.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "ms_port",
+    "args": "TODO",
+    "descr": "",
+    "fn": "Cmd_MQTTServer_Port",
+    "file": "driver/drv_mqttServer.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "ms_publish",
+    "args": "TODO",
+    "descr": "",
+    "fn": "Cmd_MQTTServer_Publish",
+    "file": "driver/drv_mqttServer.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "ms_user",
+    "args": "TODO",
+    "descr": "",
+    "fn": "Cmd_MQTTServer_User",
+    "file": "driver/drv_mqttServer.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
     "name": "ntp_info",
     "args": "",
     "descr": "Display NTP related settings",
