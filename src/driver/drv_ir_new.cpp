@@ -119,10 +119,10 @@ Print Serial;
 
 // THIS function is defined in src/libraries/IRremoteESP8266/src/IRrecv.cpp
 extern "C" void DRV_IR_ISR(void* arg);
-extern void IR_ISR();
+extern void IR_ISR(float period_us);
 
 static int8_t ir_chan = -1;
-static uint32_t ir_periodus = 50;
+static float ir_periodus = 50;
 
 void timerConfigForReceive() {
 	// nothing here`
@@ -131,8 +131,8 @@ void timerConfigForReceive() {
 void _timerConfigForReceive() {
 	ir_counter = 0;
 
-	ir_chan = HAL_RequestHWTimer(ir_periodus, DRV_IR_ISR, NULL);
-	ADDLOG_INFO(LOG_FEATURE_IR, (char *)"ir timer enabled %u", ir_chan);
+	ir_chan = HAL_RequestHWTimer(ir_periodus, &ir_periodus, DRV_IR_ISR, NULL);
+	ADDLOG_INFO(LOG_FEATURE_IR, (char *)"ir timer %u, %.2f us period", ir_chan, ir_periodus);
 }
 
 static void timer_enable() {
@@ -239,7 +239,7 @@ public:
 		pwmduty = duty;
 
 		HAL_PIN_PWM_Start(sendPin, freq);
-		HAL_PIN_PWM_Update(sendPin, duty);
+		//HAL_PIN_PWM_Update(sendPin, duty);
 	}
 
 	void resetsendqueue() {
@@ -274,7 +274,7 @@ public:
 	uint32_t pwmduty;
 
 	uint32_t our_ms;
-	uint32_t our_us;
+	float our_us;
 };
 
 
@@ -288,11 +288,7 @@ extern "C" void DRV_IR_ISR(void* arg)
 {
 	int sending = 0;
 	if (pIRsend) {
-#if PLATFORM_RTL8720D || PLATFORM_RTL8710B
-		pIRsend->our_us += 61;
-#else
-		pIRsend->our_us += 50;
-#endif
+		pIRsend->our_us += ir_periodus;
 		if (pIRsend->our_us > 1000) {
 			pIRsend->our_ms++;
 			pIRsend->our_us -= 1000;
@@ -355,7 +351,7 @@ extern "C" void DRV_IR_ISR(void* arg)
 
 	// don't receive if we are currently sending
 	if (ourReceiver && !sending){
-		IR_ISR();
+		IR_ISR(ir_periodus);
 	}
 	ir_counter++;
 }
