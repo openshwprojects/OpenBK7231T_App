@@ -763,7 +763,7 @@ void Test_TuyaMCU_Robustness() {
 	// -----------------------------------------------------------------------
 	// Part 1: Truncated STATE packet (v3, cmd 0x07)
 	//
-	// Malformed packet: 55AA03070007010200040000172F
+	// Malformed packet: 55AA030700070102000400001730
 	//   version=3, cmd=STATE(0x07), payload_len=7
 	//   payload: dpId=1 type=2(value) sectorLen=4, data bytes present=3
 	//   remaining after header = 3, so 4 > 3 => guard fires, break.
@@ -777,7 +777,7 @@ void Test_TuyaMCU_Robustness() {
 	SELFTEST_ASSERT_CHANNEL(20, 99);
 
 	// inject the truncated STATE packet
-	CMD_ExecuteCommand("uartFakeHex 55AA03070007010200040000172F", 0);
+	CMD_ExecuteCommand("uartFakeHex 55AA030700070102000400001730", 0);
 	Sim_RunFrames(100, false);
 
 	// channel must be untouched - guard prevented parsing
@@ -791,7 +791,7 @@ void Test_TuyaMCU_Robustness() {
 	// -----------------------------------------------------------------------
 	// Part 2: Truncated V0 cmd 0x05 packet (no datetime prefix)
 	//
-	// Malformed packet: 55AA000500070102000400001225
+	// Malformed packet: 55AA000500070102000400001226
 	//   version=0, cmd=0x05(TUYA_CMD_WIFI_SELECT), payload_len=7
 	//   payload: dpId=1 type=2(value) sectorLen=4, data bytes present=3
 	//   remaining=3, guard fires.
@@ -805,7 +805,7 @@ void Test_TuyaMCU_Robustness() {
 	SELFTEST_ASSERT_CHANNEL(21, 77);
 
 	// inject truncated V0 no-date packet
-	CMD_ExecuteCommand("uartFakeHex 55AA000500070102000400001225", 0);
+	CMD_ExecuteCommand("uartFakeHex 55AA000500070102000400001226", 0);
 	Sim_RunFrames(100, false);
 
 	SELFTEST_ASSERT_CHANNEL(21, 77);
@@ -818,7 +818,7 @@ void Test_TuyaMCU_Robustness() {
 	// -----------------------------------------------------------------------
 	// Part 3: Truncated V0 cmd 0x08 packet (with 7-byte datetime prefix)
 	//
-	// Malformed packet: 55AA0008000E000000000000000102000400001C39
+	// Malformed packet: 55AA0008000E000000000000000102000400001C3A
 	//   version=0, cmd=0x08(TUYA_CMD_QUERY_STATE), payload_len=14
 	//   7 datetime bytes (all zero) + dpId=1 type=2(value) sectorLen=4
 	//   data bytes present=3, so remaining=3 and the guard fires.
@@ -832,7 +832,7 @@ void Test_TuyaMCU_Robustness() {
 	SELFTEST_ASSERT_CHANNEL(22, 55);
 
 	// inject truncated V0 with-date packet
-	CMD_ExecuteCommand("uartFakeHex 55AA0008000E000000000000000102000400001C39", 0);
+	CMD_ExecuteCommand("uartFakeHex 55AA0008000E000000000000000102000400001C3A", 0);
 	Sim_RunFrames(100, false);
 
 	SELFTEST_ASSERT_CHANNEL(22, 55);
