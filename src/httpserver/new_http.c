@@ -12,109 +12,115 @@
 #include "../base64/base64.h"
 #include "http_basic_auth.h"
 
-
 // define the feature ADDLOGF_XXX will use
 #define LOG_FEATURE LOG_FEATURE_HTTP
 
-const char httpHeader[] = "HTTP/1.1 %d OK\nContent-type: %s";  // HTTP header
-const char httpMimeTypeHTML[] = "text/html";              // HTML MIME type
-const char httpMimeTypeText[] = "text/plain";           // TEXT MIME type
-const char httpMimeTypeXML[] = "text/xml";           // TEXT MIME type
-const char httpMimeTypeCSS[] = "text/css";           // CSS MIME type
-const char httpMimeTypeJavascript[] = "application/javascript";   // NOTE: According to RFC 4329 text/javascript became obsolete see: https://www.rfc-editor.org/rfc/rfc4329.html#section-7.2
-const char httpMimeTypeJson[] = "application/json";           // TEXT MIME type
-const char httpMimeTypeBinary[] = "application/octet-stream";   // binary/file MIME type
+const char httpHeader[] = "HTTP/1.1 %d OK\nContent-type: %s";	// HTTP header
+const char httpMimeTypeHTML[] = "text/html";					// HTML MIME type
+const char httpMimeTypeText[] = "text/plain";					// TEXT MIME type
+const char httpMimeTypeXML[] = "text/xml";						// TEXT MIME type
+const char httpMimeTypeCSS[] = "text/css";						// CSS MIME type
+const char httpMimeTypeJavascript[] = "application/javascript"; // NOTE: According to RFC 4329 text/javascript became obsolete see: https://www.rfc-editor.org/rfc/rfc4329.html#section-7.2
+const char httpMimeTypeJson[] = "application/json";				// TEXT MIME type
+const char httpMimeTypeBinary[] = "application/octet-stream";	// binary/file MIME type
 
 const char htmlShortcutIcon[] = "<link rel='shortcut icon' href='data:image/gif;base64,R0lGODlhEAAQALMAABEHBLT+BJxCBFgmBHx6fKxKBCQiJCIWC/ppBJSWlNTS1Pv9+0xmBDo7Oow6BNlZBCH5BAEAAAsALAAAAAAQABAAAwRzcMm5UqKYtjFalkpjEACCAITRKJrwHOV5PII3GQ/yAM+ePwYKYYYoOBwF3YEwaQCehQODcSg8AZ7EwPRwMAIBhiOHGFi2Oi9YTDYvnFAp1fq0LYY5I1LJvP14PjpBTS4wJgAzNRQhIzEoKiwfGx0fGRYfEQA7' />";
 
 const char htmlDoctype[] =
-"<!DOCTYPE html><html>";
+	"<!DOCTYPE html><html>";
 const char htmlHeadMeta[] =
-"<meta charset=\"utf-8\">"
-"<meta name=\"viewport\" content=\"width=device-width,initial-scale=1,user-scalable=no\">"
-"<meta name=\"robots\" content=\"none\">";
+	"<meta charset=\"utf-8\">"
+	"<meta name=\"viewport\" content=\"width=device-width,initial-scale=1,user-scalable=no\">"
+	"<meta name=\"robots\" content=\"none\">";
 const char htmlBodyStart[] =
-"<body>"
-"<noscript>To use this device, please enable JavaScript.<br></noscript>"
-"<div id=\"main\">"
-"<h1>"
-"<a target=\"_blank\" href=\"https://github.com/openshwprojects/OpenBK7231T_App/\">";
+	"<body>"
+	"<noscript>To use this device, please enable JavaScript.<br></noscript>"
+	"<div id=\"main\">"
+	"<h1>"
+	"<a target=\"_blank\" href=\"https://github.com/openshwprojects/OpenBK7231T_App/\">";
 const char htmlBodyStart2[] =
-"</a></h1>";
+	"</a></h1>";
 const char htmlBodyEnd[] = "</div></body></html>";
 
 const char htmlFooterReturnToMainPage[] = "<a href=\"index\">Home</a>";
 const char htmlFooterRefreshLink[] = "<a href=\"index\">Refresh</a>";
 const char htmlFooterReturnToCfgOrMainPage[] =
-"<a href=\"cfg\">Return to Config</a> | "
-"<a href=\"index\">Home</a>";
+	"<a href=\"cfg\">Return to Config</a> | "
+	"<a href=\"index\">Home</a>";
 
 const char htmlFooterInfo[] =
-"<a target=\"_blank\" "
-"href=\"https://www.elektroda.com/rtvforum/forum390.html\">Forum</a> | "
-"<a target=\"_blank\" "
-"href=\"https://www.youtube.com/@elektrodacom/videos\">YT</a> | "
-"<a target=\"_blank\" "
-"href=\"https://openbekeniot.github.io/webapp/devicesList.html\">Devices List</a> | "
-"<a target=\"_blank\" "
-"href=\"https://github.com/openshwprojects/OpenBK7231T_App/blob/main/docs/README.md\">Docs</a> | "
-"<a target=\"_blank\" "
-"href=\"https://paypal.me/openshwprojects\">Support Project</a><br>";
+	"<a target=\"_blank\" "
+	"href=\"https://www.elektroda.com/rtvforum/forum390.html\">Forum</a> | "
+	"<a target=\"_blank\" "
+	"href=\"https://www.youtube.com/@elektrodacom/videos\">YT</a> | "
+	"<a target=\"_blank\" "
+	"href=\"https://openbekeniot.github.io/webapp/devicesList.html\">Devices List</a> | "
+	"<a target=\"_blank\" "
+	"href=\"https://github.com/openshwprojects/OpenBK7231T_App/blob/main/docs/README.md\">Docs</a> | "
+	"<a target=\"_blank\" "
+	"href=\"https://paypal.me/openshwprojects\">Support Project</a><br>";
 
-const char* g_build_str = "Built on " __DATE__ " " __TIME__ " version " USER_SW_VER; // Show GIT version at Build line;
+const char *g_build_str = "Built on " __DATE__ " " __TIME__ " version " USER_SW_VER; // Show GIT version at Build line;
 
-const char httpCorsHeaders[] = "Access-Control-Allow-Origin: *\r\nAccess-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept";           // TEXT MIME type
+const char httpCorsHeaders[] = "Access-Control-Allow-Origin: *\r\nAccess-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept"; // TEXT MIME type
 
 int g_indexAutoRefreshInterval = 1000; // 1s
 
-const char* methodNames[] = {
+const char *methodNames[] = {
 	"GET",
 	"PUT",
 	"POST",
-	"OPTIONS"
-};
+	"OPTIONS"};
 
 #if WINDOWS
 #define os_free free
 #define os_malloc malloc
 #endif
 
-void misc_formatUpTimeString(int totalSeconds, char* o);
+void misc_formatUpTimeString(int totalSeconds, char *o);
 
-typedef struct http_callback_tag {
-	char* url;
+typedef struct http_callback_tag
+{
+	char *url;
 	int method;
 	http_callback_fn callback;
 	int auth_required;
 } http_callback_t;
 
 #define MAX_HTTP_CALLBACKS 32
-static http_callback_t* callbacks[MAX_HTTP_CALLBACKS];
+static http_callback_t *callbacks[MAX_HTTP_CALLBACKS];
 static int numCallbacks = 0;
 
-int HTTP_RegisterCallback(const char* url, int method, http_callback_fn callback, int auth_required) {
+int HTTP_RegisterCallback(const char *url, int method, http_callback_fn callback, int auth_required)
+{
 	int i;
 
-	if (!url || !callback) {
+	if (!url || !callback)
+	{
 		return -1;
 	}
-	if (numCallbacks >= MAX_HTTP_CALLBACKS) {
+	if (numCallbacks >= MAX_HTTP_CALLBACKS)
+	{
 		return -4;
 	}
-	for (i = 0; i < MAX_HTTP_CALLBACKS; i++) {
-		if (callbacks[i]) {
-			if (callbacks[i]->callback == callback && !strcmp(callbacks[i]->url, url)
-				&& callbacks[i]->method == method) {
+	for (i = 0; i < MAX_HTTP_CALLBACKS; i++)
+	{
+		if (callbacks[i])
+		{
+			if (callbacks[i]->callback == callback && !strcmp(callbacks[i]->url, url) && callbacks[i]->method == method)
+			{
 				return i;
 			}
 		}
 	}
-	callbacks[numCallbacks] = (http_callback_t*)os_malloc(sizeof(http_callback_t));
-	if (!callbacks[numCallbacks]) {
+	callbacks[numCallbacks] = (http_callback_t *)os_malloc(sizeof(http_callback_t));
+	if (!callbacks[numCallbacks])
+	{
 		return -2;
 	}
-	callbacks[numCallbacks]->url = (char*)os_malloc(strlen(url) + 1);
-	if (!callbacks[numCallbacks]->url) {
+	callbacks[numCallbacks]->url = (char *)os_malloc(strlen(url) + 1);
+	if (!callbacks[numCallbacks]->url)
+	{
 		os_free(callbacks[numCallbacks]);
 		return -3;
 	}
@@ -129,25 +135,30 @@ int HTTP_RegisterCallback(const char* url, int method, http_callback_fn callback
 	return 0;
 }
 
-int my_strnicmp(const char* a, const char* b, int len) {
+int my_strnicmp(const char *a, const char *b, int len)
+{
 	int i;
-	for (i = 0; i < len; i++) {
+	for (i = 0; i < len; i++)
+	{
 		char x = *a;
 		char y = *b;
-		if (!x || !y) return 1;
-		if ((x | 0x20) != (y | 0x20)) return 1;
+		if (!x || !y)
+			return 1;
+		if ((x | 0x20) != (y | 0x20))
+			return 1;
 		a++;
 		b++;
 	}
 	return 0;
 }
 
-
 /// @brief Write escaped data to the response.
 /// @param request
 /// @param str
-void poststr_escaped(http_request_t* request, char* str) {
-	if (str == NULL) {
+void poststr_escaped(http_request_t *request, char *str)
+{
+	if (str == NULL)
+	{
 		postany(request, NULL, 0);
 		return;
 	}
@@ -157,8 +168,10 @@ void poststr_escaped(http_request_t* request, char* str) {
 	int len = strlen(str);
 
 	// Do a quick check if escaping is necessary
-	for (i = 0; (foundChar == false) && (i < len); i++) {
-		switch (str[i]) {
+	for (i = 0; (foundChar == false) && (i < len); i++)
+	{
+		switch (str[i])
+		{
 		case '<':
 			foundChar = true;
 			break;
@@ -174,9 +187,12 @@ void poststr_escaped(http_request_t* request, char* str) {
 		}
 	}
 
-	if (foundChar) {
-		for (i = 0; i < len; i++) {
-			switch (str[i]) {
+	if (foundChar)
+	{
+		for (i = 0; i < len; i++)
+		{
+			switch (str[i])
+			{
 			case '<':
 				postany(request, "&lt;", 4);
 				break;
@@ -195,13 +211,16 @@ void poststr_escaped(http_request_t* request, char* str) {
 			}
 		}
 	}
-	else {
+	else
+	{
 		postany(request, str, strlen(str));
 	}
 }
 
-void poststr_escapedForJSON(http_request_t* request, char* str) {
-	if (str == NULL) {
+void poststr_escapedForJSON(http_request_t *request, char *str)
+{
+	if (str == NULL)
+	{
 		postany(request, NULL, 0);
 		return;
 	}
@@ -211,8 +230,10 @@ void poststr_escapedForJSON(http_request_t* request, char* str) {
 	int len = strlen(str);
 
 	// Do a quick check if escaping is necessary
-	for (i = 0; (foundChar == false) && (i < len); i++) {
-		switch (str[i]) {
+	for (i = 0; (foundChar == false) && (i < len); i++)
+	{
+		switch (str[i])
+		{
 		case '\n':
 			foundChar = true;
 			break;
@@ -225,9 +246,12 @@ void poststr_escapedForJSON(http_request_t* request, char* str) {
 		}
 	}
 
-	if (foundChar) {
-		for (i = 0; i < len; i++) {
-			switch (str[i]) {
+	if (foundChar)
+	{
+		for (i = 0; i < len; i++)
+		{
+			switch (str[i])
+			{
 			case '\n':
 				postany(request, "\\n", 2);
 				break;
@@ -243,12 +267,15 @@ void poststr_escapedForJSON(http_request_t* request, char* str) {
 			}
 		}
 	}
-	else {
+	else
+	{
 		postany(request, str, strlen(str));
 	}
 }
-bool http_startsWith(const char* base, const char* substr) {
-	while (*substr != 0) {
+bool http_startsWith(const char *base, const char *substr)
+{
+	while (*substr != 0)
+	{
 		if (*base != *substr)
 			return false;
 		if (*base == 0)
@@ -259,8 +286,10 @@ bool http_startsWith(const char* base, const char* substr) {
 	return true;
 }
 
-bool http_checkUrlBase(const char* base, const char* fileName) {
-	while (*base != 0 && *base != '?' && *base != ' ') {
+bool http_checkUrlBase(const char *base, const char *fileName)
+{
+	while (*base != 0 && *base != '?' && *base != ' ')
+	{
 		if (*base != *fileName)
 			return false;
 		if (*base == 0)
@@ -273,7 +302,8 @@ bool http_checkUrlBase(const char* base, const char* fileName) {
 	return true;
 }
 
-void http_setup(http_request_t* request, const char* type) {
+void http_setup(http_request_t *request, const char *type)
+{
 	hprintf255(request, httpHeader, request->responseCode, type);
 	poststr(request, "\r\n"); // next header
 	poststr(request, httpCorsHeaders);
@@ -295,7 +325,8 @@ void http_setup(http_request_t* request, const char* type) {
 	poststr(request, "\r\n"); // end headers with double CRLF
 	poststr(request, "\r\n");
 }
-void http_setup_gz(http_request_t* request, const char* type) {
+void http_setup_gz(http_request_t *request, const char *type)
+{
 	hprintf255(request, httpHeader, request->responseCode, type);
 	poststr(request, "\r\n"); // next header
 	poststr(request, httpCorsHeaders);
@@ -307,11 +338,13 @@ void http_setup_gz(http_request_t* request, const char* type) {
 	poststr(request, "\r\n");
 }
 
-void http_html_start(http_request_t* request, const char* pagename) {
+void http_html_start(http_request_t *request, const char *pagename)
+{
 	poststr(request, htmlDoctype);
 	poststr(request, "<head><title>");
 	poststr(request, CFG_GetDeviceName());
-	if (pagename) {
+	if (pagename)
+	{
 		hprintf255(request, " - %s", pagename);
 	}
 	poststr(request, "</title>");
@@ -324,13 +357,12 @@ void http_html_start(http_request_t* request, const char* pagename) {
 	poststr(request, htmlBodyStart2);
 }
 
-
 const char pageScriptPart1[] = "<script type='text/javascript'>var firstTime,lastTime,onlineFor,req=null,onlineForEl=null,getElement=e=>document.getElementById(e);function showState(){clearTimeout(firstTime),clearTimeout(lastTime),null!=req&&req.abort(),(e=getElement(\"state\"))&&((req=new XMLHttpRequest).onreadystatechange=()=>{4==req.readyState&&\"OK\"==req.statusText&&(\"SELECT\"!=document.activeElement.tagName&&(\"INPUT\"!=document.activeElement.tagName||\"number\"!=document.activeElement.type&&\"color\"!=document.activeElement.type)&&(e.innerHTML=req.responseText),clearTimeout(firstTime),clearTimeout(lastTime),lastTime=setTimeout(showState,";
 const char pageScriptPart2[] = "))},req.open(\"GET\",\"index?state=1\",!0),req.send()),firstTime=setTimeout(showState,";
-const char pageScriptPart3[] = ")}function fmtUpTime(e){var t,n,o=Math.floor(e/86400);return e%=86400,t=Math.floor(e/3600),e%=3600,n=Math.floor(e/60),e=e%60,0<o?o+` days, ${t} hours, ${n} minutes and ${e} seconds`:0<t?t+` hours, ${n} minutes and ${e} seconds`:0<n?n+` minutes and ${e} seconds`:`just ${e} seconds`}function updateOnlineFor(){onlineForEl.textContent=fmtUpTime(++onlineFor)}function onLoad(){(onlineForEl=getElement(\"onlineFor\"))&&(onlineFor=parseInt(onlineForEl.dataset.initial,10))&&setInterval(updateOnlineFor,1e3),showState()}function submitTemperature(e){var t=getElement(\"form132\");getElement(\"kelvin132\").value=Math.round(1e6/parseInt(e.value)),t.submit()}window.addEventListener(\"load\",onLoad),history.pushState(null,\"\",window.location.pathname.slice(1)),setTimeout(()=>{var e=getElement(\"changed\");e&&(e.innerHTML=\"\")},5e3);</script>";
+const char pageScriptPart3[] = ")}function fmtUpTime(e){var t,n,o=Math.floor(e/86400);return e%=86400,t=Math.floor(e/3600),e%=3600,n=Math.floor(e/60),e=e%60,0<o?o+` days, ${t} hours, ${n} minutes and ${e} seconds`:0<t?t+` hours, ${n} minutes and ${e} seconds`:0<n?n+` minutes and ${e} seconds`:`just ${e} seconds`}function updateOnlineFor(){onlineForEl.textContent=fmtUpTime(++onlineFor)}function onLoad(){(onlineForEl=getElement(\"onlineFor\"))&&(onlineFor=parseInt(onlineForEl.dataset.initial,10))&&setInterval(updateOnlineFor,1e3),showState()}function submitTemperature(e){var t=getElement(\"form132\");getElement(\"kelvin132\").value=Math.round(1e6/parseInt(e.value)),t.submit()}window.addEventListener(\"load\",onLoad),history.replaceState(null,\"\",window.location.pathname.slice(1)),setTimeout(()=>{var e=getElement(\"changed\");e&&(e.innerHTML=\"\")},5e3);</script>";
 
-
-void http_html_end(http_request_t* request) {
+void http_html_end(http_request_t *request)
+{
 	char upTimeStr[128];
 	unsigned char mac[32];
 
@@ -340,8 +372,7 @@ void http_html_end(http_request_t* request) {
 	poststr(request, g_build_str);
 
 	hprintf255(request, "<br>Online for&nbsp;<span id=\"onlineFor\" data-initial=\"%i\">-</span>", g_secondsElapsed);
-	WiFI_GetMacAddress((char*)mac);
-
+	WiFI_GetMacAddress((char *)mac);
 
 	snprintf(upTimeStr, sizeof(upTimeStr), "<br>Device MAC: %02X:%02X:%02X:%02X:%02X:%02X", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
 	poststr(request, upTimeStr);
@@ -360,8 +391,10 @@ void http_html_end(http_request_t* request) {
 	poststr(request, pageScriptPart3);
 }
 
-const char* http_checkArg(const char* p, const char* n) {
-	while (1) {
+const char *http_checkArg(const char *p, const char *n)
+{
+	while (1)
+	{
 		if (*n == 0 && (*p == 0 || *p == '='))
 			return p;
 		if (*p != *n)
@@ -372,14 +405,16 @@ const char* http_checkArg(const char* p, const char* n) {
 	return p;
 }
 
-int http_copyCarg(const char* atin, char* to, int maxSize) {
+int http_copyCarg(const char *atin, char *to, int maxSize)
+{
 	int a, b;
 	int realSize;
-	const unsigned char* at = (unsigned char*)atin;
+	const unsigned char *at = (unsigned char *)atin;
 
 	realSize = 0;
 
-	while (*at != 0 && *at != '&' && *at != ' ') {
+	while (*at != 0 && *at != '&' && *at != ' ')
+	{
 #if 0
 		* to = *at;
 		to++;
@@ -388,7 +423,8 @@ int http_copyCarg(const char* atin, char* to, int maxSize) {
 #else
 		if ((*at == '%') &&
 			((a = at[1]) && (b = at[2])) &&
-			(isxdigit(a) && isxdigit(b))) {
+			(isxdigit(a) && isxdigit(b)))
+		{
 			if (a >= 'a')
 				a -= 'a' - 'A';
 			if (a >= 'A')
@@ -402,25 +438,30 @@ int http_copyCarg(const char* atin, char* to, int maxSize) {
 			else
 				b -= '0';
 			// can we afford to place this char in the target?
-			if (maxSize > 1) {
+			if (maxSize > 1)
+			{
 				maxSize--;
 				*to++ = 16 * a + b;
 			}
 			realSize++;
 			at += 3;
 		}
-		else if (*at == '+') {
+		else if (*at == '+')
+		{
 			// can we afford to place this char in the target?
-			if (maxSize > 1) {
+			if (maxSize > 1)
+			{
 				maxSize--;
 				*to++ = ' ';
 			}
 			realSize++;
 			at++;
 		}
-		else {
+		else
+		{
 			// can we afford to place this char in the target?
-			if (maxSize > 1) {
+			if (maxSize > 1)
+			{
 				maxSize--;
 				*to++ = *at;
 			}
@@ -433,17 +474,22 @@ int http_copyCarg(const char* atin, char* to, int maxSize) {
 	return realSize;
 }
 
-int http_getRawArg(const char* base, const char* name, char* o, int maxSize) {
+int http_getRawArg(const char *base, const char *name, char *o, int maxSize)
+{
 	*o = '\0';
 
-	while (*base) {
-		const char* at = http_checkArg(base, name);
-		if (at) {
+	while (*base)
+	{
+		const char *at = http_checkArg(base, name);
+		if (at)
+		{
 			at++;
 			return http_copyCarg(at, o, maxSize);
 		}
-		while (*base != '&') {
-			if (*base == 0) {
+		while (*base != '&')
+		{
+			if (*base == 0)
+			{
 				return 0;
 			}
 			base++;
@@ -452,9 +498,11 @@ int http_getRawArg(const char* base, const char* name, char* o, int maxSize) {
 	}
 	return 0;
 }
-int http_getArg(const char* base, const char* name, char* o, int maxSize) {
+int http_getArg(const char *base, const char *name, char *o, int maxSize)
+{
 	*o = '\0';
-	while (*base != '?') {
+	while (*base != '?')
+	{
 		if (*base == '\0')
 			return 0;
 		base++;
@@ -463,14 +511,15 @@ int http_getArg(const char* base, const char* name, char* o, int maxSize) {
 
 	return http_getRawArg(base, name, o, maxSize);
 }
-int http_getArgInteger(const char* base, const char* name) {
+int http_getArgInteger(const char *base, const char *name)
+{
 	char tmp[16];
 	if (http_getArg(base, name, tmp, sizeof(tmp)) == 0)
 		return 0;
 	return atoi(tmp);
 }
 
-const char* htmlPinRoleNames[] = {
+const char *htmlPinRoleNames[] = {
 	" ",
 	"Rel",
 	"Rel_n",
@@ -560,29 +609,39 @@ const char* htmlPinRoleNames[] = {
 	"HLW_8112_SCSN",
 	"RCRecv",
 	"RCRecv_nPup",
-	"error",
+	"Btn_pd",
+	"Btn_pd_n",
+	"TglChanOnTgl_pd",
+	"ShutterA",
+	"ShutterB",
+	"BtnShutterUp",
+	"BtnShutterDown",
 	"error",
 	"error",
 };
-
-const char* PIN_RoleToString(int role) {
+const char *PIN_RoleToString(int role)
+{
 	return htmlPinRoleNames[role];
 }
-int PIN_ParsePinRoleName(const char* name) {
+int PIN_ParsePinRoleName(const char *name)
+{
 	int i;
 
-	if (!stricmp(name, "None")) {
+	if (!stricmp(name, "None"))
+	{
 		return IOR_None;
 	}
 
-	for (i = 0; i < IOR_Total_Options; i++) {
+	for (i = 0; i < IOR_Total_Options; i++)
+	{
 		if (!stricmp(name, htmlPinRoleNames[i]))
 			return i;
 	}
 	return IOR_Total_Options;
 }
 
-void setupAllWB2SPinsAsButtons() {
+void setupAllWB2SPinsAsButtons()
+{
 	PIN_SetPinRoleForPinIndex(6, IOR_Button);
 	PIN_SetPinChannelForPinIndex(6, 1);
 
@@ -608,7 +667,8 @@ void setupAllWB2SPinsAsButtons() {
 // add some more output safely, sending if necessary.
 // call with str == NULL to force send. - can be binary.
 // supply length
-int postany(http_request_t* request, const char* str, int len) {
+int postany(http_request_t *request, const char *str, int len)
+{
 #if PLATFORM_BL602 || PLATFORM_BEKEN_NEW || PLATFORM_RTL8720D
 	send(request->fd, str, len, 0);
 	return 0;
@@ -616,15 +676,18 @@ int postany(http_request_t* request, const char* str, int len) {
 	int currentlen;
 	int addlen = len;
 
-	//ADDLOG_ERROR(LOG_FEATURE_HTTP, "postany: got %i", len);
+	// ADDLOG_ERROR(LOG_FEATURE_HTTP, "postany: got %i", len);
 
-	if (NULL == str) {
+	if (NULL == str)
+	{
 		// fd will be NULL for unit tests where HTTP packet is faked locally
-		if (request->fd == 0) {
+		if (request->fd == 0)
+		{
 			return request->replylen;
 		}
-		if (request->replylen > 0) {
-			//ADDLOG_ERROR(LOG_FEATURE_HTTP, "postany: send %i", request->replylen);
+		if (request->replylen > 0)
+		{
+			// ADDLOG_ERROR(LOG_FEATURE_HTTP, "postany: send %i", request->replylen);
 			send(request->fd, request->reply, request->replylen, 0);
 		}
 		request->reply[0] = 0;
@@ -633,20 +696,23 @@ int postany(http_request_t* request, const char* str, int len) {
 	}
 
 	currentlen = request->replylen;
-	if (currentlen + addlen >= request->replymaxlen) {
-		//ADDLOG_ERROR(LOG_FEATURE_HTTP, "postany: send %i", request->replylen);
+	if (currentlen + addlen >= request->replymaxlen)
+	{
+		// ADDLOG_ERROR(LOG_FEATURE_HTTP, "postany: send %i", request->replylen);
 		send(request->fd, request->reply, request->replylen, 0);
 		request->reply[0] = 0;
 		request->replylen = 0;
 		currentlen = 0;
 	}
-	while (addlen >= request->replymaxlen) {
-		if (request->replylen > 0) {
-			//ADDLOG_ERROR(LOG_FEATURE_HTTP, "postany: send %i", request->replylen);
+	while (addlen >= request->replymaxlen)
+	{
+		if (request->replylen > 0)
+		{
+			// ADDLOG_ERROR(LOG_FEATURE_HTTP, "postany: send %i", request->replylen);
 			send(request->fd, request->reply, request->replylen, 0);
 			request->replylen = 0;
 		}
-		//ADDLOG_ERROR(LOG_FEATURE_HTTP, "postany: send %i", (request->replymaxlen - 1));
+		// ADDLOG_ERROR(LOG_FEATURE_HTTP, "postany: send %i", (request->replymaxlen - 1));
 		send(request->fd, str, (request->replymaxlen - 1), 0);
 		addlen -= (request->replymaxlen - 1);
 		str += (request->replymaxlen - 1);
@@ -660,19 +726,21 @@ int postany(http_request_t* request, const char* str, int len) {
 #endif
 }
 
-
 // add some more output safely, sending if necessary.
 // call with str == NULL to force send.
-int poststr(http_request_t* request, const char* str) {
-	if (str == NULL) {
+int poststr(http_request_t *request, const char *str)
+{
+	if (str == NULL)
+	{
 		return postany(request, NULL, 0);
 	}
 	return postany(request, str, strlen(str));
 }
 
-int hprintf255(http_request_t* request, const char* fmt, ...) {
+int hprintf255(http_request_t *request, const char *fmt, ...)
+{
 	va_list argList;
-	//BaseType_t taken;
+	// BaseType_t taken;
 	char tmp[256];
 	memset(tmp, 0, sizeof(tmp));
 	va_start(argList, fmt);
@@ -681,48 +749,57 @@ int hprintf255(http_request_t* request, const char* fmt, ...) {
 	return postany(request, tmp, strlen(tmp));
 }
 
-int HUE_APICall(http_request_t* request);
+int HUE_APICall(http_request_t *request);
 
-int HTTP_ProcessPacket(http_request_t* request) {
+int HTTP_ProcessPacket(http_request_t *request)
+{
 	int i;
-	char* p;
-	char* headers;
-	char* protocol;
-	//int bChanged = 0;
-	char* urlStr = "";
-	char* recvbuf;
+	char *p;
+	char *headers;
+	char *protocol;
+	// int bChanged = 0;
+	char *urlStr = "";
+	char *recvbuf;
 
-	if (request->received == 0) {
+	if (request->received == 0)
+	{
 		ADDLOGF_ERROR("You gave request with NULL input");
 		return 0;
 	}
 	request->method = -1;
 	recvbuf = request->received;
-	for (i = 0; i < sizeof(methodNames) / sizeof(*methodNames); i++) {
-		if (http_startsWith(recvbuf, methodNames[i])) {
+	for (i = 0; i < sizeof(methodNames) / sizeof(*methodNames); i++)
+	{
+		if (http_startsWith(recvbuf, methodNames[i]))
+		{
 			urlStr = recvbuf + strlen(methodNames[i]) + 2; // skip method name plus space, plus slash
 			request->method = i;
 			break;
 		}
 	}
-	if (request->method == -1) {
+	if (request->method == -1)
+	{
 		ADDLOGF_ERROR("unsupported method %7s", recvbuf);
 		return 0;
 	}
-	if (request->reply == 0) {
+	if (request->reply == 0)
+	{
 		ADDLOGF_ERROR("You gave request with NULL buffer");
 		return 0;
 	}
 
-	if (request->method == HTTP_GET) {
-		//ADDLOG_INFO(LOG_FEATURE_HTTP, "HTTP request\n");
+	if (request->method == HTTP_GET)
+	{
+		// ADDLOG_INFO(LOG_FEATURE_HTTP, "HTTP request\n");
 	}
-	else {
-		//ADDLOG_INFO(LOG_FEATURE_HTTP, "Other request\n");
+	else
+	{
+		// ADDLOG_INFO(LOG_FEATURE_HTTP, "Other request\n");
 	}
 
 	// if OPTIONS, return now - for CORS
-	if (request->method == HTTP_OPTIONS) {
+	if (request->method == HTTP_OPTIONS)
+	{
 		http_setup(request, httpMimeTypeHTML);
 		i = strlen(request->reply);
 		return i;
@@ -730,17 +807,21 @@ int HTTP_ProcessPacket(http_request_t* request) {
 
 	// chop URL at space
 	p = strchr(urlStr, ' ');
-	if (p != 0) {
-		if (*p) {
+	if (p != 0)
+	{
+		if (*p)
+		{
 			*p = '\0';
 			p++; // past space
 		}
-		else {
+		else
+		{
 			ADDLOGF_ERROR("invalid request\n");
 			return 0;
 		}
 	}
-	else {
+	else
+	{
 		// if p is 0, then strchr below would crash
 		ADDLOGF_ERROR("invalid request\n");
 		return 0;
@@ -751,13 +832,16 @@ int HTTP_ProcessPacket(http_request_t* request) {
 	// protocol is next, termed by \r\n
 	protocol = p;
 	p = strchr(protocol, '\r');
-	if (p != 0) {
-		if (*p) {
+	if (p != 0)
+	{
+		if (*p)
+		{
 			*p = '\0';
 			p++; // past \r
 			p++; // past \n
 		}
-		else {
+		else
+		{
 			ADDLOGF_ERROR("invalid request\n");
 			return 0;
 		}
@@ -765,17 +849,23 @@ int HTTP_ProcessPacket(http_request_t* request) {
 	// i.e. not received
 	request->contentLength = -1;
 	headers = p;
-	if (headers != 0) {
-		do {
+	if (headers != 0)
+	{
+		do
+		{
 			p = strchr(headers, '\r');
-			if (p != headers) {
-				if (p) {
-					if (request->numheaders < MAX_HEADERS) {
+			if (p != headers)
+			{
+				if (p)
+				{
+					if (request->numheaders < MAX_HEADERS)
+					{
 						request->headers[request->numheaders] = headers;
 						request->numheaders++;
 					}
 					// pick out contentLength
-					if (!my_strnicmp(headers, "Content-Length:", 15)) {
+					if (!my_strnicmp(headers, "Content-Length:", 15))
+					{
 						request->contentLength = atoi(headers + 15);
 					}
 
@@ -784,11 +874,13 @@ int HTTP_ProcessPacket(http_request_t* request) {
 					p++; // past \n
 					headers = p;
 				}
-				else {
+				else
+				{
 					break;
 				}
 			}
-			if (*p == '\r') {
+			if (*p == '\r')
+			{
 				// end of headers
 				*p = 0;
 				p++;
@@ -798,11 +890,13 @@ int HTTP_ProcessPacket(http_request_t* request) {
 		} while (1);
 	}
 
-	if (p == 0) {
+	if (p == 0)
+	{
 		request->bodystart = 0;
 		request->bodylen = 0;
 	}
-	else {
+	else
+	{
 		request->bodystart = p;
 		request->bodylen = request->receivedLen - (p - request->received);
 	}
@@ -814,18 +908,23 @@ int HTTP_ProcessPacket(http_request_t* request) {
 #endif
 
 #if ENABLE_DRIVER_HUE
-	if (HUE_APICall(request)) {
+	if (HUE_APICall(request))
+	{
 		return 0;
 	}
 #endif
 
 	// look for a callback with this URL and method, or HTTP_ANY
-	for (i = 0; i < numCallbacks; i++) {
-		char* url = callbacks[i]->url;
-		if (http_startsWith(urlStr, &url[1])) {
+	for (i = 0; i < numCallbacks; i++)
+	{
+		char *url = callbacks[i]->url;
+		if (http_startsWith(urlStr, &url[1]))
+		{
 			int method = callbacks[i]->method;
-			if (method == HTTP_ANY || method == request->method) {
-				if (callbacks[i]->auth_required > 0 && http_basic_auth_run(request) == HTTP_BASIC_AUTH_FAIL) {
+			if (method == HTTP_ANY || method == request->method)
+			{
+				if (callbacks[i]->auth_required > 0 && http_basic_auth_run(request) == HTTP_BASIC_AUTH_FAIL)
+				{
 					return 0;
 				}
 				return callbacks[i]->callback(request);
@@ -833,90 +932,121 @@ int HTTP_ProcessPacket(http_request_t* request) {
 		}
 	}
 
-	if (http_basic_auth_run(request) == HTTP_BASIC_AUTH_FAIL) {
+	if (http_basic_auth_run(request) == HTTP_BASIC_AUTH_FAIL)
+	{
 		ADDLOG_ERROR(LOG_FEATURE_HTTP, "HTTP packet with auth fail\n");
 		return 0;
 	}
 
 #if ENABLE_HTTP_OVERRIDE
-	bool HTTP_checkLFSOverride(http_request_t* request, const char *ext);
-	if (HTTP_checkLFSOverride(request,".html")) {
+	bool HTTP_checkLFSOverride(http_request_t * request, const char *ext);
+	if (HTTP_checkLFSOverride(request, ".html"))
+	{
 		return 1;
 	}
-	if (HTTP_checkLFSOverride(request, "")) {
+	if (HTTP_checkLFSOverride(request, ""))
+	{
 		return 1;
 	}
 #endif
 
-	if (http_checkUrlBase(urlStr, "")) return http_fn_empty_url(request);
+	if (http_checkUrlBase(urlStr, ""))
+		return http_fn_empty_url(request);
 
-	if (http_checkUrlBase(urlStr, "testmsg")) return http_fn_testmsg(request);
-	if (http_checkUrlBase(urlStr, "index")) return http_fn_index(request);
+	if (http_checkUrlBase(urlStr, "testmsg"))
+		return http_fn_testmsg(request);
+	if (http_checkUrlBase(urlStr, "index"))
+		return http_fn_index(request);
 
-	if (http_checkUrlBase(urlStr, "about")) return http_fn_about(request);
-	
+	if (http_checkUrlBase(urlStr, "about"))
+		return http_fn_about(request);
+
 #if ENABLE_HTTP_MQTT
-	if (http_checkUrlBase(urlStr, "cfg_mqtt")) return http_fn_cfg_mqtt(request);
-	if (http_checkUrlBase(urlStr, "cfg_mqtt_set")) return http_fn_cfg_mqtt_set(request);
+	if (http_checkUrlBase(urlStr, "cfg_mqtt"))
+		return http_fn_cfg_mqtt(request);
+	if (http_checkUrlBase(urlStr, "cfg_mqtt_set"))
+		return http_fn_cfg_mqtt_set(request);
 #endif
 #if ENABLE_HTTP_IP
-	if (http_checkUrlBase(urlStr, "cfg_ip")) return http_fn_cfg_ip(request);
+	if (http_checkUrlBase(urlStr, "cfg_ip"))
+		return http_fn_cfg_ip(request);
 #endif
 #if (ENABLE_DRIVER_DS1820_FULL)
-	// including "../driver/drv_ds1820_simple.h" will complain about typedefs not used here 
+	// including "../driver/drv_ds1820_simple.h" will complain about typedefs not used here
 	// so lets declare it "extern"
-	extern int http_fn_cfg_ds18b20(http_request_t* request);
-	if (http_checkUrlBase(urlStr, "cfg_ds18b20")) return http_fn_cfg_ds18b20(request);
+	extern int http_fn_cfg_ds18b20(http_request_t * request);
+	if (http_checkUrlBase(urlStr, "cfg_ds18b20"))
+		return http_fn_cfg_ds18b20(request);
 #endif
 
 #if ENABLE_HTTP_WEBAPP
-	if (http_checkUrlBase(urlStr, "cfg_webapp")) return http_fn_cfg_webapp(request);
-	if (http_checkUrlBase(urlStr, "cfg_webapp_set")) return http_fn_cfg_webapp_set(request);
+	if (http_checkUrlBase(urlStr, "cfg_webapp"))
+		return http_fn_cfg_webapp(request);
+	if (http_checkUrlBase(urlStr, "cfg_webapp_set"))
+		return http_fn_cfg_webapp_set(request);
 #endif
 
-	if (http_checkUrlBase(urlStr, "cfg_wifi")) return http_fn_cfg_wifi(request);
+	if (http_checkUrlBase(urlStr, "cfg_wifi"))
+		return http_fn_cfg_wifi(request);
 #if ENABLE_HTTP_NAMES
-	if (http_checkUrlBase(urlStr, "cfg_name")) return http_fn_cfg_name(request);
+	if (http_checkUrlBase(urlStr, "cfg_name"))
+		return http_fn_cfg_name(request);
 #endif
-	if (http_checkUrlBase(urlStr, "cfg_wifi_set")) return http_fn_cfg_wifi_set(request);
+	if (http_checkUrlBase(urlStr, "cfg_wifi_set"))
+		return http_fn_cfg_wifi_set(request);
 
-	if (http_checkUrlBase(urlStr, "cfg_loglevel_set")) return http_fn_cfg_loglevel_set(request);
+	if (http_checkUrlBase(urlStr, "cfg_loglevel_set"))
+		return http_fn_cfg_loglevel_set(request);
 #if ENABLE_HTTP_MAC
-	if (http_checkUrlBase(urlStr, "cfg_mac")) return http_fn_cfg_mac(request);
+	if (http_checkUrlBase(urlStr, "cfg_mac"))
+		return http_fn_cfg_mac(request);
 #endif
-	if (http_checkUrlBase(urlStr, "cmd_tool")) return http_fn_cmd_tool(request);
+	if (http_checkUrlBase(urlStr, "cmd_tool"))
+		return http_fn_cmd_tool(request);
 
 #if ENABLE_HTTP_STARTUP
-	if (http_checkUrlBase(urlStr, "startup_command")) return http_fn_startup_command(request); 
+	if (http_checkUrlBase(urlStr, "startup_command"))
+		return http_fn_startup_command(request);
 #endif
 #if ENABLE_HTTP_FLAGS
-	if (http_checkUrlBase(urlStr, "cfg_generic")) return http_fn_cfg_generic(request);
+	if (http_checkUrlBase(urlStr, "cfg_generic"))
+		return http_fn_cfg_generic(request);
 #endif
 #if ENABLE_HTTP_STARTUP
-	if (http_checkUrlBase(urlStr, "cfg_startup")) return http_fn_cfg_startup(request);
+	if (http_checkUrlBase(urlStr, "cfg_startup"))
+		return http_fn_cfg_startup(request);
 #endif
 #if ENABLE_HTTP_DGR
-	if (http_checkUrlBase(urlStr, "cfg_dgr")) return http_fn_cfg_dgr(request);
+	if (http_checkUrlBase(urlStr, "cfg_dgr"))
+		return http_fn_cfg_dgr(request);
 #endif
 
 #if ENABLE_HA_DISCOVERY
-	if (http_checkUrlBase(urlStr, "ha_cfg")) return http_fn_ha_cfg(request);
-	if (http_checkUrlBase(urlStr, "ha_discovery")) return http_fn_ha_discovery(request);
+	if (http_checkUrlBase(urlStr, "ha_cfg"))
+		return http_fn_ha_cfg(request);
+	if (http_checkUrlBase(urlStr, "ha_discovery"))
+		return http_fn_ha_discovery(request);
 #endif
-	if (http_checkUrlBase(urlStr, "cfg")) return http_fn_cfg(request);
+	if (http_checkUrlBase(urlStr, "cfg"))
+		return http_fn_cfg(request);
 
-	if (http_checkUrlBase(urlStr, "cfg_pins")) return http_fn_cfg_pins(request);
+	if (http_checkUrlBase(urlStr, "cfg_pins"))
+		return http_fn_cfg_pins(request);
 #if ENABLE_HTTP_PING
-	if (http_checkUrlBase(urlStr, "cfg_ping")) return http_fn_cfg_ping(request);
+	if (http_checkUrlBase(urlStr, "cfg_ping"))
+		return http_fn_cfg_ping(request);
 #endif
 
+	if (http_checkUrlBase(urlStr, "ota"))
+		return http_fn_ota(request);
+	if (http_checkUrlBase(urlStr, "ota_exec"))
+		return http_fn_ota_exec(request);
+	if (http_checkUrlBase(urlStr, "cm"))
+		return http_fn_cm(request);
 
-	if (http_checkUrlBase(urlStr, "ota")) return http_fn_ota(request);
-	if (http_checkUrlBase(urlStr, "ota_exec")) return http_fn_ota_exec(request);
-	if (http_checkUrlBase(urlStr, "cm")) return http_fn_cm(request);
-	
 #if ENABLE_TIME_PMNTP
-	if (http_checkUrlBase(urlStr, "pmntp")) return http_fn_pmntp(request); // poor mans NTP
+	if (http_checkUrlBase(urlStr, "pmntp"))
+		return http_fn_pmntp(request); // poor mans NTP
 #endif
 	return http_fn_other(request);
 }
@@ -930,10 +1060,10 @@ Gulp tasks should automatically appear in Visual Code or can be invoked from con
 See https://github.com/openshwprojects/OpenBK7231T_App/blob/main/BUILDING.md for gulp setup.
 */
 
-//region_start htmlHeadStyle
+// region_start htmlHeadStyle
 const char htmlHeadStyle[] = "<style>div,fieldset,input,select{padding:5px;font-size:1em;margin:0 0 .2em}fieldset{background:#4f4f4f}p{margin:.5em 0}input{width:100%;box-sizing:border-box;-webkit-box-sizing:border-box;-moz-box-sizing:border-box;background:#ddd;color:#000}form{margin-bottom:.5em}input[type=checkbox],input[type=radio]{width:1em;margin-right:6px;vertical-align:-1px}input[type=range]{width:99%}select{width:100%;background:#ddd;color:#000}textarea{resize:vertical;width:98%;height:318px;padding:5px;overflow:auto;background:#1f1f1f;color:#65c115}body{text-align:center;font-family:verdana,sans-serif}body,h1 a{background:#21333e;color:#eaeaea}td{padding:0}button,input[type=submit]{border:0;border-radius:.3rem;background:#1fa3ec;color:#faffff;line-height:2.4rem;font-size:1.2rem;cursor:pointer}input[type=submit]{width:100%;transition-duration:.4s}input[type=submit]:hover{background:#0e70a4}.bred{background:#d43535!important}.bred:hover{background:#931f1f!important}.bgrn{background:#47c266!important}.bgrn:hover{background:#5aaf6f!important}a{color:#1fa3ec;text-decoration:none}.p{float:left;text-align:left}.q{float:right;text-align:right}.r{border-radius:.3em;padding:2px;margin:6px 2px;background:linear-gradient(90deg,#ffa000,#a6d1ff)}.hf{display:none}.hdiv{width:95%;white-space:nowrap}.hele{width:210px;display:inline-block;margin-left:2px}div#state{padding:0}div#changed{padding:0;height:23px}div#main{text-align:left;display:inline-block;color:#eaeaea;min-width:340px;max-width:800px}table{table-layout:fixed;width:100%}.disp-none{display:none}.disp-inline{display:inline-block}.safe{color:red}form.indent{padding-left:16px}li{margin:5px 0}.off,.on{text-align:center;font-size:54px}.on{font-weight:700}</style>";
-//region_end htmlHeadStyle
+// region_end htmlHeadStyle
 
-//region_start ha_discovery_script
+// region_start ha_discovery_script
 const char ha_discovery_script[] = "<script type='text/javascript'>function send_ha_disc(){var e=new XMLHttpRequest;e.open(\"GET\",\"/ha_discovery?prefix=\"+document.getElementById(\"ha_disc_topic\").value,!1),e.onload=function(){200===e.status?alert(e.responseText):404===e.status&&alert(\"Error invoking ha_discovery\")},e.onerror=function(){alert(\"Error invoking ha_discovery\")},e.send()}</script>";
-//region_end ha_discovery_script
+// region_end ha_discovery_script

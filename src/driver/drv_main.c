@@ -22,6 +22,12 @@
 #include "drv_ds3231.h"
 #include "drv_hlw8112.h"
 
+void DRV_MQTTServer_Init();
+void DRV_MQTTServer_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState);
+void DRV_MQTTServer_RunEverySecond();
+void DRV_MQTTServer_RunQuickTick();
+void DRV_MQTTServer_Stop();
+
 
 typedef struct driver_s {
 	const char* name;
@@ -727,7 +733,7 @@ static driver_t g_drivers[] = {
 	false,                                   // loaded
 	},
 #endif
-#if ENABLE_DRIVER_IRREMOTEESP
+#if ENABLE_DRIVER_IR || ENABLE_DRIVER_IRREMOTEESP
 	//drvdetail:{"name":"IR",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"IRLibrary wrapper, so you can receive remote signals and send them. See [forum discussion here](https://www.elektroda.com/rtvforum/topic3920360.html), also see [LED strip and IR YT video](https://www.youtube.com/watch?v=KU0tDwtjfjw)",
@@ -737,39 +743,23 @@ static driver_t g_drivers[] = {
 	NULL,                                    // onEverySecond
 	NULL,                                    // appendInformationToHTTPIndexPage
 	DRV_IR_RunFrame,                         // runQuickTick
-	NULL,                                    // stopFunction
-	NULL,                                    // onChannelChanged
-	NULL,                                    // onHassDiscovery
-	false,                                   // loaded
-	},
-#endif
-#if ENABLE_DRIVER_IR
-	//drvdetail:{"name":"IR",
-	//drvdetail:"title":"TODO",
-	//drvdetail:"descr":"IRLibrary wrapper, so you can receive remote signals and send them. See [forum discussion here](https://www.elektroda.com/rtvforum/topic3920360.html), also see [LED strip and IR YT video](https://www.youtube.com/watch?v=KU0tDwtjfjw)",
-	//drvdetail:"requires":""}
-	{ "IR",                                  // Driver Name
-	DRV_IR_Init,                             // Init
-	NULL,                                    // onEverySecond
-	NULL,                                    // appendInformationToHTTPIndexPage
-	DRV_IR_RunFrame,                         // runQuickTick
-	NULL,                                    // stopFunction
+	DRV_IR_Deinit,                           // stopFunction
 	NULL,                                    // onChannelChanged
 	NULL,                                    // onHassDiscovery
 	false,                                   // loaded
 	},
 #endif
 #if ENABLE_DRIVER_RC
-		//drvdetail:{"name":"RC",
-		//drvdetail:"title":"TODO",
-		//drvdetail:"descr":"",
-		//drvdetail:"requires":""}
+	//drvdetail:{"name":"RC",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"",
+	//drvdetail:"requires":""}
 	{ "RC",                                  // Driver Name
 	DRV_RC_Init,                             // Init
 	NULL,                                    // onEverySecond
-	RC_AppendInformationToHTTPIndexPage,                                    // appendInformationToHTTPIndexPage
+	RC_AppendInformationToHTTPIndexPage,     // appendInformationToHTTPIndexPage
 	DRV_RC_RunFrame,                         // runQuickTick
-	NULL,                                    // stopFunction
+	DRV_RC_Deinit,                           // stopFunction
 	NULL,                                    // onChannelChanged
 	NULL,                                    // onHassDiscovery
 	false,                                   // loaded
@@ -804,6 +794,22 @@ static driver_t g_drivers[] = {
 	DRV_DDPSend_Shutdown,                    // stopFunction
 	NULL,                                    // onChannelChanged
 	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
+	},
+#endif
+#if ENABLE_DRIVER_SHUTTERS
+	//drvdetail:{"name":"Shutters",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"ShutterShutters",
+	//drvdetail:"requires":""}
+	{ "Shutters",                                 // Driver Name
+	DRV_Shutters_Init,                            // Init
+	DRV_Shutters_RunEverySecond,                                    // onEverySecond
+	DRV_Shutters_AddToHtmlPage, // appendInformationToHTTPIndexPage
+	DRV_Shutters_RunQuickTick,                        // runQuickTick
+	NULL,                        // stopFunction
+	NULL,                                    // onChannelChanged
+	DRV_Shutters_DoDiscovery,                 // onHassDiscovery
 	false,                                   // loaded
 	},
 #endif
@@ -1005,6 +1011,22 @@ static driver_t g_drivers[] = {
 	NULL,                                    // onChannelChanged
 	NULL,                                    // onHassDiscovery
 	false,                                   // loaded
+	},
+#endif
+#if ENABLE_DRIVER_SSD1306
+	//drvdetail:{"name":"SSD1306",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"SSD1306 OLEd 128x32 I2C display driver.",
+	//drvdetail:"requires":""}
+	{ "SSD1306",                              // Driver Name
+		SSD1306_DRV_Init,                             // Init
+		SSD1306_OnEverySecond,                    // onEverySecond
+		NULL, // appendInformationToHTTPIndexPage
+		NULL,                                    // runQuickTick
+		NULL,                                    // stopFunction
+		NULL,                                    // onChannelChanged
+		NULL,                                    // onHassDiscovery
+		false,                                   // loaded
 	},
 #endif
 #if ENABLE_DRIVER_BMP280
@@ -1385,6 +1407,54 @@ static driver_t g_drivers[] = {
 	NULL,                                    // onHassDiscovery
 	false,                                   // loaded
 	},
+#endif
+#if ENABLE_DRIVER_LTR_ALS
+	//drvdetail:{"name":"LTR_ALS",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"LTR-303/329 ambient light sensor driver.",
+	//drvdetail:"requires":""}
+	{ "LTR_ALS",                          // Driver Name
+	LTR_Init,                             // Init
+	LTR_OnEverySecond,                    // onEverySecond
+	LTR_AppendInformationToHTTPIndexPage, // appendInformationToHTTPIndexPage
+	NULL,                                 // runQuickTick
+	NULL,                                 // stopFunction
+	NULL,                                 // onChannelChanged
+	NULL,                                 // onHassDiscovery
+	false,                                // loaded
+	},
+#endif
+#if ENABLE_DRIVER_TINYIR_NEC
+	//drvdetail:{"name":"TinyIR_NEC",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"NEC-only IR receiver",
+	//drvdetail:"requires":""}
+	{ "TinyIR_NEC",      // Driver Name
+	TinyIR_NEC_Init,     // Init
+	NULL,                // onEverySecond
+	NULL,                // appendInformationToHTTPIndexPage
+	TinyIR_NEC_RunFrame, // runQuickTick
+	TinyIR_NEC_Deinit,   // stopFunction
+	NULL,                // onChannelChanged
+	NULL,                // onHassDiscovery
+	false,               // loaded
+	},
+#endif
+#if ENABLE_DRIVER_MQTTSERVER
+	//drvdetail:{"name":"mqttServer",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"MQTT Server driver.",
+	//drvdetail:"requires":""}
+	{ "mqttServer",                          // Driver Name
+	DRV_MQTTServer_Init,                     // Init
+	DRV_MQTTServer_RunEverySecond,           // onEverySecond
+	DRV_MQTTServer_AppendInformationToHTTPIndexPage, // appendInformationToHTTPIndexPage
+	DRV_MQTTServer_RunQuickTick,             // runQuickTick
+	DRV_MQTTServer_Stop,                     // stopFunction
+	NULL,                                    // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
+	}
 #endif
 	//{ "", NULL, NULL, NULL, NULL, NULL, NULL, NULL, false },
 };

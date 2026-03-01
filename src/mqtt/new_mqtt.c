@@ -12,7 +12,7 @@
 #include "../cmnds/cmd_public.h"
 #include "../hal/hal_wifi.h"
 #include "../driver/drv_public.h"
-#include "../driver/drv_ntp.h"
+//#include "../driver/drv_ntp.h"
 #include "../driver/drv_deviceclock.h"
 #include "../driver/drv_tuyaMCU.h"
 #include "../hal/hal_ota.h"
@@ -1787,7 +1787,7 @@ static BENCHMARK_TEST_INFO* info = NULL;
 #if WINDOWS
 
 #elif PLATFORM_BL602 || PLATFORM_W600 || PLATFORM_W800 || PLATFORM_ESPIDF || PLATFORM_TR6260 \
-	|| PLATFORM_REALTEK || PLATFORM_ECR6600 || PLATFORM_ESP8266 || PLATFORM_TXW81X || PLATFORM_RDA5981
+	|| PLATFORM_REALTEK || PLATFORM_ECR6600 || PLATFORM_ESP8266 || PLATFORM_TXW81X || PLATFORM_RDA5981 || PLATFORM_LN8825
 static void mqtt_timer_thread(void* param)
 {
 	while (1)
@@ -1828,7 +1828,7 @@ commandResult_t MQTT_StartMQTTTestThread(const void* context, const char* cmd, c
 #if WINDOWS
 
 #elif PLATFORM_BL602 || PLATFORM_W600 || PLATFORM_W800 || PLATFORM_ESPIDF || PLATFORM_TR6260 \
-	|| PLATFORM_REALTEK || PLATFORM_ECR6600 || PLATFORM_ESP8266
+	|| PLATFORM_REALTEK || PLATFORM_ECR6600 || PLATFORM_ESP8266 || PLATFORM_LN8825
 	xTaskCreate(mqtt_timer_thread, "mqtt", 1024, (void*)info, 15, NULL);
 #elif PLATFORM_TXW81X
 	os_task_create("mqtt", mqtt_timer_thread, (void*)info, 15, 0, NULL, 1024);
@@ -2447,6 +2447,11 @@ void MQTT_QueuePublishWithCommand(const char* topic, const char* channel, const 
 
 		if (newItem == NULL) {
 			newItem = os_malloc(sizeof(MqttPublishItem_t));
+			if(newItem == NULL)
+			{
+				//addLogAdv(LOG_ERROR, LOG_FEATURE_MQTT, "os_malloc failed for MqttPublishItem_t");
+				return;
+			}
 			newItem->next = NULL;
 			get_queue_tail(g_MqttPublishQueueHead)->next = newItem; //Append new item
 		}
@@ -2585,20 +2590,20 @@ struct tm* cvt_date(char const* date, char const* time, struct tm* t)
 	return t;
 }
 struct tm* mbedtls_platform_gmtime_r(const mbedtls_time_t* tt, struct tm* tm_buf) {
-	// If NTP time not synced return compile time
+	// If time not synced return compile time
 	struct tm* ltm;
-	if (!NTP_IsTimeSynced()) {	
+	if (!TIME_IsTimeSynced()) {	
 		ltm = cvt_date(__DATE__, __TIME__, tm_buf);
 		if (log_gmtime_alt) {
-			addLogAdv(LOG_INFO, LOG_FEATURE_NTP, "MBEDTLS: NTP not synchronized. Using compile time: %04d/%02d/%02d %02d:%02d:%02d",
+			addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "MBEDTLS: TIME not synchronized. Using compile time: %04d/%02d/%02d %02d:%02d:%02d",
 				ltm->tm_year + 1900, ltm->tm_mon + 1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min, ltm->tm_sec);
 			log_gmtime_alt = false; 
 		}			
 		return ltm;
 	}
-	time_t ntpTime;
-	ntpTime=(time_t)TIME_GetCurrentTime();
-	return gmtime_r((time_t*)&ntpTime, tm_buf);
+	time_t devTime;
+	devTime=(time_t)TIME_GetCurrentTime();
+	return gmtime_r((time_t*)&devTime, tm_buf);
 }
 #endif  //MBEDTLS_PLATFORM_GMTIME_R_ALT
 

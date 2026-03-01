@@ -143,6 +143,7 @@ commandResult_t CMD_LEDDriver_Map(const void *context, const char *cmd, const ch
 static void SM2135_SetCurrent(int curValRGB, int curValCW) {
 	g_current_setting_rgb = curValRGB;
 	g_current_setting_cw = curValCW;
+	LED_ResendCurrentColors();
 }
 
 static commandResult_t SM2135_Current(const void *context, const char *cmd, const char *args, int flags){

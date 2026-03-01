@@ -1,4 +1,4 @@
-#ifdef PLATFORM_LN882H
+#if PLATFORM_LN882H || PLATFORM_LN8825
 
 #include "../../new_common.h"
 #include "../hal_flashVars.h"

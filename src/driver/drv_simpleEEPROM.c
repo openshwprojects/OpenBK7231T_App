@@ -160,8 +160,10 @@ commandResult_t EEPROM_DumpCmd(const void*ctx, const char*cmd, const char*args, 
 // EEPROM_Write 0 AABBCC
 // EEPROM_Read 0 16
 void EEPROM_Init() {
-	g_eepI2C.pin_clk = Tokenizer_GetArgIntegerDefault(1, g_eepI2C.pin_clk); 
-	g_eepI2C.pin_data = Tokenizer_GetArgIntegerDefault(2, g_eepI2C.pin_data);
+//	g_eepI2C.pin_clk = Tokenizer_GetArgIntegerDefault(1, g_eepI2C.pin_clk); 
+//	g_eepI2C.pin_data = Tokenizer_GetArgIntegerDefault(2, g_eepI2C.pin_data);
+	g_eepI2C.pin_clk = Tokenizer_GetPin(1, g_eepI2C.pin_clk); 
+	g_eepI2C.pin_data = Tokenizer_GetPin(2, g_eepI2C.pin_data);
 	Soft_I2C_PreInit(&g_eepI2C);
 	//cmddetail:{"name":"EEPROM_Read","args":"TODO",
 	//cmddetail:"descr":"",

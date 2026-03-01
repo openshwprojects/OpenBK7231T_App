@@ -14,55 +14,50 @@
 void SelfTest_Failed(const char *file, const char *function, int line, const char *exp);
 
 #define SELFTEST_ASSERT(expr) \
-	if (!(expr)) \
+	if (!(expr))              \
 	SelfTest_Failed(__FILE__, __FUNCTION__, __LINE__, #expr)
 
 #define SELFTEST_ASSERT_FLOATCOMPARE(exp, res) SELFTEST_ASSERT(Float_Equals(exp, res));
-#define SELFTEST_ASSERT_INTCOMPARE(exp, res) SELFTEST_ASSERT((exp==res));
+#define SELFTEST_ASSERT_INTCOMPARE(exp, res) SELFTEST_ASSERT((exp == res));
 #define SELFTEST_ASSERT_FLOATCOMPAREEPSILON(exp, res, eps) SELFTEST_ASSERT(Float_EqualsEpsilon(exp, res, eps));
-#define SELFTEST_ASSERT_EXPRESSION(exp, res) SELFTEST_ASSERT(Float_Equals(CMD_EvaluateExpression(exp,0), res));
+#define SELFTEST_ASSERT_EXPRESSION(exp, res) SELFTEST_ASSERT(Float_Equals(CMD_EvaluateExpression(exp, 0), res));
 // currently, channels are integers
 #define SELFTEST_ASSERT_CHANNEL(channelIndex, res) SELFTEST_ASSERT(CHANNEL_Get(channelIndex) == res);
 #define SELFTEST_ASSERT_CHANNELEPSILON(channelIndex, res, marg) SELFTEST_ASSERT(Float_EqualsEpsilon(CHANNEL_Get(channelIndex), res, marg));
-#define SELFTEST_ASSERT_CHANNELTYPE(channelIndex, res) SELFTEST_ASSERT(CHANNEL_GetType(channelIndex)==res);
-#define SELFTEST_ASSERT_PIN_BOOLEAN(pinIndex, res) SELFTEST_ASSERT((SIM_GetSimulatedPinValue(pinIndex)== res));
+#define SELFTEST_ASSERT_CHANNELTYPE(channelIndex, res) SELFTEST_ASSERT(CHANNEL_GetType(channelIndex) == res);
+#define SELFTEST_ASSERT_PIN_BOOLEAN(pinIndex, res) SELFTEST_ASSERT((SIM_GetSimulatedPinValue(pinIndex) == res));
 #define SELFTEST_ASSERT_ARGUMENT(argumentIndex, res) SELFTEST_ASSERT(!strcmp(Tokenizer_GetArg(argumentIndex), res));
-#define SELFTEST_ASSERT_ARGUMENT_INTEGER(argumentIndex, res) SELFTEST_ASSERT((Tokenizer_GetArgInteger(argumentIndex)== res));
-#define SELFTEST_ASSERT_ARGUMENTS_COUNT(wantedCount) SELFTEST_ASSERT((Tokenizer_GetArgsCount()==wantedCount));
-#define SELFTEST_ASSERT_JSON_VALUE_STRING(obj, varName, res) SELFTEST_ASSERT(!strcmp(Test_GetJSONValue_String(varName,obj), res));
-#define SELFTEST_ASSERT_JSON_ONE_OF_TWO_VALUES_STRING(obj, varName, res, res2) SELFTEST_ASSERT(!strcmp(Test_GetJSONValue_String(varName,obj), res) || !strcmp(Test_GetJSONValue_String(varName,obj), res2));
-#define SELFTEST_ASSERT_JSON_VALUE_STRING_STARTSWITH(obj, varName, res) SELFTEST_ASSERT(!strncmp(Test_GetJSONValue_String(varName,obj), res, strlen(res)));
-#define SELFTEST_ASSERT_JSON_VALUE_STRING_NOT_PRESENT(obj, varName) SELFTEST_ASSERT((*Test_GetJSONValue_String(varName,obj))==0);
-#define SELFTEST_ASSERT_JSON_VALUE_EXISTS(obj, varName) SELFTEST_ASSERT(Test_GetJSONValue_Generic(varName,obj));
-#define SELFTEST_ASSERT_JSON_VALUE_INTEGER(obj, varName, res) SELFTEST_ASSERT((Test_GetJSONValue_Integer(varName,obj) == res));
-#define SELFTEST_ASSERT_JSON_VALUE_INTEGER_NESTED2(par1, par2, varName, res) SELFTEST_ASSERT((Test_GetJSONValue_Integer_Nested2(par1, par2,varName) == res));
-#define SELFTEST_ASSERT_JSON_VALUE_FLOAT_NESTED2(par1, par2, varName, res) SELFTEST_ASSERT((Float_Equals(Test_GetJSONValue_Float_Nested2(par1, par2,varName),res)));
-#define SELFTEST_ASSERT_JSON_VALUE_STRING_NESTED2(par1, par2, varName, res) SELFTEST_ASSERT((!strcmp(Test_GetJSONValue_String_Nested2(par1, par2,varName),res)));
-#define SELFTEST_ASSERT_HAS_MQTT_ARRAY_ITEM_INT(index, key, valInt) SELFTEST_ASSERT((Test_GetJSONValue_IntFromArray(index,key)==valInt));
-#define SELFTEST_ASSERT_HAS_MQTT_ARRAY_ITEM_STR(index, key, valInt) SELFTEST_ASSERT((!strcmp(Test_GetJSONValue_StrFromArray(index,key),valInt)));
-#define SELFTEST_ASSERT_JSON_VALUE_STRING_NESTED_ARRAY(par, varName, index, res) SELFTEST_ASSERT((!strcmp(Test_GetJSONValue_StrFromNestedArray(par, varName, index),res)));
+#define SELFTEST_ASSERT_ARGUMENT_INTEGER(argumentIndex, res) SELFTEST_ASSERT((Tokenizer_GetArgInteger(argumentIndex) == res));
+#define SELFTEST_ASSERT_ARGUMENTS_COUNT(wantedCount) SELFTEST_ASSERT((Tokenizer_GetArgsCount() == wantedCount));
+#define SELFTEST_ASSERT_JSON_VALUE_STRING(obj, varName, res) SELFTEST_ASSERT(!strcmp(Test_GetJSONValue_String(varName, obj), res));
+#define SELFTEST_ASSERT_JSON_ONE_OF_TWO_VALUES_STRING(obj, varName, res, res2) SELFTEST_ASSERT(!strcmp(Test_GetJSONValue_String(varName, obj), res) || !strcmp(Test_GetJSONValue_String(varName, obj), res2));
+#define SELFTEST_ASSERT_JSON_VALUE_STRING_STARTSWITH(obj, varName, res) SELFTEST_ASSERT(!strncmp(Test_GetJSONValue_String(varName, obj), res, strlen(res)));
+#define SELFTEST_ASSERT_JSON_VALUE_STRING_NOT_PRESENT(obj, varName) SELFTEST_ASSERT((*Test_GetJSONValue_String(varName, obj)) == 0);
+#define SELFTEST_ASSERT_JSON_VALUE_EXISTS(obj, varName) SELFTEST_ASSERT(Test_GetJSONValue_Generic(varName, obj));
+#define SELFTEST_ASSERT_JSON_VALUE_INTEGER(obj, varName, res) SELFTEST_ASSERT((Test_GetJSONValue_Integer(varName, obj) == res));
+#define SELFTEST_ASSERT_JSON_VALUE_INTEGER_NESTED2(par1, par2, varName, res) SELFTEST_ASSERT((Test_GetJSONValue_Integer_Nested2(par1, par2, varName) == res));
+#define SELFTEST_ASSERT_JSON_VALUE_FLOAT_NESTED2(par1, par2, varName, res) SELFTEST_ASSERT((Float_Equals(Test_GetJSONValue_Float_Nested2(par1, par2, varName), res)));
+#define SELFTEST_ASSERT_JSON_VALUE_STRING_NESTED2(par1, par2, varName, res) SELFTEST_ASSERT((!strcmp(Test_GetJSONValue_String_Nested2(par1, par2, varName), res)));
+#define SELFTEST_ASSERT_HAS_MQTT_ARRAY_ITEM_INT(index, key, valInt) SELFTEST_ASSERT((Test_GetJSONValue_IntFromArray(index, key) == valInt));
+#define SELFTEST_ASSERT_HAS_MQTT_ARRAY_ITEM_STR(index, key, valInt) SELFTEST_ASSERT((!strcmp(Test_GetJSONValue_StrFromArray(index, key), valInt)));
+#define SELFTEST_ASSERT_JSON_VALUE_STRING_NESTED_ARRAY(par, varName, index, res) SELFTEST_ASSERT((!strcmp(Test_GetJSONValue_StrFromNestedArray(par, varName, index), res)));
 #define SELFTEST_ASSERT_HTTP_HAS_LED_DIMMER(bHas) SELFTEST_ASSERT((bHas) == SIM_HasHTTPDimmer());
 #define SELFTEST_ASSERT_HTTP_HAS_LED_TEMPERATURE(bHas) SELFTEST_ASSERT((bHas) == SIM_HasHTTPTemperature());
 #define SELFTEST_ASSERT_HTTP_HAS_LED_RGB(bHas) SELFTEST_ASSERT((bHas) == SIM_HasHTTPRGB());
 #define SELFTEST_ASSERT_HTTP_HAS_BUTTON_LEDS_ON(bHas) SELFTEST_ASSERT((bHas) == SIM_HasHTTP_LED_Toggler(true));
 #define SELFTEST_ASSERT_HTTP_HAS_BUTTON_LEDS_OFF(bHas) SELFTEST_ASSERT((bHas) == SIM_HasHTTP_LED_Toggler(false));
 
+#define SELFTEST_ASSERT_PAGE_NOT_CONTAINS(page, expected) SELFTEST_ASSERT(!(strstr(Test_QueryHTMLReply(page), expected)));
+#define SELFTEST_ASSERT_PAGE_CONTAINS(page, expected) SELFTEST_ASSERT((strstr(Test_QueryHTMLReply(page), expected)));
 
-
-
-
-
-#define SELFTEST_ASSERT_PAGE_NOT_CONTAINS(page,expected) SELFTEST_ASSERT(!(strstr(Test_QueryHTMLReply(page),expected)));
-#define SELFTEST_ASSERT_PAGE_CONTAINS(page,expected) SELFTEST_ASSERT((strstr(Test_QueryHTMLReply(page),expected)));
-
-#define SELFTEST_ASSERT_STRING(current,expected) SELFTEST_ASSERT((strcmp(expected,current) == 0));
-#define SELFTEST_ASSERT_INTEGER(current,expected) SELFTEST_ASSERT((expected==current));
-#define SELFTEST_ASSERT_HTML_REPLY(expected) SELFTEST_ASSERT((strcmp(Test_GetLastHTMLReply(),expected) == 0));
-#define SELFTEST_ASSERT_HTML_REPLY_CONTAINS(expected) SELFTEST_ASSERT((strstr(Test_GetLastHTMLReply(),expected)));
-#define SELFTEST_ASSERT_HTML_REPLY_NOT_CONTAINS(expected) SELFTEST_ASSERT(!(strstr(Test_GetLastHTMLReply(),expected)));
-#define SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR(topic, value, bRetain) SELFTEST_ASSERT(SIM_CheckMQTTHistoryForString(topic,value,bRetain));
-#define SELFTEST_ASSERT_HAD_MQTT_PUBLISH_FLOAT(topic, value, bRetain) SELFTEST_ASSERT(SIM_CheckMQTTHistoryForFloat(topic,value,bRetain));
-#define SELFTEST_ASSERT_FLAG(flag, value) SELFTEST_ASSERT(CFG_HasFlag(flag)==value);
+#define SELFTEST_ASSERT_STRING(current, expected) SELFTEST_ASSERT((strcmp(expected, current) == 0));
+#define SELFTEST_ASSERT_INTEGER(current, expected) SELFTEST_ASSERT((expected == current));
+#define SELFTEST_ASSERT_HTML_REPLY(expected) SELFTEST_ASSERT((strcmp(Test_GetLastHTMLReply(), expected) == 0));
+#define SELFTEST_ASSERT_HTML_REPLY_CONTAINS(expected) SELFTEST_ASSERT((strstr(Test_GetLastHTMLReply(), expected)));
+#define SELFTEST_ASSERT_HTML_REPLY_NOT_CONTAINS(expected) SELFTEST_ASSERT(!(strstr(Test_GetLastHTMLReply(), expected)));
+#define SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR(topic, value, bRetain) SELFTEST_ASSERT(SIM_CheckMQTTHistoryForString(topic, value, bRetain));
+#define SELFTEST_ASSERT_HAD_MQTT_PUBLISH_FLOAT(topic, value, bRetain) SELFTEST_ASSERT(SIM_CheckMQTTHistoryForFloat(topic, value, bRetain));
+#define SELFTEST_ASSERT_FLAG(flag, value) SELFTEST_ASSERT(CFG_HasFlag(flag) == value);
 #define SELFTEST_ASSERT_HAS_MQTT_JSON_SENT(topic, bPrefixMode) SELFTEST_ASSERT(!SIM_BeginParsingMQTTJSON(topic, bPrefixMode));
 #define SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY(topic, bPrefixMode, object1, object2, key, value) SELFTEST_ASSERT(SIM_HasMQTTHistoryStringWithJSONPayload(topic, bPrefixMode, object1, object2, key, value, 0, 0, 0, 0, 0, 0));
 #define SELFTEST_ASSERT_HAS_NOT_MQTT_JSON_SENT_ANY(topic, bPrefixMode, object1, object2, key, value) SELFTEST_ASSERT(!SIM_HasMQTTHistoryStringWithJSONPayload(topic, bPrefixMode, object1, object2, key, value, 0, 0, 0, 0, 0, 0));
@@ -70,14 +65,13 @@ void SelfTest_Failed(const char *file, const char *function, int line, const cha
 #define SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY_3KEY(topic, bPrefixMode, object1, object2, key, value, key2, value2, key3, value3) SELFTEST_ASSERT(SIM_HasMQTTHistoryStringWithJSONPayload(topic, bPrefixMode, object1, object2, key, value, key2, value2, key3, value3, 0, 0));
 #define SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY_4KEY(topic, bPrefixMode, object1, object2, key, value, key2, value2, key3, value3, key4, value4) SELFTEST_ASSERT(SIM_HasMQTTHistoryStringWithJSONPayload(topic, bPrefixMode, object1, object2, key, value, key2, value2, key3, value3, key4, value4));
 #define SELFTEST_ASSERT_HAS_SENT_UART_STRING(str) SELFTEST_ASSERT(SIM_UART_ExpectAndConsumeHexStr(str));
-#define SELFTEST_ASSERT_HAS_UART_EMPTY() SELFTEST_ASSERT(SIM_UART_GetDataSize()==0);
-#define SELFTEST_ASSERT_HAS_SOME_DATA_IN_UART() SELFTEST_ASSERT(SIM_UART_GetDataSize()!=0);
+#define SELFTEST_ASSERT_HAS_UART_EMPTY() SELFTEST_ASSERT(SIM_UART_GetDataSize() == 0);
+#define SELFTEST_ASSERT_HAS_SOME_DATA_IN_UART() SELFTEST_ASSERT(SIM_UART_GetDataSize() != 0);
 
-//#define FLOAT_EQUALS (a,b) (fabs(a-b)<0.001f)
+// #define FLOAT_EQUALS (a,b) (fabs(a-b)<0.001f)
 float myFabs(float f);
 bool Float_Equals(float a, float b);
 bool Float_EqualsEpsilon(float a, float b, float epsilon);
-
 
 const char *va(const char *fmt, ...);
 
@@ -89,7 +83,7 @@ void Test_TwoPWMsOneChannel();
 void Test_ClockEvents();
 void Test_Commands_Channels();
 void Test_LEDDriver();
-void Test_TuyaMCU_Basic(); 
+void Test_TuyaMCU_Basic();
 void Test_TuyaMCU_Calib();
 void Test_TuyaMCU_Boolean();
 void Test_TuyaMCU_DP22();
@@ -155,6 +149,8 @@ void Test_PIR();
 void Test_Driver_TCL_AC();
 void Test_MAX72XX();
 void Test_OpenWeatherMap();
+void Test_Shutters();
+void Test_Pins();
 
 void Test_GetJSONValue_Setup(const char *text);
 void Test_FakeHTTPClientPacket_GET(const char *tg);
@@ -193,10 +189,10 @@ void SIM_SendFakeMQTTRawChannelSet_ViaGroupTopic(int channelIndex, const char *a
 void SIM_ClearMQTTHistory();
 void SIM_DumpMQTTHistory();
 bool SIM_CheckMQTTHistoryForString(const char *topic, const char *value, bool bRetain);
-bool SIM_HasMQTTHistoryStringWithJSONPayload(const char *topic, bool bPrefixMode, 
-	const char *object1, const char *object2,
-	const char *key, const char *value, const char *key2, const char *val2,
-	const char *key3, const char *val3, const char *key4, const char *val4);
+bool SIM_HasMQTTHistoryStringWithJSONPayload(const char *topic, bool bPrefixMode,
+											 const char *object1, const char *object2,
+											 const char *key, const char *value, const char *key2, const char *val2,
+											 const char *key3, const char *val3, const char *key4, const char *val4);
 bool SIM_CheckMQTTHistoryForFloat(const char *topic, float value, bool bRetain);
 const char *SIM_GetMQTTHistoryString(const char *topic, bool bPrefixMode);
 bool SIM_BeginParsingMQTTJSON(const char *topic, bool bPrefixMode);
@@ -212,7 +208,6 @@ void SIM_AppendUARTByte(byte rc);
 bool SIM_UART_ExpectAndConsumeHByte(byte b);
 bool SIM_UART_ExpectAndConsumeHexStr(const char *hexString);
 void SIM_ClearUART();
-
 
 #endif
 #endif // __SELFTEST_LOCAL_H__

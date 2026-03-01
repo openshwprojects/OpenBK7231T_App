@@ -81,3 +81,7 @@
 	path = sdk/OpenRDA5981
 	url = https://github.com/NonPIayerCharacter/OpenRDA5981
 	branch = master
+[submodule "sdk/OpenLN8825"]
+	path = sdk/OpenLN8825
+	url = https://github.com/NonPIayerCharacter/OpenLN8825
+	branch = master

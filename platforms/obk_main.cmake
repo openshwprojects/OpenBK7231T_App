@@ -27,7 +27,9 @@ set(OBKM_SRC
 	${OBK_SRCS}hal/generic/hal_flashConfig_generic.c
 	${OBK_SRCS}hal/generic/hal_flashVars_generic.c
 	${OBK_SRCS}hal/generic/hal_generic.c
+	${OBK_SRCS}hal/generic/hal_hwtimer_generic.c
 	${OBK_SRCS}hal/generic/hal_main_generic.c
+	${OBK_SRCS}hal/generic/hal_ota_generic.c
 	${OBK_SRCS}hal/generic/hal_pins_generic.c
 	${OBK_SRCS}hal/generic/hal_wifi_generic.c
 	${OBK_SRCS}hal/generic/hal_uart_generic.c
@@ -97,6 +99,8 @@ set(OBKM_SRC
 	${OBK_SRCS}driver/drv_max72xx_internal.c
 	${OBK_SRCS}driver/drv_max72xx_single.c
 	${OBK_SRCS}driver/drv_mcp9808.c
+	${OBK_SRCS}driver/drv_mqttServer.c
+	${OBK_SRCS}driver/drv_mqttServerBerry.c
 	${OBK_SRCS}driver/drv_multiPinI2CScanner.c
 	${OBK_SRCS}driver/drv_ntp.c
 	${OBK_SRCS}driver/drv_deviceclock.c
@@ -122,18 +126,22 @@ set(OBKM_SRC
 	${OBK_SRCS}driver/drv_sm15155e.c
 	${OBK_SRCS}driver/drv_sm16703P.c
 	${OBK_SRCS}driver/drv_simpleEEPROM.c
+	${OBK_SRCS}driver/drv_shutters.c
 	${OBK_SRCS}driver/drv_leds_shared.c
+	${OBK_SRCS}driver/drv_ltr_als.c
 	${OBK_SRCS}driver/drv_spi.c
 	${OBK_SRCS}driver/drv_spiLED.c
 	${OBK_SRCS}driver/drv_spi_flash.c
 	${OBK_SRCS}driver/drv_spidma.c
 	${OBK_SRCS}driver/drv_ssdp.c
+	${OBK_SRCS}driver/drv_ssd1306.c
 	${OBK_SRCS}driver/drv_tasmotaDeviceGroups.c
 	${OBK_SRCS}driver/drv_tca9554.c
 	${OBK_SRCS}driver/drv_tclAC.c
 	${OBK_SRCS}driver/drv_test.c
 	${OBK_SRCS}driver/drv_test_drivers.c
 	${OBK_SRCS}driver/drv_textScroller.c
+	${OBK_SRCS}driver/drv_tinyir_nec.c
 	${OBK_SRCS}driver/drv_tm1637.c
 	${OBK_SRCS}driver/drv_tm1638.c
 	${OBK_SRCS}driver/drv_tm_gn_display_shared.c

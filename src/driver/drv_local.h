@@ -15,6 +15,12 @@ void DRV_DDP_RunFrame();
 void DRV_DDP_Shutdown();
 void DRV_DDP_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState);
 
+void DRV_Shutters_RunQuickTick();
+void DRV_Shutters_RunEverySecond();
+void DRV_Shutters_AddToHtmlPage(http_request_t *request, int bPreState);
+void DRV_Shutters_Init();
+void DRV_Shutters_DoDiscovery(const char *topic);
+
 void BMP280_Init();
 void BMP280_OnEverySecond();
 void BMP280_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState);
@@ -28,6 +34,9 @@ void DoorDeepSleep_OnChannelChanged(int ch, int value);
 void DRV_MAX72XX_Clock_OnEverySecond();
 void DRV_MAX72XX_Clock_RunFrame();
 void DRV_MAX72XX_Clock_Init();
+
+void SSD1306_DRV_Init();
+void SSD1306_OnEverySecond();
 
 void DRV_ADCButton_Init();
 void DRV_ADCButton_RunFrame();
@@ -224,6 +233,15 @@ void PixelAnim_SetAnimQuickTick();
 void PixelAnim_SetAnim(int j);
 void PixelAnim_CreatePanel(http_request_t* request);
 
+typedef struct ledAnim_s
+{
+	const char* name;
+	void(*runFunc)();
+} ledAnim_t;
+extern ledAnim_t g_anims[];
+extern int g_numAnims;
+extern int activeAnim;
+
 void Drawers_Init();
 void Drawers_QuickTick();
 
@@ -284,3 +302,11 @@ void Bridge_driver_DeInit();
 void Bridge_driver_QuickFrame();
 void Bridge_driver_OnChannelChanged(int ch, int value);
 /*************************************************************/
+
+void LTR_Init();
+void LTR_OnEverySecond();
+void LTR_AppendInformationToHTTPIndexPage(http_request_t* request, int bPreState);
+
+void TinyIR_NEC_Init();
+void TinyIR_NEC_Deinit();
+void TinyIR_NEC_RunFrame();

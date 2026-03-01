@@ -11,6 +11,7 @@
 #define OBK_VARIANT_IRREMOTEESP					4
 #define OBK_VARIANT_SENSORS						5
 #define OBK_VARIANT_HLW8112						6
+#define OBK_VARIANT_BATTERY						7
 #define OBK_VARIANT_ESP2M						1
 #define OBK_VARIANT_ESP4M						2
 #define OBK_VARIANT_ESP2M_BERRY					3
@@ -49,9 +50,10 @@
 #define ENABLE_NTP								1
 #define ENABLE_DRIVER_WEMO						1
 #define ENABLE_DRIVER_HUE						1
+#define ENABLE_DRIVER_TINYIR_NEC				1
 // allow usage as an WPA2 AP and define number of clients to connect
 #define ENABLE_WPA_AP						1
-#define WPA_AP_STA_CLIENTS					3
+#define AP_STA_CLIENTS					3
 
 #if PLATFORM_XR809
 #define ENABLE_DRIVER_BATTERY					1
@@ -69,7 +71,7 @@
 #endif
 // allow usage as an WPA2 AP and define number of clients to connect
 #define ENABLE_WPA_AP						1
-#define WPA_AP_STA_CLIENTS					3
+#define AP_STA_CLIENTS					3
 
 #elif PLATFORM_W600
 
@@ -89,10 +91,12 @@
 #define ENABLE_ADVANCED_CHANNELTYPES_DISCOVERY	1
 #define ENABLE_LITTLEFS							1
 //#define ENABLE_DRIVER_TUYAMCU					1
+//#define ENABLE_DRIVER_SM16703P					1
+//#define ENABLE_DRIVER_PIXELANIM					1
 #undef ENABLE_HTTP_MAC
 // allow usage as an WPA2 AP and define number of clients to connect
 #define ENABLE_WPA_AP						1
-#define WPA_AP_STA_CLIENTS					3
+#define AP_STA_CLIENTS					3
 
 #elif PLATFORM_W800
 
@@ -118,12 +122,15 @@
 #define ENABLE_LITTLEFS							1
 #define NEW_TCP_SERVER							1
 #define ENABLE_DRIVER_NEO6M						1
-#define ENABLE_TIME_SUNRISE_SUNSET					1
-#define ENABLE_TIME_DST				1
+#define ENABLE_TIME_SUNRISE_SUNSET				1
+#define ENABLE_TIME_DST							1
+#define ENABLE_DRIVER_LTR_ALS					1
+#define ENABLE_DRIVER_SM16703P					1
+#define ENABLE_DRIVER_PIXELANIM					1
+#define ENABLE_DRIVER_TINYIR_NEC				1
 // allow usage as an WPA2 AP and define number of clients to connect
 #define ENABLE_WPA_AP						1
-#define WPA_AP_STA_CLIENTS					3
-
+#define AP_STA_CLIENTS					3
 
 #elif WINDOWS
 
@@ -203,6 +210,7 @@
 #define ENABLE_OBK_BERRY						1
 #define ENABLE_DRIVER_DS1820_FULL				1
 #define ENABLE_DRIVER_DMX						1
+#define ENABLE_DRIVER_MQTTSERVER				1
 
 #elif PLATFORM_BL602
 
@@ -246,10 +254,11 @@
 //#undef ENABLE_DRIVER_BL0942
 #define ENABLE_DRIVER_IRREMOTEESP				1
 //#endif
-#define ENABLE_DRIVER_NEO6M					1
+#define ENABLE_DRIVER_NEO6M						1
+#define ENABLE_DRIVER_TINYIR_NEC				1
 // allow usage as an WPA2 AP and define number of clients to connect
 #define ENABLE_WPA_AP						1
-#define WPA_AP_STA_CLIENTS					3
+#define AP_STA_CLIENTS					3
 
 #elif PLATFORM_BEKEN
 
@@ -257,6 +266,8 @@
 //#define ENABLE_DRIVER_TESTSPIFLASH			1
 
 //#define	ENABLE_DRIVER_UART_TCP					1
+
+//#define	ENABLE_DRIVER_SSD1306					1
 
 // #define	ENABLE_DRIVER_PIR					1
 //#define ENABLE_DRIVER_BKPARTITIONS				1
@@ -320,7 +331,7 @@
 #if PLATFORM_BEKEN_NEW
 #define NEW_TCP_SERVER							1
 #endif
-#define ENABLE_DRIVER_NEO6M						1
+//#define ENABLE_DRIVER_NEO6M						1
 
 // ENABLE_I2C_ is a syntax for
 // our I2C system defines for drv_i2c_main.c
@@ -348,7 +359,7 @@
 #undef ENABLE_DRIVER_ADCSMOOTHER
 #endif
 
-#if (OBK_VARIANT == OBK_VARIANT_TUYAMCU || OBK_VARIANT == OBK_VARIANT_IRREMOTEESP || OBK_VARIANT == OBK_VARIANT_SENSORS || PLATFORM_BK7252 || PLATFORM_BK7252N)
+#if (OBK_VARIANT == OBK_VARIANT_TUYAMCU || OBK_VARIANT == OBK_VARIANT_IRREMOTEESP || OBK_VARIANT == OBK_VARIANT_SENSORS || OBK_VARIANT == OBK_VARIANT_BATTERY || PLATFORM_BK7252 || PLATFORM_BK7252N)
 #undef ENABLE_DRIVER_BL0937
 #undef ENABLE_DRIVER_BL0942
 #undef ENABLE_DRIVER_BL0942SPI
@@ -366,7 +377,7 @@
 #define ENABLE_DRIVER_IRREMOTEESP				1
 #endif
 
-#if (OBK_VARIANT == OBK_VARIANT_SENSORS)
+#if (OBK_VARIANT == OBK_VARIANT_SENSORS || OBK_VARIANT == OBK_VARIANT_BATTERY)
 #define ENABLE_DRIVER_BMP280					1
 #define ENABLE_DRIVER_BMPI2C					1
 #define ENABLE_DRIVER_SHT3X						1
@@ -382,7 +393,19 @@
 #endif
 // allow usage as an WPA2 AP and define number of clients to connect
 #define ENABLE_WPA_AP						1
-#define WPA_AP_STA_CLIENTS					3
+#define AP_STA_CLIENTS					3
+
+#if (OBK_VARIANT == OBK_VARIANT_BATTERY)
+#undef ENABLE_DRIVER_BMP280
+#undef ENABLE_DRIVER_LED
+#undef ENABLE_DRIVER_SM16703P
+#undef ENABLE_DRIVER_PIXELANIM
+#undef ENABLE_DRIVER_SM15155E
+#undef ENABLE_DRIVER_IR
+#undef ENABLE_DRIVER_NEO6M
+#undef ENABLE_DRIVER_HTTPBUTTONS
+#undef ENABLE_DRIVER_KP18058
+#endif
 
 #elif PLATFORM_LN882H
 
@@ -393,6 +416,7 @@
 #define ENABLE_NTP								1
 //#define ENABLE_TIME_DST						1
 #define ENABLE_DRIVER_BL0937					1
+#define ENABLE_DRIVER_BL0942					1
 #define ENABLE_DRIVER_LED 						1
 #define ENABLE_DRIVER_WEMO						1
 #define ENABLE_DRIVER_HUE						1
@@ -407,13 +431,15 @@
 #define ENABLE_OBK_SCRIPTING					1
 #define ENABLE_DRIVER_SSDP						1
 #define ENABLE_ADVANCED_CHANNELTYPES_DISCOVERY	1
-#define ENABLE_OBK_BERRY						1
+//#define ENABLE_OBK_BERRY						1
 #define ENABLE_DRIVER_SM16703P					1
 #define ENABLE_DRIVER_PIXELANIM					1
 #define ENABLE_DRIVER_IRREMOTEESP				1
+#define ENABLE_DRIVER_TUYAMCU					1
+#define ENABLE_DRIVER_TINYIR_NEC				1
 // allow usage as an WPA2 AP and define number of clients to connect
 #define ENABLE_WPA_AP						1
-#define WPA_AP_STA_CLIENTS					3
+#define AP_STA_CLIENTS					3
 
 #elif PLATFORM_ESPIDF
 
@@ -447,6 +473,7 @@
 #define ENABLE_ADVANCED_CHANNELTYPES_DISCOVERY	1
 #define ENABLE_DRIVER_SM16703P					1
 #define ENABLE_DRIVER_PIXELANIM					1
+#define ENABLE_DRIVER_TINYIR_NEC				1
 
 #if (OBK_VARIANT == OBK_VARIANT_ESP4M || OBK_VARIANT == OBK_VARIANT_ESP2M_BERRY)
 #define ENABLE_OBK_BERRY						1
@@ -455,10 +482,11 @@
 #if (OBK_VARIANT == OBK_VARIANT_ESP4M)
 #define ENABLE_DRIVER_TCA9554					1
 #define ENABLE_DRIVER_DMX						1
+#define ENABLE_DRIVER_MQTTSERVER				1
 #endif
 // allow usage as an WPA2 AP and define number of clients to connect
 #define ENABLE_WPA_AP						1
-#define WPA_AP_STA_CLIENTS					3
+#define AP_STA_CLIENTS					3
 
 #elif PLATFORM_TR6260
 
@@ -479,9 +507,10 @@
 #define ENABLE_OBK_SCRIPTING					1
 #define ENABLE_ADVANCED_CHANNELTYPES_DISCOVERY	1
 #define ENABLE_OBK_BERRY						1
+#define ENABLE_DRIVER_TINYIR_NEC				1
 // allow usage as an WPA2 AP and define number of clients to connect
 #define ENABLE_WPA_AP						1
-#define WPA_AP_STA_CLIENTS					3
+#define AP_STA_CLIENTS					3
 
 #elif PLATFORM_REALTEK
 
@@ -515,6 +544,7 @@
 #define ENABLE_DRIVER_TCL						1
 #define ENABLE_DRIVER_SM16703P					1
 #define ENABLE_DRIVER_PIXELANIM					1
+#define ENABLE_DRIVER_TINYIR_NEC				1
 
 #ifndef PLATFORM_RTL8710B
 #define ENABLE_OBK_BERRY						1
@@ -530,7 +560,7 @@
 #endif
 // allow usage as an WPA2 AP and define number of clients to connect
 #define ENABLE_WPA_AP						1
-#define WPA_AP_STA_CLIENTS					3
+#define AP_STA_CLIENTS					3
 
 #elif PLATFORM_ECR6600
 
@@ -560,7 +590,7 @@
 #define ENABLE_OBK_BERRY						1
 // allow usage as an WPA2 AP and define number of clients to connect
 #define ENABLE_WPA_AP						1
-#define WPA_AP_STA_CLIENTS					3
+#define AP_STA_CLIENTS					3
 
 #elif PLATFORM_ESP8266
 
@@ -588,19 +618,14 @@
 #define ENABLE_DRIVER_BL0937					1
 #define ENABLE_TASMOTA_JSON						1
 #define ENABLE_TASMOTADEVICEGROUPS				1
-#define ENABLE_I2C 								1
-#define ENABLE_DRIVER_AHT2X 					1
 #define ENABLE_NTP 								1
 #define ENABLE_DRIVER_LED						1
-#define ENABLE_DRIVER_WEMO						1
 #define ENABLE_DRIVER_SSDP						1
-#define ENABLE_DRIVER_TUYAMCU					1
 #define ENABLE_DRIVER_DS1820					1
-#define ENABLE_DRIVER_BMPI2C					1
-#define ENABLE_DRIVER_NEO6M					1
+#define ENABLE_DRIVER_TUYAMCU					1
 // allow usage as an WPA2 AP and define number of clients to connect
 #define ENABLE_WPA_AP						1
-#define WPA_AP_STA_CLIENTS					3
+#define AP_STA_CLIENTS					3
 
 // #define ENABLE_OBK_BERRY						1
 
@@ -619,7 +644,7 @@
 #undef ENABLE_LED_BASIC
 // allow usage as an WPA2 AP and define number of clients to connect
 #define ENABLE_WPA_AP						1
-#define WPA_AP_STA_CLIENTS					3
+#define AP_STA_CLIENTS					3
 
 #elif PLATFORM_RDA5981
 
@@ -635,7 +660,25 @@
 #define ENABLE_LITTLEFS							1
 // allow usage as an WPA2 AP and define number of clients to connect
 #define ENABLE_WPA_AP						1
-#define WPA_AP_STA_CLIENTS					3
+#define AP_STA_CLIENTS					3
+
+#elif PLATFORM_LN8825
+
+//#define ENABLE_SEND_POSTANDGET				1
+#define	ENABLE_HA_DISCOVERY						1
+#define ENABLE_MQTT								1
+#define ENABLE_TASMOTADEVICEGROUPS				1
+#define ENABLE_NTP								1
+#define ENABLE_DRIVER_LED 						1
+#define ENABLE_LITTLEFS							1
+#define ENABLE_TEST_COMMANDS					1
+#define ENABLE_EXPAND_CONSTANT					1
+#define ENABLE_TASMOTA_JSON						1
+#define ENABLE_OBK_SCRIPTING					1
+#define ENABLE_DRIVER_SSDP						1
+#define ENABLE_ADVANCED_CHANNELTYPES_DISCOVERY	1
+#define ENABLE_DRIVER_IRREMOTEESP				1
+#define ENABLE_DRIVER_TINYIR_NEC				1
 
 #else
 
@@ -657,6 +700,11 @@
 // #define ENABLE_BL_TWIN						1
 // allow moving average energy calculation +180 bytes
 // #define ENABLE_BL_MOVINGAVG					1
+#endif
+
+// ensure that there would be no conflicts
+#if ENABLE_DRIVER_IRREMOTEESP
+#undef ENABLE_DRIVER_IR
 #endif
 
 // closing OBK_CONFIG_H

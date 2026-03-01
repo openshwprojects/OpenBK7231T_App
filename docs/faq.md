@@ -48,7 +48,7 @@ All questions/answers were taken from json file.
 **Question:** *How to setup device with two relays and two buttons?*<br>**A:** Determine which IO pins are used for relays and buttons, then for first relay and button set channel 1, and for second relay and button set channel 2
 
 
-**Question:** *How to setup RGB LED?*<br>**A:** Determine whether this LED is using 'I2C' LED driver like SM2135, or is it using PWMs. If it's using PWMs, just check which 3 GPIO pins are used for colours, and set PWM roles for them, keep channels in RGB order - Red is 1, Green is 2, Blue is 3 (altough firmware will also support indexing started from 0)
+**Question:** *How to setup RGB LED?*<br>**A:** Determine whether this LED is using 'I2C' LED driver like SM2135, or is it using PWMs. If it's using PWMs, just check which 3 GPIO pins are used for colours, and set PWM roles for them, keep channels in RGB order - Red is 1, Green is 2, Blue is 3 (although firmware will also support indexing started from 0)
 
 
 **Question:** *How to use bistable button? A button that toggles relay when it's changed?*<br>**A:** Just use a 'ToggleChannelOnToggle' role. The target channel value will be inversed when you toggle the switch. You can also [see this detailed description](https://www.elektroda.com/rtvforum/topic3895572.html)

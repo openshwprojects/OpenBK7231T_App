@@ -35,8 +35,10 @@ setChannelType 7 Toggle
 
 */
 void TCA9554_Init() {
-	tcI2C.pin_clk = Tokenizer_GetArgIntegerDefault(1, 41);
-	tcI2C.pin_data = Tokenizer_GetArgIntegerDefault(2, 42);
+//	tcI2C.pin_clk = Tokenizer_GetArgIntegerDefault(1, 41);
+//	tcI2C.pin_data = Tokenizer_GetArgIntegerDefault(2, 42);
+	tcI2C.pin_clk = Tokenizer_GetPin(1, 41);
+	tcI2C.pin_data = Tokenizer_GetPin(2, 42);
 	tca_firstChannel = Tokenizer_GetArgIntegerDefault(3, 8);
 	tca_adr = Tokenizer_GetArgIntegerDefault(4, tca_adr);
 

@@ -16,6 +16,7 @@ typedef enum MQTT_Dedup_Slot_e {
 	DEDUP_LED_ENABLEALL,
 	// not enabled by default, but a user requested ability also to broadcast full RGBCW format
 	DEDUP_LED_FINALCOLOR_RGBCW,
+	DEDUP_CURRENT_ANIM,
 	DEDUP_MAX,
 } MQTT_Dedup_Slot_t;
 

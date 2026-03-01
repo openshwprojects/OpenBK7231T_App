@@ -2822,10 +2822,10 @@ void TuyaMCU_Init()
 	//cmddetail:"examples":"tuyaMcu_enableAutoSend 0"}
 	CMD_RegisterCommand("tuyaMcu_enableAutoSend", Cmd_TuyaMCU_EnableAutoSend, NULL);
 
-	//cmddetail:{"name":"tuyaMcu_batteryPoweredMode ","args": "[Optional 1 or 0, by default 1 is assumed]",
+	//cmddetail:{"name":"tuyaMcu_batteryPoweredMode","args": "[Optional 1 or 0, by default 1 is assumed]",
 	//cmddetail:"descr":"Enables battery mode communications for version 3 TuyaMCU. tuyaMcu_batteryPoweredMode 0 can be used to disable the mode.",
 	//cmddetail:"fn":"Cmd_TuyaMCU_BatteryPoweredMode","file":"driver/drv_tuyaMCU.c","requires":"",
-	//cmddetail:"examples":"tuyaMcu_batteryPoweredMode "}
+	//cmddetail:"examples":"tuyaMcu_batteryPoweredMode"}
 	CMD_RegisterCommand("tuyaMcu_batteryPoweredMode", Cmd_TuyaMCU_BatteryPoweredMode, NULL);
 }
 

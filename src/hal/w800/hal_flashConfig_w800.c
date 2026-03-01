@@ -16,7 +16,7 @@ void initFlashIfNeeded() {
 
 	tls_fls_init();									//initialize flash driver
 
-#if defined(PLATFORM_W800) 
+#if defined(PLATFORM_W800) || defined(PLATFORM_W600)
 	easyflash_init();
 #endif
 	bFlashReady = 1;

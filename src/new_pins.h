@@ -184,14 +184,14 @@ typedef enum ioRole_e {
 	IOR_BP5758D_CLK,
 	//iodetail:{"name":"BP1658CJ_DAT",
 	//iodetail:"title":"TODO",
-	//iodetail:"descr":"BP1658CJ DAT pin for BP5758D modified-I2C twowire LED driver, used in RGBCW lights. Set both required BP1658CJ pins to autostart the related driver. Don't forget to Map the colors order later, so colors are not mixed.",
+	//iodetail:"descr":"BP1658CJ DAT pin for BP1658CJ modified-I2C twowire LED driver, used in RGBCW lights. Set both required BP1658CJ pins to autostart the related driver. Don't forget to Map the colors order later, so colors are not mixed.",
 	//iodetail:"enum":"IOR_BP1658CJ_DAT",
 	//iodetail:"file":"new_pins.h",
 	//iodetail:"driver":""}
 	IOR_BP1658CJ_DAT,
 	//iodetail:{"name":"BP1658CJ_CLK",
 	//iodetail:"title":"TODO",
-	//iodetail:"descr":"BP1658CJ CLK pin for BP5758D modified-I2C twowire LED driver, used in RGBCW lights. Set both required BP1658CJ pins to autostart the related driver. Don't forget to Map the colors order later, so colors are not mixed.",
+	//iodetail:"descr":"BP1658CJ CLK pin for BP1658CJ modified-I2C twowire LED driver, used in RGBCW lights. Set both required BP1658CJ pins to autostart the related driver. Don't forget to Map the colors order later, so colors are not mixed.",
 	//iodetail:"enum":"IOR_BP1658CJ_CLK",
 	//iodetail:"file":"new_pins.h",
 	//iodetail:"driver":""}
@@ -268,7 +268,7 @@ typedef enum ioRole_e {
 	IOR_UCS1912_DIN,
 	//iodetail:{"name":"SM16703P_DIN",
 	//iodetail:"title":"TODO",
-	//iodetail:"descr":"WIP driver, write a post on Elektroda if you need it working",
+	//iodetail:"descr":"SPI DIN data pin for SM16703P RGB LED driver. Set this role and call startDriver SM16703P to use it. Also used by the SM15155E 5-channel LED driver; set this same role and call startDriver SM15155E to use it.",
 	//iodetail:"enum":"IOR_SM16703P_DIN",
 	//iodetail:"file":"new_pins.h",
 	//iodetail:"driver":""}
@@ -485,14 +485,14 @@ typedef enum ioRole_e {
 	IOR_SGP_DAT,
 	//iodetail:{"name":"ADC_Button",
 	//iodetail:"title":"TODO",
-	//iodetail:"descr":"Single ADC with multiple buttons connected.d",
+	//iodetail:"descr":"Single ADC with multiple buttons connected.",
 	//iodetail:"enum":"IOR_ADC_Button",
 	//iodetail:"file":"new_pins.h",
 	//iodetail:"driver":""}
 	IOR_ADC_Button,
 	//iodetail:{"name":"GN6932_CLK",
 	//iodetail:"title":"TODO",
-	//iodetail:"descr":"GN6932 LED Display Driver - Clock pi",
+	//iodetail:"descr":"GN6932 LED Display Driver - Clock pin",
 	//iodetail:"enum":"IOR_GN6932_CLK",
 	//iodetail:"file":"new_pins.h",
 	//iodetail:"driver":""}
@@ -555,35 +555,35 @@ typedef enum ioRole_e {
 	IOR_KP18058_DAT,
 	//iodetail:{"name":"DS1820_IO",
 	//iodetail:"title":"TODO",
-	//iodetail:"descr":"vers simple OneWire Temp sensor DS1820",
+	//iodetail:"descr":"very simple OneWire Temp sensor DS1820",
 	//iodetail:"enum":"IOR_DS1820_IO",
 	//iodetail:"file":"new_pins.h",
 	//iodetail:"driver":""}
 	IOR_DS1820_IO,
 	//iodetail:{"name":"PWM_ScriptOnly",
 	//iodetail:"title":"TODO",
-	//iodetail:"descr":"",
+	//iodetail:"descr":"Like PWM, but excluded from automatic LED/light generation logic. Intended for direct channel control such as scripts or manual channel updates.",
 	//iodetail:"enum":"IOR_PWM_ScriptOnly",
 	//iodetail:"file":"new_pins.h",
 	//iodetail:"driver":""}
 	IOR_PWM_ScriptOnly,
 	//iodetail:{"name":"PWM_ScriptOnly_n",
 	//iodetail:"title":"TODO",
-	//iodetail:"descr":"",
+	//iodetail:"descr":"Like PWM_ScriptOnly, but with inverted duty cycle. Excluded from automatic LED/light generation logic and intended for direct channel control.",
 	//iodetail:"enum":"IOR_PWM_ScriptOnly_n",
 	//iodetail:"file":"new_pins.h",
 	//iodetail:"driver":""}
 	IOR_PWM_ScriptOnly_n,
 	//iodetail:{"name":"Counter_f",
 	//iodetail:"title":"TODO",
-	//iodetail:"descr":"",
+	//iodetail:"descr":"Counts pulses on falling edge (transition from high to low). Each transitions adds 1 to linked channel.",
 	//iodetail:"enum":"IOR_Counter_f",
 	//iodetail:"file":"new_pins.h",
 	//iodetail:"driver":""}
 	IOR_Counter_f,
 	//iodetail:{"name":"Counter_r",
 	//iodetail:"title":"TODO",
-	//iodetail:"descr":"",
+	//iodetail:"descr":"Counts pulses on rising edge (transition from low to high). Each transitions adds 1 to linked channel.",
 	//iodetail:"enum":"IOR_Counter_r",
 	//iodetail:"file":"new_pins.h",
 	//iodetail:"driver":""}
@@ -630,6 +630,55 @@ typedef enum ioRole_e {
 	//iodetail:"file":"new_pins.h",
 	//iodetail:"driver":"RC"}
 	IOR_RCRecv_nPup,
+	//iodetail:{"name":"Button_pd",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"same as Button but with pulldown instead pullup",
+	//iodetail:"enum":"IOR_Button_pd",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
+	IOR_Button_pd,
+	//iodetail:{"name":"Button_pd_n",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"Same as Button_pd, but with inverted logic.",
+	//iodetail:"enum":"IOR_Button_pd_n",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
+	IOR_Button_pd_n,
+	//iodetail:{"name":"ToggleChannelOnToggle_pd",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"pulldown version of ToggleChannelOnToggle",
+	//iodetail:"enum":"IOR_ToggleChannelOnToggle_pd",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
+	IOR_ToggleChannelOnToggle_pd,
+	//iodetail:{"name":"ShutterA",
+	//iodetail:"title":"ShutterA Pin",
+	//iodetail:"descr":"Shutter relay A.",
+	//iodetail:"enum":"IOR_ShutterA",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":"RC"}
+	IOR_ShutterA,
+	//iodetail:{"name":"ShutterB",
+	//iodetail:"title":"ShutterB Pin",
+	//iodetail:"descr":"Shutter relay B.",
+	//iodetail:"enum":"IOR_ShutterB",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":"RC"}
+	IOR_ShutterB,
+	//iodetail:{"name":"Button_ShutterUp",
+	//iodetail:"title":"Button_ShutterUp Pin",
+	//iodetail:"descr":"Pressing this button will start shutter up move. Double click will stop move.",
+	//iodetail:"enum":"IOR_Button_ShutterUp",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":"RC"}
+	IOR_Button_ShutterUp,
+	//iodetail:{"name":"Button_ShutterDown",
+	//iodetail:"title":"Button_ShutterDown Pin",
+	//iodetail:"descr":"Pressing this button will start shutter down move. Double click will stop move.",
+	//iodetail:"enum":"IOR_Button_ShutterDown",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":"RC"}
+	IOR_Button_ShutterDown,
 	//iodetail:{"name":"Total_Options",
 	//iodetail:"title":"TODO",
 	//iodetail:"descr":"Current total number of available IOR roles",
@@ -1106,6 +1155,20 @@ typedef enum channelType_e {
 	//chandetail:"file":"new_pins.h",
 	//chandetail:"driver":""}
 	ChType_Current_div10,
+	//chandetail:{"name":"Illuminance_div10",
+	//chandetail:"title":"Illuminance_div10",
+	//chandetail:"descr":"Illuminance in Lux",
+	//chandetail:"enum":"ChType_Illuminance_div10",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
+	ChType_Illuminance_div10,
+	//chandetail:{"name":"Frequency",
+	//chandetail:"title":"TODO",
+	//chandetail:"descr":"For TuyaMCU power metering. Not used for BL09** and CSE** sensors.",
+	//chandetail:"enum":"ChType_Frequency",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
+	ChType_Frequency,
 	//chandetail:{"name":"Max",
 	//chandetail:"title":"TODO",
 	//chandetail:"descr":"This is the current total number of available channel types.",
@@ -1128,7 +1191,7 @@ typedef enum channelType_e {
 #define PLATFORM_GPIO_MAX 17
 #elif PLATFORM_W800
 #define PLATFORM_GPIO_MAX 44
-#elif PLATFORM_LN882H
+#elif PLATFORM_LN882H || PLATFORM_LN8825
 #define PLATFORM_GPIO_MAX 26
 #elif PLATFORM_ESPIDF
 #ifdef CONFIG_IDF_TARGET_ESP32C3
@@ -1518,11 +1581,6 @@ typedef struct mainConfig_s {
 	char ping_host[64];
 	// ofs 0x000005E0 (dec 1504)
 	//char initCommandLine[512];
-#if PLATFORM_W600 || PLATFORM_W800
-#define ALLOW_SSID2 0
-#define ALLOW_WEB_PASSWORD 0
-	char initCommandLine[512];
-#else
 #define ALLOW_SSID2 1
 #define ALLOW_WEB_PASSWORD 1
 	char initCommandLine[1568];
@@ -1541,14 +1599,7 @@ typedef struct mainConfig_s {
 	// offset 0x00000CBB (3259 decimal)
 	byte disable_web_server;
 	// offset 0x00000CBC (3260 decimal)
-#if PLATFORM_BEKEN
-	obkFastConnectData_t fcdata;
-	// offset 0x00000D0C (3340 decimal)
-	char unused[244];
-#else
 	char unused[324];
-#endif
-#endif
 } mainConfig_t;
 
 // one sector is 4096 so it we still have some expand possibility
@@ -1664,5 +1715,10 @@ void FV_UpdateStartupSSIDIfChanged_StoredValue(int assidindex);
 float XJ_MovingAverage_float(float aprevvalue, float aactvalue);
 int XJ_MovingAverage_int(int aprevvalue, int aactvalue);
 #endif
+
+// Find index of a pin from string.
+// Either a number or an alias for a pin.
+// used e.g. for Tokenizer_GetPin()
+int PIN_FindIndexFromString(const char *name);
 
 #endif
