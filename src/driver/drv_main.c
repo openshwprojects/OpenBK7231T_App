@@ -1424,6 +1424,22 @@ static driver_t g_drivers[] = {
 	false,                                // loaded
 	},
 #endif
+#if ENABLE_DRIVER_TINYIR_NEC
+	//drvdetail:{"name":"TinyIR_NEC",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"NEC-only IR receiver",
+	//drvdetail:"requires":""}
+	{ "TinyIR_NEC",      // Driver Name
+	TinyIR_NEC_Init,     // Init
+	NULL,                // onEverySecond
+	NULL,                // appendInformationToHTTPIndexPage
+	TinyIR_NEC_RunFrame, // runQuickTick
+	TinyIR_NEC_Deinit,   // stopFunction
+	NULL,                // onChannelChanged
+	NULL,                // onHassDiscovery
+	false,               // loaded
+	},
+#endif
 #if ENABLE_DRIVER_MQTTSERVER
 	//drvdetail:{"name":"mqttServer",
 	//drvdetail:"title":"TODO",
@@ -1438,7 +1454,7 @@ static driver_t g_drivers[] = {
 	NULL,                                    // onChannelChanged
 	NULL,                                    // onHassDiscovery
 	false,                                   // loaded
-	},
+	}
 #endif
 	//{ "", NULL, NULL, NULL, NULL, NULL, NULL, NULL, false },
 };
