@@ -139,6 +139,7 @@ OBKM_SRC  += $(OBK_SRCS)driver/drv_rn8209.c
 OBKM_SRC  += $(OBK_SRCS)driver/drv_sgp.c
 OBKM_SRC  += $(OBK_SRCS)driver/drv_shiftRegister.c
 OBKM_SRC  += $(OBK_SRCS)driver/drv_sht3x.c
+OBKM_SRC  += $(OBK_SRCS)driver/drv_shtxx.c
 OBKM_SRC  += $(OBK_SRCS)driver/drv_sm15155e.c
 OBKM_SRC  += $(OBK_SRCS)driver/drv_sm16703P.c
 OBKM_SRC  += $(OBK_SRCS)driver/drv_simpleEEPROM.c

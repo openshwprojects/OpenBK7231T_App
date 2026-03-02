@@ -657,5 +657,9 @@
 #undef ENABLE_DRIVER_IR
 #endif
 
+#if ! WINDOWS
+// for testing: enable new driver SHTxx for all platforms
+#define ENABLE_DRIVER_SHTXX                                            1
+#endif
 // closing OBK_CONFIG_H
 #endif

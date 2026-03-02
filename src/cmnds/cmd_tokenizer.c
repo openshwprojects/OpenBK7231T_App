@@ -323,6 +323,57 @@ void expandQuotes(char* str) {
 	str[writeIndex] = 0;
 }
 
+
+// search for a "named" argument like channel=5
+// with Tokenizer_GetArgEqual("channel=")
+// will always return char pointer, so you'll might need to convert in later
+// since we can't be sure, the argument is present, we need a mandatory "default" for this function
+const char *Tokenizer_GetArgEqualDefault(const char *search, const char *def) {
+       const char* s=NULL;
+       const char* arg;
+       const char* found=NULL;
+
+       for (int i=0; i < g_numArgs; i++){
+               arg = Tokenizer_GetArg(i);
+               found=NULL;
+//             ADDLOG_INFO(LOG_FEATURE_CMD,"Tokenizer_GetArgEqual: argument %i/%i is %s",i,argnum,arg);        
+
+               found=strstr(arg,search);
+               if ( arg && found) {
+                       s=(found + strlen(search));
+//                     ADDLOG_INFO(LOG_FEATURE_DRV,"Tokenizer_GetArgEqual: Found %s . Value is %s",search,s);
+                       break;
+               }
+       }
+       if (!s) s = def;
+       return s;
+}
+
+
+// search for a "named" integer argument like channel=5
+// with Tokenizer_GetGetArgEqualInteger("SDA=")
+int Tokenizer_GetArgEqualInteger(const char *search, const int def) {
+       int ret=def;
+       const char* found=Tokenizer_GetArgEqualDefault(search, "##X##");                // search for argument, default must be no number
+       if(strlen(found) > 2 && found[0] == '0' && (found[1] == 'x' || found[1] == 'X') ) {                  // also handle hex numbers (e.g. i2c addreses), at least 0x[one digit] --> strlen(found) > 2 
+               sscanf(found, "%x", &ret);
+               return ret;
+       }
+       if (strIsInteger(found)) ret = atoi(found);                                     // will check for number - use default else
+       return ret;
+}
+
+// search for a "named" argument like channel=5
+// with Tokenizer_GetPinEqual("SDA=")
+// will return pin or default pin
+int Tokenizer_GetPinEqual(const char *search, const int def) {
+       int ret=def, temp;
+       const char* found=Tokenizer_GetArgEqualDefault(search, "#x#X"); // search for argument, default must neither be a number nor a valid pin name
+       temp=PIN_FindIndexFromString(found);                                    // will check for number and pin names
+       if (temp != -1) ret=temp;
+       return ret;
+}
+
 void Tokenizer_TokenizeString(const char *s, int flags) {
 	char *p;
 
