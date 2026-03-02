@@ -30,8 +30,8 @@ Do not add anything here, as it will overwritten with next rebuild.
 | SM2135_CLK | SM2135 CLK pin for SM2135 modified-I2C twowire LED driver, used in RGBCW lights. Set both required SM2135 pins to autostart the related driver. Don't forget to Map the colors order later, so colors are not mixed. |
 | BP5758D_DAT | BP5758D DAT pin for BP5758D modified-I2C twowire LED driver, used in RGBCW lights. Set both required BP5758D pins to autostart the related driver. Don't forget to Map the colors order later, so colors are not mixed. |
 | BP5758D_CLK | BP5758D CLK pin for BP5758D modified-I2C twowire LED driver, used in RGBCW lights. Set both required BP5758D pins to autostart the related driver. Don't forget to Map the colors order later, so colors are not mixed. |
-| BP1658CJ_DAT | BP1658CJ DAT pin for BP5758D modified-I2C twowire LED driver, used in RGBCW lights. Set both required BP1658CJ pins to autostart the related driver. Don't forget to Map the colors order later, so colors are not mixed. |
-| BP1658CJ_CLK | BP1658CJ CLK pin for BP5758D modified-I2C twowire LED driver, used in RGBCW lights. Set both required BP1658CJ pins to autostart the related driver. Don't forget to Map the colors order later, so colors are not mixed. |
+| BP1658CJ_DAT | BP1658CJ DAT pin for BP1658CJ modified-I2C twowire LED driver, used in RGBCW lights. Set both required BP1658CJ pins to autostart the related driver. Don't forget to Map the colors order later, so colors are not mixed. |
+| BP1658CJ_CLK | BP1658CJ CLK pin for BP1658CJ modified-I2C twowire LED driver, used in RGBCW lights. Set both required BP1658CJ pins to autostart the related driver. Don't forget to Map the colors order later, so colors are not mixed. |
 | PWM_n | as above, but percentage of duty is inversed. This might be useful for some special LED drivers that are using single PWM to choose between Cool white and Warm white (it also needs setting a special flag in General options) |
 | IRRecv | IR receiver for our IRLibrary port |
 | IRSend | IR sender for our IRLibrary port |
@@ -42,7 +42,7 @@ Do not add anything here, as it will overwritten with next rebuild.
 | AlwaysHigh | always outputs 1 |
 | AlwaysLow | always outputs 0 |
 | UCS1912_DIN | WIP driver, write a post on Elektroda if you need it working |
-| SM16703P_DIN | WIP driver, write a post on Elektroda if you need it working |
+| SM16703P_DIN | SPI DIN data pin for SM16703P RGB LED driver. Set this role and call startDriver SM16703P to use it. Also used by the SM15155E 5-channel LED driver; set this same role and call startDriver SM15155E to use it. |
 | Button_NextTemperature | Button that automatically allows you to control temperature of your LED device |
 | Button_NextTemperature_n | Like Button_NextTemperature, but inversed button logic |
 | Button_ScriptOnly | This button does nothing automatically, even the linked channel is not changed. Useful for scripts, but you can still also use any buttons for scripting. |
@@ -73,8 +73,8 @@ Do not add anything here, as it will overwritten with next rebuild.
 | DoorSensorWithDeepSleep_pd | As DoorSensorWithDeepSleep, but with pulldown resistor |
 | SGP_CLK | SGP Quality Sensor Clock line. will autostart related driver |
 | SGP_DAT | SGP Quality Sensor Data line. will autostart related driver |
-| ADC_Button | Single ADC with multiple buttons connected.d |
-| GN6932_CLK | GN6932 LED Display Driver - Clock pi |
+| ADC_Button | Single ADC with multiple buttons connected. |
+| GN6932_CLK | GN6932 LED Display Driver - Clock pin |
 | GN6932_DAT | GN6932 LED Display Driver - Data pin |
 | GN6932_STB | GN6932 LED Display Driver - STB pin (Latch Enable) |
 | TM1638_CLK | TM1638 8x7 Segment Display - Clock pin |
@@ -83,9 +83,9 @@ Do not add anything here, as it will overwritten with next rebuild.
 | BAT_Relay_n | Like BAT_Relay, but inversed. See [battery driver topic here](https://www.elektroda.com/rtvforum/topic3959103.html) |
 | KP18058_CLK | KP18058 LED linear constant current dimming chip with I2C interface - CLK pin |
 | KP18058_DAT | KP18058 LED linear constant current dimming chip with I2C interface - DATA pin |
-| DS1820_IO | vers simple OneWire Temp sensor DS1820 |
-| PWM_ScriptOnly |  |
-| PWM_ScriptOnly_n |  |
+| DS1820_IO | very simple OneWire Temp sensor DS1820 |
+| PWM_ScriptOnly | Like PWM, but excluded from automatic LED/light generation logic. Intended for direct channel control such as scripts or manual channel updates. |
+| PWM_ScriptOnly_n | Like PWM_ScriptOnly, but with inverted duty cycle. Excluded from automatic LED/light generation logic and intended for direct channel control. |
 | Counter_f | Counts pulses on falling edge (transition from high to low). Each transitions adds 1 to linked channel. |
 | Counter_r | Counts pulses on rising edge (transition from low to high). Each transitions adds 1 to linked channel. |
 | IRRecv_nPup | IRRecv without pull-up |
@@ -95,6 +95,6 @@ Do not add anything here, as it will overwritten with next rebuild.
 | RCRecv | 433MHz RC receiver input (uses internal pull-up). |
 | RCRecv_nPup | 433MHz RC receiver input without internal pull-up. |
 | Button_pd | same as Button but with pulldown instead pullup |
-| Button_pd_n | same as Button but with pulldown instead pullup |
+| Button_pd_n | Same as Button_pd, but with inverted logic. |
 | ToggleChannelOnToggle_pd | pulldown version of ToggleChannelOnToggle |
 | Total_Options | Current total number of available IOR roles |

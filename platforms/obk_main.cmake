@@ -126,6 +126,7 @@ set(OBKM_SRC
 	${OBK_SRCS}driver/drv_sm15155e.c
 	${OBK_SRCS}driver/drv_sm16703P.c
 	${OBK_SRCS}driver/drv_simpleEEPROM.c
+	${OBK_SRCS}driver/drv_shutters.c
 	${OBK_SRCS}driver/drv_leds_shared.c
 	${OBK_SRCS}driver/drv_ltr_als.c
 	${OBK_SRCS}driver/drv_spi.c
@@ -140,6 +141,7 @@ set(OBKM_SRC
 	${OBK_SRCS}driver/drv_test.c
 	${OBK_SRCS}driver/drv_test_drivers.c
 	${OBK_SRCS}driver/drv_textScroller.c
+	${OBK_SRCS}driver/drv_tinyir_nec.c
 	${OBK_SRCS}driver/drv_tm1637.c
 	${OBK_SRCS}driver/drv_tm1638.c
 	${OBK_SRCS}driver/drv_tm_gn_display_shared.c
