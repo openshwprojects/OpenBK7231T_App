@@ -1364,6 +1364,10 @@ void Main_Init_BeforeDelay_Unsafe(bool bAutoRunScripts) {
 	CMD_InitSimulatorOnlyCommands();
 #else
 	HAL_RegisterPlatformSpecificCommands();
+#if ENABLE_BT_PROXY
+	extern void HAL_BTProxy_RegisterCommands();
+	HAL_BTProxy_RegisterCommands();
+#endif
 #endif
 
 	/* Automatic disable of PIN MONITOR after reboot */

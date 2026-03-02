@@ -23,17 +23,6 @@ extern struct bd_addr common_default_bdaddr;
 
 typedef struct
 {
-	uint8_t bda[6];
-	int rssi;
-	int adv_len;
-	uint8_t addr_type;
-	int evt_type;
-	uint8_t data[31];
-	uint32_t ts_ms;
-} bt_scan_entry_t;
-
-typedef struct
-{
 	bool init_done;
 	bool scan_active;
 	int scan_total_packets;
@@ -46,7 +35,6 @@ typedef struct
 	int scan_count;
 
 	//QueueHandle_t cmd_queue;
-	SemaphoreHandle_t scan_mutex;
 	TaskHandle_t task_handle;
 } hal_bt_state_t;
 
@@ -84,6 +72,11 @@ static void hal_bt_gap_callback(ble_notice_t notice, void* param)
 	{
 		recv_adv_t* info = (recv_adv_t*)param;
 		HAL_BTProxy_Lock();
+		if(!g_bt_proxy.scan_ring)
+		{
+			HAL_BTProxy_Unlock();
+			return;
+		}
 
 		int found = -1;
 
@@ -156,6 +149,7 @@ static void HAL_BTScan_EnsureStackReady()
 
 void HAL_BTProxy_StartScan()
 {
+	if(!g_bt_proxy.init_done) return;
 	struct scan_param scan;
 	ble_err_t ret;
 	if(g_bt_proxy.scan_active)
@@ -193,6 +187,7 @@ void HAL_BTProxy_StartScan()
 
 void HAL_BTProxy_StopScan()
 {
+	if(!g_bt_proxy.init_done) return;
 	ble_err_t ret;
 	if(g_bt_proxy.scan_active)
 	{
@@ -213,7 +208,14 @@ void HAL_BTProxy_StopScan()
 
 void HAL_BTProxy_Init(void)
 {
-	if(g_bt_proxy.init_done) return;
+	if(g_bt_proxy.init_done)
+	{
+		HAL_BTProxy_Lock();
+		if(g_bt_proxy.scan_ring) os_free(g_bt_proxy.scan_ring);
+		g_bt_proxy.scan_ring = os_malloc(sizeof(bt_scan_entry_t) * g_bt_proxy.scan_ring_size);
+		HAL_BTProxy_Unlock();
+		return;
+	}
 	HAL_BTProxy_Lock();
 
 	memset(&g_bt_proxy, 0, sizeof(g_bt_proxy));
@@ -221,7 +223,6 @@ void HAL_BTProxy_Init(void)
 	g_bt_proxy.scan_ring = os_malloc(sizeof(bt_scan_entry_t) * g_bt_proxy.scan_ring_size);
 
 	HAL_BTScan_EnsureStackReady();
-	HAL_BTProxy_StartScan();
 
 	HAL_BTProxy_Unlock();
 
@@ -230,11 +231,25 @@ void HAL_BTProxy_Init(void)
 
 void HAL_BTProxy_Deinit(void)
 {
-	if(!g_bt_proxy.init_done) return;
-
 	HAL_BTProxy_StopScan();
 
-	g_bt_proxy.init_done = false;
+	HAL_BTProxy_Lock();
+
+	g_bt_proxy.scan_total_packets = 0;
+	g_bt_proxy.scan_dropped_packets = 0;
+	g_bt_proxy.scan_head = 0;
+	g_bt_proxy.scan_tail = 0;
+	g_bt_proxy.scan_count = 0;
+
+	if(g_bt_proxy.scan_ring)
+	{
+		os_free(g_bt_proxy.scan_ring);
+		g_bt_proxy.scan_ring = NULL;
+	}
+
+	HAL_BTProxy_Unlock();
+
+	//g_bt_proxy.init_done = false;
 }
 
 void HAL_BTProxy_GetMAC(uint8_t* mac)
@@ -286,6 +301,11 @@ void HAL_BTProxy_SetScanRingBufSize(uint16_t new_size)
 	HAL_BTProxy_Unlock();
 }
 
+bool HAL_BTProxy_IsInit(void)
+{
+	return g_bt_proxy.init_done;
+}
+
 void HAL_BTProxy_OnEverySecond(void)
 {
 	// add check if there were no scan results in 60 seconds, if so - restart scan
@@ -293,7 +313,7 @@ void HAL_BTProxy_OnEverySecond(void)
 
 int HAL_BTProxy_PopScanResult(uint8_t* mac, int* rssi, uint8_t* addr_type, uint8_t* data, int* data_len)
 {
-	if(g_bt_proxy.scan_count == 0) return 0;
+	if(g_bt_proxy.scan_count == 0 || !g_bt_proxy.scan_ring) return 0;
 
 	int pos = g_bt_proxy.scan_tail;
 
@@ -304,7 +324,7 @@ int HAL_BTProxy_PopScanResult(uint8_t* mac, int* rssi, uint8_t* addr_type, uint8
 	}
 	if(rssi) *rssi = g_bt_proxy.scan_ring[pos].rssi;
 	if(addr_type) *addr_type = g_bt_proxy.scan_ring[pos].addr_type;
-	if(data_len) *data_len = g_bt_proxy.scan_ring[pos].adv_len > 62 ? 62 : g_bt_proxy.scan_ring[pos].adv_len;
+	if(data_len) *data_len = g_bt_proxy.scan_ring[pos].adv_len > 31 ? 31 : g_bt_proxy.scan_ring[pos].adv_len;
 	if(data && data_len) memcpy(data, g_bt_proxy.scan_ring[pos].data, *data_len);
 
 	g_bt_proxy.scan_tail = (g_bt_proxy.scan_tail + 1) % g_bt_proxy.scan_ring_size;
@@ -329,6 +349,8 @@ int HAL_BTProxy_GetScanEntry(int newest_index, char* mac_buf, int mac_buf_len, i
 	int pos;
 	bt_scan_entry_t e;
 	uint32_t now_ms;
+
+	if(g_bt_proxy.scan_count == 0 || !g_bt_proxy.scan_ring) return 0;
 
 	if(newest_index < 0 || newest_index >= g_bt_proxy.scan_count)
 	{
@@ -358,22 +380,6 @@ int HAL_BTProxy_GetScanEntry(int newest_index, char* mac_buf, int mac_buf_len, i
 		*age_ms = (int)(now_ms - e.ts_ms);
 	}
 	return 1;
-}
-
-void HAL_BTProxy_Lock(void)
-{
-	if(g_bt_proxy.scan_mutex)
-	{
-		xSemaphoreTake(g_bt_proxy.scan_mutex, portMAX_DELAY);
-	}
-}
-
-void HAL_BTProxy_Unlock(void)
-{
-	if(g_bt_proxy.scan_mutex)
-	{
-		xSemaphoreGive(g_bt_proxy.scan_mutex);
-	}
 }
 
 #endif

@@ -135,17 +135,20 @@ void ESPHome_API_Send_DeviceInfoResponse(int client_sock)
 	// Feature flags (ESPHome 2024.1+):
 	// 1 (Passive Scan), 2 (Active Connections), 32 (Raw Advertisements), 64 (State and Mode)
 	// 1 | 2 | 32 | 64  = 99
+	if(HAL_BTProxy_IsInit())
+	{
 #if PLATFORM_ESPIDF
-	uint64_t flags = 2 | 4 | 32 | 64;
+		uint64_t flags = 2 | 4 | 32 | 64;
 #else
-	uint64_t flags = 32 | 64;
+		uint64_t flags = 32 | 64;
 #endif
-	flags |= HAL_BTProxy_GetScanMode();
-	pb_encode_varint_field(&ptr, 15, flags); // bluetooth_proxy_feature_flags
-	uint8_t btmac[6];
-	HAL_BTProxy_GetMAC(btmac);
-	sprintf(mac_str, MACSTR, MAC2STR(btmac));
-	pb_encode_string_field(&ptr, 18, mac_str); // bluetooth_mac_address
+		flags |= HAL_BTProxy_GetScanMode();
+		pb_encode_varint_field(&ptr, 15, flags); // bluetooth_proxy_feature_flags
+		uint8_t btmac[6];
+		HAL_BTProxy_GetMAC(btmac);
+		sprintf(mac_str, MACSTR, MAC2STR(btmac));
+		pb_encode_string_field(&ptr, 18, mac_str); // bluetooth_mac_address
+	}
 #endif
 
 	PB_SendFrame(client_sock, ESPHOME_MSG_DeviceInfoResponse, payload, ptr - payload);

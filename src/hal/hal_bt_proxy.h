@@ -51,6 +51,18 @@
 //    uint32_t last_activity_ms;  // Used for watchdog/timeout disconnecting stale peers
 //} bt_proxy_conn_slot_t;
 
+typedef struct
+{
+	uint8_t bda[6];
+	int rssi;
+	int adv_len;
+	uint8_t addr_type;
+	int evt_type;
+	uint8_t data[31];
+	uint32_t ts_ms;
+} bt_scan_entry_t;
+
+bool HAL_BTProxy_IsInit(void);
 void HAL_BTProxy_Init(void);
 void HAL_BTProxy_Deinit(void);
 void HAL_BTProxy_StartScan();
@@ -74,6 +86,9 @@ int HAL_BTProxy_GetScanStats(int* init_done, int* scan_active, int* total_packet
 int HAL_BTProxy_GetScanEntry(int newest_index, char* mac_buf, int mac_buf_len, int* rssi, int* adv_len, int* evt_type, int* age_ms);
 void HAL_BTProxy_Lock(void);
 void HAL_BTProxy_Unlock(void);
+void HAL_BTProxy_RegisterPlatformCommands(void);
+void HAL_BTProxy_RegisterCommands(void);
+
 
 #endif // ENABLE_BT_PROXY
 #endif // __HAL_BT_PROXY_H__

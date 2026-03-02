@@ -191,86 +191,8 @@ static void ESPHome_API_TCP_Server_Thread(void* param)
 	rtos_suspend_thread(NULL);
 }
 
-#if ENABLE_BT_PROXY
-
-static commandResult_t CMD_SetBTScanMode(const void* context, const char* cmd, const char* args, int cmdFlags)
-{
-	Tokenizer_TokenizeString(args, 0);
-
-	int isActive = Tokenizer_GetArgIntegerDefault(0, 0);
-	if(isActive != 0 && isActive != 1)
-		return CMD_RES_BAD_ARGUMENT;
-	HAL_BTProxy_SetScanMode(isActive);
-	return CMD_RES_OK;
-}
-
-static commandResult_t CMD_SetWindowInterval(const void* context, const char* cmd, const char* args, int cmdFlags)
-{
-	Tokenizer_TokenizeString(args, 0);
-
-	int window = Tokenizer_GetArgIntegerDefault(0, 30);
-	int interval = Tokenizer_GetArgIntegerDefault(1, 50);
-	if(window <= 0 || interval <= 0)
-		return CMD_RES_BAD_ARGUMENT;
-	HAL_BTProxy_SetWindowInterval(window, interval);
-	return CMD_RES_OK;
-}
-
-static commandResult_t CMD_StartScan(const void* context, const char* cmd, const char* args, int cmdFlags)
-{
-	HAL_BTProxy_StartScan();
-	return CMD_RES_OK;
-}
-
-static commandResult_t CMD_StopScan(const void* context, const char* cmd, const char* args, int cmdFlags)
-{
-	HAL_BTProxy_StopScan();
-	return CMD_RES_OK;
-}
-
-static commandResult_t CMD_SetScanRingBufSize(const void* context, const char* cmd, const char* args, int cmdFlags)
-{
-	Tokenizer_TokenizeString(args, 0);
-	int new_size = Tokenizer_GetArgIntegerDefault(0, 32);
-	if(new_size <= 0 || new_size > 0xFFFF)
-		return CMD_RES_BAD_ARGUMENT;
-	HAL_BTProxy_SetScanRingBufSize(new_size & 0xFFFF);
-	return CMD_RES_OK;
-}
-
-#endif
-
 void DRV_ESPHome_API_Init()
 {
-#if ENABLE_BT_PROXY
-	HAL_BTProxy_Init();
-	//cmddetail:{"name":"BTSetScanMode","args":"[isActive]",
-	//cmddetail:"descr":"Set BT scan mode",
-	//cmddetail:"fn":"CMD_SetBTScanMode","file":"driver/drv_esphome_api_server.c","requires":"ENABLE_DRIVER_ESPHOME_API && ENABLE_BT_PROXY",
-	//cmddetail:"examples":""}
-	CMD_RegisterCommand("BTSetScanMode", CMD_SetBTScanMode, NULL);
-	//cmddetail:{"name":"BTSetWindowInterval","args":"[window] [interval]",
-	//cmddetail:"descr":"Set BT window and interval",
-	//cmddetail:"fn":"CMD_SetWindowInterval","file":"driver/drv_esphome_api_server.c","requires":"ENABLE_DRIVER_ESPHOME_API && ENABLE_BT_PROXY",
-	//cmddetail:"examples":""}
-	CMD_RegisterCommand("BTSetWindowInterval", CMD_SetWindowInterval, NULL);
-	//cmddetail:{"name":"BTStartScan","args":"",
-	//cmddetail:"descr":"BT start scan",
-	//cmddetail:"fn":"CMD_StartScan","file":"driver/drv_esphome_api_server.c","requires":"ENABLE_DRIVER_ESPHOME_API && ENABLE_BT_PROXY",
-	//cmddetail:"examples":""}
-	CMD_RegisterCommand("BTStartScan", CMD_StartScan, NULL);
-	//cmddetail:{"name":"BTStartScan","args":"",
-	//cmddetail:"descr":"BT start scan",
-	//cmddetail:"fn":"CMD_StopScan","file":"driver/drv_esphome_api_server.c","requires":"ENABLE_DRIVER_ESPHOME_API && ENABLE_BT_PROXY",
-	//cmddetail:"examples":""}
-	CMD_RegisterCommand("BTStopScan", CMD_StopScan, NULL);
-	//cmddetail:{"name":"BTSetBufSize","args":"[size]",
-	//cmddetail:"descr":"BT set scan ring buffer size. Will consume 54 bytes of heap for 1 entry",
-	//cmddetail:"fn":"CMD_SetScanRingBufSize","file":"driver/drv_esphome_api_server.c","requires":"ENABLE_DRIVER_ESPHOME_API && ENABLE_BT_PROXY",
-	//cmddetail:"examples":""}
-	CMD_RegisterCommand("BTSetBufSize", CMD_SetScanRingBufSize, NULL);
-#endif
-
 	OSStatus err = rtos_create_thread(&s_esphome_api_thread, BEKEN_APPLICATION_PRIORITY - 1,
 		"ESPHomeAPI_Srv",
 		(beken_thread_function_t)ESPHome_API_TCP_Server_Thread,
@@ -289,15 +211,11 @@ void DRV_ESPHome_API_Init()
 
 void DRV_ESPHome_API_Deinit()
 {
-	OSStatus err;
 	if(s_esphome_api_thread != NULL)
 	{
 		rtos_delete_thread(&s_esphome_api_thread);
 		s_esphome_api_thread = NULL;
 	}
-#if ENABLE_BT_PROXY
-	HAL_BTProxy_Deinit();
-#endif
 }
 
 void DRV_ESPHome_API_OnEverySecond()

@@ -8,6 +8,8 @@
 #include <string.h>
 #include <stdio.h>
 #include <os_sched.h>
+#include "wifi_conf.h"
+#include "trace_app.h"
 #include "gap.h"
 #include "gap_adv.h"
 #include "gap_bond_le.h"
@@ -32,23 +34,11 @@
 #if PLATFORM_RTL8720D
 #define BT_SCAN_RING_SIZE 128
 #else
-#define BT_SCAN_RING_SIZE 16
+#define BT_SCAN_RING_SIZE 32
 #endif
 #define BT_CMD_QUEUE_SIZE 10
-/** @brief Default scan window (units of 0.625ms, 0x520=820ms) */
-#define DEFAULT_SCAN_INTERVAL     0x520
-#define DEFAULT_SCAN_WINDOW       0x520
-
-typedef struct
-{
-	uint8_t bda[6];
-	int rssi;
-	int adv_len;
-	uint8_t addr_type;
-	int evt_type;
-	uint8_t data[31];
-	uint32_t ts_ms;
-} bt_scan_entry_t;
+#define DEFAULT_SCAN_INTERVAL     0x520	// 820ms
+#define DEFAULT_SCAN_WINDOW       0x520	// 820ms
 
 typedef struct
 {
@@ -64,7 +54,6 @@ typedef struct
 	int scan_count;
 
 	//QueueHandle_t cmd_queue;
-	SemaphoreHandle_t scan_mutex;
 	TaskHandle_t task_handle;
 } hal_bt_state_t;
 
@@ -75,6 +64,9 @@ static hal_bt_state_t g_bt_proxy = { 0 };
 static void* _evtQueueHandle;
 static void* _ioQueueHandle;
 static bool btq_task_running = true;
+static uint16_t scan_interval = DEFAULT_SCAN_INTERVAL;
+static uint16_t scan_window = DEFAULT_SCAN_WINDOW;
+static uint8_t scan_mode = GAP_SCAN_MODE_PASSIVE;
 
 static int scan_entry_matches(bt_scan_entry_t* e, T_LE_SCAN_INFO* info)
 {
@@ -101,6 +93,11 @@ static T_APP_RESULT hal_bt_gap_callback(uint8_t cb_type, void* p_cb_data)
 	if(cb_type == GAP_MSG_LE_SCAN_INFO)
 	{
 		HAL_BTProxy_Lock();
+		if(!g_bt_proxy.scan_ring)
+		{
+			HAL_BTProxy_Unlock();
+			return;
+		}
 
 		T_LE_SCAN_INFO* info = p_data->p_le_scan_info;
 		int found = -1;
@@ -161,6 +158,7 @@ static T_APP_RESULT hal_bt_gap_callback(uint8_t cb_type, void* p_cb_data)
 
 void HAL_BTProxy_StartScan()
 {
+	if(!g_bt_proxy.init_done) return;
 	T_GAP_CAUSE cause;
 	if(g_bt_proxy.scan_active)
 	{
@@ -180,6 +178,7 @@ void HAL_BTProxy_StartScan()
 
 void HAL_BTProxy_StopScan()
 {
+	if(!g_bt_proxy.init_done) return;
 	if(g_bt_proxy.scan_active)
 	{
 		le_scan_stop();
@@ -222,7 +221,6 @@ static void hal_btq_task(void* p_param)
 static void hal_bt_task(void* p_param)
 {
 	(void)p_param;
-	uint8_t event;
 
 	while(!(wifi_is_up(RTW_STA_INTERFACE)))
 	{
@@ -241,7 +239,7 @@ static void hal_bt_task(void* p_param)
 		le_gap_init(2);
 	}
 
-	char* device_name = CFG_GetDeviceName();
+	char* device_name = (char*)CFG_GetDeviceName();
 	uint16_t appearance = GAP_GATT_APPEARANCE_UNKNOWN;
 
 	uint8_t  scan_filter_policy = GAP_SCAN_FILTER_ANY;
@@ -250,8 +248,10 @@ static void hal_bt_task(void* p_param)
 	le_set_gap_param(GAP_PARAM_DEVICE_NAME, GAP_DEVICE_NAME_LEN, device_name);
 	le_set_gap_param(GAP_PARAM_APPEARANCE, sizeof(appearance), &appearance);
 
-	HAL_BTProxy_SetScanMode(false);
-	HAL_BTProxy_SetWindowInterval(820, 820);
+	le_scan_set_param(GAP_PARAM_SCAN_INTERVAL, sizeof(scan_interval), &scan_interval);
+	le_scan_set_param(GAP_PARAM_SCAN_WINDOW, sizeof(scan_window), &scan_window);
+	le_scan_set_param(GAP_PARAM_SCAN_MODE, sizeof(scan_mode), &scan_mode);
+
 	le_scan_set_param(GAP_PARAM_SCAN_FILTER_POLICY, sizeof(scan_filter_policy),
 		&scan_filter_policy);
 	le_scan_set_param(GAP_PARAM_SCAN_FILTER_DUPLICATES, sizeof(scan_filter_duplicate),
@@ -270,13 +270,21 @@ static void hal_bt_task(void* p_param)
 	} while(new_state.gap_init_state != GAP_INIT_STATE_STACK_READY);
 	wifi_btcoex_set_bt_on();
 	delay_ms(50);
-	HAL_BTProxy_StartScan();
 	vTaskDelete(NULL);
 }
 
 void HAL_BTProxy_Init(void)
 {
-	if(g_bt_proxy.init_done) return;
+	if(g_bt_proxy.init_done)
+	{
+		HAL_BTProxy_Lock();
+		if(g_bt_proxy.scan_ring) os_free(g_bt_proxy.scan_ring);
+		g_bt_proxy.scan_ring = os_malloc(sizeof(bt_scan_entry_t) * g_bt_proxy.scan_ring_size);
+		HAL_BTProxy_Unlock();
+		return;
+		le_register_app_cb(hal_bt_gap_callback);
+		return;
+	}
 	HAL_BTProxy_Lock();
 	memset(&g_bt_proxy, 0, sizeof(g_bt_proxy));
 	g_bt_proxy.scan_ring_size = BT_SCAN_RING_SIZE;
@@ -300,29 +308,43 @@ void HAL_BTProxy_Deinit(void)
 	if(!g_bt_proxy.init_done) return;
 
 	HAL_BTProxy_StopScan();
-	btq_task_running = false;
+	//btq_task_running = false;
 	le_register_app_cb(NULL);
 
-	if(_evtQueueHandle)
-	{
-		uint8_t dummy = EVENT_IO_TO_APP;
-		os_msg_send(_evtQueueHandle, &dummy, 0);
-		delay_ms(100);
-		os_msg_queue_delete(_evtQueueHandle);
-		_evtQueueHandle = NULL;
-	}
-	if(_ioQueueHandle)
-	{
-		os_msg_queue_delete(_ioQueueHandle);
-		_ioQueueHandle = NULL;
-	}
+	//if(_evtQueueHandle)
+	//{
+	//	uint8_t dummy = EVENT_IO_TO_APP;
+	//	os_msg_send(_evtQueueHandle, &dummy, 0);
+	//	delay_ms(100);
+	//	os_msg_queue_delete(_evtQueueHandle);
+	//	_evtQueueHandle = NULL;
+	//}
+	//if(_ioQueueHandle)
+	//{
+	//	os_msg_queue_delete(_ioQueueHandle);
+	//	_ioQueueHandle = NULL;
+	//}
 
 	//bte_deinit(); // causes crash
-	bt_trace_uninit();
+	//bt_trace_uninit();
 
-	if(g_bt_proxy.scan_ring) os_free(g_bt_proxy.scan_ring);
+	HAL_BTProxy_Lock();
 
-	g_bt_proxy.init_done = false;
+	g_bt_proxy.scan_total_packets = 0;
+	g_bt_proxy.scan_dropped_packets = 0;
+	g_bt_proxy.scan_head = 0;
+	g_bt_proxy.scan_tail = 0;
+	g_bt_proxy.scan_count = 0;
+
+	if(g_bt_proxy.scan_ring)
+	{
+		os_free(g_bt_proxy.scan_ring);
+		g_bt_proxy.scan_ring = NULL;
+	}
+
+	HAL_BTProxy_Unlock();
+
+	//g_bt_proxy.init_done = false;
 }
 
 void HAL_BTProxy_GetMAC(uint8_t* mac)
@@ -338,12 +360,16 @@ void HAL_BTProxy_GetMAC(uint8_t* mac)
 
 void HAL_BTProxy_SetScanMode(bool isActive)
 {
-	uint8_t scan_mode = isActive == true ? GAP_SCAN_MODE_ACTIVE : GAP_SCAN_MODE_PASSIVE;
-	le_scan_set_param(GAP_PARAM_SCAN_MODE, sizeof(scan_mode), &scan_mode);
+	scan_mode = isActive == true ? GAP_SCAN_MODE_ACTIVE : GAP_SCAN_MODE_PASSIVE;
+	if(g_bt_proxy.init_done)
+	{
+		le_scan_set_param(GAP_PARAM_SCAN_MODE, sizeof(scan_mode), &scan_mode);
+	}
 }
 
 bool HAL_BTProxy_GetScanMode(void)
 {
+	if(!g_bt_proxy.init_done) return false;
 	uint8_t scan_mode;
 	T_GAP_CAUSE cause = le_scan_get_param(GAP_PARAM_SCAN_MODE, &scan_mode);
 	if(cause) return false;
@@ -354,11 +380,14 @@ bool HAL_BTProxy_GetScanMode(void)
 void HAL_BTProxy_SetWindowInterval(uint16_t window, uint16_t interval)
 {
 	// convert from ms
-	uint16_t scan_interval = (uint16_t)((interval * 16) / 10);
-	uint16_t scan_window = (uint16_t)((window * 16) / 10);
+	scan_interval = (uint16_t)((interval * 16) / 10);
+	scan_window = (uint16_t)((window * 16) / 10);
 
-	le_scan_set_param(GAP_PARAM_SCAN_INTERVAL, sizeof(scan_interval), &scan_interval);
-	le_scan_set_param(GAP_PARAM_SCAN_WINDOW, sizeof(scan_window), &scan_window);
+	if(g_bt_proxy.init_done)
+	{
+		le_scan_set_param(GAP_PARAM_SCAN_INTERVAL, sizeof(scan_interval), &scan_interval);
+		le_scan_set_param(GAP_PARAM_SCAN_WINDOW, sizeof(scan_window), &scan_window);
+	}
 }
 
 void HAL_BTProxy_SetScanRingBufSize(uint16_t new_size)
@@ -371,6 +400,11 @@ void HAL_BTProxy_SetScanRingBufSize(uint16_t new_size)
 	if(g_bt_proxy.scan_ring) os_free(g_bt_proxy.scan_ring);
 	g_bt_proxy.scan_ring = os_malloc(sizeof(bt_scan_entry_t) * g_bt_proxy.scan_ring_size);
 	HAL_BTProxy_Unlock();
+}
+
+bool HAL_BTProxy_IsInit(void)
+{
+	return g_bt_proxy.init_done;
 }
 
 void HAL_BTProxy_OnEverySecond(void)
@@ -391,7 +425,7 @@ void HAL_BTProxy_OnEverySecond(void)
 
 int HAL_BTProxy_PopScanResult(uint8_t* mac, int* rssi, uint8_t* addr_type, uint8_t* data, int* data_len)
 {
-	if(g_bt_proxy.scan_count == 0) return 0;
+	if(g_bt_proxy.scan_count == 0 || !g_bt_proxy.scan_ring) return 0;
 
 	int pos = g_bt_proxy.scan_tail;
 	//memcpy(mac, g_bt_proxy.scan_ring[pos].bda, 6);
@@ -401,7 +435,7 @@ int HAL_BTProxy_PopScanResult(uint8_t* mac, int* rssi, uint8_t* addr_type, uint8
 	}
 	if(rssi) *rssi = g_bt_proxy.scan_ring[pos].rssi;
 	if(addr_type) *addr_type = g_bt_proxy.scan_ring[pos].addr_type;
-	if(data_len) *data_len = g_bt_proxy.scan_ring[pos].adv_len > 62 ? 62 : g_bt_proxy.scan_ring[pos].adv_len;
+	if(data_len) *data_len = g_bt_proxy.scan_ring[pos].adv_len > 31 ? 31 : g_bt_proxy.scan_ring[pos].adv_len;
 	if(data && data_len) memcpy(data, g_bt_proxy.scan_ring[pos].data, *data_len);
 
 	g_bt_proxy.scan_tail = (g_bt_proxy.scan_tail + 1) % g_bt_proxy.scan_ring_size;
@@ -426,6 +460,8 @@ int HAL_BTProxy_GetScanEntry(int newest_index, char* mac_buf, int mac_buf_len, i
 	int pos;
 	bt_scan_entry_t e;
 	uint32_t now_ms;
+
+	if(g_bt_proxy.scan_count == 0 || !g_bt_proxy.scan_ring) return 0;
 
 	if(newest_index < 0 || newest_index >= g_bt_proxy.scan_count)
 	{
@@ -455,22 +491,6 @@ int HAL_BTProxy_GetScanEntry(int newest_index, char* mac_buf, int mac_buf_len, i
 		*age_ms = (int)(now_ms - e.ts_ms);
 	}
 	return 1;
-}
-
-void HAL_BTProxy_Lock(void)
-{
-	if(g_bt_proxy.scan_mutex)
-	{
-		xSemaphoreTake(g_bt_proxy.scan_mutex, portMAX_DELAY);
-	}
-}
-
-void HAL_BTProxy_Unlock(void)
-{
-	if(g_bt_proxy.scan_mutex)
-	{
-		xSemaphoreGive(g_bt_proxy.scan_mutex);
-	}
 }
 
 #endif
