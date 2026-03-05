@@ -193,7 +193,7 @@ void pinModeFast(unsigned char P, unsigned char V)
 extern "C" void DRV_IR_ISR(void* arg);
 
 static int8_t ir_chan = -1;
-static uint32_t ir_periodus = 50;
+static float ir_periodus = 50;
 
 void timerConfigForReceive(){
     // nothing here`
@@ -202,8 +202,8 @@ void timerConfigForReceive(){
 void _timerConfigForReceive() {
     ir_counter = 0;
 
-    ir_chan = HAL_RequestHWTimer(ir_periodus, DRV_IR_ISR, NULL);
-    ADDLOG_INFO(LOG_FEATURE_IR, (char*)"ir timer enabled %u", ir_chan);
+    ir_chan = HAL_RequestHWTimer(ir_periodus, &ir_periodus, DRV_IR_ISR, NULL);
+    ADDLOG_INFO(LOG_FEATURE_IR, (char*)"ir timer %u, %.2f us period", ir_chan, ir_periodus);
 }
 
 static void timer_enable(){
@@ -273,7 +273,7 @@ class myIRsend : public IRsend {
 #else
             HAL_PIN_PWM_Start(sendPin, ((uint32_t)aFrequencyKHz) * 1000);
             pwmduty = 50;
-            HAL_PIN_PWM_Update(sendPin, pwmduty);
+            //HAL_PIN_PWM_Update(sendPin, pwmduty);
 #endif
         }
 
@@ -341,7 +341,7 @@ class myIRsend : public IRsend {
             return val;
         }
 
-        int currentsendtime;
+        float currentsendtime;
         int currentbitval;
 
         uint8_t sendPin;
@@ -353,7 +353,7 @@ class myIRsend : public IRsend {
         uint32_t pwmduty;
 
         uint32_t our_ms;
-        uint32_t our_us;
+        float our_us;
 };
 
 
