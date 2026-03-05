@@ -196,6 +196,7 @@
 #define ENABLE_OBK_BERRY						1
 #define ENABLE_DRIVER_DS1820_FULL				1
 #define ENABLE_DRIVER_DMX						1
+#define ENABLE_DRIVER_MQTTSERVER				1
 //#define ENABLE_DRIVER_ARISTON					1
 
 #elif PLATFORM_BL602
@@ -315,7 +316,7 @@
 #endif
 //#define ENABLE_DRIVER_NEO6M					1
 //#define ENABLE_DRIVER_ARISTON					1
-#define ENABLE_DRIVER_ROOMBA				    1
+//#define ENABLE_DRIVER_ROOMBA				    1
 
 // ENABLE_I2C_ is a syntax for
 // our I2C system defines for drv_i2c_main.c
@@ -459,6 +460,7 @@
 #if (OBK_VARIANT == OBK_VARIANT_ESP4M)
 #define ENABLE_DRIVER_TCA9554					1
 #define ENABLE_DRIVER_DMX						1
+#define ENABLE_DRIVER_MQTTSERVER				1
 #endif
 
 #elif PLATFORM_TR6260
