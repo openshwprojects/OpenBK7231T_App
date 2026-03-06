@@ -1436,6 +1436,19 @@ void TuyaMCU_V0_ParseRealTimeWithRecordStorage(const byte* data, int len, bool b
 		sectorLen = data[ofs + 2] << 8 | data[ofs + 3];
 		dpId = data[ofs];
 		dataType = data[ofs + 1];
+
+		// Guard against malformed/truncated payloads (same vulnerability as ParseStateMessage).
+		// A corrupt sectorLen can point past the end of the buffer, causing OOB reads on the
+		// data[ofs+4..] accesses below and an unbounded ofs advance on the next iteration.
+		// "remaining" is how many data bytes actually follow the 4-byte sector header.
+		const int remaining = len - (ofs + 4);
+		if (sectorLen > remaining) {
+			addLogAdv(LOG_ERROR, LOG_FEATURE_TUYAMCU,
+				"V0_ParseRealTime: ERROR: payload truncated (dpId=%i type=%i-%s sectorLen=%i remaining=%i ofs=%i total=%i)\n",
+				dpId, dataType, TuyaMCU_GetDataTypeString(dataType), sectorLen, remaining, ofs, len);
+			break;
+		}
+
 		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "V0_ParseRealTimeWithRecordStorage: processing id %i, dataType %i-%s and %i data bytes\n",
 			dpId, dataType, TuyaMCU_GetDataTypeString(dataType), sectorLen);
 
@@ -1470,6 +1483,10 @@ void TuyaMCU_V0_ParseRealTimeWithRecordStorage(const byte* data, int len, bool b
 		}
 	}
 }
+// CALLER CONTRACT: This function trusts that sectorLen (data[ofs+2..3]) has already been
+// validated by the caller to fit within the packet buffer (i.e. sectorLen <= len - (ofs+4)).
+// Do NOT call this from a new code path without first performing that bounds check.
+// Currently the only call site is TuyaMCU_ParseStateMessage(), which enforces the guard.
 void TuyaMCU_PublishDPToMQTT(const byte *data, int ofs) {
 	int sectorLen;
 	int dpId;
@@ -1547,6 +1564,8 @@ void TuyaMCU_PublishDPToMQTT(const byte *data, int ofs) {
 	MQTT_PublishMain_StringString(sName, s, OBK_PUBLISH_FLAG_FORCE_REMOVE_GET);
 #endif
 }
+// CALLER CONTRACT: Same constraint as TuyaMCU_PublishDPToMQTT above.
+// sectorLen must have been bounds-checked by the caller before this is invoked.
 void TuyaMCU_PublishDPToBerry(const byte *data, int ofs) {
 	int sectorLen;
 	int dpId;
@@ -1618,6 +1637,15 @@ void TuyaMCU_ParseStateMessage(const byte* data, int len) {
 		sectorLen = data[ofs + 2] << 8 | data[ofs + 3];
 		dpId = data[ofs];
 		dataType = data[ofs + 1];
+		// Guard against malformed/truncated STATE payloads (prevents OOB reads/copies)
+		int remaining = len - (ofs + 4);
+		if (sectorLen > remaining) {
+			addLogAdv(LOG_ERROR, LOG_FEATURE_TUYAMCU,
+				"ParseState: ERROR: STATE payload truncated (dpId=%i type=%i-%s sectorLen=%i remaining=%i ofs=%i total=%i)\n",
+				dpId, dataType, TuyaMCU_GetDataTypeString(dataType), sectorLen, remaining, ofs, len);
+			break;
+		}
+
 		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "ParseState: id %i type %i-%s len %i\n",
 			dpId, dataType, TuyaMCU_GetDataTypeString(dataType), sectorLen);
 
@@ -1639,13 +1667,24 @@ void TuyaMCU_ParseStateMessage(const byte* data, int len) {
 				// add space for NULL terminating character
 				int useLen = sectorLen + 1;
 				if (mapping->rawBufferSize < useLen) {
-					mapping->rawData = realloc(mapping->rawData, useLen);
-					mapping->rawBufferSize = useLen;
+					byte *tmp = (byte*)realloc(mapping->rawData, useLen);
+					if (tmp == NULL) {
+						addLogAdv(LOG_ERROR, LOG_FEATURE_TUYAMCU,
+							"ParseState: ERROR: realloc failed for rawData (dpId=%i type=%i-%s need=%i)\n",
+							dpId, dataType, TuyaMCU_GetDataTypeString(dataType), useLen);
+					} else {
+						mapping->rawData = tmp;
+						mapping->rawBufferSize = useLen;
+					}
 				}
-				mapping->rawDataLen = sectorLen;
-				memcpy(mapping->rawData, data + ofs + 4, sectorLen);
-				// TuyaMCU strings are without NULL terminating character
-				mapping->rawData[sectorLen] = 0;
+				if (mapping->rawData && mapping->rawBufferSize >= useLen) {
+					mapping->rawDataLen = sectorLen;
+					memcpy(mapping->rawData, data + ofs + 4, sectorLen);
+					// TuyaMCU strings are without NULL terminating character
+					mapping->rawData[sectorLen] = 0;
+				} else {
+					mapping->rawDataLen = 0;
+				}
 			}
 		}
 
@@ -1951,7 +1990,16 @@ void TuyaMCU_ParseReportStatusType(const byte *value, int len) {
 	
 	case 0x0B:
 		// TuyaMCU version 3 equivalent packet to version 0 0x08 packet
-		// This packet includes first DateTime (skip past), then DataUnits
+		// This packet includes first DateTime (skip past), then DataUnits.
+		// Layout: [1 subcommand][8 datetime bytes (year/month/day/hour/min/sec/...)]
+		// So we need at least 9 bytes before attempting the slice; if the packet is
+		// shorter than that, data + 9 would be past the buffer end.
+		if (len < 9) {
+			addLogAdv(LOG_ERROR, LOG_FEATURE_TUYAMCU,
+				"ParseReportStatusType: ERROR: 0x0B payload too short to contain datetime header (len=%i need>=9)\n",
+				len);
+			break;
+		}
 		TuyaMCU_ParseStateMessage(value + 9, len - 9);
 		state_updated = true;
 		g_sendQueryStatePackets = 0;
