@@ -313,3 +313,7 @@ void LTR_AppendInformationToHTTPIndexPage(http_request_t* request, int bPreState
 void TinyIR_NEC_Init();
 void TinyIR_NEC_Deinit();
 void TinyIR_NEC_RunFrame();
+
+void DRV_ESPHome_API_Init();
+void DRV_ESPHome_API_Deinit();
+void DRV_ESPHome_API_OnEverySecond();
