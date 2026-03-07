@@ -4,7 +4,7 @@
 #include "../obk_config.h"
 #include "drv_mdns.h"
 
-#if (PLATFORM_BK7231N || PLATFORM_BK7231T) && ENABLE_DRIVER_MDNS
+#if (PLATFORM_BK7231N || PLATFORM_BK7231T || PLATFORM_LN882H) && ENABLE_DRIVER_MDNS
 
 #include "lwip/apps/mdns_opts.h"
 
@@ -14,7 +14,9 @@
 #include "lwip/err.h"
 #include "lwip/init.h"
 #include "lwip/netif.h"
+#if PLATFORM_BK7231N || PLATFORM_BK7231T
 #include "net.h"
+#endif
 #include "tcpip.h"
 
 #ifndef LOCK_TCPIP_CORE
@@ -39,7 +41,12 @@ static s8_t g_mdnsServiceSlot = -1;
 #endif
 
 static struct netif *DRV_MDNS_GetStaNetif(void) {
+#if PLATFORM_LN882H
+	extern struct netif *get_connected_nif(void);
+	return get_connected_nif();
+#else
 	return (struct netif *)net_get_sta_handle();
+#endif
 }
 
 static void DRV_MDNS_StartOrRestart(void) {
