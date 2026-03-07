@@ -277,6 +277,7 @@ static void wifi_connected_cb(void* arg)
     }
 }
 
+#if PLATFORM_LN882H
 static OS_Semaphore_t * sem_scan = NULL;
 
 static void exec_wifi_scan_complete_cb(void * arg)
@@ -387,6 +388,7 @@ void wifi_exec_scan(void * arg)
 	sem_scan = NULL;
     }
 }
+#endif
 
 void wifi_init_sta(const char* oob_ssid, const char* connect_key, obkStaticIP_t *ip)
 {
