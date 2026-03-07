@@ -3,7 +3,7 @@ include($ENV{IDF_PATH}/tools/cmake/project.cmake)
 add_compile_definitions(PLATFORM_ESPIDF=1)
 add_compile_definitions(LWIP_NOASSERT=1)
 set(ENABLE_MDNS_ESPIDF 0)
-if("$ENV{IDF_TARGET}" STREQUAL "esp32" OR "$ENV{IDF_TARGET}" STREQUAL "esp32c6")
+if("$ENV{IDF_TARGET}" STREQUAL "esp32" OR "$ENV{IDF_TARGET}" STREQUAL "esp32c6" OR "$ENV{IDF_TARGET}" STREQUAL "esp32s3")
 	set(ENABLE_MDNS_ESPIDF 1)
 # C3 2M CI image overflows app partition; keep mDNS enabled only for 4M variant for now.
 elseif("$ENV{IDF_TARGET}" STREQUAL "esp32c3" AND "$ENV{OBK_VARIANT}" STREQUAL "2")
