@@ -4,7 +4,7 @@
 #include "../obk_config.h"
 #include "drv_mdns.h"
 
-#if (PLATFORM_BK7231N || PLATFORM_BK7231T || PLATFORM_BK7238 || PLATFORM_W600 || PLATFORM_W800 || PLATFORM_BL602 || PLATFORM_LN882H) && ENABLE_DRIVER_MDNS
+#if (PLATFORM_BK7231N || PLATFORM_BK7231T || PLATFORM_BK7238 || PLATFORM_W600 || PLATFORM_W800 || PLATFORM_BL602 || PLATFORM_LN882H || PLATFORM_ESP8266) && ENABLE_DRIVER_MDNS
 
 #include "lwip/apps/mdns_opts.h"
 
@@ -44,6 +44,9 @@ static struct netif *DRV_MDNS_GetStaNetif(void) {
 #if PLATFORM_LN882H
 	extern struct netif *get_connected_nif(void);
 	return get_connected_nif();
+#elif PLATFORM_ESP8266
+	extern struct netif *netif_default;
+	return netif_default;
 #elif PLATFORM_BL602
 	extern struct netif *wifi_mgmr_sta_netif_get(void);
 	return wifi_mgmr_sta_netif_get();
