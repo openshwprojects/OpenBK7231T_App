@@ -20,5 +20,12 @@ set(PROJ_ALL_SRC
 	${BERRY_SRC_C}
 	../../../libraries/mqtt_patched.c
 )
+if("$ENV{IDF_TARGET}" STREQUAL "esp32")
+	list(APPEND PROJ_ALL_SRC
+		../../../sdk/esp-idf/components/lwip/lwip/src/apps/mdns/mdns.c
+		../../../sdk/esp-idf/components/lwip/lwip/src/apps/mdns/mdns_domain.c
+		../../../sdk/esp-idf/components/lwip/lwip/src/apps/mdns/mdns_out.c
+	)
+endif()
 idf_component_register(SRCS ${PROJ_ALL_SRC} WHOLE_ARCHIVE
 			PRIV_REQUIRES mqtt lwip esp_wifi nvs_flash esp_driver_tsens esp_driver_gpio esp_pm esp_partition app_update esp_adc esp_driver_uart esp_driver_ledc spi_flash esp_driver_spi esp_driver_gptimer)
