@@ -20,7 +20,13 @@ set(PROJ_ALL_SRC
 	${BERRY_SRC_C}
 	../../../libraries/mqtt_patched.c
 )
-if("$ENV{IDF_TARGET}" STREQUAL "esp32" OR "$ENV{IDF_TARGET}" STREQUAL "esp32c3")
+set(ENABLE_MDNS_ESPIDF 0)
+if("$ENV{IDF_TARGET}" STREQUAL "esp32" OR "$ENV{IDF_TARGET}" STREQUAL "esp32c6")
+	set(ENABLE_MDNS_ESPIDF 1)
+elseif("$ENV{IDF_TARGET}" STREQUAL "esp32c3" AND "$ENV{OBK_VARIANT}" STREQUAL "2")
+	set(ENABLE_MDNS_ESPIDF 1)
+endif()
+if(ENABLE_MDNS_ESPIDF)
 	list(APPEND PROJ_ALL_SRC
 		../../../sdk/esp-idf/components/lwip/lwip/src/apps/mdns/mdns.c
 		../../../sdk/esp-idf/components/lwip/lwip/src/apps/mdns/mdns_domain.c
