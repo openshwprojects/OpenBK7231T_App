@@ -1,10 +1,15 @@
 OBK_DIR = ../../../../..
 
 CFLAGS += -DPLATFORM_RTL87X0C -DPLATFORM_REALTEK
+CFLAGS += -DENABLE_DRIVER_MDNS=1 -DLWIP_MDNS_RESPONDER=1
+
+# Ensure our lwIP option wrapper is picked before SDK lwipopts.h.
+INCLUDES := -I$(OBK_DIR)/platforms/RTL87X0C $(INCLUDES)
 
 INCLUDES += -I$(OBK_DIR)/libraries/easyflash/inc
 
 SRC_C  += ../../../../../platforms/RTL87X0C/main.c
+SRC_C  += ../../../component/common/network/lwip/lwip_$(LWIP_VERSION)/src/apps/mdns/mdns.c
 
 #SRC_C  += $(OBK_DIR)/src/hal/realtek/rtl87x0c/hal_adc_rtl87x0c.c
 #SRC_C  += $(OBK_DIR)/src/hal/realtek/rtl87x0c/hal_main_rtl87x0c.c
