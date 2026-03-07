@@ -305,6 +305,9 @@
 // #define ENABLE_DRIVER_BMPI2C					1
 #define ENABLE_DRIVER_DDP						1
 #define ENABLE_DRIVER_SSDP						1
+#if PLATFORM_BK7231N || PLATFORM_BK7231T
+#define ENABLE_DRIVER_MDNS						1
+#endif
 #define ENABLE_DRIVER_IR						1
 #define ENABLE_DRIVER_RC						1
 // #define ENABLE_DRIVER_IR2					1
