@@ -6,13 +6,19 @@
 #include "lwip/sockets.h"
 #include "lwip/ip_addr.h"
 #include "lwip/inet.h"
+#include <string.h>
 #include "../logging/logging.h"
+#include "../hal/hal_ota.h"
 #include "new_http.h"
-#if PLATFORM_ESP8266
+#if PLATFORM_ESP8266 || PLATFORM_RTL87X0C
 #define MAX_SOCKETS_TCP 2
+#endif
+#if PLATFORM_ESP8266
 #define REPLY_BUFFER_SIZE			1024
 #define INCOMING_BUFFER_SIZE		1024
 #define HTTP_CLIENT_STACK_SIZE		4096
+#elif PLATFORM_RTL87X0C
+#define HTTP_CLIENT_STACK_SIZE		6144
 #endif
 #ifndef MAX_SOCKETS_TCP
 #define MAX_SOCKETS_TCP MEMP_NUM_TCP_PCB
@@ -79,6 +85,20 @@ static void tcp_client_thread(tcp_thread_t* arg)
 			break;
 		}
 		request.receivedLen += received;
+		request.received[request.receivedLen] = 0;
+
+#if PLATFORM_REALTEK
+		// On RTL, keep OTA uploads streaming from socket instead of buffering
+		// full request body in RAM.
+		if (strstr(request.received, "\r\n\r\n") != NULL) {
+			if (!strncmp(request.received, "POST /api/ota ", 14) ||
+				!strncmp(request.received, "POST /api/flash/", 16)) {
+				ADDLOG_INFO(LOG_FEATURE_HTTP, "RTL OTA stream mode active");
+				break;
+			}
+		}
+#endif
+
 		if(received < remaining)
 		{
 			break;
@@ -297,6 +317,18 @@ static void tcp_server_thread(beken_thread_arg_t arg)
 			else
 			{
 				//ADDLOG_EXTRADEBUG(LOG_FEATURE_HTTP, "[sock=%d]: Connection accepted from IP:%s", sock[new_idx].fd, get_clientaddr(&source_addr));
+
+#if PLATFORM_REALTEK
+				// OTA upload on RTL is memory-heavy; reject extra incoming HTTP clients
+				// while OTA is in progress to avoid malloc-failed hard-faults.
+				if (OTA_GetProgress() >= 0) {
+					ADDLOG_DEBUG(LOG_FEATURE_HTTP, "RTL OTA guard: dropping extra HTTP client");
+					lwip_close(sock[new_idx].fd);
+					sock[new_idx].fd = INVALID_SOCK;
+					rtos_delay_milliseconds(5);
+					continue;
+				}
+#endif
 
 				rtos_delay_milliseconds(20);
 				if(kNoErr != rtos_create_thread(&sock[new_idx].thread,

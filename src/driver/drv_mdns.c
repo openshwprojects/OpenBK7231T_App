@@ -4,7 +4,7 @@
 #include "../obk_config.h"
 #include "drv_mdns.h"
 
-#if (PLATFORM_BK7231N || PLATFORM_BK7231T || PLATFORM_BK7238 || PLATFORM_W600 || PLATFORM_W800 || PLATFORM_BL602 || PLATFORM_LN882H || PLATFORM_ESP8266 || (PLATFORM_ESPIDF && (CONFIG_IDF_TARGET_ESP32 || CONFIG_IDF_TARGET_ESP32C3 || CONFIG_IDF_TARGET_ESP32C6 || CONFIG_IDF_TARGET_ESP32S3))) && ENABLE_DRIVER_MDNS
+#if (PLATFORM_BK7231N || PLATFORM_BK7231T || PLATFORM_BK7238 || PLATFORM_W600 || PLATFORM_W800 || PLATFORM_BL602 || PLATFORM_LN882H || PLATFORM_RTL87X0C || PLATFORM_ESP8266 || (PLATFORM_ESPIDF && (CONFIG_IDF_TARGET_ESP32 || CONFIG_IDF_TARGET_ESP32C3 || CONFIG_IDF_TARGET_ESP32C6 || CONFIG_IDF_TARGET_ESP32S3))) && ENABLE_DRIVER_MDNS
 
 #include "lwip/apps/mdns_opts.h"
 
@@ -61,6 +61,9 @@ static struct netif *DRV_MDNS_GetStaNetif(void) {
 #elif PLATFORM_BL602
 	extern struct netif *wifi_mgmr_sta_netif_get(void);
 	return wifi_mgmr_sta_netif_get();
+#elif PLATFORM_RTL87X0C
+	extern struct netif xnetif[];
+	return &xnetif[0];
 #elif PLATFORM_W600 || PLATFORM_W800
 	extern struct netif *tls_get_netif(void);
 	return tls_get_netif();
