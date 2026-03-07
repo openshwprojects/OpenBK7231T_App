@@ -4,7 +4,7 @@
 #include "../obk_config.h"
 #include "drv_mdns.h"
 
-#if (PLATFORM_BK7231N || PLATFORM_BK7231T || PLATFORM_LN882H) && ENABLE_DRIVER_MDNS
+#if (PLATFORM_BK7231N || PLATFORM_BK7231T || PLATFORM_BK7238 || PLATFORM_LN882H) && ENABLE_DRIVER_MDNS
 
 #include "lwip/apps/mdns_opts.h"
 
@@ -14,7 +14,7 @@
 #include "lwip/err.h"
 #include "lwip/init.h"
 #include "lwip/netif.h"
-#if PLATFORM_BK7231N || PLATFORM_BK7231T
+#if PLATFORM_BK7231N || PLATFORM_BK7231T || PLATFORM_BK7238
 #include "net.h"
 #endif
 #include "tcpip.h"
