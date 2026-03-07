@@ -20,7 +20,7 @@ set(PROJ_ALL_SRC
 	${BERRY_SRC_C}
 	../../../libraries/mqtt_patched.c
 )
-if("$ENV{IDF_TARGET}" STREQUAL "esp32")
+if("$ENV{IDF_TARGET}" STREQUAL "esp32" OR "$ENV{IDF_TARGET}" STREQUAL "esp32c3")
 	list(APPEND PROJ_ALL_SRC
 		../../../sdk/esp-idf/components/lwip/lwip/src/apps/mdns/mdns.c
 		../../../sdk/esp-idf/components/lwip/lwip/src/apps/mdns/mdns_domain.c
