@@ -6,9 +6,9 @@
 
 #if (PLATFORM_BK7231N || PLATFORM_BK7231T) && ENABLE_DRIVER_MDNS
 
-#ifndef LWIP_MDNS_RESPONDER
-#define LWIP_MDNS_RESPONDER 1
-#endif
+#include "lwip/apps/mdns_opts.h"
+
+#if LWIP_MDNS_RESPONDER
 
 #include "lwip/apps/mdns.h"
 #include "lwip/err.h"
@@ -130,6 +130,27 @@ void DRV_MDNS_Shutdown(void) {
 
 	DRV_MDNS_Active = 0;
 }
+
+#else
+
+extern int DRV_MDNS_Active;
+
+void DRV_MDNS_Init(void) {
+	addLogAdv(LOG_INFO, LOG_FEATURE_HTTP, "DRV_MDNS unavailable in this SDK build");
+	DRV_MDNS_Active = 0;
+}
+
+void DRV_MDNS_RunEverySecond(void) {
+}
+
+void DRV_MDNS_RunQuickTick(void) {
+}
+
+void DRV_MDNS_Shutdown(void) {
+	DRV_MDNS_Active = 0;
+}
+
+#endif
 
 #else
 
