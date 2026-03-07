@@ -11,6 +11,7 @@
 #include "drv_ntp.h"
 #include "drv_deviceclock.h"
 #include "drv_public.h"
+#include "drv_mdns.h"
 #include "drv_ssdp.h"
 #include "drv_test_drivers.h"
 #include "drv_tuyaMCU.h"
@@ -840,6 +841,22 @@ static driver_t g_drivers[] = {
 	DRV_DDP_AppendInformationToHTTPIndexPage, // appendInformationToHTTPIndexPage
 	DRV_DDP_RunFrame,                        // runQuickTick
 	DRV_DDP_Shutdown,                        // stopFunction
+	NULL,                                    // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
+	},
+#endif
+#if ENABLE_DRIVER_MDNS
+	//drvdetail:{"name":"MDNS",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"mDNS/DNS-SD discovery service. Publishes the device hostname and HTTP service on local network.",
+	//drvdetail:"requires":""}
+	{ "MDNS",                                // Driver Name
+	DRV_MDNS_Init,                           // Init
+	DRV_MDNS_RunEverySecond,                 // onEverySecond
+	NULL,                                    // appendInformationToHTTPIndexPage
+	DRV_MDNS_RunQuickTick,                   // runQuickTick
+	DRV_MDNS_Shutdown,                       // stopFunction
 	NULL,                                    // onChannelChanged
 	NULL,                                    // onHassDiscovery
 	false,                                   // loaded
