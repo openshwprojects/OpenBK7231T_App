@@ -152,6 +152,7 @@ OBKM_SRC  += $(OBK_SRCS)driver/drv_spi.c
 OBKM_SRC  += $(OBK_SRCS)driver/drv_spiLED.c
 OBKM_SRC  += $(OBK_SRCS)driver/drv_spi_flash.c
 OBKM_SRC  += $(OBK_SRCS)driver/drv_spidma.c
+OBKM_SRC  += $(OBK_SRCS)driver/drv_mdns.c
 OBKM_SRC  += $(OBK_SRCS)driver/drv_ssdp.c
 OBKM_SRC  += $(OBK_SRCS)driver/drv_shutters.c
 OBKM_SRC  += $(OBK_SRCS)driver/drv_ssd1306.c
