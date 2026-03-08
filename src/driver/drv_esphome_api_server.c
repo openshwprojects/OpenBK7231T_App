@@ -22,6 +22,7 @@ extern int Main_HasWiFiConnected();
 
 static int s_listen_sock = INVALID_SOCK;
 static xTaskHandle s_esphome_api_thread = NULL;
+static int client_sock = INVALID_SOCK;
 
 static void ESPHome_API_TCP_Server_Thread(void* param)
 {
@@ -70,7 +71,7 @@ static void ESPHome_API_TCP_Server_Thread(void* param)
 	{
 		struct sockaddr_storage source_addr;
 		socklen_t addr_len = sizeof(source_addr);
-		int client_sock = accept(s_listen_sock, (struct sockaddr*)&source_addr, &addr_len);
+		client_sock = accept(s_listen_sock, (struct sockaddr*)&source_addr, &addr_len);
 
 		if(client_sock != INVALID_SOCK)
 		{
@@ -154,41 +155,29 @@ static void ESPHome_API_TCP_Server_Thread(void* param)
 				}
 				else if(ret == -1 && (errno == EAGAIN || errno == EWOULDBLOCK))
 				{
-					rtos_delay_milliseconds(100);
-					// do not continue, send ble scans
-					//continue;
+					rtos_delay_milliseconds(10);
+					continue;
 				}
 				else
 				{
 					break; // Error or closed
-				}
-
-				// Flush pending BLE scans from HAL to TCP socket
-				if(g_bt_proxy_forwarding_active)
-				{
-					uint8_t mac_buf[6];
-					int rssi_buf;
-					uint8_t addr_type_buf;
-					uint8_t data_buf[62];
-					int data_len_buf;
-
-					HAL_BTProxy_Lock();
-					while(HAL_BTProxy_PopScanResult(mac_buf, &rssi_buf, &addr_type_buf, data_buf, &data_len_buf))
-					{
-						ESPHome_API_Hook_ScanResult(client_sock, mac_buf, rssi_buf, addr_type_buf, data_buf, data_len_buf);
-					}
-					HAL_BTProxy_Unlock();
 				}
 			}
 		disconnect:
 			ADDLOG_INFO(LOG_FEATURE_DRV, "ESPHomeAPI: Client disconnected or error");
 			g_bt_proxy_forwarding_active = false;
 			close(client_sock);
+			client_sock = INVALID_SOCK;
 		}
 		rtos_delay_milliseconds(50);
 	}
 
 	rtos_suspend_thread(NULL);
+}
+
+bool ESPHome_API_PassScanResult(const uint8_t* mac, int rssi, uint8_t addr_type, const uint8_t* data, int data_len)
+{
+	return ESPHome_API_Hook_ScanResult(client_sock, mac, rssi, addr_type, data, data_len);
 }
 
 void DRV_ESPHome_API_Init()

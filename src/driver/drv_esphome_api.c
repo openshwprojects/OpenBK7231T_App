@@ -10,7 +10,7 @@
 
 #define INVALID_SOCK -1
 
-extern int g_bt_proxy_forwarding_active;
+extern bool g_bt_proxy_forwarding_active;
 
 // Minimalist Varint encoder
 static void encode_varint(uint8_t** buf, uint64_t value)
@@ -289,10 +289,10 @@ void ESPHome_API_Process_Packet(int client_sock, uint32_t type, uint8_t* payload
 }
 
 // Forward a BLE scan result to the connected ESPHome client
-void ESPHome_API_Hook_ScanResult(int client_sock, const uint8_t* mac, int rssi, uint8_t addr_type, const uint8_t* data, int data_len)
+bool ESPHome_API_Hook_ScanResult(int client_sock, const uint8_t* mac, int rssi, uint8_t addr_type, const uint8_t* data, int data_len)
 {
-	if(client_sock == INVALID_SOCK) return;
-	if(!mac || !data || data_len <= 0) return;
+	if(client_sock == INVALID_SOCK || g_bt_proxy_forwarding_active == false) return false;
+	if(!mac || !data || data_len <= 0) return false;
 
 	// ESPHome Msg 93 (BluetoothLERawAdvertisementsResponse)
 	// repeated BluetoothLERawAdvertisement advertisements = 1;
@@ -308,7 +308,7 @@ void ESPHome_API_Hook_ScanResult(int client_sock, const uint8_t* mac, int rssi, 
 
 	// Convert MAC to uint64
 	uint64_t mac_u64 = 0;
-	for(int i = 0; i < 6; i++) mac_u64 |= ((uint64_t)mac[5 - i]) << (i * 8);
+	for(int i = 0; i < 6; i++) mac_u64 |= ((uint64_t)mac[i]) << (i * 8);
 
 	// Encode the single Advertisement message into a sub-buffer
 	uint8_t adv_msg[256];
@@ -327,6 +327,7 @@ void ESPHome_API_Hook_ScanResult(int client_sock, const uint8_t* mac, int rssi, 
 	pb_encode_bytes_field(&ptr, 1, adv_msg, adv_ptr - adv_msg);
 
 	PB_SendFrame(client_sock, ESPHOME_MSG_BluetoothLERawAdvertisementsResponse, payload, ptr - payload);
+	return true;
 }
 
 #endif // ENABLE_DRIVER_ESPHOME_API

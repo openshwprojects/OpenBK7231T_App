@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <stddef.h>
+#include <stdbool.h>
 
 // ESPHome Message Types
 #define ESPHOME_MSG_HelloRequest 1
@@ -39,6 +40,7 @@ void ESPHome_API_Send_PingResponse(int client_sock);
 void ESPHome_API_Send_DeviceInfoResponse(int client_sock);
 void ESPHome_API_Send_ListEntitiesDoneResponse(int client_sock);
 
-void ESPHome_API_Hook_ScanResult(int client_sock, const uint8_t *mac, int rssi, uint8_t addr_type, const uint8_t *data, int data_len);
+bool ESPHome_API_Hook_ScanResult(int client_sock, const uint8_t *mac, int rssi, uint8_t addr_type, const uint8_t *data, int data_len);
+bool ESPHome_API_PassScanResult(const uint8_t* mac, int rssi, uint8_t addr_type, const uint8_t* data, int data_len);
 
 #endif // __DRV_BT_PROXY_API_H__

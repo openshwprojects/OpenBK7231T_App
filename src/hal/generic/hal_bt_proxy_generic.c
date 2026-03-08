@@ -6,7 +6,7 @@
 #include "../hal_bt_proxy.h"
 #include "../hal_wifi.h"
 
-static SemaphoreHandle_t scan_mutex = NULL;
+//static SemaphoreHandle_t scan_mutex = NULL;
 
 void __attribute__((weak)) HAL_BTProxy_StartScan()
 {
@@ -48,41 +48,26 @@ void __attribute__((weak)) HAL_BTProxy_SetWindowInterval(uint16_t window, uint16
 
 }
 
-void __attribute__((weak)) HAL_BTProxy_SetScanRingBufSize(uint16_t new_size)
-{
-
-}
-
 void __attribute__((weak)) HAL_BTProxy_OnEverySecond(void)
 {
 
 }
 
-int __attribute__((weak)) HAL_BTProxy_PopScanResult(uint8_t* mac, int* rssi, uint8_t* addr_type, uint8_t* data, int* data_len)
+int __attribute__((weak)) HAL_BTProxy_GetScanStats(int* init_done, int* scan_active, int* total_packets, int* dropped_packets)
 {
 	return 0;
 }
 
-int __attribute__((weak)) HAL_BTProxy_GetScanStats(int* init_done, int* scan_active, int* total_packets, int* dropped_packets, int* buffered_packets)
-{
-	return 0;
-}
+//void __attribute__((weak)) HAL_BTProxy_Lock(void)
+//{
+//	if(!scan_mutex) scan_mutex = xSemaphoreCreateMutex();
+//	xSemaphoreTake(scan_mutex, 0xFFFFFFFF);
+//}
 
-int __attribute__((weak)) HAL_BTProxy_GetScanEntry(int newest_index, char* mac_buf, int mac_buf_len, int* rssi, int* adv_len, int* evt_type, int* age_ms)
-{
-	return 0;
-}
-
-void __attribute__((weak)) HAL_BTProxy_Lock(void)
-{
-	if(!scan_mutex) scan_mutex = xSemaphoreCreateMutex();
-	xSemaphoreTake(scan_mutex, 0xFFFFFFFF);
-}
-
-void __attribute__((weak)) HAL_BTProxy_Unlock(void)
-{
-	xSemaphoreGive(scan_mutex);
-}
+//void __attribute__((weak)) HAL_BTProxy_Unlock(void)
+//{
+//	xSemaphoreGive(scan_mutex);
+//}
 
 void __attribute__((weak)) HAL_BTProxy_RegisterPlatformCommands(void)
 {
@@ -131,16 +116,6 @@ static commandResult_t CMD_StopScan(const void* context, const char* cmd, const 
 	return CMD_RES_OK;
 }
 
-static commandResult_t CMD_SetScanRingBufSize(const void* context, const char* cmd, const char* args, int cmdFlags)
-{
-	Tokenizer_TokenizeString(args, 0);
-	int new_size = Tokenizer_GetArgIntegerDefault(0, 32);
-	if(new_size <= 0 || new_size > 0xFFFF)
-		return CMD_RES_BAD_ARGUMENT;
-	HAL_BTProxy_SetScanRingBufSize(new_size & 0xFFFF);
-	return CMD_RES_OK;
-}
-
 static commandResult_t CMD_BTInit(const void* context, const char* cmd, const char* args, int cmdFlags)
 {
 	HAL_BTProxy_Init();
@@ -178,11 +153,6 @@ void HAL_BTProxy_RegisterCommands(void)
 	//cmddetail:"fn":"CMD_StopScan","file":"hal/generic/hal_bt_proxy_generic.c","requires":"ENABLE_BT_PROXY",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("BTStopScan", CMD_StopScan, NULL);
-	//cmddetail:{"name":"BTSetBufSize","args":"[size]",
-	//cmddetail:"descr":"BT set scan ring buffer size. Will consume 54 bytes of heap for 1 entry",
-	//cmddetail:"fn":"CMD_SetScanRingBufSize","file":"hal/generic/hal_bt_proxy_generic.c","requires":"ENABLE_BT_PROXY",
-	//cmddetail:"examples":""}
-	CMD_RegisterCommand("BTSetBufSize", CMD_SetScanRingBufSize, NULL);
 	//cmddetail:{"name":"BTInit","args":"",
 	//cmddetail:"descr":"BT init",
 	//cmddetail:"fn":"CMD_BTInit","file":"hal/generic/hal_bt_proxy_generic.c","requires":"ENABLE_BT_PROXY",

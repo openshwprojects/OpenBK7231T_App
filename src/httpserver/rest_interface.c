@@ -1071,36 +1071,11 @@ static int http_rest_get_bt_scan(http_request_t* request) {
 	int scan_active = 0;
 	int total_packets = 0;
 	int dropped_packets = 0;
-	int buffered_packets = 0;
-	int limit;
-	int i;
-	int first = 1;
-	char mac[18];
-	int rssi, adv_len, evt_type, age_ms;
 
-	HAL_BTProxy_Lock();
-	HAL_BTProxy_GetScanStats(&init_done, &scan_active, &total_packets, &dropped_packets, &buffered_packets);
+	HAL_BTProxy_GetScanStats(&init_done, &scan_active, &total_packets, &dropped_packets);
 	http_setup(request, httpMimeTypeJson);
-	hprintf255(request, "{\"init\":%d,\"scan\":%d,\"total\":%d,\"dropped\":%d,\"buffered\":%d,\"entries\":[",
-		init_done, scan_active, total_packets, dropped_packets, buffered_packets);
-
-	limit = buffered_packets;
-	//if (limit > 10) {
-	//	limit = 10;
-	//}
-	for (i = 0; i < limit; i++) {
-		if (!HAL_BTProxy_GetScanEntry(i, mac, sizeof(mac), &rssi, &adv_len, &evt_type, &age_ms)) {
-			continue;
-		}
-		if (!first) {
-			poststr(request, ",");
-		}
-		first = 0;
-		hprintf255(request, "{\"mac\":\"%s\",\"rssi\":%d,\"adv_len\":%d,\"evt_type\":%d,\"age_ms\":%d}",
-			mac, rssi, adv_len, evt_type, age_ms);
-	}
-	HAL_BTProxy_Unlock();
-	poststr(request, "]}");
+	hprintf255(request, "{\"init\":%d,\"scan\":%d,\"total\":%d,\"dropped\":%d}",
+		init_done, scan_active, total_packets, dropped_packets);
 	poststr(request, NULL);
 	return 0;
 }
