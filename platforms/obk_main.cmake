@@ -133,6 +133,7 @@ set(OBKM_SRC
 	${OBK_SRCS}driver/drv_spiLED.c
 	${OBK_SRCS}driver/drv_spi_flash.c
 	${OBK_SRCS}driver/drv_spidma.c
+	${OBK_SRCS}driver/drv_mdns.c
 	${OBK_SRCS}driver/drv_ssdp.c
 	${OBK_SRCS}driver/drv_ssd1306.c
 	${OBK_SRCS}driver/drv_tasmotaDeviceGroups.c
