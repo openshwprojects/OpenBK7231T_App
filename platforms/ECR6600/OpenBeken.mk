@@ -1,4 +1,5 @@
 CFLAGS += -DPLATFORM_ECR6600 -Wno-error -DTCP_MSL=3000
+CFLAGS += -DENABLE_DRIVER_MDNS=1
 VPATH += $(TOPDIR)/../../src
 VPATH += $(TOPDIR)/../../platforms/ECR6600
 

@@ -36,3 +36,29 @@
 # and then in pre_build.sh you apply this patch with:
 #
 # patch -p 1 -d sdk/OpenW800 < platforms/W800/my_change.diff
+
+LWIPOPTS="sdk/OpenW800/src/network/lwip2.0.3/include/lwip/lwipopts.h"
+
+if [ -f "$LWIPOPTS" ]; then
+	echo "PREBUILD W800: enabling lwIP mDNS options"
+
+	if grep -q '^[[:space:]]*#define LWIP_MDNS_RESPONDER' "$LWIPOPTS"; then
+		sed -i 's/^[[:space:]]*#define LWIP_MDNS_RESPONDER.*/#define LWIP_MDNS_RESPONDER             1/' "$LWIPOPTS"
+	else
+		sed -i '/^[[:space:]]*#define LWIP_IGMP[[:space:]]\+/a #define LWIP_MDNS_RESPONDER             1' "$LWIPOPTS"
+	fi
+
+	if grep -q '^[[:space:]]*#define LWIP_NUM_NETIF_CLIENT_DATA' "$LWIPOPTS"; then
+		sed -i 's/^[[:space:]]*#define LWIP_NUM_NETIF_CLIENT_DATA.*/#define LWIP_NUM_NETIF_CLIENT_DATA      1/' "$LWIPOPTS"
+	else
+		sed -i '/^[[:space:]]*#define LWIP_IGMP[[:space:]]\+/a #define LWIP_NUM_NETIF_CLIENT_DATA      1' "$LWIPOPTS"
+	fi
+
+	if grep -q '^[[:space:]]*#define MEMP_NUM_UDP_PCB' "$LWIPOPTS"; then
+		sed -i 's/^[[:space:]]*#define MEMP_NUM_UDP_PCB.*/#define MEMP_NUM_UDP_PCB                5/' "$LWIPOPTS"
+	else
+		sed -i '/^[[:space:]]*#define LWIP_IGMP[[:space:]]\+/a #define MEMP_NUM_UDP_PCB                5' "$LWIPOPTS"
+	fi
+else
+	echo "PREBUILD W800: WARN lwipopts.h not found: $LWIPOPTS"
+fi
