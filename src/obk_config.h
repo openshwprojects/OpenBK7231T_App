@@ -601,6 +601,7 @@
 #define ENABLE_DRIVER_SSDP						1
 #define ENABLE_DRIVER_DS1820					1
 #define ENABLE_DRIVER_TUYAMCU					1
+#define ENABLE_DRIVER_MDNS						1
 
 // #define ENABLE_OBK_BERRY						1
 
