@@ -1,5 +1,6 @@
 OBK_SRCS = ../shared/src/
 CC_FLAGS += -DPLATFORM_XRADIO
+CC_FLAGS += -DENABLE_DRIVER_MDNS=PLATFORM_XR806+PLATFORM_XR809
 
 SRCS += $(OBK_SRCS)hal/xradio/hal_adc_xradio
 SRCS += $(OBK_SRCS)hal/xradio/hal_wifi_xradio
