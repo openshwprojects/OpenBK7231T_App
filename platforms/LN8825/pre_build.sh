@@ -36,3 +36,24 @@
 # and then in pre_build.sh you apply this patch with:
 #
 # patch -p 1 -d sdk/OpenLN882H < platforms/LN882H/my_change.diff
+
+LWIPOPTS="sdk/OpenLN8825/components/net/lwip-2.1.3/src/port/ln_osal/include/lwipopts.h"
+
+if [ -f "$LWIPOPTS" ]; then
+	echo "PREBUILD: enabling lwIP mDNS options for LN8825"
+	sed -i 's/#define MEMP_NUM_UDP_PCB[[:space:]]*(4)/#define MEMP_NUM_UDP_PCB        (5)/' "$LWIPOPTS"
+
+	if grep -q '^[[:space:]]*#define LWIP_MDNS_RESPONDER' "$LWIPOPTS"; then
+		sed -i 's/^[[:space:]]*#define LWIP_MDNS_RESPONDER.*/#define LWIP_MDNS_RESPONDER      1/' "$LWIPOPTS"
+	else
+		sed -i '/^[[:space:]]*#define LWIP_IGMP[[:space:]]\+1/a #define LWIP_MDNS_RESPONDER      1' "$LWIPOPTS"
+	fi
+
+	if grep -q '^[[:space:]]*#define LWIP_NUM_NETIF_CLIENT_DATA' "$LWIPOPTS"; then
+		sed -i 's/^[[:space:]]*#define LWIP_NUM_NETIF_CLIENT_DATA.*/#define LWIP_NUM_NETIF_CLIENT_DATA 1/' "$LWIPOPTS"
+	else
+		sed -i '/^[[:space:]]*#define LWIP_IGMP[[:space:]]\+1/a #define LWIP_NUM_NETIF_CLIENT_DATA 1' "$LWIPOPTS"
+	fi
+else
+	echo "PREBUILD: WARN lwipopts.h not found: $LWIPOPTS"
+fi
