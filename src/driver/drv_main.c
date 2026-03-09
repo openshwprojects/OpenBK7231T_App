@@ -22,6 +22,7 @@
 #include "drv_ds1820_common.h"
 #include "drv_ds3231.h"
 #include "drv_hlw8112.h"
+#include "drv_shtxx.h"
 
 void DRV_MQTTServer_Init();
 void DRV_MQTTServer_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState);
@@ -1190,6 +1191,22 @@ static driver_t g_drivers[] = {
 	false,                                   // loaded
 	},
 #endif
+#if ENABLE_DRIVER_SHTXX
+       //drvdetail:{"name":"SHTXX",
+       //drvdetail:"title":"TODO",
+       //drvdetail:"descr":"Humidity/temperature sensor. Testing for unknown sensor on 0x44",
+       //drvdetail:"requires":""}
+       { "SHTXX",                               // Driver Name
+       SHTXX_Init,                              // Init
+       SHTXX_OnEverySecond,                     // onEverySecond
+       SHTXX_AppendInformationToHTTPIndexPage,  // appendInformationToHTTPIndexPage
+       NULL,                                    // runQuickTick
+       SHTXX_StopDriver,                        // stopFunction
+       NULL,                                    // onChannelChanged
+       NULL,                                    // onHassDiscovery
+       false,                                   // loaded
+       },
+#endif
 #if ENABLE_DRIVER_SGP
 	//drvdetail:{"name":"SGP",
 	//drvdetail:"title":"TODO",
@@ -1711,6 +1728,15 @@ void DRV_Generic_Init() {
 #ifndef OBK_DISABLE_ALL_DRIVERS
 	// init TIME unconditionally on start
 	TIME_Init();
+#if WIN32
+#include "drv_soft_i2c_sim.h"
+    //cmddetail:{"name":"Sim_AddI2Csensor","args":"[type=SHT3x/SHT4x/AHT2x/CHT83xx/BMP280] [SCL=<pin>] [SDA=<pin>] [adress=<hex> optional, try default if ommited]",
+    //cmddetail:"descr":"Ads a pseudo sensor to the given pins",
+    //cmddetail:"fn":"CMD_SoftI2C_simAddSensor","file":"driver/drv_soft_i2c_sim.c","requires":"",
+    //cmddetail:"examples":"Sim_AddI2Csensor SHT3x SCL=24 SDA=17 adress=0x45"}
+    CMD_RegisterCommand("Sim_AddI2Csensor", CMD_SoftI2C_simAddSensor, NULL);
+
+#endif
 #endif
 }
 

@@ -208,6 +208,18 @@ void CHT83XX_Init()
 	g_softI2C.pin_data = 14;
 	g_softI2C.pin_clk = PIN_FindPinIndexForRole(IOR_CHT83XX_CLK, g_softI2C.pin_clk);
 	g_softI2C.pin_data = PIN_FindPinIndexForRole(IOR_CHT83XX_DAT, g_softI2C.pin_data);
+	channel_temp = g_cfg.pins.channels[g_softI2C.pin_data];
+	channel_humid = g_cfg.pins.channels2[g_softI2C.pin_data];
+
+	// if cli data is given, use instead of pin cfg page
+	g_softI2C.pin_clk   = Tokenizer_GetPinEqual("SCL=",    g_softI2C.pin_clk);
+	g_softI2C.pin_data  = Tokenizer_GetPinEqual("SDA=",    g_softI2C.pin_data);
+	channel_temp  = Tokenizer_GetArgEqualInteger("chan_t=", channel_temp);
+	channel_humid = Tokenizer_GetArgEqualInteger("chan_h=", channel_humid);
+
+
+	setPinUsedString(g_softI2C.pin_clk, "CHT83XX SCL");
+	setPinUsedString(g_softI2C.pin_data, "CHT83XX SDA");
 
 	Soft_I2C_PreInit(&g_softI2C);
 
@@ -291,9 +303,6 @@ void CHT83XX_Init()
 void CHT83XX_Measure()
 {
 	CHT83XX_ReadEnv(&g_temp, &g_humid);
-
-	channel_temp = g_cfg.pins.channels[g_softI2C.pin_data];
-	channel_humid = g_cfg.pins.channels2[g_softI2C.pin_data];
 	// don't want to loose accuracy, so multiply by 10
 	// We have a channel types to handle that
 	CHANNEL_Set(channel_temp, (int)(g_temp * 10), 0);

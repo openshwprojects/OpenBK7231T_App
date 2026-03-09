@@ -190,6 +190,9 @@ void AHT2X_Init()
 
 	Soft_I2C_PreInit(&g_softI2C);
 	rtos_delay_milliseconds(100);
+	setPinUsedString(g_softI2C.pin_clk, "AHT2X SCL");
+	setPinUsedString(g_softI2C.pin_data, "AHT2X SDA");
+
 
 	AHT2X_Initialization();
 

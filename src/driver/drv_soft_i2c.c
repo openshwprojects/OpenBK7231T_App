@@ -11,6 +11,7 @@
 #include "../hal/hal_pins.h"
 
 static int g_clk_period = SM2135_DELAY;
+#ifndef WIN32
 
 #if !PLATFORM_ESPIDF && !PLATFORM_XR806 && !PLATFORM_XR872 && !PLATFORM_ESP8266 && !PLATFORM_REALTEK_NEW && !PLATFORM_TXW81X
 void usleep(int r) //delay function do 10*r nops, because rtos_delay_milliseconds is too much
@@ -23,6 +24,7 @@ void usleep(int r) //delay function do 10*r nops, because rtos_delay_millisecond
 #endif
 }
 #endif
+
 
 void Soft_I2C_SetLow(uint8_t pin) {
 	HAL_PIN_Setup_Output(pin);
@@ -153,4 +155,4 @@ uint8_t Soft_I2C_ReadByte(softI2C_t *i2c, bool nack)
 
 	return val;
 }
-
+#endif // to #ifndef WIN32
