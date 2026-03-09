@@ -37,16 +37,16 @@ shutter_t *g_shutters = 0;
 
 
 void Shutter_Save(shutter_t *s) {
-	HAL_FlashVars_SaveChannel(s->channel * 3 + 0, s->openTimeSeconds * 100);
-	HAL_FlashVars_SaveChannel(s->channel * 3 + 1, s->closeTimeSeconds * 100);
+	HAL_FlashVars_SaveChannel(s->channel * 3 + 0, s->openTimeSeconds * 10);
+	HAL_FlashVars_SaveChannel(s->channel * 3 + 1, s->closeTimeSeconds * 10);
 	HAL_FlashVars_SaveChannel(s->channel * 3 + 2, s->frac * 100);
 }
 void Shutter_Read(shutter_t *s) {
-	s->openTimeSeconds = HAL_FlashVars_GetChannelValue(s->channel * 3 + 0) * 0.01f;
+	s->openTimeSeconds = HAL_FlashVars_GetChannelValue(s->channel * 3 + 0) * 0.1f;
 	if (s->openTimeSeconds == 0.0f) {
 		s->openTimeSeconds = DEFAULT_TIME;
 	}
-	s->closeTimeSeconds = HAL_FlashVars_GetChannelValue(s->channel * 3 + 1) * 0.01f;
+	s->closeTimeSeconds = HAL_FlashVars_GetChannelValue(s->channel * 3 + 1) * 0.1f;
 	if (s->closeTimeSeconds == 0.0f) {
 		s->closeTimeSeconds = DEFAULT_TIME;
 	}
@@ -270,6 +270,8 @@ void Shutter_SetTimes(int channel, float timeOpen, float timeClose) {
 
 	if (timeClose > 0.0f)
 		s->closeTimeSeconds = timeClose;
+
+	Shutter_Save(s);
 }
 
 static commandResult_t CMD_Shutter_Calibrate(const void *context, const char *cmd, const char *args, int flags) {
@@ -324,6 +326,7 @@ static void RegisterShutterForChannel(int channel) {
 		s->closeTimeSeconds = DEFAULT_TIME; // default
 		s->next = g_shutters;
 		g_shutters = s;
+		Shutter_Read(s);
 	}
 }
 void DRV_Shutters_RunEverySecond() {
