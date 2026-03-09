@@ -33,7 +33,14 @@ fi
 
 
 # Smart Sync Strategy
-if [ ! -d "$BUILD_DIR/sdk" ]; then
+# CLEAN_BUILD=1 means we must refresh SDK content too, otherwise stale/corrupted
+# SDK files in the persistent build volume can survive indefinitely.
+if [ "$CLEAN_BUILD" = "1" ]; then
+    echo "Clean build requested: full sync of source to build volume (including SDKs)..."
+    rsync -rltD --no-owner --no-group --info=progress2 \
+        --exclude 'docker/test_runs/' \
+        "$SOURCE_DIR/" "$BUILD_DIR/" || true
+elif [ ! -d "$BUILD_DIR/sdk" ]; then
     echo "Initial setup: Full sync of source to build volume..."
     # First run: Sync everything including SDKs
     rsync -rltD --no-owner --no-group --info=progress2 \
@@ -392,10 +399,10 @@ if [ -f "$TARGET_CMAKE" ]; then
 
     # 3. Patch CMakeLists.txt: Fix Component Requirements (downgrade v5.x -> v4.4)
     # Remove v5.x specific drivers and use generic 'driver'
-    sed -i 's|PRIV_REQUIRES .*|PRIV_REQUIRES mqtt lwip esp_wifi nvs_flash esp_pm app_update driver spi_flash)|g' "$TARGET_CMAKE"
+    sed -i 's|PRIV_REQUIRES .*|PRIV_REQUIRES mqtt lwip esp_wifi nvs_flash bt esp_pm app_update driver spi_flash)|g' "$TARGET_CMAKE"
     
     # 4. Remove WHOLE_ARCHIVE (it seems to be misinterpreted as a source file)
-    sed -i 's|WHOLE_ARCHIVE||g' "$TARGET_CMAKE"
+    # sed -i 's|WHOLE_ARCHIVE||g' "$TARGET_CMAKE"
     sed -i '/idf_component_register/i message(STATUS "DEBUG: CMAKE_CURRENT_LIST_DIR=${CMAKE_CURRENT_LIST_DIR}")' "$TARGET_CMAKE"
 
     echo "Patched CMakeLists.txt:"
@@ -430,7 +437,7 @@ TARGET_CMAKE="$BUILD_DIR/platforms/ESP-IDF/main/CMakeLists.txt"
 if [ -f "$TARGET_CMAKE" ]; then
     echo "Patching CMakeLists.txt for IDF v5 dependencies..."
     # Append esp_adc to component list
-    sed -i 's|PRIV_REQUIRES mqtt lwip esp_wifi nvs_flash esp_pm app_update driver spi_flash)|PRIV_REQUIRES mqtt lwip esp_wifi nvs_flash esp_pm app_update driver spi_flash esp_adc esp_timer)|g' "$TARGET_CMAKE"
+    sed -i 's|PRIV_REQUIRES mqtt lwip esp_wifi nvs_flash bt esp_pm app_update driver spi_flash)|PRIV_REQUIRES mqtt lwip esp_wifi nvs_flash bt esp_pm app_update driver spi_flash esp_adc esp_timer)|g' "$TARGET_CMAKE"
     
     # Also verify if WHOLE_ARCHIVE works or needs removal. V5 usually supports it.
     # Leaving it alone for now as previous log didn't complain about it.
@@ -723,10 +730,13 @@ if [ "$CLEAN_BUILD" = "1" ]; then
     find "$BUILD_DIR/src" -name "*.o" -delete || true
 fi
 
-# Manual Patch: Ensure partitions.csv exists (Makefile logic fails for OBK_VARIANT=0)
-if [ ! -f "$BUILD_DIR/platforms/ESP-IDF/partitions.csv" ]; then
-    echo "partitions.csv missing, copying default partitions-2mb.csv..."
-    cp "$BUILD_DIR/platforms/ESP-IDF/partitions-2mb.csv" "$BUILD_DIR/platforms/ESP-IDF/partitions.csv" || echo "Warning: Failed to copy partitions.csv"
+# Manual Patch: Ensure correct partitions.csv is used
+if [ "$OBK_VARIANT" = "2" ] || [ "$FLASH_SIZE" = "4MB" ]; then
+    echo "Copying partitions-4mb.csv (OBK_VARIANT=$OBK_VARIANT, FLASH_SIZE=$FLASH_SIZE)..."
+    cp -f "$BUILD_DIR/platforms/ESP-IDF/partitions-4mb.csv" "$BUILD_DIR/platforms/ESP-IDF/partitions.csv" || echo "Warning: Failed to copy partitions-4mb.csv"
+else
+    echo "Copying partitions-2mb.csv (OBK_VARIANT=$OBK_VARIANT, FLASH_SIZE=$FLASH_SIZE)..."
+    cp -f "$BUILD_DIR/platforms/ESP-IDF/partitions-2mb.csv" "$BUILD_DIR/platforms/ESP-IDF/partitions.csv" || echo "Warning: Failed to copy partitions-2mb.csv"
 fi
 
 echo "Building version: $APP_VERSION"

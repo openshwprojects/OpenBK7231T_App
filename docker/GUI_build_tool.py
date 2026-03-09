@@ -230,24 +230,73 @@ class OBKBuildToolGUI(tk.Tk):
         dirty: bool,
     ):
         dirty_text = "Yes" if dirty else "No"
+        try:
+            is_behind = int(behind) > 0
+        except ValueError:
+            is_behind = False
+
         if ahead == "0" and behind == "0":
             sync_state = "Up to date with upstream main."
+            msg = [
+                sync_state,
+                "",
+                f"Source: {UPSTREAM_REPO_URL}",
+                f"Repo dir: {repo_dir}",
+                f"Current branch: {current_branch}",
+                "",
+                f"Local HEAD:    {local_desc}",
+                f"Upstream main: {remote_desc}",
+                f"Ahead: {ahead}, Behind: {behind}",
+                f"Working tree dirty: {dirty_text}",
+            ]
+            messagebox.showinfo("Main Status", "\n".join(msg))
         else:
             sync_state = "Differs from upstream main."
+            msg = [
+                sync_state,
+                "",
+                f"Source: {UPSTREAM_REPO_URL}",
+                f"Repo dir: {repo_dir}",
+                f"Current branch: {current_branch}",
+                "",
+                f"Local HEAD:    {local_desc}",
+                f"Upstream main: {remote_desc}",
+                f"Ahead: {ahead}, Behind: {behind}",
+                f"Working tree dirty: {dirty_text}",
+            ]
+            
+            if is_behind:
+                msg.append("")
+                msg.append("Would you like to try pulling these updates now?")
+                msg.append("(A fast-forward merge will be attempted. Your local unsaved edits are safe and will prevent the update if they conflict.)")
+                if messagebox.askyesno("Main Status / Updates Available", "\n".join(msg)):
+                    threading.Thread(target=self._pull_upstream_worker, args=(repo_dir,), daemon=True).start()
+            else:
+                messagebox.showinfo("Main Status", "\n".join(msg))
 
-        msg = [
-            sync_state,
-            "",
-            f"Source: {UPSTREAM_REPO_URL}",
-            f"Repo dir: {repo_dir}",
-            f"Current branch: {current_branch}",
-            "",
-            f"Local HEAD:    {local_desc}",
-            f"Upstream main: {remote_desc}",
-            f"Ahead: {ahead}, Behind: {behind}",
-            f"Working tree dirty: {dirty_text}",
-        ]
-        messagebox.showinfo("Main Status", "\n".join(msg))
+    def _pull_upstream_worker(self, repo_dir: str):
+        # We assume _check_updates_worker just fetched FETCH_HEAD successfully.
+        # We use --ff-only to ensure we NEVER overwrite local commits or conflicting edits.
+        self._set_ui_busy(True)
+        try:
+            merge = self._run_git(
+                repo_dir,
+                ["merge", "FETCH_HEAD", "--ff-only"],
+                timeout_sec=30,
+            )
+            # Must run UI updates in main thread
+            if merge.returncode == 0:
+                self.after(0, lambda: messagebox.showinfo("Update Successful", "Successfully pulled the latest updates from main!"))
+            else:
+                err = (merge.stderr or merge.stdout or "").strip()
+                self.after(0, lambda e=err: messagebox.showwarning(
+                    "Update Aborted", 
+                    f"Could not fast-forward cleanly. This usually means you have conflicting local changes or your branch has diverged.\n\nGit output:\n{e}"
+                ))
+        except Exception as ex:
+            self.after(0, lambda e=ex: messagebox.showerror("Update Error", f"Failed to pull updates:\n{e}"))
+        finally:
+            self.after(0, lambda: self._set_ui_busy(False))
 
 
     def _clear_log(self):
@@ -356,6 +405,7 @@ class OBKBuildToolGUI(tk.Tk):
         hint_flash = ttk.Label(frm_settings, text="Hint: double check flash size for each platform before building.",
                                foreground="#555")
         hint_flash.grid(row=5, column=1, columnspan=2, sticky="w", padx=8, pady=(0, 6))
+        self.lbl_flash_hint = hint_flash
 
         # Version/name
         ttk.Label(frm_settings, text="Version / Name:").grid(row=6, column=0, sticky="w", padx=8, pady=(6, 2))
@@ -537,6 +587,9 @@ class OBKBuildToolGUI(tk.Tk):
         if not current_flash:
             self.var_flash_size.set(default_flash)
 
+        # Update valid flash sizes for this platform
+        self._update_flash_sizes()
+
         # TXW packager is only relevant for TXW81X.
         if plat == "TXW81X":
             self.cmb_txw.config(state="readonly")
@@ -547,6 +600,30 @@ class OBKBuildToolGUI(tk.Tk):
         # Refresh drivers list
         self._refresh_drivers()
         self._update_ota_controls()
+
+    def _update_flash_sizes(self):
+        """Filter the flash size dropdown to only valid sizes for the current platform."""
+        plat = self.var_platform.get().strip()
+        allowed = bt.get_valid_flash_sizes(plat) if plat else bt.ALL_FLASH_SIZES
+        self.cmb_flash["values"] = allowed
+        # Auto-correct selection if it is now invalid
+        current = self.var_flash_size.get().strip()
+        if current and current not in allowed:
+            self.var_flash_size.set(bt.get_default_flash_size(plat) if plat else allowed[0])
+        elif not current:
+            self.var_flash_size.set(bt.get_default_flash_size(plat) if plat else allowed[0])
+        # Update hint colour
+        if hasattr(self, "lbl_flash_hint"):
+            if plat in bt.FLASH_SIZE_RESTRICTIONS:
+                self.lbl_flash_hint.config(
+                    text=f"Note: {plat} only supports {', '.join(allowed)} (partition table required).",
+                    foreground="#b00020",
+                )
+            else:
+                self.lbl_flash_hint.config(
+                    text="Hint: double check flash size for each platform before building.",
+                    foreground="#555",
+                )
 
     def _on_source_change(self):
         src_dir = self.var_src_dir.get().strip()
@@ -815,20 +892,27 @@ class OBKBuildToolGUI(tk.Tk):
                 self._log("[OTA] ERROR: Upload blocked due to platform mismatch.\n")
                 return False
 
-            result = bt.upload_ota_file(host, ota_file)
+            result = bt.upload_ota_file(host, ota_file, device_platform_token=token)
             if result.get("ok"):
                 self._log(f"[OTA] Upload OK (HTTP {result.get('status', 0)}).\n")
                 body = (result.get("body") or "").strip()
                 if body:
                     self._log(f"[OTA] Response: {body}\n")
-                restart = bt.restart_device(host)
+                if result.get("rtl_fallback"):
+                    self._log("[OTA] RTL upload fallback mode was used.\n")
+                restart = bt.restart_device_after_ota(host, token)
                 if restart.get("ok"):
-                    self._log("[OTA] Restart command sent (Restart 1).\n")
+                    attempts = int(restart.get("attempts", 1) or 1)
+                    if restart.get("rtl_delayed"):
+                        self._log(f"[OTA] Restart command sent (Restart 1), RTL delay mode (attempt {attempts}).\n")
+                    else:
+                        self._log("[OTA] Restart command sent (Restart 1).\n")
                     rbody = (restart.get("body") or "").strip()
                     if rbody:
                         self._log(f"[OTA] Restart response: {rbody}\n")
                 else:
-                    self._log(f"[OTA] Restart FAILED (HTTP {restart.get('status', 0)}).\n")
+                    attempts = int(restart.get("attempts", 1) or 1)
+                    self._log(f"[OTA] Restart FAILED (HTTP {restart.get('status', 0)}), attempts={attempts}.\n")
                     rbody = (restart.get("body") or "").strip()
                     if rbody:
                         self._log(f"[OTA] Restart error: {rbody}\n")
@@ -837,6 +921,8 @@ class OBKBuildToolGUI(tk.Tk):
             body = (result.get("body") or "").strip()
             if body:
                 self._log(f"[OTA] Error: {body}\n")
+            if result.get("rtl_fallback"):
+                self._log("[OTA] RTL upload fallback mode was used.\n")
             return False
         except Exception as e:
             self._log(f"[OTA] Upload failed: {e}\n")
@@ -1083,6 +1169,11 @@ class OBKBuildToolGUI(tk.Tk):
                 cmd += ["-e", "CLEAN_BUILD=1"]
             if flash_size:
                 cmd += ["-e", f"FLASH_SIZE={flash_size}"]
+                if "ESP" in target_platform:
+                    if flash_size in ["4MB", "8MB", "16MB"]:
+                        cmd += ["-e", "OBK_VARIANT=2"]
+                    else:
+                        cmd += ["-e", "OBK_VARIANT=1"]
             if txw_packager:
                 cmd += ["-e", f"TXW_PACKAGER_MODE={txw_packager}"]
 
@@ -1095,17 +1186,24 @@ class OBKBuildToolGUI(tk.Tk):
             except Exception:
                 pass
 
-            cmd += ["openbk_builder", target_platform]
+            image_mode = bt.get_builder_image_mode("openbk_builder", creationflags=self._creation_flags)
+            if image_mode == "legacy_cmd":
+                cmd += ["openbk_builder", "/build_target_platforms.sh", target_platform]
+            else:
+                cmd += ["openbk_builder", target_platform]
 
             self._run_cmd_stream(cmd, cwd=None)
 
-            # verify output file presence
-            try:
-                bt.find_ota_image_file(out_dir, platform)
+            # verify output file presence for OTA-capable platforms only
+            if bt.is_platform_ota_capable(platform):
+                try:
+                    bt.find_ota_image_file(out_dir, platform)
+                    self._last_build_success = True
+                except Exception as ve:
+                    self._log(f"\n[Warn] Build finished but OTA artifact not found: {ve}\n")
+                    self._last_build_success = False
+            else:
                 self._last_build_success = True
-            except Exception as ve:
-                self._log(f"\n[Warn] Build finished but OTA artifact not found: {ve}\n")
-                self._last_build_success = False
 
             elapsed = time.time() - start_time
             self._log(f"\n[OK] Build completed in {elapsed:.2f} seconds.\n")

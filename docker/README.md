@@ -1,100 +1,123 @@
-# OpenBeken Build System - Replication Guide
+# OpenBeken Docker Build Guide
 
-NOTE!! - `build_tool.py` goes in the **root** folder, while the other two go in the `docker` folder.
+This folder contains the local Docker-based build system used to run OpenBeken builds with shared caches and repeatable test runs.
 
 ## Prerequisites
 
-Before you start, ensure you have:
+1. Docker Desktop running
+2. Python 3 in `PATH`
+3. Git in `PATH`
 
-1.  **Docker Desktop** (Installed and running)
-2.  **Python 3.x** (Installed and added to PATH)
-3.  **Git** (Installed and added to PATH)
+## Repository Setup (Required)
 
-## Step-by-Step Instructions
+Fresh clone:
 
-1.  **Create & Open Folder**:
-    Create a new folder (e.g., `MyBuildEnv`), right-click inside it, and select "Open Terminal Here".
+```powershell
+git clone --recursive https://github.com/openshwprojects/OpenBK7231T_App.git
+cd OpenBK7231T_App
+```
 
-2.  **Clone Repository**:
+If the repository was cloned without submodules:
 
-    in powershell type the following command:
-    git clone --recursive https://github.com/openshwprojects/OpenBK7231T_App.git
+```powershell
+git submodule update --init --recursive
+```
 
-3.  **Enter Repository**:
+## Docker folder files
 
-    in powershell change directory to the repository folder
-    cd OpenBK7231T_App
+- `docker/build_tool.py`: interactive single-platform builder
+- `docker/GUI_build_tool.py`: GUI wrapper for `build_tool.py`
+- `docker/OpenBK_GUI_Build_Tool.exe`: packaged Windows GUI executable for the Docker build tool
+- `docker/entrypoint.sh`: runtime setup, sync, patching, and cache hydration inside container
+- `docker/Dockerfile`: build image definition
+- `docker/gcc-arm-none-eabi-8-2019-q3-update-linux.tar.bz2`: required ARM toolchain archive used during Docker image build
 
-4.  **Copy Files** (Crucial Step):
-    - Copy/replace `Dockerfile`, `build_tool.py` and `entrypoint.sh` to: `OpenBK7231T_App\docker\`
-	- (The `docker` folder is already present in the repository).
+## Quick Start
 
-    **Final Structure must look like this:**
+From repository root:
 
-    ```
-    OpenBK7231T_App\
-    
-    ├── docker\
-    │   ├── Dockerfile         <-- Docker config is HERE
-    │   ├── entrypoint.sh      <-- Entry script is HERE
-	│   └── build_tool.py      <-- Script is HERE
-    ├── platforms\
-    ├── src\
-    └── ... (other git files)
-    ```
+```powershell
+python docker/build_tool.py
+```
 
-5.  **Run Tool**:
-    Run the script from the root folder:
+Launch GUI:
 
-    ```powershell
-    python build_tool.py
-    ```
+```powershell
+python docker/GUI_build_tool.py
+```
 
-6.  **Follow Prompts**:
-    Select your platform, drivers, and version. The tool will handle the rest
-    (building the Docker image automatically on the first run which will take some time on the first run only,
-    subsequent runs will be much faster).
+## CLI Help and Options
 
-## Advanced Usage
+Show CLI help:
 
-The tool also supports command-line arguments for advanced control:
+```powershell
+python docker/build_tool.py --help
+```
 
-- **Check Commands**:
+Supported options for `docker/build_tool.py`:
 
-    ```powershell
-    python build_tool.py --help
-    ```
+- `--clean`: perform a clean build (`make clean`) before building
+- `--no-cache`: rebuild the Docker image with layer cache disabled
+- `--flash-size <size>`: set flash size (for example `2MB`, `4MB`, `8MB`)
+- `--txw-packager <mode>`: TXW packaging mode (`auto`, `wine`, `fallback`) for TXW builds only
+- `--src <path>`: repository root path when running from outside the repo root
 
-- **Force Clean Build**:
-  Use this to delete temporary files and force a full rebuild (simulates `make clean`):
+Examples:
 
-    ```powershell
-    python build_tool.py --clean
-    ```
+```powershell
+# Standard interactive run
+python docker/build_tool.py
 
-- **Specify Flash Size**:
-  Force a specific flash size (automatically adds "MB" suffix if only numbers are provided):
+# Clean build with explicit flash size
+python docker/build_tool.py --clean --flash-size 4MB
 
-    ```powershell
-    python build_tool.py --flash-size 4MB
-    ```
+# Force Docker image rebuild without layer cache
+python docker/build_tool.py --no-cache
 
-- **Run from Anywhere (External Folder)**:
-  If the script is not in the repo root, specify the path to the repository source:
+# Set TXW packager mode explicitly
+python docker/build_tool.py --txw-packager fallback
 
-    ```powershell
-    python build_tool.py --src "C:\Users\user\Desktop\OpenBK7231T_App"
-    ```
+# Run from another directory by pointing to repo root
+python docker/build_tool.py --src "E:\\OBK"
+```
 
-- **Rebuild Docker Image**:
-  Force a rebuild of the Docker environment (e.g., after updating `entrypoint.sh` or `Dockerfile`):
-    ```powershell
-    python build_tool.py --no-cache
-    ```
+## Cache Volumes
 
-## Custom Output Paths
+Default volumes used by current scripts:
 
-When prompted for the "Output Folder", you can provide:
+- `openbk_build_data`
+- `openbk_rtk_toolchain`
+- `openbk_espressif_tools`
+- `openbk_esp8266_tools`
+- `openbk_mbedtls_cache`
+- `openbk_csky_w800_cache`
+- `openbk_csky_txw_cache`
+- `openbk_pip_cache`
 
-1.  **A name**: Creates a folder inside the current directory (e.g., `test_OUT`).
-2.  **An absolute path**: Saves artifacts to any external folder (e.g., `C:\Users\user\Desktop\FirmwareBuilds`).
+These are reused across runs for speed.
+
+## Optional `important_files` Seeding
+
+`docker/important_files` is optional. If present, `entrypoint.sh` uses it to seed caches on early runs.
+
+Recognized inputs:
+
+- `docker/important_files/python-wheels/` (offline Python wheels)
+- `docker/important_files/mbedtls-2.28.5-gpl.tgz`
+- `docker/important_files/csky-elf-noneabiv2-tools-x86_64-newlib-20250328.tar.gz`
+- `docker/important_files/csky-elfabiv2-tools-x86_64-minilibc-20230301.tar.gz`
+- `docker/important_files/esp-idf-tools/dist/*`
+- `docker/important_files/esp-idf-tools/idf-env.json`
+- `docker/important_files/asdk-10.3.1-linux-newlib-build-4354-x86_64_with_small_reent.tar.bz2`
+
+If these files are not present, the build still proceeds using upstream download/install paths.
+
+## Important Note About Fresh Clones
+
+Current Docker image build expects this file to exist in `docker/`:
+
+- `gcc-arm-none-eabi-8-2019-q3-update-linux.tar.bz2`
+
+`Dockerfile` uses a hard `COPY` for it. If missing, `docker build` fails immediately.
+
+`Disclamer` - 100% of testing was done on Win11 PC, if able test on linux and Mac and report issues!

@@ -18,7 +18,7 @@ RUN dpkg --add-architecture i386 \
 	libc6-i386 make rsync \
 	# ESP-IDF Dependencies
 	flex bison gperf gawk python3-venv \
-	build-essential cmake ninja-build ccache libffi-dev libssl-dev dfu-util libusb-1.0-0 gcc-arm-none-eabi wine
+	build-essential cmake ninja-build ccache libffi-dev libssl-dev libncurses-dev dfu-util libusb-1.0-0 gcc-arm-none-eabi wine
 
 # Install Python packages required by build scripts (BL602 SDK requirements from Makefile line 162)
 RUN pip3 install fdt toml configobj pycryptodomex
@@ -79,7 +79,7 @@ RUN IDF_PIP="$(find /opt/espressif/python_env -maxdepth 4 -type f -path '*/idf5*
 USER root
 
 COPY entrypoint.sh /entrypoint.sh
-RUN chmod 775 /entrypoint.sh && chown ${USERNAME}:${USERNAME} /entrypoint.sh
+RUN sed -i 's/\r$//' /entrypoint.sh && chmod 775 /entrypoint.sh && chown ${USERNAME}:${USERNAME} /entrypoint.sh
 
 ENV OPENBK7231T_APP_NAME="OpenBK7231T_App"
 
