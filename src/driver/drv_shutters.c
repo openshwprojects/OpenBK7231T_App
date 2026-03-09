@@ -37,16 +37,16 @@ shutter_t *g_shutters = 0;
 
 
 void Shutter_Save(shutter_t *s) {
-	HAL_FlashVars_SaveChannel(s->channel * 3 + 0, s->openTimeSeconds * 10);
-	HAL_FlashVars_SaveChannel(s->channel * 3 + 1, s->closeTimeSeconds * 10);
+	HAL_FlashVars_SaveChannel(s->channel * 3 + 0, s->openTimeSeconds * 20);
+	HAL_FlashVars_SaveChannel(s->channel * 3 + 1, s->closeTimeSeconds * 20);
 	HAL_FlashVars_SaveChannel(s->channel * 3 + 2, s->frac * 100);
 }
 void Shutter_Read(shutter_t *s) {
-	s->openTimeSeconds = HAL_FlashVars_GetChannelValue(s->channel * 3 + 0) * 0.1f;
+	s->openTimeSeconds = HAL_FlashVars_GetChannelValue(s->channel * 3 + 0) * 0.05f;
 	if (s->openTimeSeconds == 0.0f) {
 		s->openTimeSeconds = DEFAULT_TIME;
 	}
-	s->closeTimeSeconds = HAL_FlashVars_GetChannelValue(s->channel * 3 + 1) * 0.1f;
+	s->closeTimeSeconds = HAL_FlashVars_GetChannelValue(s->channel * 3 + 1) * 0.05f;
 	if (s->closeTimeSeconds == 0.0f) {
 		s->closeTimeSeconds = DEFAULT_TIME;
 	}
