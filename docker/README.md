@@ -1,61 +1,123 @@
-# Docker Files for OpenBK7231T_App
+# OpenBeken Docker Build Guide
 
-This docker will build all or some of the platforms that OpenBeken supports. To use, first build the docker image:
+This folder contains the local Docker-based build system used to run OpenBeken builds with shared caches and repeatable test runs.
 
-```sh
-docker build -t openbk_build --build-arg UID=$UID --build-arg USERNAME=$USER .
+## Prerequisites
+
+1. Docker Desktop running
+2. Python 3 in `PATH`
+3. Git in `PATH`
+
+## Repository Setup (Required)
+
+Fresh clone:
+
+```powershell
+git clone --recursive https://github.com/openshwprojects/OpenBK7231T_App.git
+cd OpenBK7231T_App
 ```
 
-Note that the current user name and user ID is passed through to the docker image build.
-This is to preserve local file permissions when OpenBeken is built.
+If the repository was cloned without submodules:
 
-If you want to change the timezone you can use the argument TZ for that like
-
-```sh
-docker build -t openbk_build --build-arg UID=$UID --build-arg USERNAME=$USER --build-arg TZ="Etc/UTC" .
+```powershell
+git submodule update --init --recursive
 ```
 
-or
+## Docker folder files
 
-```sh
-docker build -t openbk_build --build-arg UID=$UID --build-arg USERNAME=$USER --build-arg TZ="Asia/Tokyo" .
+- `docker/build_tool.py`: interactive single-platform builder
+- `docker/GUI_build_tool.py`: GUI wrapper for `build_tool.py`
+- `docker/OpenBK_GUI_Build_Tool.exe`: packaged Windows GUI executable for the Docker build tool
+- `docker/entrypoint.sh`: runtime setup, sync, patching, and cache hydration inside container
+- `docker/Dockerfile`: build image definition
+- `docker/gcc-arm-none-eabi-8-2019-q3-update-linux.tar.bz2`: required ARM toolchain archive used during Docker image build
+
+## Quick Start
+
+From repository root:
+
+```powershell
+python docker/build_tool.py
 ```
 
+Launch GUI:
 
-Once the docker image is build, you can use it to build the SDKs as follows (assumed you are in the current `docker` directory):
-
-```sh
-docker run -it -v "$(pwd)/..":/OpenBK7231T_App  openbk_build
+```powershell
+python docker/GUI_build_tool.py
 ```
 
-When complete, all target platform builds with be present in the repository's `output` directory.
+## CLI Help and Options
 
-When running the docker image, you may pass the following environment variables with the `--env` option:
+Show CLI help:
 
-* `APP_VERSION` - The version identifier for the build. If not provided, a default version will be used based on the time of the build.
-* `TARGET_SDKS` - A comma-separated list of platforms (with no spaces) that should be built. If not present, all platforms will be built. The supported platform identifiers are:
-  * `OpenBK7231T`
-  * `OpenBK7231N`
-  * `OpenXR809`
-  * `OpenBL602`
-  * `OpenW800`
-  * `OpenW600`
-  * `OpenLN882H`
-
-  For example, to build `OpenBK7231T` and `OpenXR809`, the options should be `-env TARGET_SDKS="OpenBK7231T,OpenXR809"`
-* `MAKEFLAGS` - This is the standard `make` environment variable for setting default `make` flags. It is recommended to use this to configure `make` to use multiple cores. for example, to use 8 cores: `--env MAKEFLAGS="-j 8"`
-
-## Building on a Apple Silicon Macs
-The software that the build process uses to compile the binaries is for the `x86` platform and can only be run by `x86` CPUs. Fortunately, this does not mean you cannot build OpenBeken on Apple Silicon (ARM) Macintosh computers. Docker is able to run `x86` docker images on Apple Silicon Macs through the Rosetta emulator. To do this, you need to enable running `x86` images in docker by following [the instructions outlined in this article](https://blog.jaimyn.dev/how-to-build-multi-architecture-docker-images-on-an-m1-mac/) (or [this article](https://levelup.gitconnected.com/docker-on-apple-silicon-mac-how-to-run-x86-containers-with-rosetta-2-4a679913a0d5)).
-
-Once you have set up your Apple Silicon Mac to run `x86` docker images, build the OpenBeken build environment docker image with this command from within the `docker` directory of this repository:
-```sh
-docker buildx build --platform linux/amd64 --load -t openbk_build --build-arg USERNAME=$USER .
+```powershell
+python docker/build_tool.py --help
 ```
 
-Once the docker image is built, you can run the OpenBeken build with this instruction:
-```sh
-docker run --platform linux/amd64 -it -v "$(pwd)/..":/OpenBK7231T_App  openbk_build
+Supported options for `docker/build_tool.py`:
+
+- `--clean`: perform a clean build (`make clean`) before building
+- `--no-cache`: rebuild the Docker image with layer cache disabled
+- `--flash-size <size>`: set flash size (for example `2MB`, `4MB`, `8MB`)
+- `--txw-packager <mode>`: TXW packaging mode (`auto`, `wine`, `fallback`) for TXW builds only
+- `--src <path>`: repository root path when running from outside the repo root
+
+Examples:
+
+```powershell
+# Standard interactive run
+python docker/build_tool.py
+
+# Clean build with explicit flash size
+python docker/build_tool.py --clean --flash-size 4MB
+
+# Force Docker image rebuild without layer cache
+python docker/build_tool.py --no-cache
+
+# Set TXW packager mode explicitly
+python docker/build_tool.py --txw-packager fallback
+
+# Run from another directory by pointing to repo root
+python docker/build_tool.py --src "E:\\OBK"
 ```
 
-All the same environment variable options described above work here too. Sometimes builds will not be successful using this approach as `x86` emulation can have occasional glitches. Retrying the build for the OpenBeken platforms that failed usually works on the second try.
+## Cache Volumes
+
+Default volumes used by current scripts:
+
+- `openbk_build_data`
+- `openbk_rtk_toolchain`
+- `openbk_espressif_tools`
+- `openbk_esp8266_tools`
+- `openbk_mbedtls_cache`
+- `openbk_csky_w800_cache`
+- `openbk_csky_txw_cache`
+- `openbk_pip_cache`
+
+These are reused across runs for speed.
+
+## Optional `important_files` Seeding
+
+`docker/important_files` is optional. If present, `entrypoint.sh` uses it to seed caches on early runs.
+
+Recognized inputs:
+
+- `docker/important_files/python-wheels/` (offline Python wheels)
+- `docker/important_files/mbedtls-2.28.5-gpl.tgz`
+- `docker/important_files/csky-elf-noneabiv2-tools-x86_64-newlib-20250328.tar.gz`
+- `docker/important_files/csky-elfabiv2-tools-x86_64-minilibc-20230301.tar.gz`
+- `docker/important_files/esp-idf-tools/dist/*`
+- `docker/important_files/esp-idf-tools/idf-env.json`
+- `docker/important_files/asdk-10.3.1-linux-newlib-build-4354-x86_64_with_small_reent.tar.bz2`
+
+If these files are not present, the build still proceeds using upstream download/install paths.
+
+## Important Note About Fresh Clones
+
+Current Docker image build expects this file to exist in `docker/`:
+
+- `gcc-arm-none-eabi-8-2019-q3-update-linux.tar.bz2`
+
+`Dockerfile` uses a hard `COPY` for it. If missing, `docker build` fails immediately.
+
+`Disclamer` - 100% of testing was done on Win11 PC, if able test on linux and Mac and report issues!
