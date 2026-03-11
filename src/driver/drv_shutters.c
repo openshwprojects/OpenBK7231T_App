@@ -37,16 +37,16 @@ shutter_t *g_shutters = 0;
 
 
 void Shutter_Save(shutter_t *s) {
-	HAL_FlashVars_SaveChannel(s->channel * 3 + 0, s->openTimeSeconds * 100);
-	HAL_FlashVars_SaveChannel(s->channel * 3 + 1, s->closeTimeSeconds * 100);
+	HAL_FlashVars_SaveChannel(s->channel * 3 + 0, s->openTimeSeconds * 20);
+	HAL_FlashVars_SaveChannel(s->channel * 3 + 1, s->closeTimeSeconds * 20);
 	HAL_FlashVars_SaveChannel(s->channel * 3 + 2, s->frac * 100);
 }
 void Shutter_Read(shutter_t *s) {
-	s->openTimeSeconds = HAL_FlashVars_GetChannelValue(s->channel * 3 + 0) * 0.01f;
+	s->openTimeSeconds = HAL_FlashVars_GetChannelValue(s->channel * 3 + 0) * 0.05f;
 	if (s->openTimeSeconds == 0.0f) {
 		s->openTimeSeconds = DEFAULT_TIME;
 	}
-	s->closeTimeSeconds = HAL_FlashVars_GetChannelValue(s->channel * 3 + 1) * 0.01f;
+	s->closeTimeSeconds = HAL_FlashVars_GetChannelValue(s->channel * 3 + 1) * 0.05f;
 	if (s->closeTimeSeconds == 0.0f) {
 		s->closeTimeSeconds = DEFAULT_TIME;
 	}
@@ -81,13 +81,13 @@ void DRV_Shutters_AddToHtmlPage(http_request_t *request, int bPreState) {
 			hprintf255(request,
 				"<form onsubmit='return false;'>"
 				"<label>Open time (s):</label> "
-				"<input id='ot%i' type='number' step='0.1' value='%.2f'> ",
+				"<input id='ot%i' type='number' step='0.05' value='%.2f'> ",
 				s->channel, s->openTimeSeconds
 			);
 
 			hprintf255(request,
 				"<label>Close time (s):</label> "
-				"<input id='ct%i' type='number' step='0.1' value='%.2f'> ",
+				"<input id='ct%i' type='number' step='0.05' value='%.2f'> ",
 				s->channel, s->closeTimeSeconds
 			);
 
@@ -197,6 +197,7 @@ static void Shutter_Stop(shutter_t *s) {
 		s->state = SHUTTER_UNKNOWN;
 	}
 	Shutter_SetPins(s, s->state);
+	Shutter_Save(s);
 }
 void Shutter_MoveByIndex(int index, float frac, bool bStopOnDuplicate) {
 	shutter_t *s = GetForChannel(index);
@@ -270,6 +271,8 @@ void Shutter_SetTimes(int channel, float timeOpen, float timeClose) {
 
 	if (timeClose > 0.0f)
 		s->closeTimeSeconds = timeClose;
+
+	Shutter_Save(s);
 }
 
 static commandResult_t CMD_Shutter_Calibrate(const void *context, const char *cmd, const char *args, int flags) {
@@ -324,6 +327,7 @@ static void RegisterShutterForChannel(int channel) {
 		s->closeTimeSeconds = DEFAULT_TIME; // default
 		s->next = g_shutters;
 		g_shutters = s;
+		Shutter_Read(s);
 	}
 }
 void DRV_Shutters_RunEverySecond() {
@@ -341,6 +345,9 @@ void DRV_Shutters_RunEverySecond() {
 		//MQTT_PublishMain_StringString(buffer, "open", 0);
 		sprintf(buffer, "shutterPos%i", s->channel);
 		MQTT_PublishMain_StringInt(buffer, (int)(s->frac*100.0f), 0);
+		if (s->state == SHUTTER_OPENING || s->state == SHUTTER_CLOSING) {
+			Shutter_Save(s);
+		}
 		s = s->next;
 	}
 }
