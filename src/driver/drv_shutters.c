@@ -197,6 +197,7 @@ static void Shutter_Stop(shutter_t *s) {
 		s->state = SHUTTER_UNKNOWN;
 	}
 	Shutter_SetPins(s, s->state);
+	Shutter_Save(s);
 }
 void Shutter_MoveByIndex(int index, float frac, bool bStopOnDuplicate) {
 	shutter_t *s = GetForChannel(index);
@@ -344,6 +345,9 @@ void DRV_Shutters_RunEverySecond() {
 		//MQTT_PublishMain_StringString(buffer, "open", 0);
 		sprintf(buffer, "shutterPos%i", s->channel);
 		MQTT_PublishMain_StringInt(buffer, (int)(s->frac*100.0f), 0);
+		if (s->state == SHUTTER_OPENING || s->state == SHUTTER_CLOSING) {
+			Shutter_Save(s);
+		}
 		s = s->next;
 	}
 }
