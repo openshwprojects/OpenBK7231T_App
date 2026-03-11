@@ -81,13 +81,13 @@ void DRV_Shutters_AddToHtmlPage(http_request_t *request, int bPreState) {
 			hprintf255(request,
 				"<form onsubmit='return false;'>"
 				"<label>Open time (s):</label> "
-				"<input id='ot%i' type='number' step='0.1' value='%.2f'> ",
+				"<input id='ot%i' type='number' step='0.05' value='%.2f'> ",
 				s->channel, s->openTimeSeconds
 			);
 
 			hprintf255(request,
 				"<label>Close time (s):</label> "
-				"<input id='ct%i' type='number' step='0.1' value='%.2f'> ",
+				"<input id='ct%i' type='number' step='0.05' value='%.2f'> ",
 				s->channel, s->closeTimeSeconds
 			);
 
