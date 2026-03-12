@@ -42,10 +42,17 @@ extern unsigned char hexbyte(const char* hex);
 void OTA_RequestDownloadFromHTTP(const char *s);
 
 #if WINDOWS
+#ifndef LINUX
 #define DEVICENAME_PREFIX_FULL "WinTest"
 #define DEVICENAME_PREFIX_SHORT "WT"
 #define PLATFORM_MCU_NAME "WIN32"
 #define MANUFACTURER "Microsoft"
+#else
+#define DEVICENAME_PREFIX_FULL "LinuxSim"
+#define DEVICENAME_PREFIX_SHORT "LS"
+#define PLATFORM_MCU_NAME "LIN"
+#define MANUFACTURER "Linux"
+#endif
 #elif PLATFORM_XR806
 #define DEVICENAME_PREFIX_FULL "OpenXR806"
 #define DEVICENAME_PREFIX_SHORT "oxr"
@@ -207,7 +214,11 @@ This platform is not supported, error!
 // but it may not be set while doing a test build on developer PC
 #ifndef USER_SW_VER
 #ifdef WINDOWS
+#ifndef LINUX
 #define USER_SW_VER "Win_Test"
+#else
+#define USER_SW_VER "Lin_Test"
+#endif
 #elif PLATFORM_XR809
 #define USER_SW_VER "XR809_Test"
 #elif PLATFORM_XR872

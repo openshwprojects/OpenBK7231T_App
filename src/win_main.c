@@ -24,7 +24,9 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 
-#define Sleep sleep
+// sleep ms, not seconds!
+//#define Sleep sleep
+#define Sleep(x) usleep((x*1000))
 
 #endif
 
@@ -620,6 +622,10 @@ int __cdecl main(int argc, char **argv)
 
 #ifndef LINUX
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF | _CRTDBG_CHECK_ALWAYS_DF);
+#else
+	// I still didn't figure out, where Init_Main is called in Windows binyry if g_selfTestsMode is 0
+	// but we need it, so commands are registered and HTTPServer_Start() is called ...
+	SIM_StartOBK(0);
 #endif
 
 	if (g_selfTestsMode)

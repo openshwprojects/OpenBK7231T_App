@@ -1728,7 +1728,7 @@ void DRV_Generic_Init() {
 #ifndef OBK_DISABLE_ALL_DRIVERS
 	// init TIME unconditionally on start
 	TIME_Init();
-#if WIN32
+#if WINDOWS
 #include "drv_soft_i2c_sim.h"
     //cmddetail:{"name":"Sim_AddI2Csensor","args":"[type=SHT3x/SHT4x/AHT2x/CHT83xx/BMP280] [SCL=<pin>] [SDA=<pin>] [adress=<hex> optional, try default if ommited]",
     //cmddetail:"descr":"Ads a pseudo sensor to the given pins",

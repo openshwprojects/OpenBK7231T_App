@@ -11,7 +11,7 @@
 // This file contains NO sensor-specific code.
 // See drv_soft_i2c_sim_sensors.c for the sensor plugins.
 // -------------------------------------------------------
-#ifdef WIN32
+#ifdef WINDOWS
 
 #include <stdlib.h>
 #include <string.h>

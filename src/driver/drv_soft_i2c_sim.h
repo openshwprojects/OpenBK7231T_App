@@ -22,7 +22,7 @@
 //   to [min, max], producing natural-looking sensor data.
 // -------------------------------------------------------
 #pragma once
-#ifdef WIN32
+#ifdef WINDOWS
 
 #include <stdint.h>
 #include <stdbool.h>

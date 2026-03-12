@@ -18,7 +18,7 @@
 //                        the real chip would return
 //
 // -------------------------------------------------------
-#ifdef WIN32
+#ifdef WINDOWS
 
 #include <stdint.h>
 #include <stdbool.h>
