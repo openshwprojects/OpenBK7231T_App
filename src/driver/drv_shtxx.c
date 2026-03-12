@@ -595,24 +595,24 @@ void SHTXX_Init()
         dev->channel_humid = g_cfg.pins.channels2[dev->i2c.pin_data];
     }
 
-    dev->i2c.pin_clk   = Tokenizer_GetPinEqual("SCL=",    dev->i2c.pin_clk);
-    dev->i2c.pin_data  = Tokenizer_GetPinEqual("SDA=",    dev->i2c.pin_data);
-    dev->channel_temp  = Tokenizer_GetArgEqualInteger("chan_t=", dev->channel_temp);
-    dev->channel_humid = Tokenizer_GetArgEqualInteger("chan_h=", dev->channel_humid);
+    dev->i2c.pin_clk   = Tokenizer_GetPinEqual("SCL",    dev->i2c.pin_clk);
+    dev->i2c.pin_data  = Tokenizer_GetPinEqual("SDA",    dev->i2c.pin_data);
+    dev->channel_temp  = Tokenizer_GetArgEqualInteger("chan_t", dev->channel_temp);
+    dev->channel_humid = Tokenizer_GetArgEqualInteger("chan_h", dev->channel_humid);
 
     dev->secondsBetween   = 10;
     dev->secondsUntilNext = 1;
     dev->calTemp = 0;
     dev->calHum  = 0;
 
-    int typeArg  = Tokenizer_GetArgEqualInteger("type=", 3);
+    int typeArg  = Tokenizer_GetArgEqualInteger("type", 3);
     dev->typeIdx = (typeArg == 4) ? SHTXX_TYPE_SHT4X : SHTXX_TYPE_SHT3X;
 
     // Address: parse "0x45" without strtol (saves ~400B if not already in fw).
     // Use A/B suffix for backward compat: address=A → 0x44, address=B → 0x45.
     dev->i2cAddr = SHTXX_I2C_ADDR;
     if(dev->typeIdx == SHTXX_TYPE_SHT3X) {
-        uint8_t A = (int8_t)(Tokenizer_GetArgEqualInteger("address=", 0x44));
+        uint8_t A = (int8_t)(Tokenizer_GetArgEqualInteger("address", 0x44));
         if (A != SHTXX_I2C_ADDR) dev->i2cAddr = A << 1;
     }
 

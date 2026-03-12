@@ -212,10 +212,10 @@ void CHT83XX_Init()
 	channel_humid = g_cfg.pins.channels2[g_softI2C.pin_data];
 
 	// if cli data is given, use instead of pin cfg page
-	g_softI2C.pin_clk   = Tokenizer_GetPinEqual("SCL=",    g_softI2C.pin_clk);
-	g_softI2C.pin_data  = Tokenizer_GetPinEqual("SDA=",    g_softI2C.pin_data);
-	channel_temp  = Tokenizer_GetArgEqualInteger("chan_t=", channel_temp);
-	channel_humid = Tokenizer_GetArgEqualInteger("chan_h=", channel_humid);
+	g_softI2C.pin_clk   = Tokenizer_GetPinEqual("SCL",    g_softI2C.pin_clk);
+	g_softI2C.pin_data  = Tokenizer_GetPinEqual("SDA",    g_softI2C.pin_data);
+	channel_temp  = Tokenizer_GetArgEqualInteger("chan_t", channel_temp);
+	channel_humid = Tokenizer_GetArgEqualInteger("chan_h", channel_humid);
 
 
 	setPinUsedString(g_softI2C.pin_clk, "CHT83XX SCL");
