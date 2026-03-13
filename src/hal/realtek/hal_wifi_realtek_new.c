@@ -32,7 +32,10 @@ extern int (*p_store_fast_connect_info)(unsigned int data1, unsigned int data2);
 bool g_STA_static_IP = 0;
 
 static void (*g_wifiStatusCallback)(int code) = NULL;
-static int g_bOpenAccessPointMode = 0;
+// is (Open-) Access point or a client?
+// included as "extern uint8_t g_AccessPointMode;" from new_common.h
+// initilized in user_main.c
+// values:	0 = STA	1 = OpenAP	2 = WAP-AP
 static wifi_data_t wdata = { 0 };
 static int g_bStaticIP = 0;
 obkFastConnectData_t fcdata = { 0 };
@@ -40,12 +43,12 @@ struct static_ip_config user_static_ip = { 0 };
 
 const char* HAL_GetMyIPString()
 {
-	return ipaddr_ntoa(&xnetif[g_bOpenAccessPointMode].ip_addr);
+	return ipaddr_ntoa(&xnetif[(g_AccessPointMode>0)].ip_addr);
 }
 
 const char* HAL_GetMyGatewayString()
 {
-	return ipaddr_ntoa(&xnetif[g_bOpenAccessPointMode].gw);
+	return ipaddr_ntoa(&xnetif[(g_AccessPointMode>0)].gw);
 }
 
 const char* HAL_GetMyDNSString()
@@ -55,7 +58,7 @@ const char* HAL_GetMyDNSString()
 
 const char* HAL_GetMyMaskString()
 {
-	return ipaddr_ntoa(&xnetif[g_bOpenAccessPointMode].netmask);
+	return ipaddr_ntoa(&xnetif[(g_AccessPointMode>0)].netmask);
 }
 
 int WiFI_SetMacAddress(char* mac)
@@ -81,7 +84,7 @@ void HAL_PrintNetworkInfo()
 	uint8_t mac[6];
 	WiFI_GetMacAddress((char*)mac);
 	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "+--------------- net device info ------------+\r\n");
-	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "|netif type    : %-16s            |\r\n", g_bOpenAccessPointMode == 0 ? "STA" : "AP");
+	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "|netif type    : %-16s            |\r\n", g_AccessPointMode == 0 ? "STA" : "AP");
 	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "|netif rssi    = %-16i            |\r\n", HAL_GetWifiStrength());
 	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "|netif ip      = %-16s            |\r\n", HAL_GetMyIPString());
 	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "|netif mask    = %-16s            |\r\n", HAL_GetMyMaskString());
@@ -204,7 +207,8 @@ void ConfigureSTA(obkStaticIP_t* ip)
 
 void HAL_ConnectToWiFi(const char* oob_ssid, const char* connect_key, obkStaticIP_t* ip)
 {
-	g_bOpenAccessPointMode = 0;
+// set in user_main - included as "extern"
+//	g_AccessPointMode = 0;	// 0 = STA	1 = OpenAP	2 = WAP-AP 
 	strcpy((char*)&wdata.ssid, oob_ssid);
 	strncpy((char*)&wdata.pwd, connect_key, 64);
 	
@@ -224,9 +228,44 @@ void HAL_DisconnectFromWifi()
 	wifi_disconnect();
 }
 
+int HAL_SetupWiFiAccessPoint(const char* ssid, const char* key)
+{
+// set in user_main - included as "extern"
+//	g_AccessPointMode = (! key || key[0] == 0) ? 1 : 2 ; 	// 0 = STA	1 = OpenAP	2 = WAP-AP  
+	rtw_mode_t mode = RTW_MODE_STA_AP;
+	struct ip_addr ipaddr;
+	struct ip_addr netmask;
+	struct ip_addr gw;
+	struct netif* pnetif = &xnetif[SOFTAP_WLAN_INDEX];
+	dhcps_deinit();
+	wifi_stop_ap();
+	struct rtw_softap_info connect_param = { 0 };
+	memcpy(connect_param.ssid.val, ssid, strlen(ssid));
+	connect_param.ssid.len = strlen(ssid);
+	connect_param.security_type = (! key || key[0] == 0) ? RTW_SECURITY_OPEN : RTW_SECURITY_WPA2_MIXED_PSK;
+	if ( key && key[0] != 0) {
+		memcpy(connect_param.password, key, strlen(key));
+		connect_param.password_len = strlen(key);
+	}
+	connect_param.channel = HAL_AP_Wifi_Channel; 
+
+	if(wifi_start_ap(&connect_param) < 0)
+	{
+		ADDLOG_ERROR(LOG_FEATURE_GENERAL, "Failed to start AP");
+		return 0;
+	}
+	IP4_ADDR(ip_2_ip4(&ipaddr), 192, 168, 4, 1);
+	IP4_ADDR(ip_2_ip4(&netmask), 255, 255, 255, 0);
+	IP4_ADDR(ip_2_ip4(&gw), 192, 168, 4, 1);
+	netifapi_netif_set_addr(pnetif, ip_2_ip4(&ipaddr), ip_2_ip4(&netmask), ip_2_ip4(&gw));
+
+	dhcps_init(pnetif);
+	return 0;
+}
+
 int HAL_SetupWiFiOpenAccessPoint(const char* ssid)
 {
-	g_bOpenAccessPointMode = 1;
+/*	g_AccessPointMode = 1;	// 0 = STA	1 = OpenAP	2 = WAP-AP 
 	rtw_mode_t mode = RTW_MODE_STA_AP;
 	struct ip_addr ipaddr;
 	struct ip_addr netmask;
@@ -252,6 +291,8 @@ int HAL_SetupWiFiOpenAccessPoint(const char* ssid)
 
 	dhcps_init(pnetif);
 	return 0;
+*/
+	return HAL_SetupWiFiAccessPoint(ssid, NULL);
 }
 
 void FastConnectToWiFiTask(void* args)
@@ -283,7 +324,8 @@ exit:
 
 void HAL_FastConnectToWiFi(const char* oob_ssid, const char* connect_key, obkStaticIP_t* ip)
 {
-	g_bOpenAccessPointMode = 0;
+// set in user_main - included as "extern"
+//	g_AccessPointMode = 0;
 	strcpy((char*)&wdata.ssid, oob_ssid);
 	strncpy((char*)&wdata.pwd, connect_key, 64);
 
