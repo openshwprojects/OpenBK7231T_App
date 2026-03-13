@@ -78,6 +78,25 @@ void Test_HassDiscovery_Relay_2x() {
 }
 
 
+static const char *gen_modes[] = {
+	"GEN0_100%",
+	"GEN1_30%",
+	"GEN2_50%",
+	"GEN3_80%",
+	NULL
+};
+
+
+@@
+	HA_AddSelect(
+	"gen",
+	"GEN Power Limit",
+	gen_modes,
+	"cmnd/GEN",
+	"stat/GEN"
+);
+
+
 void Test_HassDiscovery_LED_CW() {
 	const char *shortName = "WinCWtest";
 	const char *fullName = "Windows Fake CoolWarm";
