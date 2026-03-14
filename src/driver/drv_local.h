@@ -313,3 +313,8 @@ void LTR_AppendInformationToHTTPIndexPage(http_request_t* request, int bPreState
 void TinyIR_NEC_Init();
 void TinyIR_NEC_Deinit();
 void TinyIR_NEC_RunFrame();
+
+// show pins w/o own IORole as "used" in config page
+// implemented in http_fns.c
+int setPinUsedString(int index, const char *str);
+
