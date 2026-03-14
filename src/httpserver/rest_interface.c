@@ -278,9 +278,14 @@ static int http_rest_post(http_request_t* request) {
 
 static int http_rest_app(http_request_t* request) {
 	const char* webhost = CFG_GetWebappRoot();
-	const char* ourip = HAL_GetMyIPString(); //CFG_GetOurIP();
+//	const char* ourip = HAL_GetMyIPString(); //CFG_GetOurIP();
 	http_setup(request, httpMimeTypeHTML);
-	if (webhost && ourip) {
+//	if (webhost && ourip) {
+// we don't need to rely on any function here for our IP.
+// If this code is used, someone is accessing the webif, so we
+// know our ip (and port) inside the browser (JS "location").
+// Knowing/using the port from location.host is very usefull e.g. in simulator ;-) 
+	if (webhost) {
 		poststr(request, htmlDoctype);
 
 		poststr(request, "<head><title>");
@@ -289,7 +294,7 @@ static int http_rest_app(http_request_t* request) {
 
 		poststr(request, htmlShortcutIcon);
 		poststr(request, htmlHeadMeta);
-		hprintf255(request, "<script>var root='%s',device='http://%s';</script>", webhost, ourip);
+		hprintf255(request, "<script>var root='%s',device='http://'+location.host;</script>", webhost);
 		hprintf255(request, "<script src='%s/startup.js'></script>", webhost);
 		poststr(request, "</head><body></body></html>");
 	}

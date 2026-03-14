@@ -16,7 +16,9 @@
 #define DWORD uint
 
 #define SOCKET_ERROR SO_ERROR
-#define Sleep sleep
+// sleep ms, not seconds!
+//#define Sleep sleep
+#define Sleep(x) usleep((x*1000))
 #define ioctlsocket ioctl
 #define closesocket close
 #define GETSOCKETERRNO() (errno)
