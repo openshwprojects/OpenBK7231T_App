@@ -24,7 +24,9 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 
-#define Sleep sleep
+// sleep ms, not seconds!
+//#define Sleep sleep
+#define Sleep(x) usleep((x*1000))
 
 #endif
 
@@ -620,6 +622,10 @@ int __cdecl main(int argc, char **argv)
 
 #ifndef LINUX
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF | _CRTDBG_CHECK_ALWAYS_DF);
+#else
+	// I still didn't figure out, where Init_Main is called in Windows binyry if g_selfTestsMode is 0
+	// but we need it, so commands are registered and HTTPServer_Start() is called ...
+	SIM_StartOBK(0);
 #endif
 
 	if (g_selfTestsMode)
@@ -643,15 +649,15 @@ int __cdecl main(int argc, char **argv)
 #endif
 
 	CMD_ExecuteCommand("startDriver MQTTServer", 0);
-#if 1
+#ifndef LINUX
 	CMD_ExecuteCommand("MQTTHost 192.168.0.113", 0);
 	CMD_ExecuteCommand("MqttPassword ma1oovoo0pooTie7koa8Eiwae9vohth1vool8ekaej8Voohi7beif5uMuph9Diex", 0);
 	CMD_ExecuteCommand("MqttClient WindowsOBK", 0);
 	CMD_ExecuteCommand("MqttUser homeassistant", 0);
 #else
-	CMD_ExecuteCommand("MQTTHost 192.168.0.118", 0);
-	CMD_ExecuteCommand("MqttPassword Test1", 0);
-	CMD_ExecuteCommand("MqttClient WindowsOBK", 0);
+	CMD_ExecuteCommand("MQTTHost 192.168.0.113", 0);
+	CMD_ExecuteCommand("MqttPassword ma1oovoo0pooTie7koa8Eiwae9vohth1vool8ekaej8Voohi7beif5uMuph9Diex", 0);
+	CMD_ExecuteCommand("MqttClient LinuxOBK", 0);
 	CMD_ExecuteCommand("MqttUser homeassistant", 0);
 #endif
 	CMD_ExecuteCommand("reboot", 0);
