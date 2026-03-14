@@ -32,9 +32,6 @@ typedef struct shutter_s {
 	float closeTimeSeconds;
 	float switchDelayRemaining;
 	int lastPublishedPos;
-	int positionChannel;    // 0 = disabled, otherwise channel to store position
-	int openTimeChannel;    // 0 = disabled, otherwise channel to store open time
-	int closeTimeChannel;   // 0 = disabled, otherwise channel to store close time
 	struct shutter_s *next;
 } shutter_t;
 
@@ -42,52 +39,20 @@ shutter_t *g_shutters = 0;
 
 
 void Shutter_Save(shutter_t *s) {
-	HAL_FlashVars_SaveChannel(s->channel * 3 + 0, s->openTimeSeconds * 100);
-	HAL_FlashVars_SaveChannel(s->channel * 3 + 1, s->closeTimeSeconds * 100);
+	HAL_FlashVars_SaveChannel(s->channel * 3 + 0, s->openTimeSeconds * 10);
+	HAL_FlashVars_SaveChannel(s->channel * 3 + 1, s->closeTimeSeconds * 10);
 	HAL_FlashVars_SaveChannel(s->channel * 3 + 2, s->frac * 100);
-	// Also save to assigned channels if configured
-	if (s->positionChannel > 0) {
-		int posValue = (int)(s->frac * 100.0f);
-		CHANNEL_Set(s->positionChannel, posValue, CHANNEL_SET_FLAG_SILENT);
-		CFG_SetChannelStartupValue(s->positionChannel, posValue);
-	}
-	if (s->openTimeChannel > 0) {
-		int openValue = (int)(s->openTimeSeconds * 100.0f);
-		CHANNEL_Set(s->openTimeChannel, openValue, CHANNEL_SET_FLAG_SILENT);
-		CFG_SetChannelStartupValue(s->openTimeChannel, openValue);
-	}
-	if (s->closeTimeChannel > 0) {
-		int closeValue = (int)(s->closeTimeSeconds * 100.0f);
-		CHANNEL_Set(s->closeTimeChannel, closeValue, CHANNEL_SET_FLAG_SILENT);
-		CFG_SetChannelStartupValue(s->closeTimeChannel, closeValue);
-	}
-	CFG_MarkAsDirty();
 }
 void Shutter_Read(shutter_t *s) {
-	// Try to read from assigned channels first if configured
-	if (s->openTimeChannel > 0) {
-		s->openTimeSeconds = CFG_GetChannelStartupValue(s->openTimeChannel) * 0.01f;
-	} else {
-		s->openTimeSeconds = HAL_FlashVars_GetChannelValue(s->channel * 3 + 0) * 0.01f;
-	}
+	s->openTimeSeconds = HAL_FlashVars_GetChannelValue(s->channel * 3 + 0) * 0.1f;
 	if (s->openTimeSeconds == 0.0f) {
 		s->openTimeSeconds = DEFAULT_TIME;
 	}
-	
-	if (s->closeTimeChannel > 0) {
-		s->closeTimeSeconds = CFG_GetChannelStartupValue(s->closeTimeChannel) * 0.01f;
-	} else {
-		s->closeTimeSeconds = HAL_FlashVars_GetChannelValue(s->channel * 3 + 1) * 0.01f;
-	}
+	s->closeTimeSeconds = HAL_FlashVars_GetChannelValue(s->channel * 3 + 1) * 0.1f;
 	if (s->closeTimeSeconds == 0.0f) {
 		s->closeTimeSeconds = DEFAULT_TIME;
 	}
-	
-	if (s->positionChannel > 0) {
-		s->frac = CFG_GetChannelStartupValue(s->positionChannel) * 0.01f;
-	} else {
-		s->frac = HAL_FlashVars_GetChannelValue(s->channel * 3 + 2) * 0.01f;
-	}
+	s->frac = HAL_FlashVars_GetChannelValue(s->channel * 3 + 2) * 0.01f;
 }
 shutter_t *GetForChannel(int i) {
 	shutter_t *s = g_shutters;
@@ -235,7 +200,6 @@ static void Shutter_Stop(shutter_t *s) {
 	}
 	s->switchDelayRemaining = 0.0f; // Reset delay on stop
 	Shutter_SetPins(s, s->state);
-	Shutter_Save(s); // Save the final position
 }
 void Shutter_MoveByIndex(int index, float frac, bool bStopOnDuplicate) {
 	shutter_t *s = GetForChannel(index);
@@ -336,62 +300,8 @@ void Shutter_SetTimes(int channel, float timeOpen, float timeClose) {
 
 	if (timeClose > 0.0f)
 		s->closeTimeSeconds = timeClose;
-	
+
 	Shutter_Save(s);
-}
-static void RegisterShutterForChannel(int channel) {
-	shutter_t *s = GetForChannel(channel);
-	if (!s) {
-		s = malloc(sizeof(shutter_t));
-		memset(s, 0, sizeof(shutter_t));
-		s->channel = channel;
-		s->frac = 0.0f;  // unknown position
-		s->state = SHUTTER_CLOSED;
-		s->targetFrac = 0.0f;
-		s->openTimeSeconds = DEFAULT_TIME;  // default
-		s->closeTimeSeconds = DEFAULT_TIME; // default
-		s->switchDelayRemaining = 0.0f;
-		s->lastPublishedPos = -1;  // force initial publish
-		s->positionChannel = 0;     // disabled by default
-		s->openTimeChannel = 0;     // disabled by default
-		s->closeTimeChannel = 0;    // disabled by default
-		s->next = g_shutters;
-		g_shutters = s;
-	}
-}
-void Shutter_AssignChannels(int channel, int posChannel, int openChannel, int closeChannel) {
-	// Ensure shutter exists by registering it if needed
-	RegisterShutterForChannel(channel);
-	
-	shutter_t *s = GetForChannel(channel);
-	if (!s)
-		return;
-	
-	s->positionChannel = posChannel;
-	s->openTimeChannel = openChannel;
-	s->closeTimeChannel = closeChannel;
-	
-	// Read current values from assigned channels (loads from config)
-	Shutter_Read(s);
-	
-	// Update channel values in UI
-	if (posChannel > 0) {
-		CHANNEL_Set(posChannel, (int)(s->frac * 100.0f), CHANNEL_SET_FLAG_SILENT);
-	}
-	if (openChannel > 0) {
-		CHANNEL_Set(openChannel, (int)(s->openTimeSeconds * 100.0f), CHANNEL_SET_FLAG_SILENT);
-	}
-	if (closeChannel > 0) {
-		CHANNEL_Set(closeChannel, (int)(s->closeTimeSeconds * 100.0f), CHANNEL_SET_FLAG_SILENT);
-	}
-	
-	// Save the configuration
-	Shutter_Save(s);
-	CFG_MarkAsDirty();
-	
-	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, 
-		"Shutter %i channels assigned: pos=%i, open=%i, close=%i",
-		channel, posChannel, openChannel, closeChannel);
 }
 
 static commandResult_t CMD_Shutter_Calibrate(const void *context, const char *cmd, const char *args, int flags) {
@@ -403,18 +313,6 @@ static commandResult_t CMD_Shutter_Calibrate(const void *context, const char *cm
 	float timeClose = Tokenizer_GetArgFloat(2);
 
 	Shutter_SetTimes(index, timeOpen, timeClose);
-
-	return CMD_RES_OK;
-}
-static commandResult_t CMD_Shutter_Channels(const void *context, const char *cmd, const char *args, int flags) {
-	Tokenizer_TokenizeString(args, 0);
-
-	int shutterIndex = Tokenizer_GetArgInteger(0);
-	int posChannel = Tokenizer_GetArgInteger(1);
-	int openChannel = Tokenizer_GetArgInteger(2);
-	int closeChannel = Tokenizer_GetArgInteger(3);
-
-	Shutter_AssignChannels(shutterIndex, posChannel, openChannel, closeChannel);
 
 	return CMD_RES_OK;
 }
@@ -461,6 +359,24 @@ void DRV_Shutters_RunQuickTick() {
 		s = s->next;
 	}
 }
+static void RegisterShutterForChannel(int channel) {
+	shutter_t *s = GetForChannel(channel);
+	if (!s) {
+		s = malloc(sizeof(shutter_t));
+		memset(s, 0, sizeof(shutter_t));
+		s->channel = channel;
+		s->frac = 0.0f;  // unknown position
+		s->state = SHUTTER_CLOSED;
+		s->targetFrac = 0.0f;
+		s->openTimeSeconds = DEFAULT_TIME;  // default
+		s->closeTimeSeconds = DEFAULT_TIME; // default
+		s->switchDelayRemaining = 0.0f;
+		s->lastPublishedPos = -1;  // force initial publish
+		s->next = g_shutters;
+		g_shutters = s; 
+		Shutter_Read(s);  // Load saved state from flash memory
+	}
+}
 void DRV_Shutters_RunEverySecond() {
 	for (int i = 0; i < PLATFORM_GPIO_MAX; i++) {
 		int r = g_cfg.pins.roles[i];
@@ -481,10 +397,6 @@ void DRV_Shutters_RunEverySecond() {
 			sprintf(buffer, "shutterPos%i", s->channel);
 			MQTT_PublishMain_StringInt(buffer, currentPos, 0);
 		}
-		// Update assigned channels for UI display
-		if (s->positionChannel > 0) {
-			CHANNEL_Set(s->positionChannel, currentPos, CHANNEL_SET_FLAG_SILENT);
-		}
 		s = s->next;
 	}
 }
@@ -503,6 +415,5 @@ void DRV_Shutters_DoDiscovery(const char *topic) {
 void DRV_Shutters_Init() {
 	CMD_RegisterCommand("ShutterMove", CMD_Shutter_MoveTo, NULL);
 	CMD_RegisterCommand("ShutterCalibrate", CMD_Shutter_Calibrate, NULL);
-	CMD_RegisterCommand("ShutterChannels", CMD_Shutter_Channels, NULL);
 }
 
