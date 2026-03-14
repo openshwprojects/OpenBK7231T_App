@@ -89,6 +89,7 @@ void Test_TuyaMCU_Boolean();
 void Test_TuyaMCU_DP22();
 void Test_TuyaMCU_Mult();
 void Test_TuyaMCU_RawAccess();
+void Test_TuyaMCU_Robustness();
 void Test_Command_If();
 void Test_Command_If_Else();
 void Test_LFS();
