@@ -30,6 +30,8 @@ typedef struct shutter_s {
 	float targetFrac;
 	float openTimeSeconds;
 	float closeTimeSeconds;
+	float switchDelayRemaining;
+	int lastPublishedPos;
 	struct shutter_s *next;
 } shutter_t;
 
@@ -196,7 +198,9 @@ static void Shutter_Stop(shutter_t *s) {
 	else {
 		s->state = SHUTTER_UNKNOWN;
 	}
+	s->switchDelayRemaining = 0.0f; // Reset delay on stop
 	Shutter_SetPins(s, s->state);
+	Shutter_Save(s);
 }
 void Shutter_MoveByIndex(int index, float frac, bool bStopOnDuplicate) {
 	shutter_t *s = GetForChannel(index);
@@ -227,18 +231,45 @@ void Shutter_MoveByIndex(int index, float frac, bool bStopOnDuplicate) {
 	if (s->frac < 0.0f)
 		s->frac = 0.0f;
 
+	shutterState_t newState;
 	if (frac > s->frac) {
-		s->state = SHUTTER_OPENING;
+		newState = SHUTTER_OPENING;
 	}
 	else if (frac < s->frac) {
-		s->state = SHUTTER_CLOSING;
+		newState = SHUTTER_CLOSING;
 	}
-	Shutter_SetPins(s, s->state);
+	else {
+		// already at position
+		return;
+	}
+
+	// Check if we need to switch direction
+	bool isSwitching = (s->state == SHUTTER_OPENING && newState == SHUTTER_CLOSING) ||
+		(s->state == SHUTTER_CLOSING && newState == SHUTTER_OPENING);
+
+	s->state = newState;
+	if (isSwitching) {
+		// Switching direction, add delay: turn off relays temporarily
+		s->switchDelayRemaining = 0.2f; // 200ms delay
+		Shutter_SetPin(s, IOR_ShutterA, 0);
+		Shutter_SetPin(s, IOR_ShutterB, 0);
+	} else {
+		Shutter_SetPins(s, s->state);
+	}
 }
 static commandResult_t CMD_Shutter_MoveTo(const void *context, const char *cmd, const char *args, int flags) {
 	Tokenizer_TokenizeString(args, 0);
-	int index = atoi(cmd + strlen("ShutterMove"));
-	const char *target = Tokenizer_GetArg(0);
+	int index;
+	const char *target;
+	if (Tokenizer_GetArgsCount() >= 2) {
+		// New format: ShutterMove <index> <target>
+		index = Tokenizer_GetArgInteger(0);
+		target = Tokenizer_GetArg(1);
+	} else {
+		// Old format: ShutterMove<index> <target>
+		index = atoi(cmd + strlen("ShutterMove"));
+		target = Tokenizer_GetArg(0);
+	}
 	if (!stricmp(target, "open")) {
 		Shutter_MoveByIndex(index, 1, false);
 		return CMD_RES_OK;
@@ -270,6 +301,8 @@ void Shutter_SetTimes(int channel, float timeOpen, float timeClose) {
 
 	if (timeClose > 0.0f)
 		s->closeTimeSeconds = timeClose;
+
+	Shutter_Save(s);
 }
 
 static commandResult_t CMD_Shutter_Calibrate(const void *context, const char *cmd, const char *args, int flags) {
@@ -289,15 +322,31 @@ void DRV_Shutter_Tick(shutter_t *s) {
 
 	switch (s->state) {
 	case SHUTTER_OPENING:
-		s->frac += dt / s->openTimeSeconds;
-		if (s->frac >= s->targetFrac)
-			Shutter_Stop(s);
+		if (s->switchDelayRemaining > 0.0f) {
+			s->switchDelayRemaining -= dt;
+			if (s->switchDelayRemaining <= 0.0f) {
+				// Delay expired, turn on the relay
+				Shutter_SetPins(s, s->state);
+			}
+		} else {
+			s->frac += dt / s->openTimeSeconds;
+			if (s->frac >= s->targetFrac)
+				Shutter_Stop(s);
+		}
 		break;
 
 	case SHUTTER_CLOSING:
-		s->frac -= dt / s->closeTimeSeconds;
-		if (s->frac <= s->targetFrac)
-			Shutter_Stop(s);
+		if (s->switchDelayRemaining > 0.0f) {
+			s->switchDelayRemaining -= dt;
+			if (s->switchDelayRemaining <= 0.0f) {
+				// Delay expired, turn on the relay
+				Shutter_SetPins(s, s->state);
+			}
+		} else {
+			s->frac -= dt / s->closeTimeSeconds;
+			if (s->frac <= s->targetFrac)
+				Shutter_Stop(s);
+		}
 		break;
 
 	default:
@@ -322,8 +371,11 @@ static void RegisterShutterForChannel(int channel) {
 		s->targetFrac = 0.0f;
 		s->openTimeSeconds = DEFAULT_TIME;  // default
 		s->closeTimeSeconds = DEFAULT_TIME; // default
+		s->switchDelayRemaining = 0.0f;
+		s->lastPublishedPos = -1;  // force initial publish
 		s->next = g_shutters;
-		g_shutters = s;
+		g_shutters = s; 
+		Shutter_Read(s);  // Load saved state from flash memory
 	}
 }
 void DRV_Shutters_RunEverySecond() {
@@ -336,11 +388,19 @@ void DRV_Shutters_RunEverySecond() {
 
 	shutter_t *s = g_shutters;
 	while (s) {
-		char buffer[64];
-		//sprintf(buffer, "shutterState%i", s->channel);
-		//MQTT_PublishMain_StringString(buffer, "open", 0);
-		sprintf(buffer, "shutterPos%i", s->channel);
-		MQTT_PublishMain_StringInt(buffer, (int)(s->frac*100.0f), 0);
+		int currentPos = (int)(s->frac * 100.0f);
+		// Only publish if position changed
+		if (currentPos != s->lastPublishedPos) {
+			s->lastPublishedPos = currentPos;
+			char buffer[64];
+			//sprintf(buffer, "shutterState%i", s->channel);
+			//MQTT_PublishMain_StringString(buffer, "open", 0);
+			sprintf(buffer, "shutterPos%i", s->channel);
+			MQTT_PublishMain_StringInt(buffer, currentPos, 0);
+			if (s->state == SHUTTER_OPENING || s->state == SHUTTER_CLOSING) {
+				Shutter_Save(s);
+			}
+		}
 		s = s->next;
 	}
 }
