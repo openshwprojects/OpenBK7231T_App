@@ -39,16 +39,16 @@ shutter_t *g_shutters = 0;
 
 
 void Shutter_Save(shutter_t *s) {
-	HAL_FlashVars_SaveChannel(s->channel * 3 + 0, s->openTimeSeconds * 10);
-	HAL_FlashVars_SaveChannel(s->channel * 3 + 1, s->closeTimeSeconds * 10);
+	HAL_FlashVars_SaveChannel(s->channel * 3 + 0, s->openTimeSeconds * 100);
+	HAL_FlashVars_SaveChannel(s->channel * 3 + 1, s->closeTimeSeconds * 100);
 	HAL_FlashVars_SaveChannel(s->channel * 3 + 2, s->frac * 100);
 }
 void Shutter_Read(shutter_t *s) {
-	s->openTimeSeconds = HAL_FlashVars_GetChannelValue(s->channel * 3 + 0) * 0.1f;
+	s->openTimeSeconds = HAL_FlashVars_GetChannelValue(s->channel * 3 + 0) * 0.01f;
 	if (s->openTimeSeconds == 0.0f) {
 		s->openTimeSeconds = DEFAULT_TIME;
 	}
-	s->closeTimeSeconds = HAL_FlashVars_GetChannelValue(s->channel * 3 + 1) * 0.1f;
+	s->closeTimeSeconds = HAL_FlashVars_GetChannelValue(s->channel * 3 + 1) * 0.01f;
 	if (s->closeTimeSeconds == 0.0f) {
 		s->closeTimeSeconds = DEFAULT_TIME;
 	}
@@ -200,6 +200,7 @@ static void Shutter_Stop(shutter_t *s) {
 	}
 	s->switchDelayRemaining = 0.0f; // Reset delay on stop
 	Shutter_SetPins(s, s->state);
+	Shutter_Save(s);
 }
 void Shutter_MoveByIndex(int index, float frac, bool bStopOnDuplicate) {
 	shutter_t *s = GetForChannel(index);
@@ -396,6 +397,9 @@ void DRV_Shutters_RunEverySecond() {
 			//MQTT_PublishMain_StringString(buffer, "open", 0);
 			sprintf(buffer, "shutterPos%i", s->channel);
 			MQTT_PublishMain_StringInt(buffer, currentPos, 0);
+			if (s->state == SHUTTER_OPENING || s->state == SHUTTER_CLOSING) {
+				Shutter_Save(s);
+			}
 		}
 		s = s->next;
 	}
