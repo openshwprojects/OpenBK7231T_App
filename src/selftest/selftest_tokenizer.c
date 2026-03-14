@@ -134,7 +134,67 @@ void Test_Tokenizer() {
 	SELFTEST_ASSERT_ARGUMENT(1, "12:55");
 	SELFTEST_ASSERT_ARGUMENT(2, "level=77");
 	SELFTEST_ASSERT_ARGUMENT(3, "0");
-	SELFTEST_ASSERT_STRING(Tokenizer_GetArgFrom(2), "level=$CH5 $CH6")
+	SELFTEST_ASSERT_STRING(Tokenizer_GetArgFrom(2), "level=$CH5 $CH6");
+
+// test new parsing args
+/*
+const char *Tokenizer_GetArgEqualDefault(const char *name, const char *def);
+int Tokenizer_GetArgEqualInteger(const char *search, const int def);
+int Tokenizer_GetPinEqual(const char *search, const int def);
+
+We will also test for GetPins using pin definitions, so for reference:
+
+Windows pin definitions:
+
+const char *HAL_PIN_GetPinNameAlias(int index) {
+	// some of pins have special roles
+	if (index == 23)	return "ADC3";
+	if (index == 26)	return "PWM5";
+	if (index == 24)	return "PWM4";
+	if (index == 6)		return "PWM0";
+	if (index == 7)		return "PWM1";
+	if (index == 0)		return "TXD2";
+	if (index == 1)		return "RXD2";
+	if (index == 9)		return "PWM3";
+	if (index == 8)		return "PWM2";
+	if (index == 10)	return "RXD1";
+	if (index == 11)	return "TXD1";
+
+*/
+
+	Tokenizer_TokenizeString("-XY 12 -X 13 SDA=ADC3 XX=17 -Y 19 SCL=8 mystr=somestring -mysecondstr \"that's another string\"", TOKENIZER_ALLOW_QUOTES);
+	SELFTEST_ASSERT_STRING(Tokenizer_GetArgEqualDefault("mystr","XX"), "somestring");
+	SELFTEST_ASSERT_STRING(Tokenizer_GetArgEqualDefault("mysecondstr","XX"), "that's another string");
+	SELFTEST_ASSERT_INTEGER(Tokenizer_GetArgEqualInteger("XY",-1), 12);
+	SELFTEST_ASSERT_INTEGER(Tokenizer_GetArgEqualInteger("X",-1), 13);
+	SELFTEST_ASSERT_INTEGER(Tokenizer_GetArgEqualInteger("XX",-1), 17);
+	SELFTEST_ASSERT_INTEGER(Tokenizer_GetArgEqualInteger("Y",-1), 19);
+	SELFTEST_ASSERT_INTEGER(Tokenizer_GetPinEqual("SDA",-1), 23);
+	SELFTEST_ASSERT_INTEGER(Tokenizer_GetPinEqual("SCL",1), 8);
+
+	SELFTEST_ASSERT_INTEGER(Tokenizer_IsStringPresent("-XY"),1);
+	SELFTEST_ASSERT_INTEGER(Tokenizer_IsStringPresent("XY"),0);
+	SELFTEST_ASSERT_INTEGER(Tokenizer_IsStringPresent("-Y"),1);
+	SELFTEST_ASSERT_INTEGER(Tokenizer_IsStringPresent("Y"),0);
+	SELFTEST_ASSERT_INTEGER(Tokenizer_IsStringPresent("SDA=ADC3"),1);
+	SELFTEST_ASSERT_INTEGER(Tokenizer_IsStringPresent("DA=ADC3"),0);
+	SELFTEST_ASSERT_INTEGER(Tokenizer_IsStringPresent("-mysecondstr"),1);
+	SELFTEST_ASSERT_INTEGER(Tokenizer_IsStringPresent("mysecondstr"),0);
+	SELFTEST_ASSERT_INTEGER(Tokenizer_IsStringPresent("that's another string"),1);
+	SELFTEST_ASSERT_INTEGER(Tokenizer_IsStringPresent("another string"),0);
+
+
+	Tokenizer_TokenizeString("mystr=\"that's my string\" -mysecondstr \"that's another string\"", TOKENIZER_ALLOW_QUOTES);
+	SELFTEST_ASSERT_STRING(Tokenizer_GetArgEqualDefault("mystr","XX"), "\"that's");		// we didn't use TOKENIZER_ALLOW_QUOTES_IN_NAMEDARG_VALUE, so only first part is returned !!!!
+	SELFTEST_ASSERT_STRING(Tokenizer_GetArgEqualDefault("mysecondstr","XX"), "that's another string");
+
+
+	Tokenizer_TokenizeString("mystr=\"that's my string\" -mysecondstr \"that's another string\"", TOKENIZER_ALLOW_QUOTES_IN_NAMEDARG_VALUE);
+	SELFTEST_ASSERT_STRING(Tokenizer_GetArgEqualDefault("mystr","XX"), "that's my string");
+	SELFTEST_ASSERT_STRING(Tokenizer_GetArgEqualDefault("mysecondstr","XX"), "that's another string");
+
+
+
 }
 
 #endif
