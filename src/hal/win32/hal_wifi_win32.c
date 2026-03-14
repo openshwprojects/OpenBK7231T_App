@@ -61,12 +61,21 @@ int WiFI_SetMacAddress(char *mac) {
 
 }
 void WiFI_GetMacAddress(char *mac) {
+#ifndef LINUX
 	mac[0] = 0xBA;
 	mac[1] = 0xDA;
 	mac[2] = 0x31;
 	mac[3] = 0x45;
 	mac[4] = 0xCA;
 	mac[5] = 0xFF;
+#else
+	mac[0] = 0xCA;
+	mac[1] = 0xFF;
+	mac[2] = 0xEE;
+	mac[3] = 0xCA;
+	mac[4] = 0xFF;
+	mac[5] = 0xEE;
+#endif
 }
 
 void HAL_PrintNetworkInfo() {
