@@ -271,6 +271,7 @@ BMP_mode GetMode(int val)
 	}
 }
 
+#ifndef WINDOWS
 BMP_sampling GetSampling(int val)
 {
 	switch(val)
@@ -284,7 +285,6 @@ BMP_sampling GetSampling(int val)
 	case 12 ... INT_MAX: return SAMPLING_X16;
 	}
 }
-
 BMP_filter GetFilter(int val)
 {
 	switch(val)
@@ -300,7 +300,6 @@ BMP_filter GetFilter(int val)
 	case 96 ... INT_MAX: return FILTER_128X;
 	}
 }
-
 standby_time GetStandbyTime(int val)
 {
 	switch(val)
@@ -316,7 +315,67 @@ standby_time GetStandbyTime(int val)
 	case 3001 ... INT_MAX: return STANDBY_4000;
 	}
 }
-
+#else
+BMP_sampling GetSampling(int val)
+{
+    if (val == -1)
+        return SAMPLING_SKIPPED;
+    else if (val == 1)
+        return SAMPLING_X1;
+    else if (val == 2)
+        return SAMPLING_X2;
+    else if (val >= 3 && val <= 5)
+        return SAMPLING_X4;
+    else if (val >= 6 && val <= 11)
+        return SAMPLING_X8;
+    else if (val >= 12 && val <= INT_MAX)
+        return SAMPLING_X16;
+    else
+        return SAMPLING_X1;
+}
+BMP_filter GetFilter(int val)
+{
+    if (val == 0)
+        return FILTER_OFF;
+    else if (val >= 1 && val <= 2)
+        return FILTER_2X;
+    else if (val >= 3 && val <= 5)
+        return FILTER_4X;
+    else if (val >= 6 && val <= 11)
+        return FILTER_8X;
+    else if (val >= 12 && val <= 23)
+        return FILTER_16X;
+    else if (val >= 24 && val <= 47)
+        return FILTER_32X;
+    else if (val >= 48 && val <= 95)
+        return FILTER_64X;
+    else if (val >= 96 && val <= INT_MAX) // INT_MAX not needed, any large value fits this branch
+        return FILTER_128X;
+    else
+        return FILTER_OFF;
+}
+standby_time GetStandbyTime(int val)
+{
+    if (val >= 0 && val <= 31)
+        return STANDBY_0_5;
+    else if (val >= 32 && val <= 94)
+        return STANDBY_62_5;
+    else if (val >= 95 && val <= 174)
+        return STANDBY_125;
+    else if (val >= 175 && val <= 374)
+        return STANDBY_250;
+    else if (val >= 375 && val <= 750)
+        return STANDBY_500;
+    else if (val >= 751 && val <= 1500)
+        return STANDBY_1000;
+    else if (val >= 1501 && val <= 3000)
+        return STANDBY_2000;
+    else if (val >= 3001 && val <= INT_MAX)
+        return STANDBY_4000;
+    else
+        return STANDBY_0_5;
+}
+#endif
 void ReadCalibData_BMX280()
 {
 	BMX280_calib.T1 = BMP_Read16(BMX280_REG_T1);

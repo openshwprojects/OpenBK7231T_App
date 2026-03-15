@@ -323,6 +323,75 @@ void expandQuotes(char* str) {
 	str[writeIndex] = 0;
 }
 
+
+// "parse" arguments to search for a "named" argument:
+// will accept
+// -<name> <value>		like "-port 80"
+// <name>=<value>		like "port=80"
+// we can never know, if the "name" is present at all, so a default is needed to return in case its not found
+const char *Tokenizer_GetArgEqualDefault(const char *name, const char *def) {
+    size_t name_len = strlen(name);
+
+    for (int i = 0; i < g_numArgs; i++) {
+        char* p = strstr(g_args[i], name);
+        if (p != NULL) {
+            size_t arg_len = strlen(g_args[i]);
+
+            // Pattern 1: <name>=<value>
+            // --> g_arg[i] must be "<name>=<value>" so
+            //		p must point to the beginning of g_arg[i], so it p == g_args[i]
+            //		g_args[i] must be at least two chars longer than <name> (one is '=' + at least one for the value)
+            //		following the <name> there must be the char '=' 	--> g_args[i][name_len] == '='	
+            //		g_args[i] must start with '-'
+            if (p == g_args[i] &&
+		arg_len >= name_len + 2 &&
+		g_args[i][name_len] == '='
+            ) {
+                return g_args[i] + name_len + 1;
+            }
+
+            // Pattern 2: -<name> <value>
+            // --> g_arg[i] must be "-<name>" so
+            //		g_args[i] must be exactly one char longer than <name>
+            //		p must point to second char, so it p > g_args[i]
+            //		p - 1 == g_args[i] 	no need to test, must be the case if the first two are true
+            //		g_args[i] must start with '-'
+            if (arg_len - 1 == name_len &&
+		p > g_args[i] &&
+//		p - 1 == g_args[i] &&
+		g_args[i][0] == '-'
+		 ) {
+                if (i + 1 < g_numArgs) {
+                    return g_args[i + 1];
+                }
+            }
+        }
+    }
+    return def;
+}
+// search for a "named" integer argument like channel=5
+// with Tokenizer_GetGetArgEqualInteger("channel")
+int Tokenizer_GetArgEqualInteger(const char *search, const int def) {
+	int ret=def;
+	const char* found=Tokenizer_GetArgEqualDefault(search, NULL);		// search for argument, default must be no number
+	if(found && found[0] == '0' && (found[1] == 'x' || found[1] == 'X') ) {			// also handle hex numbers (e.g. i2c addreses)
+		sscanf(found, "%x", &ret);
+		return ret;
+	}
+	if (strIsInteger(found)) ret = atoi(found);					// will check for number - use default else
+	return ret;
+}
+
+// search for a "named" pin argument like
+// will return pin or default pin
+int Tokenizer_GetPinEqual(const char *search, const int def) {
+	const char* found=Tokenizer_GetArgEqualDefault(search, NULL);	// search for argument, default must neither be a number nor a valid pin name
+	if (found == NULL) return def;
+	int temp = PIN_FindIndexFromString(found);			// will check for number and pin names
+	if (temp != -1) return temp;
+	return def;
+}
+
 void Tokenizer_TokenizeString(const char *s, int flags) {
 	char *p;
 
@@ -383,6 +452,34 @@ void Tokenizer_TokenizeString(const char *s, int flags) {
 				g_argsFrom[g_numArgs] = (s+((p+1)-g_buffer));
 				g_numArgs++;
 			}
+		}
+		// special handling to allow quotes with named arguments like 
+		// myarg="that's my arg"
+		// in this case, the quote is "inside" the arg (no whitespace before the '"' - but a '=')
+		//
+		// We will pretend it's -myarg "that's my arg"
+		// by shifting the argument one char to the right and prepend '-'
+		// --> so if we had
+		//		myarg="that's my arg"
+		// we now have
+		//		-myarg"thats my arg"
+		//
+		// and immediately jump to "quote:"
+		// This works, because in "quote" first code will change the '"' to '\0' so we have the "name" string terminated by \0
+		// Then the next arg is started after the " (turned to \0 before) and continued until the closing '"' 
+		//
+		// we know p[1] must be present, even if string is ending, it will be there as '\0', so it's safe to compare p[1] to '"'
+		if ((flags & TOKENIZER_ALLOW_QUOTES_IN_NAMEDARG_VALUE) == TOKENIZER_ALLOW_QUOTES_IN_NAMEDARG_VALUE && *p == '=' &&  p[1] == '"'){
+
+			// shift the nem one to the left ...
+			for (int j = p - g_args[g_numArgs-1]; j > 0; j--){
+				g_args[g_numArgs-1][j]=g_args[g_numArgs-1][j-1];
+			}
+			// ... and make first char a '-'
+			g_args[g_numArgs-1][0]='-';
+			// forward to '"' (*p was '=')
+			p=p+1;
+			goto quote;
 		}
 		//if(*p == ',') {
 		//	*p = 0;
