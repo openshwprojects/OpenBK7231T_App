@@ -554,22 +554,155 @@ const char *skipExpected(const char *p, const char *tok) {
  *  @param topic	The topic to parse
  *  @return 		The topic without the client, or NULL if <client>/ wasn't present
  */
+
+//const char* MQTT_RemoveClientFromTopic(const char* topic, const char *prefix) {
+//	const char *p2;
+//	const char *p = topic;
+//	if (prefix) {
+//		p = skipExpected(p, prefix);
+//		if (p == 0) {
+//			return 0;
+//		}
+//	}
+//	// it is either group topic or a device topic
+//	p2 = skipExpected(p, CFG_GetMQTTClientId());
+//	if (p2 == 0) {
+//		p2 = skipExpected(p, CFG_GetMQTTGroupTopic());
+//	}
+//	return p2;
+//}
+/**
+ * Parse an MQTT topic and remove the device/group prefix if it matches
+ * this device or its configured group.
+ *
+ * Supported topic formats:
+ *
+ *   <prefix>/<device>/<command>
+ *   <prefix>/<group>/<command>
+ *   <prefix>/<root>/<groupList>/<command>
+ *
+ * Where:
+ *   device     = CFG_GetMQTTClientId()
+ *   group      = CFG_GetMQTTGroupTopic()
+ *   root       = the root part of group (before '/')
+ *   groupList  = comma separated groups (e.g. kitchen,living,bedroom)
+ *
+ * Examples:
+ *
+ *   cmnd/device1/power               -> power
+ *   cmnd/kitchen/power               -> power
+ *   cmnd/home/kitchen,pool/light     -> light
+ *   cmnd/home/all/light              -> light
+ *
+ * Behavior:
+ *   - If the topic targets this device directly, return the command.
+ *   - If the topic targets the configured group, return the command.
+ *   - If the topic contains a group list, match the device's group or
+ *     the broadcast group "all".
+ *
+ * Improvements over the previous implementation:
+ *
+ *   - Supports multi-group addressing via comma separated group lists.
+ *   - Supports broadcast group "all".
+ *   - Allows hierarchical group topics (<root>/<group>).
+ *   - Maintains zero-allocation parsing (no malloc, no string copies).
+ *   - Uses pointer arithmetic to avoid modifying the original topic.
+ *   - Maintains compatibility with existing device and group topics.
+ *
+ * Constraints:
+ *   - CFG_GetMQTTGroupTopic() must contain a '/' to enable multi-group parsing.
+ *   - Topics not matching any valid format return NULL.
+ *
+ * @param topic   The MQTT topic to parse.
+ * @param prefix  Optional prefix (e.g. "cmnd"). If present, it must match.
+ *
+ * @return Pointer to the command part of the topic, or NULL if the topic
+ *         does not target this device or its group.
+ */
+
 const char* MQTT_RemoveClientFromTopic(const char* topic, const char *prefix) {
+
+	const char *p;
 	const char *p2;
-	const char *p = topic;
+
+	p = topic;
+
 	if (prefix) {
 		p = skipExpected(p, prefix);
-		if (p == 0) {
+		if (!p)
 			return 0;
-		}
 	}
-	// it is either group topic or a device topic
+
+	// device topic
 	p2 = skipExpected(p, CFG_GetMQTTClientId());
-	if (p2 == 0) {
-		p2 = skipExpected(p, CFG_GetMQTTGroupTopic());
+	if (p2)
+		return p2;
+
+	const char *group = CFG_GetMQTTGroupTopic();
+
+	// direct group topic
+	p2 = skipExpected(p, group);
+	if (p2)
+		return p2;
+
+	// split root/group
+	const char *slash = strchr(group, '/');
+	if (!slash)
+		return 0;
+
+	size_t rootLen = slash - group;
+	const char *deviceGroup = slash + 1;
+	size_t deviceGroupLen = strlen(deviceGroup);
+
+	// check root match
+	if (strncmp(p, group, rootLen) != 0)
+		return 0;
+
+	if (p[rootLen] != '/')
+		return 0;
+
+	const char *groupList = p + rootLen + 1;
+
+	// find command
+	const char *cmd = strchr(groupList, '/');
+	if (!cmd)
+		return 0;
+
+	size_t listLen = cmd - groupList;
+
+	const char *command = cmd + 1;
+
+	const char *s = groupList;
+	const char *end = groupList + listLen;
+
+	while (s < end) {
+
+		const char *gStart = s;
+
+		while (s < end && *s != ',')
+			s++;
+
+		size_t gLen = s - gStart;
+
+		// match device group
+		if (gLen == deviceGroupLen &&
+			strncmp(gStart, deviceGroup, gLen) == 0) {
+			return command;
+		}
+
+		// match broadcast
+		if (gLen == 3 &&
+			memcmp(gStart, "all", 3) == 0) {
+			return command;
+		}
+
+		if (s < end)
+			s++;   // skip comma
 	}
-	return p2;
+
+	return 0;
 }
+
 bool stribegins(const char *str, const char *needle) {
 	int l = strlen(needle);
 	return !wal_strnicmp(str, needle, l);
