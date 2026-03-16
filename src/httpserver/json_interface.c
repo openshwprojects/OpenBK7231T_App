@@ -1006,7 +1006,7 @@ int JSON_ProcessCommandReply(const char* cmd, const char* arg, void* request, js
 		}
 #endif
 	}
-	else if (!wal_strnicmp(cmd, "SENSOR", 5)) {
+	else if (!wal_strnicmp(cmd, "SENSOR", 6)) {
 		// not a Tasmota command, but still required for us
 		http_tasmota_json_status_SNS(request, printer, false);
 #if ENABLE_MQTT
@@ -1124,7 +1124,7 @@ int JSON_ProcessCommandReply(const char* cmd, const char* arg, void* request, js
 		printer(request, "}");
 	}
 #endif
-	else if (!wal_strnicmp(cmd, "MQTTClient", 8)) {
+	else if (!wal_strnicmp(cmd, "MQTTClient", 10)) {
 		printer(request, "{");
 		JSON_PrintKeyValue_String(request, printer, "MQTTClient", CFG_GetMQTTClientId(), false);
 		printer(request, "}");
