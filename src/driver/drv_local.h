@@ -303,6 +303,9 @@ void Bridge_driver_QuickFrame();
 void Bridge_driver_OnChannelChanged(int ch, int value);
 /*************************************************************/
 
+/* Roomba driver *********************************************/
+void Roomba_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState);
+/*************************************************************/
 void LTR_Init();
 void LTR_OnEverySecond();
 void LTR_AppendInformationToHTTPIndexPage(http_request_t* request, int bPreState);

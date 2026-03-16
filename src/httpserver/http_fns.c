@@ -1272,6 +1272,7 @@ int http_fn_cfg_mqtt(http_request_t* request) {
 	add_label_text_field(request, "Group Topic (Secondary Topic to only receive cmnds)", "group", CFG_GetMQTTGroupTopic(), "<br>");
 	add_label_text_field(request, "User", "user", CFG_GetMQTTUserName(), "<br>");
 	add_label_password_field(request, "Password", "password", CFG_GetMQTTPass(), "<br>");
+	poststr(request, "<span style=\"float:right;\"><input type=\"checkbox\" onclick=\"e=getElement('password');if(this.checked){e.type='text'}else e.type='password'\" > enable clear text password</span><br>");
 
 	poststr(request, "<br><input type=\"submit\" value=\"Submit\" onclick=\"return confirm('Are you sure? Please check MQTT data twice?')\"></form> ");
 	poststr(request, htmlFooterReturnToCfgOrMainPage);
