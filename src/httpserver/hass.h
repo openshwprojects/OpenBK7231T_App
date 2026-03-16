@@ -153,6 +153,7 @@ HassDeviceInfo* hass_createSelectEntityIndexedCustom(const char* state_topic, co
 	const char* options[], const char* title, char* value_template, char* command_template);
 HassDeviceInfo* hass_createGarageEntity(const char* state_topic, const char* command_topic,
 	const char *title);
+HassDeviceInfo* hass_createShutter(int index);
 
 HassDeviceInfo* hass_createToggle(const char *label, const char *stateTopic, const char *commandTopic);
 HassDeviceInfo* hass_init_textField_info(int index);
