@@ -130,7 +130,7 @@ void HAL_PIN_PWM_Start(int index, int freq) {
 
 	g_periods[pwmIndex] = period;
 	if(g_pwm_on[pwmIndex] == true) return;
-#if defined(PLATFORM_BK7231N) && !defined(PLATFORM_BEKEN_NEW)
+#if (defined(PLATFORM_BK7231N) || defined(PLATFORM_BK7238)) && !defined(PLATFORM_BEKEN_NEW)
 	// OSStatus bk_pwm_initialize(bk_pwm_t pwm, uint32_t frequency, uint32_t duty_cycle);
 	bk_pwm_initialize(pwmIndex, period, 0, 0, 0);
 #else
@@ -156,7 +156,7 @@ void HAL_PIN_PWM_Update(int index, float value) {
 	//uint32_t value_upscaled = value * 10.0f; //Duty cycle 0...100 -> 0...1000
 	uint32_t period = g_periods[pwmIndex];
 	uint32_t duty = (value / 100.0 * period); //No need to use upscaled variable
-#if defined(PLATFORM_BK7231N) && !defined(PLATFORM_BEKEN_NEW)
+#if (defined(PLATFORM_BK7231N) || defined(PLATFORM_BK7238)) && !defined(PLATFORM_BEKEN_NEW)
 	bk_pwm_update_param(pwmIndex, period, duty,0,0);
 #else
 	bk_pwm_update_param(pwmIndex, period, duty);
