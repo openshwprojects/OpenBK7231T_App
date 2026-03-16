@@ -208,6 +208,39 @@ int http_fn_testmsg(http_request_t* request) {
 
 }
 
+// START add code to show pins in use py driver w/o IORole
+// array to hold possible used function names
+char *pinUsedName[PLATFORM_GPIO_MAX];
+
+// Function to set the string in the pinUsedName array
+int setPinUsedString(int index, const char *str) {
+    if (index < 0 || index >= IOR_Total_Options) {
+        return -1; // Return an error if index is out of bounds
+    }
+
+    // If setting to NULL, free existing memory
+    if (str == NULL) {
+        if (pinUsedName[index] != NULL) {
+            free(pinUsedName[index]); // Free the existing string
+            pinUsedName[index] = NULL; // Reset to NULL
+        }
+    } else {
+        // Allocate memory for the string and copy it into the array
+        // We could use MAX_STRING_LENGTH to limit the string length if needed
+        pinUsedName[index] = malloc((strlen(str) + 1) * sizeof(char)); // +1 for the null terminator
+        if (pinUsedName[index]) {
+            strcpy(pinUsedName[index], str);
+        } else {
+            return -1; // Allocation error
+        }
+    }
+
+    return 0; // Success
+}
+
+
+// END add code to show pins in use py driver w/o IORole
+
 #if ENABLE_TIME_PMNTP
 // poor mans NTP
 int http_fn_pmntp(http_request_t* request) {
@@ -2977,6 +3010,17 @@ int http_fn_cfg_pins(http_request_t* request) {
 		"d.className = \"hdiv\";"
 		"d.innerHTML = \"<span class='disp-inline' style='min-width: 15ch'>\"+alias+\"</span>\";"
 		"f.appendChild(d);"
+		"var y = document.createElement(\"input\");"
+// START add code to show pins in use py driver w/o IORole
+		"if (typeof c =='string'){"
+		"y.disabled = true;"
+		"y.value='Pin '+id+' used by '+c;"
+		"y.style.color='dimgray';"
+		"y.style.width='56%';"
+		"d.appendChild(y);"
+		"return;"
+		"}"
+// END add code to show pins in use py driver w/o IORole
 		"let s = document.createElement(\"select\");"
 		"s.className = \"hele\";"
 		"s.name = id;"
@@ -2989,7 +3033,6 @@ int http_fn_cfg_pins(http_request_t* request) {
 		"	o.selected = (sr[i][1] == c);"
 		"s.add(o);s.onchange = hide_show;"
 		"}"
-		"var y = document.createElement(\"input\");"
 		"y.className = \"hele\";"
 		"y.name = \"r\"+id;"
 		"y.id = \"r\"+id;"
@@ -3035,7 +3078,15 @@ int http_fn_cfg_pins(http_request_t* request) {
 		else {
 			hprintf255(request, "P%i ", i);
 		}
-		hprintf255(request, "\",%i,%i, %i,", i, si, !bCanThisPINbePWM);
+//		hprintf255(request, "\",%i,%i, %i,", i, si, !bCanThisPINbePWM);
+// START changed code to show pins in use py driver w/o IORole
+		hprintf255(request, "\",%i,", i);
+		if (pinUsedName[i]){
+			hprintf255(request, "'%s',", pinUsedName[i]);
+		} else {
+			hprintf255(request, "%i, %i,", si, !bCanThisPINbePWM);
+		}
+// END changed code to show pins in use py driver w/o IORole
 		// Primary linked channel
 		int NofC = PIN_IOR_NofChan(si);
 		if (NofC >= 1)
