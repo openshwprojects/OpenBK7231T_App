@@ -31,6 +31,8 @@ else ifeq ($(VARIANT),hlw8112)
 OBK_VARIANT = 6
 else ifeq ($(VARIANT),battery)
 OBK_VARIANT = 7
+else ifeq ($(VARIANT),btproxy)
+OBK_VARIANT = 8
 else ifeq ($(VARIANT),2M)
 OBK_VARIANT = 1
 ESP_FSIZE = 2MB
@@ -637,7 +639,17 @@ OpenRTL8720E: prebuild_OpenRTL8720E
 
 .PHONY: OpenBK7238
 OpenBK7238: prebuild_OpenBK7238
+ifeq ($(OBK_VARIANT), 8)
+	cd sdk/beken_freertos_sdk && \
+	cp -f beken378/app/config/sys_config_bk7238.h beken378/app/config/sys_config_bk7238.h.bak && \
+	sed -i 's/#if 0\/\/BTPROXY/#if 1/' beken378/app/config/sys_config_bk7238.h && \
+	OBK_VARIANT=$(OBK_VARIANT) sh build.sh bk7238 $(APP_VERSION); \
+	rc=$$?; \
+	mv -f beken378/app/config/sys_config_bk7238.h.bak beken378/app/config/sys_config_bk7238.h; \
+	exit $$rc
+else
 	cd sdk/beken_freertos_sdk && OBK_VARIANT=$(OBK_VARIANT) sh build.sh bk7238 $(APP_VERSION)
+endif
 	mkdir -p output/$(APP_VERSION)
 	cp sdk/beken_freertos_sdk/out/bk7238.bin output/$(APP_VERSION)/OpenBK7238_${APP_VERSION}.bin
 	cp sdk/beken_freertos_sdk/out/bk7238_QIO.bin output/$(APP_VERSION)/OpenBK7238_QIO_${APP_VERSION}.bin
@@ -677,7 +689,17 @@ OpenBK7252N: prebuild_OpenBK7252N
 
 .PHONY: OpenBK7231N_ALT
 OpenBK7231N_ALT: prebuild_OpenBK7231N_ALT
+ifeq ($(OBK_VARIANT), 8)
+	cd sdk/beken_freertos_sdk && \
+	cp -f beken378/app/config/sys_config_bk7231n.h beken378/app/config/sys_config_bk7231n.h.bak && \
+	sed -i 's/#if 0\/\/BTPROXY/#if 1/' beken378/app/config/sys_config_bk7231n.h && \
+	OBK_VARIANT=$(OBK_VARIANT) sh build.sh bk7231n $(APP_VERSION)_ALT; \
+	rc=$$?; \
+	mv -f beken378/app/config/sys_config_bk7231n.h.bak beken378/app/config/sys_config_bk7231n.h; \
+	exit $$rc
+else
 	cd sdk/beken_freertos_sdk && OBK_VARIANT=$(OBK_VARIANT) sh build.sh bk7231n $(APP_VERSION)_ALT
+endif
 	mkdir -p output/$(APP_VERSION)
 	cp sdk/beken_freertos_sdk/out/bk7231n_QIO.bin output/$(APP_VERSION)/OpenBK7231N_ALT_QIO_${APP_VERSION}.bin
 	cp sdk/beken_freertos_sdk/out/bk7231n.bin output/$(APP_VERSION)/OpenBK7231N_ALT_${APP_VERSION}.bin

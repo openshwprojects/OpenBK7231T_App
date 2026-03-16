@@ -16,7 +16,7 @@
 
 #define IS_QSPI_PIN(index) (index > 12 && index < 19)
 
-static int g_active_pwm = 0b0;
+static uint16_t g_active_pwm = 0b0;
 
 OBKInterruptHandler g_handlers[PLATFORM_GPIO_MAX];
 OBKInterruptType g_modes[PLATFORM_GPIO_MAX];
@@ -116,6 +116,8 @@ unsigned int HAL_GetGPIOPin(int index)
 
 #if PLATFORM_LN882H
 
+#include "utils/power_mgmt/ln_pm.h"
+
 void HAL_PIN_SetOutputValue(int index, int iVal) {
 	if (index >= g_numPins)
 		return;
@@ -192,6 +194,7 @@ uint32_t get_adv_timer_base(uint8_t ch)
 
 void pwm_init(uint32_t freq, uint8_t pwm_channel_num, uint32_t gpio_reg_base, gpio_pin_t gpio_pin)
 {
+	if(pwm_channel_num < 0 || pwm_channel_num > 5) return;
 	uint32_t reg_base = get_adv_timer_base(pwm_channel_num);
 
 	adv_tim_init_t_def adv_tim_init;
@@ -223,12 +226,14 @@ void pwm_init(uint32_t freq, uint8_t pwm_channel_num, uint32_t gpio_reg_base, gp
 
 void pwm_start(uint8_t pwm_channel_num)
 {
+	if(pwm_channel_num < 0 || pwm_channel_num > 5) return;
 	uint32_t reg_base = get_adv_timer_base(pwm_channel_num);
 	hal_adv_tim_a_en(reg_base, HAL_ENABLE);
 }
 
 void pwm_set_duty(float duty, uint8_t pwm_channel_num)
 {
+	if(pwm_channel_num < 0 || pwm_channel_num > 5) return;
 	uint32_t reg_base = get_adv_timer_base(pwm_channel_num);
 	hal_adv_tim_set_comp_a(reg_base, (hal_adv_tim_get_load_value(reg_base) + 2) * duty / 100.0f);
 }
@@ -241,10 +246,13 @@ void HAL_PIN_PWM_Stop(int index) {
 	uint32_t reg_base = get_adv_timer_base(pin->pwm_cha);
 	hal_adv_tim_a_en(reg_base, HAL_DISABLE);
 	hal_gpio_pin_afio_en(pin->base, pin->pin, HAL_DISABLE);
-	g_active_pwm &= ~(1 << pin->pwm_cha);
+	BIT_CLEAR(g_active_pwm, pin->pwm_cha);
 	uint8_t chan = pin->pwm_cha;
 	pin->pwm_cha = -1;
-	ADDLOG_DEBUG(LOG_FEATURE_CMD, "PWM_Stop: ch: %i, all: %i", chan, g_active_pwm);
+	if(g_active_pwm == 0)
+	{
+		soc_module_clk_gate_disable(CLK_G_ADV_TIMER);
+	}
 }
 
 void HAL_PIN_PWM_Start(int index, int freq) 
@@ -258,10 +266,15 @@ void HAL_PIN_PWM_Start(int index, int freq)
 		return;
 	}
 	uint8_t freecha;
-	for(freecha = 0; freecha < 5; freecha++) if((g_active_pwm >> freecha & 1) == 0) break;
-	g_active_pwm |= 1 << freecha;
+	for(freecha = 0; freecha < 6; freecha++) if(!BIT_CHECK(g_active_pwm, freecha)) break;
+	printf("PWM_Start: ch_pwm: %u\r\n", freecha);
+	if((g_active_pwm & 0x3F) == 0x3F) return;
+	if(g_active_pwm == 0)
+	{
+		soc_module_clk_gate_enable(CLK_G_ADV_TIMER);
+	}
+	BIT_SET(g_active_pwm, freecha);
 	pin->pwm_cha = freecha;
-	ADDLOG_DEBUG(LOG_FEATURE_CMD, "PWM_Start: ch_pwm: %u", freecha);
 	pwm_init(freq, freecha, pin->base, pin->pin);
 	pwm_start(freecha);
 }
@@ -416,7 +429,7 @@ void HAL_PIN_PWM_Stop(int index)
 	uint8_t chan = pin->pwm_cha;
 	pin->pwm_cha = -1;
 	HAL_PWM_Stop(chan);
-	g_active_pwm &= ~(1 << chan);
+	BIT_CLEAR(g_active_pwm, pin->pwm_cha);
 	HAL_SYSCON_FuncIOSet(chan + GPIO_AF_PWM0, pin->pin, 0);
 }
 
@@ -452,9 +465,9 @@ void HAL_PIN_PWM_Start(int index, int freq)
 		return;
 	}
 	uint8_t freecha;
-	for(freecha = 0; freecha < PWM_CH_MAX; freecha++) if((g_active_pwm >> freecha & 1) == 0) break;
+	for(freecha = 0; freecha < PWM_CH_MAX; freecha++) if(!BIT_CHECK(g_active_pwm, freecha)) break;
 
-	g_active_pwm |= 1 << freecha;
+	BIT_SET(g_active_pwm, freecha);
 	pin->pwm_cha = freecha;
 	g_pwm_load[freecha] = load;
 
