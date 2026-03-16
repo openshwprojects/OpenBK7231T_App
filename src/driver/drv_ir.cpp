@@ -460,7 +460,7 @@ extern "C" void DRV_IR_ISR(void* arg){
             }
         }
 #if PLATFORM_BEKEN
-#if PLATFORM_BK7231N && !PLATFORM_BEKEN_NEW
+#if (PLATFORM_BK7231N || PLATFORM_BK7238) && !PLATFORM_BEKEN_NEW
         bk_pwm_update_param((bk_pwm_t)pIRsend->pwmIndex, pIRsend->pwmperiod, duty,0,0);
 #else
         bk_pwm_update_param((bk_pwm_t)pIRsend->pwmIndex, pIRsend->pwmperiod, duty);
