@@ -39,16 +39,16 @@ shutter_t *g_shutters = 0;
 
 
 void Shutter_Save(shutter_t *s) {
-	HAL_FlashVars_SaveChannel(s->channel * 3 + 0, s->openTimeSeconds * 100);
-	HAL_FlashVars_SaveChannel(s->channel * 3 + 1, s->closeTimeSeconds * 100);
+	HAL_FlashVars_SaveChannel(s->channel * 3 + 0, s->openTimeSeconds * 20);
+	HAL_FlashVars_SaveChannel(s->channel * 3 + 1, s->closeTimeSeconds * 20);
 	HAL_FlashVars_SaveChannel(s->channel * 3 + 2, s->frac * 100);
 }
 void Shutter_Read(shutter_t *s) {
-	s->openTimeSeconds = HAL_FlashVars_GetChannelValue(s->channel * 3 + 0) * 0.01f;
+	s->openTimeSeconds = HAL_FlashVars_GetChannelValue(s->channel * 3 + 0) * 0.05f;
 	if (s->openTimeSeconds == 0.0f) {
 		s->openTimeSeconds = DEFAULT_TIME;
 	}
-	s->closeTimeSeconds = HAL_FlashVars_GetChannelValue(s->channel * 3 + 1) * 0.01f;
+	s->closeTimeSeconds = HAL_FlashVars_GetChannelValue(s->channel * 3 + 1) * 0.05f;
 	if (s->closeTimeSeconds == 0.0f) {
 		s->closeTimeSeconds = DEFAULT_TIME;
 	}
@@ -83,13 +83,13 @@ void DRV_Shutters_AddToHtmlPage(http_request_t *request, int bPreState) {
 			hprintf255(request,
 				"<form onsubmit='return false;'>"
 				"<label>Open time (s):</label> "
-				"<input id='ot%i' type='number' step='0.1' value='%.2f'> ",
+				"<input id='ot%i' type='number' step='0.05' value='%.2f'> ",
 				s->channel, s->openTimeSeconds
 			);
 
 			hprintf255(request,
 				"<label>Close time (s):</label> "
-				"<input id='ct%i' type='number' step='0.1' value='%.2f'> ",
+				"<input id='ct%i' type='number' step='0.05' value='%.2f'> ",
 				s->channel, s->closeTimeSeconds
 			);
 
