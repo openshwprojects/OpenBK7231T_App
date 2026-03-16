@@ -26,11 +26,7 @@ int g_cfg_pendingChanges = 0;
 #define MAIN_CFG_VERSION_V3 3
 // version 4 - bumped size by 1024,
 // added alternate ssid fields
-#if PLATFORM_W600
-#define MAIN_CFG_VERSION 3
-#else
 #define MAIN_CFG_VERSION 5
-#endif
 
 static byte CFG_CalcChecksum(mainConfig_t *inf) {
 	int header_size;
@@ -871,7 +867,16 @@ void CFG_InitAndLoad() {
 #if ALLOW_WEB_PASSWORD
 	// add web admin password configuration
 	if (g_cfg.version<5) {
+#if defined(PLATFORM_W600)
+	// W600 changed from V3 to V5, so at this point
+	// we read a valid V3 config but need a V5 config.
+	// Memory might contain old data (from flash_vars)
+	// so let's zero complete additional memory (including g_cfg.webPassword, making it empty).
+		memset((char*)(&g_cfg) + MAGIC_CONFIG_SIZE_V3, 0, sizeof(mainConfig_t) - MAGIC_CONFIG_SIZE_V3);
+		g_cfg_pendingChanges ++;
+#else
 		strcpy_safe(g_cfg.webPassword, "", sizeof(g_cfg.webPassword));
+#endif
 	}
 #endif
 	g_cfg.version = MAIN_CFG_VERSION;

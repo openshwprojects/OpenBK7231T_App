@@ -76,6 +76,8 @@ commandResult_t BP1658CJ_Current(const void *context, const char *cmd, const cha
 	g_currentRGB = Tokenizer_GetArgInteger(0);
 	g_currentCW = Tokenizer_GetArgInteger(1);
 
+	LED_ResendCurrentColors();
+
 	return CMD_RES_OK;
 }
 // startDriver BP1658CJ

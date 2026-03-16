@@ -339,10 +339,16 @@ void LED_RunQuickColorLerp(int deltaMS) {
 	}
 
 	for(i = 0; i < 5; i++) {
-		float ch_rgb_cal = (i < 3)? rgb_used_corr[i] : 1.0f; // adjust change rate with RGB correction in use
-		// This is the most silly and primitive approach, but it works
-		// In future we might implement better lerp algorithms, use HUE, etc
-		led_rawLerpCurrent[i] = Mathf_MoveTowards(led_rawLerpCurrent[i],finalColors[i], deltaSeconds * led_lerpSpeedUnitsPerSecond * ch_rgb_cal);
+		// Directional lerp: apply rgb calibration correction to the step size only when ramping UP.
+		// This keeps channels visually tracking together during fade-in (corrected channel raw value
+		// moves faster to compensate for the cal multiply applied at output time).
+		// When ramping DOWN we use a plain (uncorrected) step so all channels converge to their
+		// target at the same rate - preventing a lower-calibrated channel from lingering visible
+		// after others have reached zero (e.g. red staying on after green/blue go dark).
+		float ch_rgb_cal = (i < 3) ? rgb_used_corr[i] : 1.0f;
+		float bRampingUp = (led_rawLerpCurrent[i] < finalColors[i]) ? 1.0f : 0.0f;
+		float directedCal = 1.0f + (ch_rgb_cal - 1.0f) * bRampingUp; // = ch_rgb_cal when up, = 1.0 when down
+		led_rawLerpCurrent[i] = Mathf_MoveTowards(led_rawLerpCurrent[i], finalColors[i], deltaSeconds * led_lerpSpeedUnitsPerSecond * directedCal);
 	}
 
 	target_value_cold_or_warm = LED_GetTemperature0to1Range() * 100.0f;
@@ -366,7 +372,15 @@ void LED_RunQuickColorLerp(int deltaMS) {
 			// So, we need to map. Map component 3 of RGBCW to first channel, and component 4 to second.
 			CHANNEL_Set_FloatPWM(firstChannelIndex + 0, led_rawLerpCurrent[3] * g_cfg_colorScaleToChannel, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
 			CHANNEL_Set_FloatPWM(firstChannelIndex + 1, led_rawLerpCurrent[4] * g_cfg_colorScaleToChannel, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
-		} else {
+		}
+#if	ENABLE_DRIVER_SM16703P
+		else if (pixel_count > 0 && (g_lightMode != Light_Anim || g_lightEnableAll == 0)) {
+			// Not CW mode (not WS2812+ CW), but WS2812 + single PWM
+			CHANNEL_Set_FloatPWM(firstChannelIndex + 0, 
+				led_rawLerpCurrent[4] * g_cfg_colorScaleToChannel, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
+		}
+#endif
+		else {
 			// This should work for both RGB and RGBCW
 			// This also could work for a SINGLE COLOR strips
 			for(i = 0; i < maxPossibleIndexToSet; i++) {
@@ -394,6 +408,15 @@ void LED_RunQuickColorLerp(int deltaMS) {
 	}
 	
 	LED_I2CDriver_WriteRGBCW(led_rawLerpCurrent);
+}
+
+void LED_ResendCurrentColors() {
+	if (CFG_HasFlag(OBK_FLAG_LED_SMOOTH_TRANSITIONS)) {
+		LED_I2CDriver_WriteRGBCW(led_rawLerpCurrent);
+	}
+	else {
+		LED_I2CDriver_WriteRGBCW(finalColors);
+	}
 }
 
 
@@ -629,7 +652,16 @@ void apply_smart_light() {
 					else if (i == 4) {
 						CHANNEL_Set_FloatPWM(firstChannelIndex + 1, chVal, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
 					}
-				} else {
+				}
+#if	ENABLE_DRIVER_SM16703P
+				else if (pixel_count > 0 && (g_lightMode != Light_Anim || g_lightEnableAll == 0)) {
+					// Not CW mode (not WS2812+ CW), but WS2812 + single PWM
+					if (i == 4) {
+						CHANNEL_Set_FloatPWM(firstChannelIndex + 0, chVal, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
+					}
+				}
+#endif
+				else {
 					// emulated cool is -1 by default, so this block will only execute
 					// if the cool emulation was enabled
 					if (channelToUse == emulatedCool && g_lightMode == Light_Temperature) {

@@ -25,6 +25,7 @@ CSRCS += $(_SHARED_APP)/hal/w800/hal_adc_w800.c
 CSRCS += $(_SHARED_APP)/hal/w800/hal_flashConfig_w800.c
 CSRCS += $(_SHARED_APP)/hal/w800/hal_flashVars_w800.c
 CSRCS += $(_SHARED_APP)/hal/w800/hal_generic_w800.c
+CSRCS += $(_SHARED_APP)/hal/w800/hal_hwtimer_w800.c
 CSRCS += $(_SHARED_APP)/hal/w800/hal_main_w800.c
 CSRCS += $(_SHARED_APP)/hal/w800/hal_pins_w800.c
 CSRCS += $(_SHARED_APP)/hal/w800/hal_wifi_w800.c
@@ -32,13 +33,18 @@ CSRCS += $(_SHARED_APP)/hal/w800/hal_ota_w800.c
 CSRCS += $(_SHARED_APP)/hal/w800/hal_uart_w800.c
 CSRCS += main.c
 
+CSRCS += $(_SHARED_APP)/../libraries/easyflash/ports/ef_port.c
+CSRCS += $(_SHARED_APP)/../libraries/easyflash/src/easyflash.c
+CSRCS += $(_SHARED_APP)/../libraries/easyflash/src/ef_env.c
+CSRCS += $(_SHARED_APP)/../libraries/easyflash/src/ef_utils.c
+
 OBK_SRCS = $(_SHARED_APP)/
 include $(_SHARED_APP)/../platforms/obk_main.mk
 CSRCS += $(OBKM_SRC)
 EXTRA_CCFLAGS += $(OBK_CFLAGS)
+EXTRA_CCFLAGS += -D__FILE__=\"\" -Wno-builtin-macro-redefined
 
 CSRCS += $(TOP_DIR)/src/network/lwip2.0.3/apps/mqtt/mqtt.c
-
 
 #############################################################
 # Configuration i.e. compile options etc.
@@ -63,9 +69,8 @@ CSRCS += $(TOP_DIR)/src/network/lwip2.0.3/apps/mqtt/mqtt.c
 
 sinclude $(TOP_DIR)/tools/rules.mk
 
-INCLUDES := $(INCLUDES) -I $(PDIR)include
+INCLUDES := $(INCLUDES) -I $(PDIR)include -I$(_SHARED_APP)/../libraries/easyflash/inc
 
 PDIR := ../$(PDIR)
 sinclude $(PDIR)Makefile
-
 

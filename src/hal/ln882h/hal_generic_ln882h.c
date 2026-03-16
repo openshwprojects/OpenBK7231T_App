@@ -1,4 +1,4 @@
-#ifdef PLATFORM_LN882H
+#if PLATFORM_LN882H || PLATFORM_LN8825
 
 #include "hal/hal_wdt.h"
 #include "utils/reboot_trace/reboot_trace.h"
@@ -13,6 +13,7 @@ void HAL_RebootModule()
 void HAL_Configure_WDT()
 {
 	/* Watchdog initialization */
+#if PLATFORM_LN882H
 	wdt_init_t_def wdt_init;
 	memset(&wdt_init, 0, sizeof(wdt_init));
 	wdt_init.wdt_rmod = WDT_RMOD_1;         // When equal to 0, the counter is reset directly when it overflows; when equal to 1, an interrupt is generated first when the counter overflows, and if it overflows again, it resets.
@@ -26,16 +27,54 @@ void HAL_Configure_WDT()
 
 	/* Enable watchdog */
 	hal_wdt_en(WDT_BASE, HAL_ENABLE);
+#else
+	ln_chip_watchdog_start(WDT_TIMEOUT_LEVEL10);
+#endif
 }
 
 void HAL_Run_WDT()
 {
+#if PLATFORM_LN882H
 	hal_wdt_cnt_restart(WDT_BASE);
+#else
+	HAL_WDT_Restart();
+#endif
 }
 
 void HAL_Delay_us(int delay)
 {
 	ln_block_delayus(delay);
 }
+
+#if PLATFORM_LN882H
+
+#include "../../cmnds/cmd_public.h"
+
+extern int g_urx_pin;
+extern int g_utx_pin;
+
+static commandResult_t CMD_SetUARTPins(const void* context, const char* cmd, const char* args, int cmdFlags)
+{
+	Tokenizer_TokenizeString(args, 0);
+
+	int rxpin = Tokenizer_GetPin(0, -1);
+	int txpin = Tokenizer_GetPin(1, -1);
+	if(rxpin == -1 || txpin == -1)
+		return CMD_RES_BAD_ARGUMENT;
+	g_urx_pin = rxpin;
+	g_utx_pin = txpin;
+	return CMD_RES_OK;
+}
+
+void HAL_RegisterPlatformSpecificCommands()
+{
+	//cmddetail:{"name":"SetUARTPins","args":"[rx pin] [tx pin]",
+	//cmddetail:"descr":"Set UART pins",
+	//cmddetail:"fn":"CMD_SetUARTPins","file":"hal/ln882h/hal_generic_ln882h.c","requires":"PLATFORM_LN882H",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("SetUARTPins", CMD_SetUARTPins, NULL);
+}
+
+#endif
 
 #endif // PLATFORM_LN882H

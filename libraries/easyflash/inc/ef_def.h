@@ -33,6 +33,9 @@
 extern "C" {
 #endif
 
+// disable logging and asserts to make it more compact
+#define EF_ENABLE_LOGGING 0
+
 /* EasyFlash software version number */
 #define EF_SW_VERSION                  "4.1.0"
 #define EF_SW_VERSION_NUM              0x40100
@@ -56,6 +59,7 @@ extern "C" {
 #else
 #define EF_DEBUG(...)
 #endif
+#if EF_ENABLE_LOGGING
 /* EasyFlash routine print function. Must be implement by user. */
 #define EF_INFO(...)  ef_log_info(__VA_ARGS__)
 /* EasyFlash assert for developer. */
@@ -65,6 +69,10 @@ if (!(EXPR))                                                                  \
     EF_DEBUG("(%s) has assert failed at %s.\n", #EXPR, __FUNCTION__);         \
     while (1);                                                                \
 }
+#else
+#define EF_INFO(...)
+#define EF_ASSERT(EXPR)
+#endif
 
 typedef struct _ef_env {
     char *key;

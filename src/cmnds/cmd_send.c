@@ -14,12 +14,19 @@
 // Following command will send get and save result to file:
 // SendGet http://example.com/ myFile.html
 // test code: addRepeatingEvent 30 -1 SendGet http://example.com/ myFile.html
+// You can also run returned value as command
+// SendGet http://example.com/ cmd
+// test code: addRepeatingEvent 30 -1 SendGet http://example.com/ cmd
+// You can also set command to run after it's done
+// alias myCommandAlias echo this is working
+// SendGet http://example.com/ myFile.html myCommandAlias
+// test code: addRepeatingEvent 30 -1 SendGet http://example.com/ myFile.html myCommandAlias
 static commandResult_t CMD_SendGET(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	ADDLOG_INFO(LOG_FEATURE_CMD, " CMD_SendGET received with args %s", args);
 
 	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_ALLOW_ESCAPING_QUOTATIONS);
 
-	HTTPClient_Async_SendGet(Tokenizer_GetArg(0), Tokenizer_GetArg(1));
+	HTTPClient_Async_SendGet(Tokenizer_GetArg(0), Tokenizer_GetArg(1), Tokenizer_GetArg(2));
 
 	return CMD_RES_OK;
 }

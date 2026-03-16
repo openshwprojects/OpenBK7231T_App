@@ -87,6 +87,25 @@ void Test_Command_If() {
 	SELFTEST_ASSERT_CHANNEL(23, 1234);
 	SELFTEST_ASSERT_CHANNEL(24, 4567);
 	SELFTEST_ASSERT_CHANNEL(25, 6789);
+
+
+	CMD_ExecuteCommand("setChannel 11 0", 0);
+	CMD_ExecuteCommand("setChannel 8 0", 0);
+	CMD_ExecuteCommand("setChannel 6 0", 0);
+	SELFTEST_ASSERT_CHANNEL(11, 0);
+	SELFTEST_ASSERT_CHANNEL(8, 0);
+	SELFTEST_ASSERT_CHANNEL(6, 0);
+	CMD_ExecuteCommand("addChangeHandler Channel8 == 1 if $CH6==1 then \"setChannel 11 1\"", 0);
+	CMD_ExecuteCommand("setChannel 8 1", 0);
+	SELFTEST_ASSERT_CHANNEL(11, 0);
+	SELFTEST_ASSERT_CHANNEL(8, 1);
+	CMD_ExecuteCommand("setChannel 8 0", 0);
+	SELFTEST_ASSERT_CHANNEL(8, 0);
+	SELFTEST_ASSERT_CHANNEL(11, 0);
+	CMD_ExecuteCommand("setChannel 6 1", 0);
+	CMD_ExecuteCommand("setChannel 8 1", 0);
+	SELFTEST_ASSERT_CHANNEL(11, 1);
+	SELFTEST_ASSERT_CHANNEL(8, 1);
 	// cause error
 	//SELFTEST_ASSERT_CHANNEL(1, 666);
 }

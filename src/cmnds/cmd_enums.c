@@ -58,9 +58,9 @@ void CMD_FormatEnumTemplate(channelEnum_t *e, char *out,
 
 	for (int i = 0; i < numOptions; i++) {
 		if (!isCommand)
-			sprintf(tmp, "%i:'%s', ", e->options[i].value,e->options[i].label);
+			snprintf(tmp, sizeof(tmp), "%i:'%s', ", e->options[i].value,e->options[i].label);
 		else
-			sprintf(tmp, "'%s':'%i', ", e->options[i].label,e->options[i].value);
+			snprintf(tmp, sizeof(tmp), "'%s':'%i', ", e->options[i].label,e->options[i].value);
 
 		strcat_safe(out, tmp, outSize);
 	}

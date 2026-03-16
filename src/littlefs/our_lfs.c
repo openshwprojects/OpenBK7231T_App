@@ -34,6 +34,12 @@ bool lfs_init = false;
 #include "hal/hal_flash.h"
 #include "flash_partition_table.h"
 
+#elif PLATFORM_LN8825
+
+#include "../hal/hal_flashConfig.h"
+#include "hal/flash.h"
+#include "flash_partition_table.h"
+
 #elif PLATFORM_ESPIDF || PLATFORM_ESP8266
 
 #include "esp_partition.h"
@@ -811,7 +817,7 @@ static int lfs_erase(const struct lfs_config *c, lfs_block_t block)
 	return res;
 }
 
-#elif PLATFORM_LN882H
+#elif PLATFORM_LN882H || PLATFORM_LN8825
 
 static int lfs_read(const struct lfs_config *c, lfs_block_t block,
         lfs_off_t off, void *buffer, lfs_size_t size){
