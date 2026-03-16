@@ -267,6 +267,11 @@ jobs:
     steps:
       - name: Source checkout
         uses: actions/checkout@v4
+      - name: Configure Git for network stability
+        run: |
+          git config --global http.postBuffer 524288000
+          git config --global http.maxRetries 5
+          git config --global submodule.fetchJobs 4
 
       - uses: actions/setup-python@v5
         if: ${{ matrix.platform == 'OpenBL602' || matrix.platform == 'OpenRTL8721DA' || matrix.platform == 'OpenRTL8720E' || matrix.platform == 'OpenRDA5981' }}
@@ -277,10 +282,11 @@ jobs:
 
       - name: Install dependencies
         if: ${{ matrix.platform == 'OpenLN882H' || matrix.platform == 'OpenLN8825' }}
-        uses: awalsh128/cache-apt-pkgs-action@latest
+        uses: awalsh128/cache-apt-pkgs-action@v1.4.3
         with:
           packages: cmake
           version: 1.0
+
 
       - name: Install arm-none-eabi-gcc
         if: ${{ matrix.gcc && matrix.gcc != 'apt' }}
