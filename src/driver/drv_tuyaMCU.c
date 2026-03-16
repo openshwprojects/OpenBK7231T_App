@@ -1444,7 +1444,7 @@ void TuyaMCU_V0_ParseRealTimeWithRecordStorage(const byte* data, int len, bool b
 		const int remaining = len - (ofs + 4);
 		if (sectorLen > remaining) {
 			addLogAdv(LOG_ERROR, LOG_FEATURE_TUYAMCU,
-				"V0_ParseRealTime: ERROR: payload truncated (dpId=%i type=%i-%s sectorLen=%i remaining=%i ofs=%i total=%i)\n",
+				"V0_ParseRealTime: truncated DP payload (id=%i type=%i-%s len=%i rem=%i)\n",
 				dpId, dataType, TuyaMCU_GetDataTypeString(dataType), sectorLen, remaining, ofs, len);
 			break;
 		}
@@ -1641,7 +1641,7 @@ void TuyaMCU_ParseStateMessage(const byte* data, int len) {
 		int remaining = len - (ofs + 4);
 		if (sectorLen > remaining) {
 			addLogAdv(LOG_ERROR, LOG_FEATURE_TUYAMCU,
-				"ParseState: ERROR: STATE payload truncated (dpId=%i type=%i-%s sectorLen=%i remaining=%i ofs=%i total=%i)\n",
+				"ParseState: truncated DP payload (id=%i type=%i-%s len=%i rem=%i)\n",
 				dpId, dataType, TuyaMCU_GetDataTypeString(dataType), sectorLen, remaining, ofs, len);
 			break;
 		}
@@ -1670,7 +1670,7 @@ void TuyaMCU_ParseStateMessage(const byte* data, int len) {
 					byte *tmp = (byte*)realloc(mapping->rawData, useLen);
 					if (tmp == NULL) {
 						addLogAdv(LOG_ERROR, LOG_FEATURE_TUYAMCU,
-							"ParseState: ERROR: realloc failed for rawData (dpId=%i type=%i-%s need=%i)\n",
+							"ParseState: rawData alloc failed (id=%i type=%i-%s need=%i)\n",
 							dpId, dataType, TuyaMCU_GetDataTypeString(dataType), useLen);
 					} else {
 						mapping->rawData = tmp;
