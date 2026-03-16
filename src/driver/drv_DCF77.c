@@ -260,11 +260,6 @@ void DCF77_QuickTick(){
 
 
 void DCF77_Init_Pin() {
-    GPIO_DCF77 = PIN_FindPinIndexForRole(IOR_DCF77, -1);
-    if (GPIO_DCF77 < 0 ){ 
-    	addLogAdv(LOG_ERROR, LOG_FEATURE_RAW, "DCF77: No pin defined for DCF77 signal!");
-    	return;
-    }
     HAL_PIN_Setup_Input_Pulldown(GPIO_DCF77);
 
 #if IRQ_raise_and_fall
@@ -354,8 +349,15 @@ void DCF77_Init(void) {
 	// look for arguments
 	uint8_t temp=Tokenizer_GetArgsCount()-1;
 	const char* arg;
-	const char* fake=NULL;	
-	for (int i=1; i<=temp; i++) {
+	const char* fake=NULL;
+	
+	GPIO_DCF77 = -1;
+	if ( (Tokenizer_GetArgsCount() < 2) || (GPIO_DCF77 = Tokenizer_GetPin(1,-1)) == -1){
+	    	addLogAdv(LOG_ERROR, LOG_FEATURE_RAW, "DCF77: No valid pin for DCF77 signal (%i)!",GPIO_DCF77);
+	    	return;
+	}
+	
+	for (int i=2; i<=temp; i++) {
 		arg = Tokenizer_GetArg(i);
 		
 		addLogAdv(LOG_DEBUG, LOG_FEATURE_RAW,"DCF77: argument %i/%i is %s",i,temp,arg);		
