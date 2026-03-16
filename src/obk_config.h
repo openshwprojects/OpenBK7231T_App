@@ -88,7 +88,7 @@
 //#define ENABLE_DRIVER_SM16703P					1
 //#define ENABLE_DRIVER_PIXELANIM					1
 #undef ENABLE_HTTP_MAC
-#define ENABLE_DRIVER_DCF77					1
+//#define ENABLE_DRIVER_DCF77					1
 
 #elif PLATFORM_W800
 
@@ -121,7 +121,7 @@
 #define ENABLE_DRIVER_PIXELANIM					1
 #define ENABLE_DRIVER_TINYIR_NEC				1
 // allow testing, remove before merging
-#define ENABLE_DRIVER_DCF77					1
+//#define ENABLE_DRIVER_DCF77					1
 
 #elif WINDOWS
 
@@ -249,7 +249,7 @@
 #define ENABLE_DRIVER_NEO6M						1
 #define ENABLE_DRIVER_TINYIR_NEC				1
 // allow testing, remove before merging
-#define ENABLE_DRIVER_DCF77					1
+//#define ENABLE_DRIVER_DCF77					1
 
 #elif PLATFORM_BEKEN
 
@@ -388,7 +388,7 @@
 #undef ENABLE_DRIVER_BL0942SPI
 #undef ENABLE_DRIVER_CSE7766
 #endif
-#define ENABLE_DRIVER_DCF77					1
+//#define ENABLE_DRIVER_DCF77					1
 
 #if (OBK_VARIANT == OBK_VARIANT_BATTERY)
 #undef ENABLE_DRIVER_BMP280
@@ -433,7 +433,7 @@
 #define ENABLE_DRIVER_TUYAMCU					1
 #define ENABLE_DRIVER_TINYIR_NEC				1
 // allow testing, remove before merging
-#define ENABLE_DRIVER_DCF77					1
+//#define ENABLE_DRIVER_DCF77					1
 
 #elif PLATFORM_ESPIDF
 
@@ -479,7 +479,7 @@
 #define ENABLE_DRIVER_DMX						1
 #define ENABLE_DRIVER_MQTTSERVER				1
 #endif
-#define ENABLE_DRIVER_DCF77					1
+//#define ENABLE_DRIVER_DCF77					1
 
 #elif PLATFORM_TR6260
 
@@ -502,7 +502,7 @@
 #define ENABLE_OBK_BERRY						1
 #define ENABLE_DRIVER_TINYIR_NEC				1
 
-#define ENABLE_DRIVER_DCF77					1
+//#define ENABLE_DRIVER_DCF77					1
 
 #elif PLATFORM_REALTEK
 
@@ -538,7 +538,7 @@
 #define ENABLE_DRIVER_PIXELANIM					1
 #define ENABLE_DRIVER_TINYIR_NEC				1
 
-#define ENABLE_DRIVER_DCF77					1
+//#define ENABLE_DRIVER_DCF77					1
 
 #ifndef PLATFORM_RTL8710B
 #define ENABLE_OBK_BERRY						1
@@ -580,7 +580,7 @@
 #define ENABLE_DRIVER_BL0937					1
 #define ENABLE_OBK_BERRY						1
 
-#define ENABLE_DRIVER_DCF77					1
+//#define ENABLE_DRIVER_DCF77					1
 
 #elif PLATFORM_ESP8266
 
@@ -614,7 +614,7 @@
 #define ENABLE_DRIVER_DS1820					1
 #define ENABLE_DRIVER_TUYAMCU					1
 
-#define ENABLE_DRIVER_DCF77					1
+//#define ENABLE_DRIVER_DCF77					1
 
 // #define ENABLE_OBK_BERRY						1
 
