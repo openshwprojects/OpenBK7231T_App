@@ -200,6 +200,10 @@
 #define ENABLE_DRIVER_DMX						1
 #define ENABLE_DRIVER_MQTTSERVER				1
 //#define ENABLE_DRIVER_ARISTON					1
+#define ENABLE_DRIVER_AHT2X				1
+#define ENABLE_DRIVER_CHT83XX				1
+#define ENABLE_DRIVER_BMP280				1
+
 
 #elif PLATFORM_BL602
 
@@ -671,6 +675,9 @@
 #if ENABLE_DRIVER_IRREMOTEESP
 #undef ENABLE_DRIVER_IR
 #endif
+
+#define ENABLE_DRIVER_SHTXX						1
+
 
 // closing OBK_CONFIG_H
 #endif
