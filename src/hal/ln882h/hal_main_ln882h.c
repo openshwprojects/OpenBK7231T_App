@@ -83,7 +83,8 @@ void creat_usr_app_task(void)
 	 * CLK_G_EFUSE: For wifi temp calibration
 	 * CLK_G_BLE  CLK_G_I2S  CLK_G_WS2811  CLK_G_DBGH  CLK_G_SDIO  CLK_G_EFUSE  CLK_G_AES
 	*/
-	ln_pm_always_clk_disable_select(CLK_G_BLE | CLK_G_I2S | CLK_G_WS2811 | CLK_G_SDIO | CLK_G_AES);
+	ln_pm_always_clk_disable_select(CLK_G_BLE | CLK_G_I2S | CLK_G_WS2811 | CLK_G_SDIO | CLK_G_DBGH | CLK_G_ADV_TIMER |
+		CLK_G_AES | CLK_G_TIM1 | CLK_G_TIM2 | CLK_G_TIM3 | CLK_G_I2C0 | CLK_G_SPI0 | CLK_G_SPI1 | CLK_G_UART2 | CLK_G_DMA);
 
 	/**
 	 * ADC0: For wifi temp calibration
@@ -92,8 +93,8 @@ void creat_usr_app_task(void)
 	 * CLK_G_WDT  CLK_G_TIM_REG  CLK_G_TIM1  CLK_G_TIM2  CLK_G_TIM3  CLK_G_TIM4  CLK_G_MAC  CLK_G_DMA
 	 * CLK_G_RF  CLK_G_ADV_TIMER  CLK_G_TRNG
 	*/
-	ln_pm_lightsleep_clk_disable_select(CLK_G_GPIOA | CLK_G_GPIOB | CLK_G_SPI0 | CLK_G_SPI1 | CLK_G_I2C0 |
-		CLK_G_UART1 | CLK_G_UART2 | CLK_G_WDT | CLK_G_TIM1 | CLK_G_TIM2 | CLK_G_MAC | CLK_G_DMA | CLK_G_RF | CLK_G_ADV_TIMER | CLK_G_TRNG);
+	ln_pm_lightsleep_clk_disable_select(CLK_G_GPIOA | CLK_G_GPIOB | CLK_G_UART1 | CLK_G_WDT |
+		CLK_G_MAC | CLK_G_RF | CLK_G_TRNG);
 
 
 	/* print sdk version */

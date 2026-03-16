@@ -158,6 +158,22 @@ static driver_t g_drivers[] = {
 	false,                                   // loaded
 	},
 #endif
+#if ENABLE_DRIVER_ESPHOME_API
+	//drvdetail:{"name":"ESPHomeAPI",
+	//drvdetail:"title":"ESPHome Protocol Bridge",
+	//drvdetail:"descr":"Native ESPHome API server (port 6053) for discovering and controlling BT Proxy and other entities seamlessly in Home Assistant.",
+	//drvdetail:"requires":"BT Proxy"}
+	{ "ESPHomeAPI",                          // Driver Name
+	DRV_ESPHome_API_Init,                    // Init
+	DRV_ESPHome_API_OnEverySecond,           // onEverySecond
+	NULL,                                    // appendInformationToHTTPIndexPage
+	NULL,                                    // runQuickTick
+	DRV_ESPHome_API_Deinit,                  // stopFunction
+	NULL,                                    // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
+	},
+#endif
 #if ENABLE_DRIVER_TESTSPIFLASH
 	//drvdetail:{"name":"TESTSPIFLASH",
 	//drvdetail:"title":"TODO",
@@ -1641,6 +1657,7 @@ void DRV_StartDriver(const char* name) {
 
 			}
 			else {
+				addLogAdv(LOG_INFO, LOG_FEATURE_MAIN, "Starting %s.\n", name);
 				if (g_drivers[i].initFunc) {
 					g_drivers[i].initFunc();
 				}

@@ -589,6 +589,9 @@ OSStatus rtos_suspend_thread(beken_thread_t* thread);
 #else
 #define OBK_OTA_EXTENSION		".bin"
 #define OBK_OTA_NAME_EXTENSION	"_OTA"
+
+extern void soc_module_clk_gate_enable(uint32_t gate_cfg);
+extern void soc_module_clk_gate_disable(uint32_t gate_cfg);
 #endif
 
 

@@ -13,6 +13,10 @@ void app_main(void);
 
 void Main_Init();
 void Main_OnEverySecond();
+#if !PLATFORM_ESP8266
+void HAL_BTProxy_PreInit(void);
+void HAL_BTProxy_OnEverySecond(void);
+#endif
 float g_wifi_temperature = 0;
 
 #if !CONFIG_IDF_TARGET_ESP32 && !PLATFORM_ESP8266
