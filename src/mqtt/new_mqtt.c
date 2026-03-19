@@ -1676,7 +1676,7 @@ bool MQTT_GetItemValue(int idx, char *out, int outLen) {
             return true;
 
         case PUBLISHITEM_SELF_DATETIME:
-            snprintf(out, outLen, "%u", TIME_GetCurrentTime());
+            snprintf(out, outLen, "%u",  (unsigned int)TIME_GetCurrentTime());
             return true;
 
         case PUBLISHITEM_SELF_SOCKETS:
@@ -1684,7 +1684,7 @@ bool MQTT_GetItemValue(int idx, char *out, int outLen) {
             return true;
 
         case PUBLISHITEM_SELF_TEMP:
-            snprintf(out, outLen, "%.2f", getInternalTemperature());
+            snprintf(out, outLen, "%.2f",  (double)getInternalTemperature());
             return true;
 
         case PUBLISHITEM_SELF_RSSI:
@@ -1714,7 +1714,7 @@ bool MQTT_GetItemValue(int idx, char *out, int outLen) {
 }
 
 int MQTT_ParseFullNameToChannels(int *out, int maxCount) {
-    const char *p = CFG_GetDeviceFullName();
+    const char *p = CFG_GetDeviceName();
     int count = 0;
 
     if (!p) return 0;
@@ -1733,6 +1733,7 @@ int MQTT_ParseFullNameToChannels(int *out, int maxCount) {
 
 #define ONEALL_PAYLOAD_MAX 512
 void MQTT_BuildAndPublishBatch_ByIndex(int *indices, int count, uint8_t* leh, int leh_len) {
+	
 	uint8_t g_oneAllDelimiter = 0x1F;
 
     uint8_t payload[ONEALL_PAYLOAD_MAX];
@@ -1836,6 +1837,7 @@ commandResult_t MQTT_PublishAll(const void* context, const char* cmd, const char
 
     return CMD_RES_OK;
 }
+
 
 
 
