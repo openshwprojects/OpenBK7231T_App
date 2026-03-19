@@ -1672,9 +1672,8 @@ int MQTT_ParseFullNameToChannels(int *out, int maxCount) {
     return count;
 }
 
+#define ONEALL_PAYLOAD_MAX 512
 void MQTT_BuildAndPublishBatch_ByIndex(int *indices, int count, uint8_t* leh, int leh_len) {
-	
-	uint16_t ONEALL_PAYLOAD_MAX 512;
 	uint8_t g_oneAllDelimiter = 0x1F;
 
     uint8_t payload[ONEALL_PAYLOAD_MAX];
