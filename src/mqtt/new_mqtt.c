@@ -1653,6 +1653,65 @@ commandResult_t MQTT_PublishAll(const void* context, const char* cmd, const char
 }
 */
 
+bool MQTT_GetItemValue(int idx, char *out, int outLen) {
+    if (!out || outLen <= 0) return false;
+    out[0] = '\0'; // ensure null terminate
+
+    switch(idx) {
+
+        case PUBLISHITEM_SELF_HOSTNAME:
+            snprintf(out, outLen, "%s", CFG_GetShortDeviceName());
+            return true;
+
+        case PUBLISHITEM_SELF_BUILD:
+            snprintf(out, outLen, "%s", BUILD_AND_VERSION_FOR_MQTT);
+            return true;
+
+        case PUBLISHITEM_SELF_MAC:
+            HAL_GetMACStr(out);  // 
+            return true;
+
+        case PUBLISHITEM_SELF_SSID:
+            snprintf(out, outLen, "%s", CFG_GetWiFiSSID());
+            return true;
+
+        case PUBLISHITEM_SELF_DATETIME:
+            snprintf(out, outLen, "%u", TIME_GetCurrentTime());
+            return true;
+
+        case PUBLISHITEM_SELF_SOCKETS:
+            snprintf(out, outLen, "%d", LWIP_GetActiveSockets());
+            return true;
+
+        case PUBLISHITEM_SELF_TEMP:
+            snprintf(out, outLen, "%.2f", getInternalTemperature());
+            return true;
+
+        case PUBLISHITEM_SELF_RSSI:
+            snprintf(out, outLen, "%d", HAL_GetWifiStrength());
+            return true;
+
+        case PUBLISHITEM_SELF_UPTIME:
+            snprintf(out, outLen, "%u", g_secondsElapsed);
+            return true;
+
+        case PUBLISHITEM_SELF_FREEHEAP:
+            snprintf(out, outLen, "%d", xPortGetFreeHeapSize());
+            return true;
+
+        case PUBLISHITEM_SELF_IP:
+            snprintf(out, outLen, "%s", HAL_GetMyIPString());
+            return true;
+
+        case PUBLISHITEM_QUEUED_VALUES:
+            // 
+            return false;
+
+        default:
+            //
+            return false;
+    }
+}
 
 int MQTT_ParseFullNameToChannels(int *out, int maxCount) {
     const char *p = CFG_GetDeviceFullName();
@@ -2610,25 +2669,21 @@ int MQTT_RunEverySecondUpdate()
 			//if (g_timeSinceLastMQTTPublish > 2)
 			{
 
+				
 				// ===== build danh sach index =====
-				int tmpIndex = g_publishItemIndex;
-				int indices[CHANNEL_MAX];
-				int count = 0;
-
-				while (tmpIndex < CHANNEL_MAX) {
-					if (MQTT_GetItemValue(tmpIndex, NULL, 0)) {
-						indices[count++] = tmpIndex;
-						if (count >= CHANNEL_MAX) break;
-					}
-					tmpIndex++;
-				}
-				// ===== CALL BATCH (truoc while goc) =====
-				if (count > 0) {
-					uint8_t leh[] = {0x01, 0x01, 0x02, 0x05};
-					MQTT_BuildAndPublishBatch_ByIndex(indices, count, leh, sizeof(leh));
-					// 	// neu chua dung prefix thi de NULL
-					//MQTT_BuildAndPublishBatch_ByIndex(indices, count, NULL, 0);
-				}
+				int indices[] = {
+						-13,//#define PUBLISHITEM_SELF_MAC                    -13  //Device mac
+						-9,//#define PUBLISHITEM_SELF_DATETIME               -9  //Current unix datetime
+						-4,//#define PUBLISHITEM_SELF_IP                     -4  //ip address
+						-7,//#define PUBLISHITEM_SELF_RSSI                   -7  //Link strength
+						-6,//#define PUBLISHITEM_SELF_UPTIME                 -6  //Uptime
+						-5,//#define PUBLISHITEM_SELF_FREEHEAP               -5  //Free heap
+						};
+				uint8_t leh[] = {0x01, 0x01, 0x02, 0x05};
+				MQTT_BuildAndPublishBatch_ByIndex(indices, count, leh, sizeof(leh));
+				// 	// neu chua dung prefix thi de NULL
+				//MQTT_BuildAndPublishBatch_ByIndex(indices, count, NULL, 0);
+				
 				
 				
 				OBK_Publish_Result publishRes;
