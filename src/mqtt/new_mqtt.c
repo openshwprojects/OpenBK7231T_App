@@ -1676,7 +1676,7 @@ bool MQTT_GetItemValue(int idx, char *out, int outLen) {
             return true;
 
         case PUBLISHITEM_SELF_DATETIME:
-            snprintf(out, outLen, "%lu",  (unsigned int)TIME_GetCurrentTime());
+            snprintf(out, outLen, "%lu", TIME_GetCurrentTime());
             return true;
 
         case PUBLISHITEM_SELF_SOCKETS:
