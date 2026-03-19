@@ -1676,9 +1676,19 @@ bool MQTT_GetItemValue(int idx, char *out, int outLen) {
             return true;
 
         case PUBLISHITEM_SELF_DATETIME:
-            snprintf(out, outLen, "%lu", (unsigned long)TIME_GetCurrentTime());
+			
+			#ifdef PLATFORM_ESP8266
+					// while all other platforms will accept uint32_t as long unsigned, ESP8266 needs %u 
+					// biuild fails otherwise because of -Werror=format
+					// src/mqtt/new_mqtt.c:2036:24: error: format '%ld' expects argument of type 'long int', but argument 3 has type 'uint32_t' {aka 'unsigned int'} [-Werror=format=]
+					// al other ESP:
+					/// src/mqtt/new_mqtt.c:2036:44: error: format '%d' expects argument of type 'int', but argument 3 has type 'uint32_t' {aka 'long unsigned int'} [-Werror=format=]
+					snprintf(out, outLen, "%u", TIME_GetCurrentTime());
+			#else
+					snprintf(out, outLen, "%lu", TIME_GetCurrentTime());
+			#endif
             return true;
-
+		
         case PUBLISHITEM_SELF_SOCKETS:
             snprintf(out, outLen, "%d", LWIP_GetActiveSockets());
             return true;
