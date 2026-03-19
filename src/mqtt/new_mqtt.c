@@ -1680,6 +1680,8 @@ commandResult_t MQTT_PublishAll(const void* context, const char* cmd, const char
     return CMD_RES_OK;
 }
 */
+
+	
 /**
  * @brief  Publish trạng thái thiết bị lên MQTT.
  *
@@ -2635,7 +2637,7 @@ int MQTT_RunEverySecondUpdate()
 				//MQTT_BuildAndPublishBatch_ByIndex(indices, count, NULL, 0);
 				*/
 				
-				uint8_t leh[] = {0x01,0x01,0x02,0x05};0x01};//byte thu 5 0xFF(255) cho biet public oneall from call boot hoac reset mqtt
+				uint8_t leh[] = {0x01,0x01,0x02,0x05 , 0xFF};//byte thu 5 0xFF(255) cho biet public oneall from call boot hoac reset mqtt
 				MQTT_BuildAndPublishBatch_ByIndex(NULL, 0, leh, sizeof(leh));
 
 
@@ -2946,7 +2948,7 @@ void MQTT_BuildAndPublishBatch_ByIndex(int *indices, int count, uint8_t* leh, in
     // ===== PHASE 1: SYSTEM ITEMS (idx < 0) =====
     // =====================================================
 	if (!indices || count == 0) {
-		int indices[] = {
+		int defaultIndices[] = {
 				-13,//#define PUBLISHITEM_SELF_MAC                    -13  //Device mac
 				-9,//#define PUBLISHITEM_SELF_DATETIME               -9  //Current unix datetime
 				-4,//#define PUBLISHITEM_SELF_IP                     -4  //ip address
