@@ -1651,7 +1651,7 @@ commandResult_t MQTT_PublishAll(const void* context, const char* cmd, const char
 	}	
 	return CMD_RES_OK;// TODO make return values consistent for all console commands
 }
-*/
+
 
 
 commandResult_t MQTT_PublishAll(const void* context, const char* cmd, const char* args, int cmdFlags) {
@@ -1679,7 +1679,110 @@ commandResult_t MQTT_PublishAll(const void* context, const char* cmd, const char
 
     return CMD_RES_OK;
 }
+*/
+/**
+ * @brief  Publish trạng thái thiết bị lên MQTT.
+ *
+ * Hàm này được dùng trong 2 ngữ cảnh:
+ *  1. Gọi từ broker (MQTT command) với args, ví dụ "/topic/PublishAll <token1> <token2> ..."
+ *  2. Gọi nội bộ từ firmware để broadcast trạng thái toàn bộ thiết bị.
+ *
+ * @param context  Thông tin ngữ cảnh gọi (có thể NULL trong nội bộ firmware)
+ * @param cmd      Tên command (ví dụ "PublishAll")
+ * @param args     Chuỗi các đối số (token) từ broker hoặc CLI
+ * @param cmdFlags Các flag điều khiển command (hiện tại không dùng)
+ *
+ * @return CMD_RES_OK luôn trả về thành công
+ *
+ * ===== Behavior chi tiết =====
+ *
+ * 1. Tokenize args:
+ *      - Tokenizer_TokenizeString(args, 0) tách chuỗi args thành các token.
+ *      - argc = số lượng token.
+ *
+ * 2. Broker-specific rules:
+ *      - Broker không cho phép gọi command với thiếu token đầu tiên (arg0).
+ *      - Token đầu tiên luôn phải tồn tại.
+ *      - Payload publish **không được rỗng hoặc NULL**, nếu NULL/bỏ trống sẽ gây lỗi MQTT.
+ *      - Default topic publish từ broker là:
+ *          "/oneall" (hay topic mặc định firmware đã cấu hình)
+ *
+ * 3. Nhánh chính: argc >= 2
+ *      - Lấy token đầu tiên arg0 = Tokenizer_GetArg(0)
+ *      - Chuẩn bị mảng indices[32] để chỉ định các system items muốn publish
+ *
+ *      a) Nếu token đầu không phải "all" hoặc có nhiều token (>2):
+ *          - Chạy vòng lặp từ token thứ 1 đến cuối
+ *          - Chuyển token thành số nguyên bằng Tokenizer_GetArgInteger()
+ *          - Giới hạn tối đa 32 phần tử
+ *          => indices[] = danh sách system items cần publish
+ *
+ *      b) Nếu token đầu là "all" và chỉ có token dummy:
+ *          - count = 0
+ *          - MQTT_BuildAndPublishBatch_ByIndex() sẽ tự động dùng default system items
+ *
+ *      - leh[] là prefix cho payload:
+ *          - 4 byte đầu: 0x01, 0x01, 0x02, 0x05
+ *          - byte thứ 5 = 0x01 đánh dấu “publish oneall từ MQTT_PublishAll”
+ *
+ *      - Gọi:
+ *          MQTT_BuildAndPublishBatch_ByIndex(indices, count, leh, sizeof(leh));
+ *          => Xây payload hệ thống + channel và publish lên default topic "/oneall"
+ *
+ * 4. Nhánh fallback: argc < 2
+ *      - Không đủ token từ broker/CLI
+ *      - Gọi MQTT_PublishWholeDeviceState_Internal(true)
+ *          => Phát toàn bộ trạng thái thiết bị (behavior gốc)
+ *
+ * 5. Lưu ý:
+ *      - Token đầu tiên arg0 **không bao giờ được thiếu khi gọi từ broker**
+ *      - Mảng indices chỉ dùng nội bộ stack, không dùng heap
+ *      - Nếu count = 0, batch function tự dùng default indices [-13, -9, -4, -7, -6, -5]
+ *      - Token thứ 0 = "all" dùng để trigger publish tất cả system items
+ *      - Payload cuối cùng **không được rỗng hoặc NULL** (cần có ít nhất 1 system item hoặc channel)
+ *      - Hành vi gốc firmware được giữ nguyên khi args không đủ hoặc không có token
+ *
+ * ===== Ví dụ sử dụng =====
+ *
+ * 1. Publish một số item cụ thể:
+ *      /topic/PublishAll -13 -9 -4
+ *      => indices[] = {-13, -9, -4}, payload được build từ các item này
+ *
+ * 2. Publish tất cả system items (dummy token):
+ *      /topic/PublishAll all 0
+ *      => indices = default [-13, -9, -4, -7, -6, -5], payload có đầy đủ system items
+ *
+ * 3. Gọi nội bộ firmware:
+ *      /topic/PublishAll ***chugicungduoc_mienlaco***
+ *      => fallback toàn bộ trạng thái thiết bị
+ */
+commandResult_t MQTT_PublishAll(const void* context, const char* cmd, const char* args, int cmdFlags) {
+    // tokenize args tu broker hoac CLI
+    Tokenizer_TokenizeString(args, 0);
+    int argc = Tokenizer_GetArgsCount();
 
+    if (argc >= 2) {
+        const char* arg0 = Tokenizer_GetArg(0);
+        int indices[32];
+        int count = 0;
+
+        // Neu co nhieu token hoac token 0 khong phai "all"
+        if (argc > 2 || strcmp(arg0, "all") != 0) {
+            for (int i = 1; i < argc; i++) {
+                indices[count++] = Tokenizer_GetArgInteger(i);
+                if (count >= 32) break;
+            }
+        }
+		uint8_t leh[] = {0x01, 0x01, 0x02, 0x05,0x01};//byte thu 5 0x01(1) cho biet public oneall from call MQTT_PublishAll
+        // meu token 0 = "all" va chi co token dummy  count = 0
+		MQTT_BuildAndPublishBatch_ByIndex(indices, count, leh, sizeof(leh));
+    } else {
+        // fallback full publish behavior goc
+        MQTT_PublishWholeDeviceState_Internal(true);
+    }
+
+    return CMD_RES_OK;
+}
 
 
 // This console command will trigger a publish of runtime variables
@@ -2513,6 +2616,7 @@ int MQTT_RunEverySecondUpdate()
 			{
 
 				
+				/*
 				// ===== build danh sach index =====
 				int indices[] = {
 						-13,//#define PUBLISHITEM_SELF_MAC                    -13  //Device mac
@@ -2523,13 +2627,18 @@ int MQTT_RunEverySecondUpdate()
 						-5,//#define PUBLISHITEM_SELF_FREEHEAP               -5  //Free heap
 						};
 				uint8_t leh[] = {0x01, 0x01, 0x02, 0x05};
+
 				MQTT_BuildAndPublishBatch_ByIndex(indices,
 					sizeof(indices) / sizeof(indices[0]),  // inline so phan tu
 					leh, sizeof(leh));
 				// neu chua dung prefix thi de NULL
 				//MQTT_BuildAndPublishBatch_ByIndex(indices, count, NULL, 0);
+				*/
 				
-				
+				uint8_t leh[] = {0x01,0x01,0x02,0x05};0x01};//byte thu 5 0xFF(255) cho biet public oneall from call boot hoac reset mqtt
+				MQTT_BuildAndPublishBatch_ByIndex(NULL, 0, leh, sizeof(leh));
+
+
 				
 				OBK_Publish_Result publishRes;
 				int g_sent_thisFrame = 0;
@@ -2833,13 +2942,22 @@ void MQTT_BuildAndPublishBatch_ByIndex(int *indices, int count, uint8_t* leh, in
         }
     }
 
-    // ===== parse channel list =====
-    int channels[CHANNEL_MAX];
-    int chCount = MQTT_ParseFullNameToChannels(channels, CHANNEL_MAX);
-
     // =====================================================
     // ===== PHASE 1: SYSTEM ITEMS (idx < 0) =====
     // =====================================================
+	if (!indices || count == 0) {
+		int indices[] = {
+				-13,//#define PUBLISHITEM_SELF_MAC                    -13  //Device mac
+				-9,//#define PUBLISHITEM_SELF_DATETIME               -9  //Current unix datetime
+				-4,//#define PUBLISHITEM_SELF_IP                     -4  //ip address
+				-7,//#define PUBLISHITEM_SELF_RSSI                   -7  //Link strength
+				-6,//#define PUBLISHITEM_SELF_UPTIME                 -6  //Uptime
+				-5,//#define PUBLISHITEM_SELF_FREEHEAP               -5  //Free heap
+				};
+		indices = defaultIndices;
+		count = 6; // truc tiep cho gon
+	}
+
     for (int i = 0; i < count; i++) {
         int idx = indices[i];
 
@@ -2864,6 +2982,10 @@ void MQTT_BuildAndPublishBatch_ByIndex(int *indices, int count, uint8_t* leh, in
     // =====================================================
     // ===== PHASE 2: CHANNELS (append cuoi) =====
     // =====================================================
+
+    int channels[CHANNEL_MAX];
+    int chCount = MQTT_ParseFullNameToChannels(channels, CHANNEL_MAX);// ===== parse channel list =====
+
     if (chCount > 0) {
         for (int i = 0; i < chCount; i++) {
             int ch = channels[i];
@@ -2897,8 +3019,6 @@ void MQTT_BuildAndPublishBatch_ByIndex(int *indices, int count, uint8_t* leh, in
 
     MQTT_DoItemPublishString("oneall", (const char*)payload);
 }
-
-
 
 
 
