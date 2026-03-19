@@ -1653,161 +1653,6 @@ commandResult_t MQTT_PublishAll(const void* context, const char* cmd, const char
 }
 */
 
-bool MQTT_GetItemValue(int idx, char *out, int outLen) {
-    if (!out || outLen <= 0) return false;
-    out[0] = '\0'; // ensure null terminate
-
-    switch(idx) {
-
-        case PUBLISHITEM_SELF_HOSTNAME:
-            snprintf(out, outLen, "%s", CFG_GetShortDeviceName());
-            return true;
-
-        case PUBLISHITEM_SELF_BUILD:
-            snprintf(out, outLen, "%s", BUILD_AND_VERSION_FOR_MQTT);
-            return true;
-
-        case PUBLISHITEM_SELF_MAC:
-            HAL_GetMACStr(out);  // 
-            return true;
-
-        case PUBLISHITEM_SELF_SSID:
-            snprintf(out, outLen, "%s", CFG_GetWiFiSSID());
-            return true;
-
-        case PUBLISHITEM_SELF_DATETIME:
-			
-			snprintf(out, outLen, "%lu", (unsigned long)TIME_GetCurrentTime());
-            return true;
-		
-        case PUBLISHITEM_SELF_SOCKETS:
-            snprintf(out, outLen, "%d", LWIP_GetActiveSockets());
-            return true;
-
-        case PUBLISHITEM_SELF_RSSI:
-            snprintf(out, outLen, "%d", HAL_GetWifiStrength());
-            return true;
-
-        case PUBLISHITEM_SELF_UPTIME:
-            snprintf(out, outLen, "%u", g_secondsElapsed);
-            return true;
-
-        case PUBLISHITEM_SELF_FREEHEAP:
-            snprintf(out, outLen, "%d", xPortGetFreeHeapSize());
-            return true;
-
-        case PUBLISHITEM_SELF_IP:
-            snprintf(out, outLen, "%s", HAL_GetMyIPString());
-            return true;
-
-        case PUBLISHITEM_QUEUED_VALUES:
-            // 
-            return false;
-
-        default:
-            //
-            return false;
-    }
-}
-
-int MQTT_ParseFullNameToChannels(int *out, int maxCount) {
-    const char *p = CFG_GetDeviceName();
-    int count = 0;
-
-    if (!p) return 0;
-
-    while (*p && count < maxCount) {
-        if (*p < '0' || *p > '9') return 0; // fix quan trong
-
-        out[count++] = atoi(p);
-
-        while (*p >= '0' && *p <= '9') p++;
-        if (*p == '_') p++;
-    }
-
-    return count;
-}
-
-#define ONEALL_PAYLOAD_MAX 512
-void MQTT_BuildAndPublishBatch_ByIndex(int *indices, int count, uint8_t* leh, int leh_len) {
-	
-	uint8_t g_oneAllDelimiter = 0x1F;
-
-    uint8_t payload[ONEALL_PAYLOAD_MAX];
-    int len = 0;
-
-    // ===== prefix =====
-    if (leh && leh_len > 0) {
-        if (leh_len < ONEALL_PAYLOAD_MAX) {
-            memcpy(payload, leh, leh_len);
-            len += leh_len;
-        }
-    }
-
-    // ===== parse channel list =====
-    int channels[CHANNEL_MAX];
-    int chCount = MQTT_ParseFullNameToChannels(channels, CHANNEL_MAX);
-
-    // =====================================================
-    // ===== PHASE 1: SYSTEM ITEMS (idx < 0) =====
-    // =====================================================
-    for (int i = 0; i < count; i++) {
-        int idx = indices[i];
-
-        if (idx >= 0) continue; // bo channel o phase nay
-
-        char value[64];
-
-        if (!MQTT_GetItemValue(idx, value, sizeof(value)))
-            continue;
-
-        int written = snprintf((char*)payload + len,
-                               ONEALL_PAYLOAD_MAX - len,
-                               "%d=%s%c",
-                               idx, value, g_oneAllDelimiter);
-
-        if (written <= 0 || written >= (int)(ONEALL_PAYLOAD_MAX - len))
-            break;
-
-        len += written;
-    }
-
-    // =====================================================
-    // ===== PHASE 2: CHANNELS (append cuoi) =====
-    // =====================================================
-    if (chCount > 0) {
-        for (int i = 0; i < chCount; i++) {
-            int ch = channels[i];
-
-            int v = CHANNEL_Get(ch);
-
-            char value[32];
-            snprintf(value, sizeof(value), "%d", v);
-
-            int written = snprintf((char*)payload + len,
-                                   ONEALL_PAYLOAD_MAX - len,
-                                   "%d~%s%c",
-                                   ch, value, g_oneAllDelimiter);
-
-            if (written <= 0 || written >= (int)(ONEALL_PAYLOAD_MAX - len))
-                break;
-
-            len += written;
-        }
-    }
-
-    if (len <= 0) return;
-
-    // remove delimiter cuoi
-    if (payload[len - 1] == g_oneAllDelimiter) {
-        payload[len - 1] = '\0';
-        len--;
-    } else {
-        payload[len] = '\0';
-    }
-
-    MQTT_DoItemPublishString("oneall", (const char*)payload);
-}
 
 commandResult_t MQTT_PublishAll(const void* context, const char* cmd, const char* args, int cmdFlags) {
     Tokenizer_TokenizeString(args, 0);
@@ -3094,5 +2939,165 @@ void mbedtls_dump_conf(mbedtls_ssl_config* conf, mbedtls_ssl_context* ssl) {
 		}
 	}
 }
+
+
+
+bool MQTT_GetItemValue(int idx, char *out, int outLen) {
+    if (!out || outLen <= 0) return false;
+    out[0] = '\0'; // ensure null terminate
+
+    switch(idx) {
+
+        case PUBLISHITEM_SELF_HOSTNAME:
+            snprintf(out, outLen, "%s", CFG_GetShortDeviceName());
+            return true;
+
+        case PUBLISHITEM_SELF_BUILD:
+            snprintf(out, outLen, "%s", BUILD_AND_VERSION_FOR_MQTT);
+            return true;
+
+        case PUBLISHITEM_SELF_MAC:
+            HAL_GetMACStr(out);  // 
+            return true;
+
+        case PUBLISHITEM_SELF_SSID:
+            snprintf(out, outLen, "%s", CFG_GetWiFiSSID());
+            return true;
+
+        case PUBLISHITEM_SELF_DATETIME:
+			
+			snprintf(out, outLen, "%lu", (unsigned long)TIME_GetCurrentTime());
+            return true;
+		
+        case PUBLISHITEM_SELF_SOCKETS:
+            snprintf(out, outLen, "%d", LWIP_GetActiveSockets());
+            return true;
+
+        case PUBLISHITEM_SELF_RSSI:
+            snprintf(out, outLen, "%d", HAL_GetWifiStrength());
+            return true;
+
+        case PUBLISHITEM_SELF_UPTIME:
+            snprintf(out, outLen, "%u", g_secondsElapsed);
+            return true;
+
+        case PUBLISHITEM_SELF_FREEHEAP:
+            snprintf(out, outLen, "%d", xPortGetFreeHeapSize());
+            return true;
+
+        case PUBLISHITEM_SELF_IP:
+            snprintf(out, outLen, "%s", HAL_GetMyIPString());
+            return true;
+
+        case PUBLISHITEM_QUEUED_VALUES:
+            // 
+            return false;
+
+        default:
+            //
+            return false;
+    }
+}
+
+int MQTT_ParseFullNameToChannels(int *out, int maxCount) {
+    const char *p = CFG_GetDeviceName();
+    int count = 0;
+
+    if (!p) return 0;
+
+    while (*p && count < maxCount) {
+        if (*p < '0' || *p > '9') return 0; // fix quan trong
+
+        out[count++] = atoi(p);
+
+        while (*p >= '0' && *p <= '9') p++;
+        if (*p == '_') p++;
+    }
+
+    return count;
+}
+
+#define ONEALL_PAYLOAD_MAX 512
+void MQTT_BuildAndPublishBatch_ByIndex(int *indices, int count, uint8_t* leh, int leh_len) {
+	
+	uint8_t g_oneAllDelimiter = 0x1F;
+
+    uint8_t payload[ONEALL_PAYLOAD_MAX];
+    int len = 0;
+
+    // ===== prefix =====
+    if (leh && leh_len > 0) {
+        if (leh_len < ONEALL_PAYLOAD_MAX) {
+            memcpy(payload, leh, leh_len);
+            len += leh_len;
+        }
+    }
+
+    // ===== parse channel list =====
+    int channels[CHANNEL_MAX];
+    int chCount = MQTT_ParseFullNameToChannels(channels, CHANNEL_MAX);
+
+    // =====================================================
+    // ===== PHASE 1: SYSTEM ITEMS (idx < 0) =====
+    // =====================================================
+    for (int i = 0; i < count; i++) {
+        int idx = indices[i];
+
+        if (idx >= 0) continue; // bo channel o phase nay
+
+        char value[64];
+
+        if (!MQTT_GetItemValue(idx, value, sizeof(value)))
+            continue;
+
+        int written = snprintf((char*)payload + len,
+                               ONEALL_PAYLOAD_MAX - len,
+                               "%d=%s%c",
+                               idx, value, g_oneAllDelimiter);
+
+        if (written <= 0 || written >= (int)(ONEALL_PAYLOAD_MAX - len))
+            break;
+
+        len += written;
+    }
+
+    // =====================================================
+    // ===== PHASE 2: CHANNELS (append cuoi) =====
+    // =====================================================
+    if (chCount > 0) {
+        for (int i = 0; i < chCount; i++) {
+            int ch = channels[i];
+
+            int v = CHANNEL_Get(ch);
+
+            char value[32];
+            snprintf(value, sizeof(value), "%d", v);
+
+            int written = snprintf((char*)payload + len,
+                                   ONEALL_PAYLOAD_MAX - len,
+                                   "%d~%s%c",
+                                   ch, value, g_oneAllDelimiter);
+
+            if (written <= 0 || written >= (int)(ONEALL_PAYLOAD_MAX - len))
+                break;
+
+            len += written;
+        }
+    }
+
+    if (len <= 0) return;
+
+    // remove delimiter cuoi
+    if (payload[len - 1] == g_oneAllDelimiter) {
+        payload[len - 1] = '\0';
+        len--;
+    } else {
+        payload[len] = '\0';
+    }
+
+    MQTT_DoItemPublishString("oneall", (const char*)payload);
+}
+
+
 #endif  //ALTCP_MBEDTLS_DEBUG
 #endif  //MQTT_USE_TLS
