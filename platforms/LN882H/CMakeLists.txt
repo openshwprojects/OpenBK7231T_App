@@ -36,6 +36,7 @@ set(PROJ_ALL_SRC
 	${COMP_LWIP_DIR}/apps/mqtt/mqtt.c
 	${MCU_LN882X_DIR}/driver_${CHIP_SERIAL}/hal/hal_dma.c
 	${MCU_LN882X_DIR}/driver_${CHIP_SERIAL}/hal/hal_spi.c
+	${COMP_LWIP_DIR}/apps/mdns/mdns.c
 )
 
 set(COMP_DHCPD_SUPPORT          ON  PARENT_SCOPE)

@@ -4,7 +4,7 @@
 #include "../obk_config.h"
 #include "drv_mdns.h"
 
-#if (PLATFORM_BK7231N || PLATFORM_BK7231T) && ENABLE_DRIVER_MDNS
+#if (PLATFORM_BK7231N || PLATFORM_BK7231T || PLATFORM_BK7231U || PLATFORM_BK7238 || PLATFORM_BK7252 || PLATFORM_BK7252N || PLATFORM_W600 || PLATFORM_W800 || PLATFORM_BL602 || PLATFORM_LN882H || PLATFORM_LN8825 || PLATFORM_RTL87X0C || PLATFORM_TR6260 || PLATFORM_ECR6600 || (PLATFORM_XRADIO && !PLATFORM_XR872 && !__CONFIG_LWIP_V1) || PLATFORM_ESP8266 || (PLATFORM_ESPIDF && (CONFIG_IDF_TARGET_ESP32 || CONFIG_IDF_TARGET_ESP32C2 || CONFIG_IDF_TARGET_ESP32C3 || CONFIG_IDF_TARGET_ESP32C5 || CONFIG_IDF_TARGET_ESP32C6 || CONFIG_IDF_TARGET_ESP32C61 || CONFIG_IDF_TARGET_ESP32S2 || CONFIG_IDF_TARGET_ESP32S3))) && ENABLE_DRIVER_MDNS
 
 #include "lwip/apps/mdns_opts.h"
 
@@ -14,8 +14,20 @@
 #include "lwip/err.h"
 #include "lwip/init.h"
 #include "lwip/netif.h"
+#if PLATFORM_ESPIDF
+#include "esp_netif.h"
+#include "esp_netif_net_stack.h"
+#endif
+#if PLATFORM_TR6260 || PLATFORM_ECR6600
+#include "system_wifi.h"
+#endif
+#if PLATFORM_XRADIO
+#include "common/framework/net_ctrl.h"
+#endif
+#if PLATFORM_BK7231N || PLATFORM_BK7231T || PLATFORM_BK7231U || PLATFORM_BK7238 || PLATFORM_BK7252 || PLATFORM_BK7252N
 #include "net.h"
-#include "tcpip.h"
+#endif
+#include "lwip/tcpip.h"
 
 #ifndef LOCK_TCPIP_CORE
 #define LOCK_TCPIP_CORE()
@@ -39,7 +51,35 @@ static s8_t g_mdnsServiceSlot = -1;
 #endif
 
 static struct netif *DRV_MDNS_GetStaNetif(void) {
+#if PLATFORM_LN882H || PLATFORM_LN8825
+	extern struct netif *get_connected_nif(void);
+	return get_connected_nif();
+#elif PLATFORM_ESPIDF
+	esp_netif_t *staEspNetif;
+	staEspNetif = esp_netif_get_handle_from_ifkey("WIFI_STA_DEF");
+	if (staEspNetif == 0) {
+		return 0;
+	}
+	return (struct netif *)esp_netif_get_netif_impl(staEspNetif);
+#elif PLATFORM_ESP8266
+	extern struct netif *netif_default;
+	return netif_default;
+#elif PLATFORM_XRADIO
+	return g_wlan_netif;
+#elif PLATFORM_BL602
+	extern struct netif *wifi_mgmr_sta_netif_get(void);
+	return wifi_mgmr_sta_netif_get();
+#elif PLATFORM_RTL87X0C
+	extern struct netif xnetif[];
+	return &xnetif[0];
+#elif PLATFORM_TR6260 || PLATFORM_ECR6600
+	return get_netif_by_index(STATION_IF);
+#elif PLATFORM_W600 || PLATFORM_W800
+	extern struct netif *tls_get_netif(void);
+	return tls_get_netif();
+#else
 	return (struct netif *)net_get_sta_handle();
+#endif
 }
 
 static void DRV_MDNS_StartOrRestart(void) {
@@ -66,10 +106,18 @@ static void DRV_MDNS_StartOrRestart(void) {
 	}
 
 	if (!g_mdnsNetifAdded) {
+#if PLATFORM_ESPIDF
+		err = mdns_resp_add_netif(netif, hostName);
+#else
 		err = mdns_resp_add_netif(netif, hostName, 120);
+#endif
 		if (err == ERR_OK) {
 			g_mdnsNetifAdded = 1;
+#if PLATFORM_ESPIDF
+			g_mdnsServiceSlot = mdns_resp_add_service(netif, hostName, "_http", DNSSD_PROTO_TCP, 80, 0, 0);
+#else
 			g_mdnsServiceSlot = mdns_resp_add_service(netif, hostName, "_http", DNSSD_PROTO_TCP, 80, 120, 0, 0);
+#endif
 			if (g_mdnsServiceSlot < 0) {
 				addLogAdv(LOG_ERROR, LOG_FEATURE_HTTP, "DRV_MDNS: mdns_resp_add_service failed");
 			}

@@ -1,9 +1,12 @@
 VPATH  += $(OBK_PATH)
 VPATH  += $(OBK_PATH)/../platforms/TR6260
+VPATH  += $(OBK_PATH)/../sdk/OpenTR6260/platform/lwip/lwip-2.1.0/src/apps/mdns
 DEFINE += -DPLATFORM_TR6260
+DEFINE += -DENABLE_DRIVER_MDNS=1 -DLWIP_MDNS_RESPONDER=1 -DLWIP_NUM_NETIF_CLIENT_DATA=1
 DEFINE += -DTCP_MSL=1000
 
 CSRCS  += main.c
+CSRCS  += mdns.c
 CSRCS  += hal/tr6260/hal_adc_tr6260.c
 CSRCS  += hal/tr6260/hal_flashConfig_tr6260.c
 CSRCS  += hal/tr6260/hal_flashVars_tr6260.c
