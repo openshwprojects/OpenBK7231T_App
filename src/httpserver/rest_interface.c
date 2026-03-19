@@ -190,18 +190,6 @@ static int http_rest_post(http_request_t* request) {
 	}
 	if (!strcmp(request->url, "api/ota")) {
 		int mdnsStoppedForOta = 0;
-#if PLATFORM_REALTEK
-		ADDLOG_INFO(LOG_FEATURE_OTA, "RTL OTA guard active, free heap=%d", (int)xPortGetFreeHeapSize());
-		// On RTL87X0C we are tight on heap during OTA upload.
-		// Stop mDNS temporarily to free lwIP allocations.
-		if (DRV_IsRunning("MDNS") || DRV_IsRunning("mdns")) {
-			DRV_StopDriver("MDNS");
-			mdnsStoppedForOta = 1;
-			ADDLOG_INFO(LOG_FEATURE_OTA, "RTL OTA guard: MDNS stopped");
-		} else {
-			ADDLOG_INFO(LOG_FEATURE_OTA, "RTL OTA guard: MDNS not running");
-		}
-#endif
 		OTA_IncrementProgress(1);
 		int r = 0;
 #if PLATFORM_BEKEN
@@ -231,12 +219,6 @@ static int http_rest_post(http_request_t* request) {
 		ADDLOG_ERROR(LOG_FEATURE_API, "No OTA");
 #endif
 		OTA_ResetProgress();
-#if PLATFORM_REALTEK
-		// On successful OTA the device reboots. Only restore mDNS on failure.
-		if (r != 0 && mdnsStoppedForOta) {
-			DRV_StartDriver("MDNS");
-		}
-#endif
 		return r;
 	}
 	if (!strncmp(request->url, "api/flash/", 10)) {
