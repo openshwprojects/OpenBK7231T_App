@@ -104,7 +104,7 @@ void AHT2X_Initialization(AHT2X_Sensor* sensor) {
 
     // BUG FIX: was 0x68 — correct calibration mask per datasheet is 0x18
     // bit3 must be set (calibrated), bits6-7 must be clear (not busy/error)
-    sensor->isWorking = ((data & 0x18) == 0x08);
+    sensor->isWorking = ((data & 0x18) == 0x18);
     ADDLOG_INFO(LOG_FEATURE_SENSOR, sensor->isWorking
                 ? "AHT2X: init ok"
                 : "AHT2X: init failed (status=0x%02x)", data);
