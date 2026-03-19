@@ -1805,7 +1805,7 @@ void MQTT_BuildAndPublishBatch_ByIndex(int *indices, int count, uint8_t* leh, in
         payload[len] = '\0';
     }
 
-    MQTT_DoItemPublishString("oneall", (char*)payload);
+    MQTT_DoItemPublishString("oneall", (const char*)payload);
 }
 
 commandResult_t MQTT_PublishAll(const void* context, const char* cmd, const char* args, int cmdFlags) {
