@@ -2678,8 +2678,10 @@ int MQTT_RunEverySecondUpdate()
 						-5,//#define PUBLISHITEM_SELF_FREEHEAP               -5  //Free heap
 						};
 				uint8_t leh[] = {0x01, 0x01, 0x02, 0x05};
-				MQTT_BuildAndPublishBatch_ByIndex(indices, sizeof(indices), leh, sizeof(leh));
-				// 	// neu chua dung prefix thi de NULL
+				MQTT_BuildAndPublishBatch_ByIndex(indices,
+					sizeof(indices) / sizeof(indices[0]),  // inline so phan tu
+					leh, sizeof(leh));
+				// neu chua dung prefix thi de NULL
 				//MQTT_BuildAndPublishBatch_ByIndex(indices, count, NULL, 0);
 				
 				
