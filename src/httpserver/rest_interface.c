@@ -189,7 +189,6 @@ static int http_rest_post(http_request_t* request) {
 		return http_rest_post_reboot(request);
 	}
 	if (!strcmp(request->url, "api/ota")) {
-		int mdnsStoppedForOta = 0;
 		OTA_IncrementProgress(1);
 		int r = 0;
 #if PLATFORM_BEKEN
