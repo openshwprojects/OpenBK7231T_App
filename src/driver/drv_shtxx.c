@@ -1,8 +1,13 @@
 // Do NOT add new_common.h – it pulls in stdio/stdlib transitively
 // and costs 1-3KB on newlib-based toolchains.
 #include "../new_pins.h"
-#include "../new_cfg.h"        // needed for g_cfg.pins – included explicitly
-                               // rather than relying on transitive includes
+#include "../new_cfg.h"
+
+// ENABLE_SHT3_EXTENDED_FEATURES uses SHTXX_GetSensorByArg which is compiled
+// only when ENABLE_SERIAL_READ is defined.  Catch misconfiguration early.
+#if defined(ENABLE_SHT3_EXTENDED_FEATURES) && !defined(ENABLE_SERIAL_READ)
+  #error "ENABLE_SHT3_EXTENDED_FEATURES requires ENABLE_SERIAL_READ"
+#endif
 #include "../cmnds/cmd_public.h"
 #include "../mqtt/new_mqtt.h"
 #include "../logging/logging.h"
@@ -70,7 +75,6 @@ static bool SHTXX_CRC8(const uint8_t *data, uint8_t expected)
 // -------------------------------------------------------
 static inline void SHTXX_SendCmd(shtxx_dev_t *dev, const uint8_t *cmd, uint8_t len)
 {
-ADDLOG_INFO(LOG_FEATURE_SENSOR, "SHTXX_SendCmd: Calling Soft_I2C_Start() for addr=0x%02X",dev->i2cAddr);
     Soft_I2C_Start(&dev->i2c, dev->i2cAddr);
     for(uint8_t i = 0; i < len; i++)
         Soft_I2C_WriteByte(&dev->i2c, cmd[i]);
@@ -84,7 +88,6 @@ static bool SHTXX_SendCmdReadData(shtxx_dev_t *dev,
                                    const uint8_t *cmd, uint8_t cmd_len,
                                    uint8_t delay, uint8_t *out)
 {
-ADDLOG_INFO(LOG_FEATURE_SENSOR, "SHTXX_SendCmdReadData: Calling Soft_I2C_Start() for addr=0x%02X",dev->i2cAddr | 1);
     SHTXX_SendCmd(dev, cmd, cmd_len);
     if(delay) rtos_delay_milliseconds(delay);
     Soft_I2C_Start(&dev->i2c, dev->i2cAddr | 1);
@@ -92,7 +95,7 @@ ADDLOG_INFO(LOG_FEATURE_SENSOR, "SHTXX_SendCmdReadData: Calling Soft_I2C_Start()
     Soft_I2C_Stop(&dev->i2c);
     if(!SHTXX_CRC8(&out[0], out[2]) || !SHTXX_CRC8(&out[3], out[5]))
     {
-        ADDLOG_INFO(LOG_FEATURE_SENSOR, "SHTXX: CRC mismatch.");
+        ADDLOG_INFO(LOG_FEATURE_SENSOR, "SHTXX:CRC!");
         return false;
     }
     return true;
@@ -138,9 +141,7 @@ static inline void SHTXX_ConvertAndStore(shtxx_dev_t *dev, const uint8_t *data)
     // Avoid stdlib abs() – single ternary, one NEG on Thumb
     int16_t t_frac = t10 % 10;
     if(t_frac < 0) t_frac = -t_frac;
-    ADDLOG_INFO(LOG_FEATURE_SENSOR,
-                "SHTXX (SDA=%i SCL=%i): T:%d.%dC H:%d.%d%%",
-                dev->i2c.pin_data, dev->i2c.pin_clk,
+    ADDLOG_INFO(LOG_FEATURE_SENSOR, "T%d.%d H%d.%d",
                 t10 / 10, t_frac, h10 / 10, h10 % 10);
 }
 
@@ -154,7 +155,7 @@ static void SHTXX_Measure(shtxx_dev_t *dev)
     if(!SHTXX_SendCmdReadData(dev, cfg->meas_cmd, cfg->meas_len,
                                cfg->meas_delay_ms, data))
     {
-        ADDLOG_INFO(LOG_FEATURE_SENSOR, "SHTXX: Measurement failed.");
+        ADDLOG_INFO(LOG_FEATURE_SENSOR, "SHTXX measure failed!");
         return;
     }
     SHTXX_ConvertAndStore(dev, data);
@@ -171,15 +172,15 @@ static void SHTXX_Initialization(shtxx_dev_t *dev)
     rtos_delay_milliseconds(cfg->rst_delay_ms);
     dev->isWorking = SHTXX_SendCmdReadData(dev, cfg->meas_cmd, cfg->meas_len,
                                             cfg->meas_delay_ms, probe);
-    ADDLOG_INFO(LOG_FEATURE_SENSOR, "SHTXX: SHT%cx init %s.",
-                (dev->typeIdx == SHTXX_TYPE_SHT3X) ? '3' : '4',
-                dev->isWorking ? "ok" : "failed");
+    
+    ADDLOG_INFO(LOG_FEATURE_SENSOR, "SHTXX SHT%cx %s.", 
+    	(dev->typeIdx==SHTXX_TYPE_SHT3X)?'3':'4',
+    	(dev->isWorking)?"ok":"fail");
 }
 
 // =======================================================
 // Serial number + auto-detect (ENABLE_SERIAL_READ)
 // =======================================================
-#ifdef ENABLE_SERIAL_READ
 
 static bool SHTXX_ReadSerial(shtxx_dev_t *dev)
 {
@@ -188,8 +189,7 @@ static bool SHTXX_ReadSerial(shtxx_dev_t *dev)
     uint8_t data[6];
     SHTXX_SendCmd(dev, sn_cmd[dev->typeIdx], sn_len[dev->typeIdx]);
     rtos_delay_milliseconds(2);
-ADDLOG_INFO(LOG_FEATURE_SENSOR, "SHTXX_ReadSerial: Calling Soft_I2C_Start() for addr=0x%02X",dev->i2cAddr | 1);
-    Soft_I2C_Start(&dev->i2c, dev->i2cAddr | 1);
+Soft_I2C_Start(&dev->i2c, dev->i2cAddr | 1);
     Soft_I2C_ReadBytes(&dev->i2c, data, 6);
     Soft_I2C_Stop(&dev->i2c);
     if(!SHTXX_CRC8(&data[0], data[2]) || !SHTXX_CRC8(&data[3], data[5]))
@@ -201,34 +201,30 @@ ADDLOG_INFO(LOG_FEATURE_SENSOR, "SHTXX_ReadSerial: Calling Soft_I2C_Start() for 
 
 static uint8_t SHTXX_DetectType(shtxx_dev_t *dev)
 {
-    ADDLOG_INFO(LOG_FEATURE_SENSOR, "SHTXX: Detecting (SDA=%i)...", dev->i2c.pin_data);
+//    ADDLOG_INFO(LOG_FEATURE_SENSOR, "SHTXX det %i", dev->i2c.pin_data);
     dev->typeIdx = SHTXX_TYPE_SHT4X;
     if(SHTXX_ReadSerial(dev)) return SHTXX_TYPE_SHT4X;
     rtos_delay_milliseconds(10);
     dev->typeIdx = SHTXX_TYPE_SHT3X;
     if(SHTXX_ReadSerial(dev)) return SHTXX_TYPE_SHT3X;
-    ADDLOG_INFO(LOG_FEATURE_SENSOR, "SHTXX: Detection failed, defaulting SHT3x.");
+    ADDLOG_INFO(LOG_FEATURE_SENSOR, "SHTXX detection fail");
     return SHTXX_TYPE_SHT3X;
 }
 
-// Sensor index resolver – only compiled when ENABLE_SERIAL_READ is on,
-// because multi-sensor selection only makes sense when sensors can be
-// identified (and when you have multiple sensors you need serial anyway).
-// When ENABLE_SERIAL_READ is OFF all commands get context-sensor directly.
+
+// Sensor index resolver
 static shtxx_dev_t *SHTXX_GetSensorByArg(const char *cmd, int arg_index, bool arg_present)
 {
     if(!arg_present) return &g_sensors[0];
     int n = Tokenizer_GetArgInteger(arg_index);
     if(n < 1 || n > (int)g_numSensors)
     {
-        ADDLOG_ERROR(LOG_FEATURE_SENSOR, "%s: sensor %i out of range (1..%i)",
-                     cmd, n, g_numSensors);
+        ADDLOG_ERROR(LOG_FEATURE_SENSOR, "no sensor %i", n);
         return NULL;
     }
     return &g_sensors[n - 1];
 }
 
-#endif  // ENABLE_SERIAL_READ
 
 // =======================================================
 // SHT3x-only extended features (ENABLE_SHT3_EXTENDED_FEATURES)
@@ -264,7 +260,7 @@ static void SHTXX_FetchPeriodic(shtxx_dev_t *dev)
     uint8_t data[6];
     if(!SHTXX_SendCmdReadData(dev, cmd, 2, 0, data))
     {
-        ADDLOG_INFO(LOG_FEATURE_SENSOR, "SHTXX: Periodic fetch failed.");
+        ADDLOG_INFO(LOG_FEATURE_SENSOR, "SHTXX periodic fail");
         return;
     }
     SHTXX_ConvertAndStore(dev, data);  // second caller – compiler emits real fn
@@ -274,8 +270,7 @@ static void SHTXX_SetHeater(shtxx_dev_t *dev, bool on)
 {
     const uint8_t cmd[2] = { 0x30, on ? 0x6D : 0x66 };
     SHTXX_SendCmd(dev, cmd, 2);
-    ADDLOG_INFO(LOG_FEATURE_SENSOR, "SHTXX (SDA=%i): Heater %s",
-                dev->i2c.pin_data, on ? "on" : "off");
+    ADDLOG_INFO(LOG_FEATURE_SENSOR, "Heater%i %s", dev->i2c.pin_data, on ? "on" : "off");
 }
 
 static void SHTXX_ReadStatus(shtxx_dev_t *dev)
@@ -286,15 +281,14 @@ static void SHTXX_ReadStatus(shtxx_dev_t *dev)
     Soft_I2C_Start(&dev->i2c, dev->i2cAddr | 1);
     Soft_I2C_ReadBytes(&dev->i2c, buf, 3);
     Soft_I2C_Stop(&dev->i2c);
-    ADDLOG_INFO(LOG_FEATURE_SENSOR, "SHTXX (SDA=%i): Status %02X%02X",
-                dev->i2c.pin_data, buf[0], buf[1]);
+    ADDLOG_INFO(LOG_FEATURE_SENSOR, "Stat%i %02X%02X", dev->i2c.pin_data, buf[0], buf[1]);
 }
 
 static void SHTXX_ClearStatus(shtxx_dev_t *dev)
 {
     static const uint8_t cmd[2] = { 0x30, 0x41 };
     SHTXX_SendCmd(dev, cmd, 2);
-    ADDLOG_INFO(LOG_FEATURE_SENSOR, "SHTXX (SDA=%i): Status cleared", dev->i2c.pin_data);
+    ADDLOG_INFO(LOG_FEATURE_SENSOR, "Stat Clear %i", dev->i2c.pin_data);
 }
 
 // Alert limits – float unavoidable for the register bit-packing.
@@ -318,7 +312,7 @@ static void SHTXX_WriteAlertReg(shtxx_dev_t *dev, uint8_t reg,
 {
     if(hum < 0.0f || hum > 100.0f || temp < -45.0f || temp > 130.0f)
     {
-        ADDLOG_INFO(LOG_FEATURE_CMD, "SHTXX: Alert value out of range.");
+        ADDLOG_INFO(LOG_FEATURE_CMD, "SHTXX alert!");
         return;
     }
     uint16_t rawH = (uint16_t)(hum  / 100.0f * 65535.0f);
@@ -341,18 +335,33 @@ static void SHTXX_WriteAlertReg(shtxx_dev_t *dev, uint8_t reg,
 
 static void SHTXX_GetAllAlerts(shtxx_dev_t *dev)
 {
-    float tLS, tLC, tHC, tHS, hLS, hLC, hHC, hHS;
-    SHTXX_ReadAlertReg(dev, 0x1F, &hHS, &tHS);
-    SHTXX_ReadAlertReg(dev, 0x14, &hHC, &tHC);
-    SHTXX_ReadAlertReg(dev, 0x09, &hLC, &tLC);
-    SHTXX_ReadAlertReg(dev, 0x02, &hLS, &tLS);
-    ADDLOG_INFO(LOG_FEATURE_SENSOR, "SHTXX Alert T (LS/LC/HC/HS): %.1f/%.1f/%.1f/%.1f",
-                tLS, tLC, tHC, tHS);
-    ADDLOG_INFO(LOG_FEATURE_SENSOR, "SHTXX Alert H (LS/LC/HC/HS): %.1f/%.1f/%.1f/%.1f",
-                hLS, hLC, hHC, hHS);
+    float h[4], t[4];
+    SHTXX_ReadAlertReg(dev, 0x1F, &h[3], &t[3]);
+    SHTXX_ReadAlertReg(dev, 0x14, &h[2], &t[2]);
+    SHTXX_ReadAlertReg(dev, 0x09, &h[1], &t[1]);
+    SHTXX_ReadAlertReg(dev, 0x02, &h[0], &t[0]);
+    ADDLOG_INFO(LOG_FEATURE_SENSOR,
+                "Alrt T%.1f<%.1f<%.1f<%.1f H%.1f<%.1f<%.1f<%.1f",
+                t[0], t[1], t[2], t[3], h[0], h[1], h[2], h[3]);
 }
 
-// --- Extended command handlers ---
+// -------------------------------------------------------
+// Generic dispatcher for SHT3x-only single-action commands.
+// The action function pointer is passed as context.
+// -------------------------------------------------------
+typedef void (*shtxx_devcmd_t)(shtxx_dev_t *);
+
+static commandResult_t SHTXX_CMD_SHT3xAction(const void *context,
+                                               const char *cmd,
+                                               const char *args, int cmdFlags)
+{
+    Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_DONT_EXPAND);
+    shtxx_dev_t *dev = SHTXX_GetSensorByArg(cmd, 0, Tokenizer_GetArgsCount() >= 1);
+    if(!dev) return CMD_RES_BAD_ARGUMENT;
+    SHTXX_REQUIRE_SHT3X(dev, CMD_RES_ERROR);
+    ((shtxx_devcmd_t)context)(dev);
+    return CMD_RES_OK;
+}
 
 commandResult_t SHTXX_CMD_LaunchPer(const void *context, const char *cmd,
                                      const char *args, int cmdFlags)
@@ -373,8 +382,7 @@ commandResult_t SHTXX_CMD_LaunchPer(const void *context, const char *cmd,
     SHTXX_StopPeriodic(dev);
     rtos_delay_milliseconds(25);
     SHTXX_StartPeriodic(dev, msb, lsb);
-    ADDLOG_INFO(LOG_FEATURE_SENSOR, "SHTXX (SDA=%i): Periodic 0x%02X/0x%02X",
-                dev->i2c.pin_data, msb, lsb);
+    ADDLOG_INFO(LOG_FEATURE_SENSOR, "Per%i %02X/%02X", dev->i2c.pin_data, msb, lsb);
     return CMD_RES_OK;
 }
 
@@ -386,21 +394,10 @@ commandResult_t SHTXX_CMD_FetchPer(const void *context, const char *cmd,
     if(!dev) return CMD_RES_BAD_ARGUMENT;
     SHTXX_REQUIRE_SHT3X(dev, CMD_RES_ERROR);
     if(!dev->periodicActive) {
-        ADDLOG_INFO(LOG_FEATURE_SENSOR, "SHTXX: Start periodic first.");
+        ADDLOG_ERROR(LOG_FEATURE_SENSOR, "SHTXX: LaunchPer first");
         return CMD_RES_ERROR;
     }
     SHTXX_FetchPeriodic(dev);
-    return CMD_RES_OK;
-}
-
-commandResult_t SHTXX_CMD_StopPer(const void *context, const char *cmd,
-                                   const char *args, int cmdFlags)
-{
-    Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_DONT_EXPAND);
-    shtxx_dev_t *dev = SHTXX_GetSensorByArg(cmd, 0, Tokenizer_GetArgsCount() >= 1);
-    if(!dev) return CMD_RES_BAD_ARGUMENT;
-    SHTXX_REQUIRE_SHT3X(dev, CMD_RES_ERROR);
-    SHTXX_StopPeriodic(dev);
     return CMD_RES_OK;
 }
 
@@ -414,39 +411,6 @@ commandResult_t SHTXX_CMD_Heater(const void *context, const char *cmd,
     if(!dev) return CMD_RES_BAD_ARGUMENT;
     SHTXX_REQUIRE_SHT3X(dev, CMD_RES_ERROR);
     SHTXX_SetHeater(dev, state != 0);
-    return CMD_RES_OK;
-}
-
-commandResult_t SHTXX_CMD_GetStatus(const void *context, const char *cmd,
-                                     const char *args, int cmdFlags)
-{
-    Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_DONT_EXPAND);
-    shtxx_dev_t *dev = SHTXX_GetSensorByArg(cmd, 0, Tokenizer_GetArgsCount() >= 1);
-    if(!dev) return CMD_RES_BAD_ARGUMENT;
-    SHTXX_REQUIRE_SHT3X(dev, CMD_RES_ERROR);
-    SHTXX_ReadStatus(dev);
-    return CMD_RES_OK;
-}
-
-commandResult_t SHTXX_CMD_ClearStatus(const void *context, const char *cmd,
-                                       const char *args, int cmdFlags)
-{
-    Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_DONT_EXPAND);
-    shtxx_dev_t *dev = SHTXX_GetSensorByArg(cmd, 0, Tokenizer_GetArgsCount() >= 1);
-    if(!dev) return CMD_RES_BAD_ARGUMENT;
-    SHTXX_REQUIRE_SHT3X(dev, CMD_RES_ERROR);
-    SHTXX_ClearStatus(dev);
-    return CMD_RES_OK;
-}
-
-commandResult_t SHTXX_CMD_ReadAlert(const void *context, const char *cmd,
-                                     const char *args, int cmdFlags)
-{
-    Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_DONT_EXPAND);
-    shtxx_dev_t *dev = SHTXX_GetSensorByArg(cmd, 0, Tokenizer_GetArgsCount() >= 1);
-    if(!dev) return CMD_RES_BAD_ARGUMENT;
-    SHTXX_REQUIRE_SHT3X(dev, CMD_RES_ERROR);
-    SHTXX_GetAllAlerts(dev);
     return CMD_RES_OK;
 }
 
@@ -465,7 +429,7 @@ commandResult_t SHTXX_CMD_SetAlert(const void *context, const char *cmd,
     SHTXX_WriteAlertReg(dev, 0x16, hHS - 0.5f, tHS - 0.5f);
     SHTXX_WriteAlertReg(dev, 0x0B, hLS + 0.5f, tLS + 0.5f);
     SHTXX_WriteAlertReg(dev, 0x00, hLS, tLS);
-    ADDLOG_INFO(LOG_FEATURE_SENSOR, "SHTXX (SDA=%i): Alert T=%.1f/%.1f H=%.1f/%.1f",
+    ADDLOG_INFO(LOG_FEATURE_SENSOR, "Alrt%i T%.1f/%.1f H%.1f/%.1f",
                 dev->i2c.pin_data, tLS, tHS, hLS, hHS);
     return CMD_RES_OK;
 }
@@ -486,14 +450,9 @@ commandResult_t SHTXX_CMD_Calibrate(const void *context, const char *cmd,
     Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_DONT_EXPAND);
     if(Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 
-#ifdef ENABLE_SERIAL_READ
     // Multi-sensor: optional 3rd arg selects target sensor
     shtxx_dev_t *dev = SHTXX_GetSensorByArg(cmd, 2, Tokenizer_GetArgsCount() >= 3);
     if(!dev) return CMD_RES_BAD_ARGUMENT;
-#else
-    // Single-sensor fast path: context IS the device pointer
-    shtxx_dev_t *dev = (shtxx_dev_t *)context;
-#endif
 
     dev->calTemp = (int16_t)(Tokenizer_GetArgFloat(0) * 10.0f);
     dev->calHum  = (int8_t) (Tokenizer_GetArgFloat(1) * 10.0f);
@@ -507,7 +466,7 @@ commandResult_t SHTXX_CMD_Cycle(const void *context, const char *cmd,
     Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_DONT_EXPAND);
     if(Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) return CMD_RES_NOT_ENOUGH_ARGUMENTS;
     int s = Tokenizer_GetArgInteger(0);
-    if(s < 1) { ADDLOG_INFO(LOG_FEATURE_CMD, "SHTXX: Min 1s."); return CMD_RES_BAD_ARGUMENT; }
+    if(s < 1) { ADDLOG_ERROR(LOG_FEATURE_CMD, "SHTXX: min 1s"); return CMD_RES_BAD_ARGUMENT; }
     dev->secondsBetween = (uint8_t)s;
     return CMD_RES_OK;
 }
@@ -542,7 +501,7 @@ commandResult_t SHTXX_CMD_ListSensors(const void *context, const char *cmd,
                                        const char *args, int cmdFlags)
 {
     if(!g_numSensors) {
-        ADDLOG_INFO(LOG_FEATURE_SENSOR, "SHTXX: No sensors.");
+        ADDLOG_INFO(LOG_FEATURE_SENSOR, "no sensors");
         return CMD_RES_OK;
     }
     for(uint8_t i = 0; i < g_numSensors; i++)
@@ -552,14 +511,14 @@ commandResult_t SHTXX_CMD_ListSensors(const void *context, const char *cmd,
         if(tf < 0) tf = -tf;
 #ifdef ENABLE_SERIAL_READ
         ADDLOG_INFO(LOG_FEATURE_SENSOR,
-                    "  [%i] SHT%cx SDA=%i SCL=%i sn=%08X T=%d.%dC H=%d.%d%% ch=%i/%i",
+                    "[%i]SHT%cx %i/%i sn=%08X T%d.%d H%d.%d ch%i/%i",
                     i, (s->typeIdx==SHTXX_TYPE_SHT3X)?'3':'4',
                     s->i2c.pin_data, s->i2c.pin_clk, s->serial,
                     s->lastTemp/10, tf, s->lastHumid/10, s->lastHumid%10,
                     s->channel_temp, s->channel_humid);
 #else
         ADDLOG_INFO(LOG_FEATURE_SENSOR,
-                    "  [%i] SHT%cx SDA=%i SCL=%i T=%d.%dC H=%d.%d%% ch=%i/%i",
+                    "[%i]SHT%cx %i/%i T%d.%d H%d.%d ch%i/%i",
                     i, (s->typeIdx==SHTXX_TYPE_SHT3X)?'3':'4',
                     s->i2c.pin_data, s->i2c.pin_clk,
                     s->lastTemp/10, tf, s->lastHumid/10, s->lastHumid%10,
@@ -568,6 +527,35 @@ commandResult_t SHTXX_CMD_ListSensors(const void *context, const char *cmd,
     }
     return CMD_RES_OK;
 }
+
+
+// -------------------------------------------------------
+// We don't have Tokenizer extension, so we need to emulate it
+// helper: search a string and return index
+// -------------------------------------------------------
+const int checkTokens(const char *str)
+{
+	for (int i=0; i<Tokenizer_GetArgsCount(); i++){
+		if(Tokenizer_GetArg(i) && !stricmp(Tokenizer_GetArg(i),str))
+			return i;
+	}
+	return -1;
+}
+
+int Tokenizer_GetPinEqual(const char *str, int def){
+	int x = checkTokens(str);
+	if (x == -1) return def;
+	return Tokenizer_GetPin(x +1 ,def); // no need to check index, tokenizer will do
+}
+
+int Tokenizer_GetArgEqualInteger(const char *str, int def){
+	int x = checkTokens(str);
+	if (x == -1) return def;
+	return Tokenizer_GetArgEqualInteger(x+1,def);
+}
+
+
+
 
 // -------------------------------------------------------
 // startDriver SHTXX [SCL=<pin>] [SDA=<pin>] [chan_t=<ch>]
@@ -579,7 +567,7 @@ commandResult_t SHTXX_CMD_ListSensors(const void *context, const char *cmd,
 void SHTXX_Init()
 {
     if(g_numSensors >= SHTXX_MAX_SENSORS) {
-        ADDLOG_INFO(LOG_FEATURE_SENSOR, "SHTXX: Max sensors reached.");
+        ADDLOG_INFO(LOG_FEATURE_SENSOR, "SHTXX: full!");
         return;
     }
     shtxx_dev_t *dev = &g_sensors[g_numSensors];
@@ -595,38 +583,36 @@ void SHTXX_Init()
         dev->channel_humid = g_cfg.pins.channels2[dev->i2c.pin_data];
     }
 
-    dev->i2c.pin_clk   = Tokenizer_GetPinEqual("SCL=",    dev->i2c.pin_clk);
-    dev->i2c.pin_data  = Tokenizer_GetPinEqual("SDA=",    dev->i2c.pin_data);
-    dev->channel_temp  = Tokenizer_GetArgEqualInteger("chan_t=", dev->channel_temp);
-    dev->channel_humid = Tokenizer_GetArgEqualInteger("chan_h=", dev->channel_humid);
+    dev->i2c.pin_clk   = Tokenizer_GetPinEqual("-SCL",    dev->i2c.pin_clk);
+    dev->i2c.pin_data  = Tokenizer_GetPinEqual("-SDA",    dev->i2c.pin_data);
+    dev->channel_temp  = Tokenizer_GetArgEqualInteger("-chan_t", dev->channel_temp);
+    dev->channel_humid = Tokenizer_GetArgEqualInteger("-chan_h", dev->channel_humid);
 
     dev->secondsBetween   = 10;
     dev->secondsUntilNext = 1;
     dev->calTemp = 0;
     dev->calHum  = 0;
 
-    int typeArg  = Tokenizer_GetArgEqualInteger("type=", 3);
+    int typeArg  = Tokenizer_GetArgEqualInteger("-type", 3);
     dev->typeIdx = (typeArg == 4) ? SHTXX_TYPE_SHT4X : SHTXX_TYPE_SHT3X;
 
-    // Address: parse "0x45" without strtol (saves ~400B if not already in fw).
-    // Use A/B suffix for backward compat: address=A → 0x44, address=B → 0x45.
+    // Address: user passes 7-bit address (0x44 or 0x45).
+    // Default 0 means "use SHTXX_I2C_ADDR". We shift here, avoiding strtol.
     dev->i2cAddr = SHTXX_I2C_ADDR;
     if(dev->typeIdx == SHTXX_TYPE_SHT3X) {
-        uint8_t A = (int8_t)(Tokenizer_GetArgEqualInteger("address=", 0x44));
-        if (A != SHTXX_I2C_ADDR) dev->i2cAddr = A << 1;
+        uint8_t A = (uint8_t)Tokenizer_GetArgEqualInteger("-address", 0);
+        if(A) dev->i2cAddr = (uint8_t)(A << 1);
     }
 
     Soft_I2C_PreInit(&dev->i2c);
     rtos_delay_milliseconds(50);
 
-#ifdef ENABLE_SERIAL_READ
     dev->serial = 0;
     if(typeArg == 0 || typeArg == 3) {  // explicit type=0 or default=3 → try detect
         dev->typeIdx = SHTXX_DetectType(dev);
     } else {
         SHTXX_ReadSerial(dev);  // type known, just log the serial
     }
-#endif
 
     SHTXX_Initialization(dev);
 
@@ -656,10 +642,10 @@ void SHTXX_Init()
         //cmddetail:"examples":"SHTXX_Reinit"}
         CMD_RegisterCommand("SHTXX_Reinit",      SHTXX_CMD_Reinit,      dev);
 
-        //cmddetail:{"name":"SHTXX_AddSensor","args":"[SCL=pin] [SDA=pin] [type=3|4] [chan_t=ch] [chan_h=ch]",
+        //cmddetail:{"name":"SHTXX_AddSensor","args":"-SCL [SCLpin] -SDA [SDApin] -type [3|4 0=auto] -chan_t[temp ch] -chan_h[humid ch] -address [I2C addr]",
         //cmddetail:"descr":"Add an additional SHT sensor on different pins.",
         //cmddetail:"fn":"SHTXX_CMD_AddSensor","file":"driver/drv_shtxx.c","requires":"",
-        //cmddetail:"examples":"SHTXX_AddSensor SDA=4 SCL=5 type=3"}
+        //cmddetail:"examples":"SHTXX_AddSensor -SDA 4 -SCL 5 -type 3"}
         CMD_RegisterCommand("SHTXX_AddSensor",   SHTXX_CMD_AddSensor,   dev);
 
         //cmddetail:{"name":"SHTXX_ListSensors","args":"",
@@ -685,7 +671,7 @@ void SHTXX_Init()
         //cmddetail:"descr":"Stop SHT3x periodic capture.",
         //cmddetail:"fn":"SHTXX_CMD_StopPer","file":"driver/drv_shtxx.c","requires":"",
         //cmddetail:"examples":"SHTXX_StopPer"}
-        CMD_RegisterCommand("SHTXX_StopPer",     SHTXX_CMD_StopPer,     dev);
+        CMD_RegisterCommand("SHTXX_StopPer",     SHTXX_CMD_SHT3xAction, (void*)SHTXX_StopPeriodic);
 
         //cmddetail:{"name":"SHTXX_Heater","args":"[0|1] [sensor]",
         //cmddetail:"descr":"Enable/disable heater. SHT3x only.",
@@ -697,19 +683,19 @@ void SHTXX_Init()
         //cmddetail:"descr":"Read status register. SHT3x only.",
         //cmddetail:"fn":"SHTXX_CMD_GetStatus","file":"driver/drv_shtxx.c","requires":"",
         //cmddetail:"examples":"SHTXX_GetStatus"}
-        CMD_RegisterCommand("SHTXX_GetStatus",   SHTXX_CMD_GetStatus,   dev);
+        CMD_RegisterCommand("SHTXX_GetStatus",   SHTXX_CMD_SHT3xAction, (void*)SHTXX_ReadStatus);
 
         //cmddetail:{"name":"SHTXX_ClearStatus","args":"[sensor]",
         //cmddetail:"descr":"Clear status register. SHT3x only.",
         //cmddetail:"fn":"SHTXX_CMD_ClearStatus","file":"driver/drv_shtxx.c","requires":"",
         //cmddetail:"examples":"SHTXX_ClearStatus"}
-        CMD_RegisterCommand("SHTXX_ClearStatus", SHTXX_CMD_ClearStatus, dev);
+        CMD_RegisterCommand("SHTXX_ClearStatus", SHTXX_CMD_SHT3xAction, (void*)SHTXX_ClearStatus);
 
         //cmddetail:{"name":"SHTXX_ReadAlert","args":"[sensor]",
         //cmddetail:"descr":"Read alert thresholds. SHT3x only.",
         //cmddetail:"fn":"SHTXX_CMD_ReadAlert","file":"driver/drv_shtxx.c","requires":"",
         //cmddetail:"examples":"SHTXX_ReadAlert"}
-        CMD_RegisterCommand("SHTXX_ReadAlert",   SHTXX_CMD_ReadAlert,   dev);
+        CMD_RegisterCommand("SHTXX_ReadAlert",   SHTXX_CMD_SHT3xAction, (void*)SHTXX_GetAllAlerts);
 
         //cmddetail:{"name":"SHTXX_SetAlert","args":"[tHS] [tLS] [hHS] [hLS] [sensor]",
         //cmddetail:"descr":"Set alert thresholds. SHT3x only.",
@@ -764,8 +750,8 @@ void SHTXX_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreSta
                    (dev->typeIdx==SHTXX_TYPE_SHT3X)?'3':'4', i,
                    dev->lastTemp/10, tf, dev->lastHumid/10, dev->lastHumid%10);
         if(!dev->isWorking)
-            hprintf255(request, "WARNING: SHT[%u] init failed – check pins!", i);
+            hprintf255(request, "SHT[%u]:init fail!", i);
         if(dev->channel_humid >= 0 && dev->channel_humid == dev->channel_temp)
-            hprintf255(request, "WARNING: SHT[%u] temp/humid share a channel!", i);
+            hprintf255(request, "SHT[%u]:ch overlap!", i);
     }
 }

@@ -17,8 +17,8 @@
 //   ~1.5KB code + float softlib (~2KB) if not already in fw.
 //   ENABLE_SERIAL_READ must also be defined when this is on.
 // -------------------------------------------------------
-#define ENABLE_SERIAL_READ
-//#define ENABLE_SHT3_EXTENDED_FEATURES
+#define ENABLE_SERIAL_READ		1
+#define ENABLE_SHT3_EXTENDED_FEATURES	1
 
 #define SHTXX_I2C_ADDR   (0x44 << 1)
 #define SHTXX_TYPE_SHT3X  0
