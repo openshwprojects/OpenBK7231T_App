@@ -1677,16 +1677,7 @@ bool MQTT_GetItemValue(int idx, char *out, int outLen) {
 
         case PUBLISHITEM_SELF_DATETIME:
 			
-			#ifdef PLATFORM_ESP8266
-					// while all other platforms will accept uint32_t as long unsigned, ESP8266 needs %u 
-					// biuild fails otherwise because of -Werror=format
-					// src/mqtt/new_mqtt.c:2036:24: error: format '%ld' expects argument of type 'long int', but argument 3 has type 'uint32_t' {aka 'unsigned int'} [-Werror=format=]
-					// al other ESP:
-					/// src/mqtt/new_mqtt.c:2036:44: error: format '%d' expects argument of type 'int', but argument 3 has type 'uint32_t' {aka 'long unsigned int'} [-Werror=format=]
-					snprintf(out, outLen, "%u", TIME_GetCurrentTime());
-			#else
-					snprintf(out, outLen, "%lu", TIME_GetCurrentTime());
-			#endif
+			snprintf(out, outLen, "%lu", (unsigned long)TIME_GetCurrentTime());
             return true;
 		
         case PUBLISHITEM_SELF_SOCKETS:
@@ -2687,7 +2678,7 @@ int MQTT_RunEverySecondUpdate()
 						-5,//#define PUBLISHITEM_SELF_FREEHEAP               -5  //Free heap
 						};
 				uint8_t leh[] = {0x01, 0x01, 0x02, 0x05};
-				MQTT_BuildAndPublishBatch_ByIndex(indices, count, leh, sizeof(leh));
+				MQTT_BuildAndPublishBatch_ByIndex(indices, sizeof(indices), leh, sizeof(leh));
 				// 	// neu chua dung prefix thi de NULL
 				//MQTT_BuildAndPublishBatch_ByIndex(indices, count, NULL, 0);
 				
