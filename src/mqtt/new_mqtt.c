@@ -1683,10 +1683,6 @@ bool MQTT_GetItemValue(int idx, char *out, int outLen) {
             snprintf(out, outLen, "%d", LWIP_GetActiveSockets());
             return true;
 
-        case PUBLISHITEM_SELF_TEMP:
-            snprintf(out, outLen, "%.2f",  (double)getInternalTemperature());
-            return true;
-
         case PUBLISHITEM_SELF_RSSI:
             snprintf(out, outLen, "%d", HAL_GetWifiStrength());
             return true;
