@@ -1,9 +1,11 @@
+#include "../../new_common.h"
 #include "../hal_hwtimer.h"
 
 #if PLATFORM_LN882H
 
 #include "hal/hal_timer.h"
 #include "hal/hal_clock.h"
+#include "utils/power_mgmt/ln_pm.h"
 
 #define MAX_TIMERS 3
 
@@ -63,6 +65,7 @@ int8_t HAL_RequestHWTimer(float requestPeriodUs, float* realPeriodUs, HWTimerCB 
 		tim_init.tim_div = (uint32_t)(hal_clock_get_apb0_clk() / 1000000) - 1;
 		tim_init.tim_load_value = (uint32_t)requestPeriodUs - 1;
 	}
+	soc_module_clk_gate_enable(CLK_G_TIM1 + freetimer);
 	hal_tim_init(TIMER_BASE + 0x18U * freetimer, &tim_init);
 	hal_tim_clr_it_flag(TIMER_BASE + 0x18U * freetimer, TIM_IT_FLAG_ACTIVE);
 	switch(freetimer)
@@ -107,6 +110,7 @@ void HAL_HWTimerDeinit(int8_t timer)
 		case 1: NVIC_DisableIRQ(TIMER1_IRQn); break;
 		case 2: NVIC_DisableIRQ(TIMER2_IRQn); break;
 	}
+	soc_module_clk_gate_disable(CLK_G_TIM1 + timer);
 	timerHandlers[timer] = NULL;
 	timerArguments[timer] = NULL;
 	g_used_timers &= ~(1 << timer);

@@ -15,6 +15,7 @@ SRC_C  += ../../../component/common/network/lwip/lwip_$(LWIP_VERSION)/src/apps/m
 #SRC_C  += $(OBK_DIR)/src/hal/realtek/rtl87x0c/hal_main_rtl87x0c.c
 SRC_C  += $(OBK_DIR)/src/hal/realtek/rtl87x0c/hal_pins_rtl87x0c.c
 SRC_C  += $(OBK_DIR)/src/hal/realtek/rtl87x0c/hal_uart_rtl87x0c.c
+SRC_C  += $(OBK_DIR)/src/hal/realtek/rtl8720d/hal_bt_proxy_rtl8720d.c
 SRC_C  += $(OBK_DIR)/src/hal/realtek/hal_flashConfig_realtek.c
 SRC_C  += $(OBK_DIR)/src/hal/realtek/hal_flashVars_realtek.c
 SRC_C  += $(OBK_DIR)/src/hal/realtek/hal_generic_realtek.c
