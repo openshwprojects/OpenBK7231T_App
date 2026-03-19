@@ -254,7 +254,7 @@ static int bl602_log_write_raw(const char *msg) {
 	}
 	return 0;
 }
-
+//TODO review cmd to align with other platforms if need be at the later date
 commandResult_t log_port(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	int idx;
 	int previousPort;
