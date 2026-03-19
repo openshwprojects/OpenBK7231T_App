@@ -2565,11 +2565,6 @@ int MQTT_RunEverySecondUpdate()
 			else {
 				//MQTT_PublishOnlyDeviceChannelsIfPossible();
 			}
-
-			// New behavior: publish "oneall" exactly once on boot/reset MQTT
-			uint8_t leh[] = {0x01,0x01,0x02,0x05, 0xFF}; // 0xFF = marker for boot/reset oneall
-			MQTT_BuildAndPublishBatch_ByIndex(NULL, 0, leh, sizeof(leh));
-			
 		}
 
 		MQTT_Mutex_Free();
@@ -2645,6 +2640,12 @@ int MQTT_RunEverySecondUpdate()
 				uint8_t leh[] = {0x01,0x01,0x02,0x05 , 0xFF};//byte thu 5 0xFF(255) cho biet public oneall from call boot hoac reset mqtt
 				MQTT_BuildAndPublishBatch_ByIndex(NULL, 0, leh, sizeof(leh));
 				*/
+
+				// New behavior: publish "oneall" exactly once on boot/reset MQTT
+				if (g_publishItemIndex == PUBLISHITEM_ALL_INDEX_FIRST){
+					uint8_t leh[] = {0x01,0x01,0x02,0x05, 0xFF};//byte thu 5 0xFF(255) cho biet public oneall from call boot hoac reset mqtt
+					MQTT_BuildAndPublishBatch_ByIndex(NULL, 0, leh, sizeof(leh));
+				}
 
 				
 				OBK_Publish_Result publishRes;
