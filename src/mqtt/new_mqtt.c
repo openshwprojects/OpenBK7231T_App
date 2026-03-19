@@ -1676,7 +1676,7 @@ bool MQTT_GetItemValue(int idx, char *out, int outLen) {
             return true;
 
         case PUBLISHITEM_SELF_DATETIME:
-            snprintf(out, outLen, "%u",  (unsigned int)TIME_GetCurrentTime());
+            snprintf(out, outLen, "%lu",  (unsigned int)TIME_GetCurrentTime());
             return true;
 
         case PUBLISHITEM_SELF_SOCKETS:
@@ -1833,7 +1833,6 @@ commandResult_t MQTT_PublishAll(const void* context, const char* cmd, const char
 
     return CMD_RES_OK;
 }
-
 
 
 
