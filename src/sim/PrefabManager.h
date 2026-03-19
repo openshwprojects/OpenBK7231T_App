@@ -23,7 +23,8 @@ class PrefabManager {
 	class CShape *generateVDD();
 	class CShape *generatePot();
 	class CShape *generateWS2812B();
-	class CShape *generateDHT11();
+	class CShape *generateDHT11(); 
+	class CShape *generateMAX7219x4(); 
 public:
 	PrefabManager(CSimulator *ps) {
 		sim = ps;

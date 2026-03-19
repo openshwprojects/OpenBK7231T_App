@@ -27,6 +27,7 @@ configMemory.bin
 /sim_lastPublish_long.txt
 /sim_lastPublishes.txt
 /sim_lastPublish.txt
+/lastEnumTemplate.txt
 /lastHTTPPacket.txt
 /lastMQTTPublishSentByOBK.txt
 *.sln
@@ -38,3 +39,5 @@ configMemory.bin
 enc_temp_folder/**
 
 *.su
+/.idea/**
+*.so

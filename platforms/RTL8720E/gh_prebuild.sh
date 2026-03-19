@@ -1,0 +1,1 @@
+../RTL8721DA/gh_prebuild.sh

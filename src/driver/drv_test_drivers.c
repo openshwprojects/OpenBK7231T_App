@@ -12,6 +12,7 @@
 static float base_v = 120;
 static float base_c = 1;
 static float base_p = 120;
+static float base_f = 60;
 static bool bAllowRandom = true;
 
 commandResult_t TestPower_Setup(const void* context, const char* cmd, const char* args, int cmdFlags) {
@@ -27,8 +28,9 @@ commandResult_t TestPower_Setup(const void* context, const char* cmd, const char
 	base_v = Tokenizer_GetArgFloat(0);
 	base_c = Tokenizer_GetArgFloat(1);
 	base_p = Tokenizer_GetArgFloat(2);
-	bAllowRandom = Tokenizer_GetArgInteger(3);
-	// SetupTestPower 230 0.23 60 
+	base_f = Tokenizer_GetArgFloat(3);
+	bAllowRandom = Tokenizer_GetArgInteger(4);
+	// SetupTestPower 230 0.23 60 50 0
 
 	return CMD_RES_OK;
 }
@@ -36,23 +38,25 @@ commandResult_t TestPower_Setup(const void* context, const char* cmd, const char
 void Test_Power_Init(void) {
     BL_Shared_Init();
 
-	//cmddetail:{"name":"SetupTestPower","args":"[fakeVoltage] [FakeCurrent] [FakePower] [bAllowRandom]",
+	//cmddetail:{"name":"SetupTestPower","args":"[fakeVoltage] [FakeCurrent] [FakePower] [FakeFrequency] [bAllowRandom]",
 	//cmddetail:"descr":"Starts the fake power metering driver",
 	//cmddetail:"fn":"TestPower_Setup","file":"driver/drv_test_drivers.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("SetupTestPower", TestPower_Setup, NULL);
 }
 void Test_Power_RunEverySecond(void) {
-    float final_v = base_v;
+	float final_v = base_v;
 	float final_c = base_c;
 	float final_p = base_p;
+	float final_f = base_f;
 
 	if (bAllowRandom) {
 		final_c += (rand() % 100) * 0.001f;
 		final_v += (rand() % 100) * 0.1f;
 		final_p += (rand() % 100) * 0.1f;
+		final_f += (rand() % 100) * 0.01f;
 	}
-	BL_ProcessUpdate(final_v, final_c, final_p, NAN, NAN);
+	BL_ProcessUpdate(final_v, final_c, final_p, final_f, NAN);
 }
 #endif
 

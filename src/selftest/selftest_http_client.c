@@ -33,6 +33,9 @@ void Test_HTTP_Client() {
 	Sim_RunSeconds(5, true);
 	SELFTEST_ASSERT_CHANNEL(1, 1);
 #endif
+	//CMD_ExecuteCommand("SendGet http://127.0.0.1/cm?cmnd=POWER%20TOGGLE", 0);
+	//Sim_RunFrames(15, false);
+	//SELFTEST_ASSERT_CHANNEL(1, 1);
 }
 
 

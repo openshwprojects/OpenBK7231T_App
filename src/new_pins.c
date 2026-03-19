@@ -12,6 +12,7 @@
 #include "cmnds/cmd_public.h"
 #include "i2c/drv_i2c_public.h"
 #include "driver/drv_tuyaMCU.h"
+#include "driver/drv_girierMCU.h"
 #include "driver/drv_public.h"
 #include "hal/hal_flashVars.h"
 #include "hal/hal_pins.h"
@@ -409,6 +410,9 @@ void PIN_SetupPins() {
 	// TODO: better place to call?
 	DHT_OnPinsConfigChanged();
 #endif
+#if ENABLE_LED_BASIC
+	LED_SetStripStateOutputs();
+#endif
 	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "PIN_SetupPins pins have been set up.\r\n");
 }
 
@@ -474,9 +478,11 @@ int PIN_IOR_NofChan(int test){
 	// Some roles don't need any channels
 	if (test == IOR_SGP_CLK || test == IOR_SHT3X_CLK || test == IOR_CHT83XX_CLK || test == IOR_Button_ToggleAll || test == IOR_Button_ToggleAll_n
 			|| test == IOR_BL0937_CF || test == IOR_BL0937_CF1 || test == IOR_BL0937_SEL
-			|| test == IOR_LED_WIFI || test == IOR_LED_WIFI_n || test == IOR_LED_WIFI_n
+			|| test == IOR_LED_WIFI || test == IOR_LED_WIFI_n || test == IOR_BL0937_SEL_n
+			|| test == IOR_RCRecv || test == IOR_RCRecv_nPup
 			|| (test >= IOR_IRRecv && test <= IOR_DHT11)
-			|| (test >= IOR_SM2135_DAT && test <= IOR_BP1658CJ_CLK)) {
+			|| (test >= IOR_SM2135_DAT && test <= IOR_BP1658CJ_CLK)
+			|| (test == IOR_HLW8112_SCSN)) {
 			return 0;
 	}
 	// all others have 1 channel
@@ -577,6 +583,18 @@ void Button_OnShortClick(int index)
 			return;
 		}
 #endif
+#if ENABLE_DRIVER_SHUTTERS
+		if (g_cfg.pins.roles[index] == IOR_Button_ShutterUp)
+		{
+			Shutter_MoveByIndex(g_cfg.pins.channels[index], 1.0f, true);
+			return;
+		}
+		if (g_cfg.pins.roles[index] == IOR_Button_ShutterDown)
+		{
+			Shutter_MoveByIndex(g_cfg.pins.channels[index], 0.0f, true);
+			return;
+		}
+#endif
 		if (g_cfg.pins.roles[index] == IOR_Button_NextDimmer || g_cfg.pins.roles[index] == IOR_Button_NextDimmer_n)
 		{
 			return;
@@ -622,6 +640,20 @@ void Button_OnDoubleClick(int index)
 		// double click toggles SECOND CHANNEL linked to this button
 		CHANNEL_Toggle(g_cfg.pins.channels2[index]);
 	}
+#if ENABLE_DRIVER_SHUTTERS
+	if (g_cfg.pins.roles[index] == IOR_Button_ShutterUp)
+	{
+		// issue stop order
+		Shutter_MoveByIndex(g_cfg.pins.channels[index], -1.0f, true);
+		return;
+	}
+	if (g_cfg.pins.roles[index] == IOR_Button_ShutterDown)
+	{
+		// issue stop order
+		Shutter_MoveByIndex(g_cfg.pins.channels[index], -1.0f, true);
+		return;
+	}
+#endif
 #if ENABLE_LED_BASIC
 	if (g_cfg.pins.roles[index] == IOR_SmartButtonForLEDs || g_cfg.pins.roles[index] == IOR_SmartButtonForLEDs_n) {
 		LED_NextColor();
@@ -714,7 +746,7 @@ bool BTN_ShouldInvert(int index) {
 		role == IOR_DigitalInput_n || role == IOR_DigitalInput_NoPup_n
 		|| role == IOR_Button_NextColor_n || role == IOR_Button_NextDimmer_n
 		|| role == IOR_Button_NextTemperature_n || role == IOR_Button_ScriptOnly_n
-		|| role == IOR_SmartButtonForLEDs_n) {
+		|| role == IOR_SmartButtonForLEDs_n || role == IOR_Button_pd_n) {
 		return true;
 	}
 	if (CFG_HasFlag(OBK_FLAG_DOORSENSOR_INVERT_STATE)) {
@@ -819,6 +851,10 @@ void CHANNEL_SetAll(int iVal, int iFlags) {
 		case IOR_Button_ScriptOnly_n:
 		case IOR_SmartButtonForLEDs:
 		case IOR_SmartButtonForLEDs_n:
+#if ENABLE_DRIVER_SHUTTERS
+		case IOR_Button_ShutterUp:
+		case IOR_Button_ShutterDown:
+#endif
 		{
 
 		}
@@ -962,6 +998,10 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 		case IOR_Button_ScriptOnly_n:
 		case IOR_SmartButtonForLEDs:
 		case IOR_SmartButtonForLEDs_n:
+#if ENABLE_DRIVER_SHUTTERS
+		case IOR_Button_ShutterUp:
+		case IOR_Button_ShutterDown:
+#endif
 		{
 			//pinButton_s *bt = &g_buttons[index];
 			// TODO: disable button
@@ -1024,14 +1064,20 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 		switch (role)
 		{
 		case IOR_Button:
+		case IOR_Button_pd: // TODO: is ok falling?
 		case IOR_Button_ToggleAll:
 		case IOR_Button_NextColor:
 		case IOR_Button_NextDimmer:
 		case IOR_Button_NextTemperature:
 		case IOR_Button_ScriptOnly:
 		case IOR_SmartButtonForLEDs:
+#if ENABLE_DRIVER_SHUTTERS
+		case IOR_Button_ShutterUp:
+		case IOR_Button_ShutterDown:
+#endif
 			falling = 1;
 		case IOR_Button_n:
+		case IOR_Button_pd_n: // TODO: is ok falling?
 		case IOR_Button_ToggleAll_n:
 		case IOR_Button_NextColor_n:
 		case IOR_Button_NextDimmer_n:
@@ -1045,7 +1091,12 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 			setGPIActive(index, 1, falling);
 
 			// digital input
-			HAL_PIN_Setup_Input_Pullup(index);
+			if (role == IOR_Button_pd_n || role == IOR_Button_pd) {
+				HAL_PIN_Setup_Input_Pulldown(index);
+			}
+			else {
+				HAL_PIN_Setup_Input_Pullup(index);
+			}
 
 			// init button after initializing pin role
 			NEW_button_init(bt, button_generic_get_gpio_value, 0);
@@ -1061,13 +1112,19 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 			break;
 
 		case IOR_ToggleChannelOnToggle:
+		case IOR_ToggleChannelOnToggle_pd:
 		{
 			// add to active inputs
 			falling = 1;
 			setGPIActive(index, 1, falling);
 
 			// digital input
-			HAL_PIN_Setup_Input_Pullup(index);
+			if (role == IOR_ToggleChannelOnToggle_pd) {
+				HAL_PIN_Setup_Input_Pulldown(index);
+			}
+			else {
+				HAL_PIN_Setup_Input_Pullup(index);
+			}
 			// otherwise we get a toggle on start			
 #ifdef PLATFORM_BEKEN
 			//20231217 XJIKKA
@@ -1141,6 +1198,20 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 			}
 		}
 		break;
+#if ENABLE_LED_BASIC
+		case IOR_StripState:
+		case IOR_StripState_n:
+		{
+			HAL_PIN_Setup_Output(index);
+			if (role == IOR_StripState) {
+				HAL_PIN_SetOutputValue(index, LED_GetEnableAll());
+			}
+			else {
+				HAL_PIN_SetOutputValue(index, !LED_GetEnableAll());
+			}
+		}
+		break;
+#endif
 		case IOR_BridgeForward:
 		case IOR_BridgeReverse:
 		{
@@ -1154,7 +1225,18 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 			HAL_PIN_SetOutputValue(index, 0);
 		}
 		break;
+		case IOR_ShutterA:
+		case IOR_ShutterB:
+		{
+			int channelIndex;
+			int channelValue;
 
+			channelIndex = PIN_GetPinChannelForPinIndex(index);
+			channelValue = g_channelValues[channelIndex];
+
+			HAL_PIN_Setup_Output(index);
+		}
+		break;
 		case IOR_AlwaysHigh:
 		{
 			HAL_PIN_Setup_Output(index);
@@ -1279,7 +1361,9 @@ static void Channel_OnChanged(int ch, int prevValue, int iFlags) {
 #if ENABLE_DRIVER_TUYAMCU
 	TuyaMCU_OnChannelChanged(ch, iVal);
 #endif
-
+#if ENABLE_DRIVER_GIRIERMCU
+	GirierMCU_OnChannelChanged(ch, iVal);
+#endif
 	for (i = 0; i < PLATFORM_GPIO_MAX; i++) {
 		if (g_cfg.pins.channels[i] == ch) {
 			if (g_cfg.pins.roles[i] == IOR_Relay || g_cfg.pins.roles[i] == IOR_BAT_Relay || g_cfg.pins.roles[i] == IOR_LED) {
@@ -1312,10 +1396,8 @@ static void Channel_OnChanged(int ch, int prevValue, int iFlags) {
 	Channel_SaveInFlashIfNeeded(ch);
 }
 void CFG_ApplyChannelStartValues() {
-	int i;
+	int i, iValue;
 	for (i = 0; i < CHANNEL_MAX; i++) {
-		int iValue;
-
 		iValue = g_cfg.startChannelValues[i];
 		if (iValue == -1) {
 			g_channelValuesFloats[i] = g_channelValues[i] = HAL_FlashVars_GetChannelValue(i);
@@ -1324,6 +1406,22 @@ void CFG_ApplyChannelStartValues() {
 		else {
 			g_channelValuesFloats[i] = g_channelValues[i] = iValue;
 			//addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "CFG_ApplyChannelStartValues: Channel %i is being set to constant state %i", i, g_channelValues[i]);
+		}
+	}
+	// preload pin values from channels for pin types that look at g_lastValidState
+	for (i = 0; i < PLATFORM_GPIO_MAX; i++) {
+		switch (g_cfg.pins.roles[i]) {
+		case IOR_DigitalInput:
+		case IOR_DigitalInput_n:
+		case IOR_ToggleChannelOnToggle:
+		case IOR_DigitalInput_NoPup:
+		case IOR_DigitalInput_NoPup_n:
+		case IOR_DoorSensorWithDeepSleep:
+		case IOR_DoorSensorWithDeepSleep_NoPup:
+		case IOR_DoorSensorWithDeepSleep_pd:
+			iValue = g_cfg.pins.channels[i];
+			g_lastValidState[i] = g_channelValues[iValue];
+			//addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "CFG_ApplyChannelStartValues: Pin %i is being set channel state %i", i, g_channelValues[iValue]);
 		}
 	}
 }
@@ -1348,6 +1446,8 @@ int ChannelType_GetDivider(int type) {
 	case ChType_Power_div10:
 	case ChType_Frequency_div10:
 	case ChType_ReadOnly_div10:
+	case ChType_Current_div10:
+	case ChType_Illuminance_div10:
 		return 10;
 	case ChType_Frequency_div100:
 	case ChType_Current_div100:
@@ -1364,6 +1464,7 @@ int ChannelType_GetDivider(int type) {
 	case ChType_EnergyTotal_kWh_div1000:
 	case ChType_EnergyExport_kWh_div1000:
 	case ChType_EnergyToday_kWh_div1000:
+	case ChType_EnergyImport_kWh_div1000:
 	case ChType_Current_div1000:
 	case ChType_LeakageCurrent_div1000:
 	case ChType_ReadOnly_div1000:
@@ -1393,6 +1494,7 @@ const char *ChannelType_GetUnit(int type) {
 	case ChType_Power_div10:
 	case ChType_Power_div100:
 		return "W";
+	case ChType_Frequency:
 	case ChType_Frequency_div10:
 	case ChType_Frequency_div100:
 	case ChType_Frequency_div1000:
@@ -1400,11 +1502,13 @@ const char *ChannelType_GetUnit(int type) {
 	case ChType_LeakageCurrent_div1000:
 	case ChType_Current_div1000:
 	case ChType_Current_div100:
+	case ChType_Current_div10:
 		return "A";
 	case ChType_EnergyTotal_kWh_div1000:
 	case ChType_EnergyExport_kWh_div1000:
 	case ChType_EnergyToday_kWh_div1000:
 	case ChType_EnergyTotal_kWh_div100:
+	case ChType_EnergyImport_kWh_div1000:
 		return "kWh";
 	case ChType_PowerFactor_div1000:
 	case ChType_PowerFactor_div100:
@@ -1414,6 +1518,7 @@ const char *ChannelType_GetUnit(int type) {
 	case ChType_ReactivePower:
 		return "vAr";
 	case ChType_Illuminance:
+	case ChType_Illuminance_div10:
 		return "Lux";
 	case ChType_Ph:
 		return "Ph";
@@ -1444,12 +1549,14 @@ const char *ChannelType_GetTitle(int type) {
 	case ChType_Power_div10:
 	case ChType_Power_div100:
 		return "Power";
+	case ChType_Frequency:
 	case ChType_Frequency_div10:
 	case ChType_Frequency_div100:
 	case ChType_Frequency_div1000:
 		return "Frequency";
 	case ChType_Current_div1000:
 	case ChType_Current_div100:
+	case ChType_Current_div10:
 		return "Current";
 	case ChType_LeakageCurrent_div1000:
 		return "Leakage"; 
@@ -1460,6 +1567,8 @@ const char *ChannelType_GetTitle(int type) {
 		return "EnergyExport";
 	case ChType_EnergyToday_kWh_div1000:
 		return "EnergyToday";
+	case ChType_EnergyImport_kWh_div1000:
+		return "EnergyImport";
 	case ChType_PowerFactor_div1000:
 	case ChType_PowerFactor_div100:
 		return "PowerFactor";
@@ -1468,6 +1577,7 @@ const char *ChannelType_GetTitle(int type) {
 	case ChType_ReactivePower:
 		return "ReactivePower";
 	case ChType_Illuminance:
+	case ChType_Illuminance_div10:
 		return "Illuminance";
 	case ChType_Ph:
 		return "Ph Water Quality";
@@ -1621,55 +1731,58 @@ void CHANNEL_Set_Ex(int ch, int iVal, int iFlags, int ausemovingaverage) {
 void CHANNEL_Set(int ch, int iVal, int iFlags) {
 	CHANNEL_Set_Ex(ch, iVal, iFlags, 0);
 }
+char *g_channelPingPongs = 0;
 
-void CHANNEL_AddClamped(int ch, int iVal, int min, int max, int bWrapInsteadOfClamp) {
-#if 0
-	int prevValue;
-	if (ch < 0 || ch >= CHANNEL_MAX) {
-		addLogAdv(LOG_ERROR, LOG_FEATURE_GENERAL, "CHANNEL_AddClamped: Channel index %i is out of range <0,%i)\n\r", ch, CHANNEL_MAX);
-		return;
-	}
-	prevValue = g_channelValues[ch];
-	g_channelValues[ch] = g_channelValues[ch] + iVal;
-
-	if (bWrapInsteadOfClamp) {
-		if (g_channelValues[ch] > max)
-			g_channelValues[ch] = min;
-		if (g_channelValues[ch] < min)
-			g_channelValues[ch] = max;
-	}
-	else {
-		if (g_channelValues[ch] > max)
-			g_channelValues[ch] = max;
-		if (g_channelValues[ch] < min)
-			g_channelValues[ch] = min;
-	}
-
-	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "CHANNEL_AddClamped channel %i has changed to %i\n\r", ch, g_channelValues[ch]);
-
-	Channel_OnChanged(ch, prevValue, 0);
-#else
+void CHANNEL_AddClamped(int ch, int iDelta, int min, int max, int bWrapInsteadOfClamp) {
 	// we want to support special channel indexes, so it's better to use GET/SET interface
 	// Special channel indexes are used to access things like dimmer, led colors, etc
-	iVal = CHANNEL_Get(ch) + iVal;
+	int newVal;;
 
-	if (bWrapInsteadOfClamp) {
-		if (iVal > max)
-			iVal = min;
-		if (iVal < min)
-			iVal = max;
+	if (bWrapInsteadOfClamp == 3) {
+		if (g_channelPingPongs) {
+			g_channelPingPongs[ch] *= -1;
+		}
+		return;
+	} else if (bWrapInsteadOfClamp == 2) {
+		// ping-pong logic
+		if (g_channelPingPongs == 0) {
+			g_channelPingPongs = (char*)malloc(CHANNEL_MAX);
+			memset(g_channelPingPongs, 1, CHANNEL_MAX);
+		}
+		int prevVal = CHANNEL_Get(ch);
+		newVal = prevVal + iDelta * g_channelPingPongs[ch];
+		if (prevVal == min && newVal < min) {
+			g_channelPingPongs[ch] *= -1;
+		}
+		else if (prevVal == max && newVal > max) {
+			g_channelPingPongs[ch] *= -1;
+		}
+		newVal = prevVal + iDelta * g_channelPingPongs[ch];
+		if (newVal > max) {
+			newVal = max;
+		}
+		else if (newVal < min) {
+			newVal = min;
+		}
+	} else if (bWrapInsteadOfClamp) {
+		newVal = CHANNEL_Get(ch) + iDelta;
+		if (newVal > max)
+			newVal = min;
+		if (newVal < min)
+			newVal = max;
 	}
 	else {
-		if (iVal > max)
-			iVal = max;
-		if (iVal < min)
-			iVal = min;
+		newVal = CHANNEL_Get(ch) + iDelta;
+		if (newVal > max)
+			newVal = max;
+		if (newVal < min)
+			newVal = min;
 	}
 
-	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "CHANNEL_AddClamped channel %i has changed to %i\n\r", ch, iVal);
+	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, 
+		"CHANNEL_AddClamped channel %i has changed to %i\n\r", ch, newVal);
 
-	CHANNEL_Set(ch, iVal, 0);
-#endif
+	CHANNEL_Set(ch, newVal, 0);
 }
 void CHANNEL_Add(int ch, int iVal) {
 #if 0
@@ -1866,12 +1979,18 @@ bool CHANNEL_ShouldBePublished(int ch) {
 		return true;
 	}
 #ifdef ENABLE_DRIVER_TUYAMCU
-	// publish if channel is used by TuyaMCU (no pin role set), for example door sensor state with power saving V0 protocol
+	// publish if channel is used by TuyaMCU or Girier (no pin role set), for example door sensor state with power saving V0 protocol
 	// Not enabled by default, you have to set OBK_FLAG_TUYAMCU_ALWAYSPUBLISHCHANNELS flag
 	if (CFG_HasFlag(OBK_FLAG_TUYAMCU_ALWAYSPUBLISHCHANNELS) && TuyaMCU_IsChannelUsedByTuyaMCU(ch)) {
 		return true;
 	}
 #endif
+#ifdef ENABLE_DRIVER_GIRIERMCU
+	if (CFG_HasFlag(OBK_FLAG_TUYAMCU_ALWAYSPUBLISHCHANNELS) && GirierMCU_IsChannelUsedByGirierMCU(ch)) {
+		return true;
+	}
+#endif
+
 	if (CFG_HasFlag(OBK_FLAG_MQTT_PUBLISH_ALL_CHANNELS)) {
 		return true;
 	}
@@ -2172,7 +2291,11 @@ void PIN_ticks(void* param)
 				|| g_cfg.pins.roles[i] == IOR_Button_NextDimmer || g_cfg.pins.roles[i] == IOR_Button_NextDimmer_n
 				|| g_cfg.pins.roles[i] == IOR_Button_NextTemperature || g_cfg.pins.roles[i] == IOR_Button_NextTemperature_n
 				|| g_cfg.pins.roles[i] == IOR_Button_ScriptOnly || g_cfg.pins.roles[i] == IOR_Button_ScriptOnly_n
-				|| g_cfg.pins.roles[i] == IOR_SmartButtonForLEDs || g_cfg.pins.roles[i] == IOR_SmartButtonForLEDs_n) {
+				|| g_cfg.pins.roles[i] == IOR_SmartButtonForLEDs || g_cfg.pins.roles[i] == IOR_SmartButtonForLEDs_n
+#if ENABLE_DRIVER_SHUTTERS
+				|| g_cfg.pins.roles[i] == IOR_Button_ShutterUp || g_cfg.pins.roles[i] == IOR_Button_ShutterDown
+#endif
+				) {
 				//addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"Test hold %i\r\n",i);
 				PIN_Input_Handler(i, t_diff);
 			}
@@ -2217,7 +2340,8 @@ void PIN_ticks(void* param)
 
 #endif
 			}
-			else if (g_cfg.pins.roles[i] == IOR_ToggleChannelOnToggle) {
+			else if (g_cfg.pins.roles[i] == IOR_ToggleChannelOnToggle
+				|| g_cfg.pins.roles[i] == IOR_ToggleChannelOnToggle_pd) {
 				value = PIN_ReadDigitalInputValue_WithInversionIncluded(i);
 			
 				if (value) {
@@ -2370,6 +2494,14 @@ const char* g_channelTypeNames[] = {
 	"OpenStopClose",
 	"Percent",
 	"StopUpDown",
+	"EnergyImport_kWh_div1000",
+	"Enum",
+	"ReadOnlyEnum",
+	"Current_div10",
+	"Illuminance_div10",
+	"Frequency",
+	"error",
+	"error",
 	"error",
 	"error",
 };
@@ -2707,6 +2839,79 @@ int XJ_MovingAverage_int(int aprevvalue, int aactvalue) {
 	return res;
 }
 #endif
+
+
+// use "complete" search as default, only "simple" one for these platforms
+//#if !(PLATFORM_LN882H || PLATFORM_W800 || PLATFORM_TXW81X || (PLATFORM_ESPIDF && ! CONFIG_IDF_TARGET_ESP32C3))
+#if !(PLATFORM_LN882H || PLATFORM_TXW81X || (PLATFORM_ESPIDF && ! CONFIG_IDF_TARGET_ESP32C3))
+// start helpers for finding (su-)string in pinalias
+
+// code to find a pin index by name
+// we migth have "complex" or alternate names like
+// "IO0/A0" or even "IO2 (B2/TX1)" and would like all to match
+// so we need to make sure the substring is found an propperly "terminated"
+// by '\0', '/' , '(', ')' or ' '
+
+
+// Define valid start and end characters for a string (e.g. for "(RX1/IO10)" we would need "()/"
+int is_valid_start_end(char ch) {
+    // Check if character is in defined terminators
+    return strchr(" ()/\0", ch) != NULL;
+}
+
+// new version, case insensitive, use 
+// wal_stricmp() and (new introduced) wal_stristr()
+// from new_common.c
+int str_match_in_alias(const char* alias, const char* str) {
+    size_t alen = strlen(alias), slen = strlen(str);
+
+    if (slen > alen) return 0; // No match
+
+    // found at start of alisa, no test for a valid "start" 
+    if (wal_strnicmp(alias, str, slen) == 0) {
+        return (slen == alen || is_valid_start_end(alias[slen]));
+    }
+
+    // not at start, so found-1 is a valid position in string
+    for (char *found = wal_stristr(alias + 1, str); found; found = wal_stristr(found + 1, str)) {
+    
+        if (is_valid_start_end(*(found - 1)) && (is_valid_start_end(found[slen]) || found[slen] == '\0')) {
+            return 1; // Match found
+        }
+    }
+
+    return 0; // No match
+}
+
+// END helpers
+
+int PIN_FindIndexFromString(const char *name) {
+	if (strIsInteger(name)) {
+		return atoi(name);
+	}
+	for (int i = 0; i < PLATFORM_GPIO_MAX; i++) {
+		if (str_match_in_alias(HAL_PIN_GetPinNameAlias(i), name)) {
+			return i;
+		}
+	}
+	return -1;
+}
+#else
+int PIN_FindIndexFromString(const char *name) {
+	if (strIsInteger(name)) {
+		return atoi(name);
+	}
+	for (int i = 0; i < PLATFORM_GPIO_MAX; i++) {
+		if (!stricmp(HAL_PIN_GetPinNameAlias(i), name)) {
+			return i;
+		}
+	}
+	return -1;
+}
+
+#endif
+
+
 
 void PIN_AddCommands(void)
 {

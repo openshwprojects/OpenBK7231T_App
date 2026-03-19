@@ -20,6 +20,10 @@
 "description": "This will create a new repeating events with 1 repeat count and 60 seconds delay everytime Channel1 becomes 1. Basically, it will automatically turn off the light 60 seconds after you turn it on. TODO: clear previous event instance?"
 },
 {
+"command": "addChangeHandler Frequncy > 5295 setChannel 1 0",
+"description": "This will Change Handler will turn off Channel 1 if the BL0XXX driver's Frequency is over 52.95hz"
+},
+{
 "command": "addEventHandler OnChannelChange 1 http://192.168.0.112/cm?cmnd=Power0%20$CH1",
 "description": "This is another approach to sending GET for change. As you can see, it's using addEventHandler instead of addChangeHandler. This will fire with every change. The index 1 here is a channel index. The $CH1 macro in URL will get expended to current channel value, usually 1 or 0"
 },

@@ -11,7 +11,10 @@
 //#include "driver/drv_ir.h"
 #include "driver/drv_public.h"
 #include "driver/drv_bl_shared.h"
+#include "driver/drv_hlw8112.h"
 //#include "ir/ir_local.h"
+
+#include "driver/drv_deviceclock.h"
 
 // Commands register, execution API and cmd tokenizer
 #include "cmnds/cmd_public.h"
@@ -36,6 +39,7 @@
 
 
 #include "driver/drv_ntp.h"
+#include "driver/drv_mdns.h"
 #include "driver/drv_ssdp.h"
 #include "driver/drv_uart.h"
 
@@ -47,6 +51,7 @@
 #include "BkDriverWdg.h"
 
 void bg_register_irda_check_func(FUNCPTR func);
+extern void WFI(void);
 #elif PLATFORM_BL602
 #include <bl_sys.h>
 #include <hosal_adc.h>
@@ -100,11 +105,25 @@ uint8_t g_StartupDelayOver = 0;
 uint32_t idleCount = 0;
 
 int DRV_SSDP_Active = 0;
+int DRV_MDNS_Active = 0;
 
 #define LOG_FEATURE LOG_FEATURE_MAIN
 
 void Main_ForceUnsafeInit();
 
+#if PLATFORM_BL602 || PLATFORM_W600 || PLATFORM_W800
+#define DEF_USE_WFI 1
+#else
+#define DEF_USE_WFI 0
+#endif
+#if PLATFORM_BEKEN
+#define WFI_FUNC WFI
+#elif PLATFORM_BL602 || PLATFORM_REALTEK || PLATFORM_XRADIO || PLATFORM_W600 || PLATFORM_RDA5981 || PLATFORM_LN8825 || PLATFORM_LN882H
+#define WFI_FUNC() __asm volatile("wfi")
+#elif PLATFORM_W800
+#define WFI_FUNC __WFI
+#endif
+bool g_use_wfi = DEF_USE_WFI;
 
 
 // TEMPORARY
@@ -140,10 +159,35 @@ void OTA_SetTotalBytes(int value)
 
 
 #if PLATFORM_XR806 || PLATFORM_XR872
+
 size_t xPortGetFreeHeapSize()
 {
 	return sram_free_heap_size();
 }
+
+#elif PLATFORM_RDA5981
+
+#include "hal/api/mbed_stats.h"
+extern uint32_t mbed_heap_size;
+size_t xPortGetFreeHeapSize()
+{
+	mbed_stats_heap_t heap_stats;
+	mbed_stats_heap_get(&heap_stats);
+	//ADDLOGF_DEBUG("mbed_heap_size: %i\n heap_stats.current_size: %i\nheap_stats.max_size: %i\nheap_stats.total_size: %i\nheap_stats.alloc_cnt: %i\nheap_stats.alloc_fail_cnt: %i\n",
+	//	mbed_heap_size, heap_stats.current_size, heap_stats.max_size, heap_stats.total_size, heap_stats.alloc_cnt, heap_stats.alloc_fail_cnt);
+	return mbed_heap_size - heap_stats.current_size;
+}
+int _kill(int pid, int sig)
+{
+	errno = EINVAL;
+	return -1;
+}
+
+pid_t _getpid()
+{
+	return 1;
+}
+
 #endif
 
 #if PLATFORM_BL602
@@ -162,6 +206,15 @@ static int get_tsen_adc(
 #endif
 
 #if PLATFORM_BEKEN
+#if (OBK_VARIANT == OBK_VARIANT_BATTERY)
+	#if PLATFORM_BEKEN_NEW
+		#define START_MS_DELAY 10;
+	#else
+		#define START_MS_DELAY 0;
+	#endif
+#else
+	#define START_MS_DELAY 250;
+#endif
 // this function waits for the extended app functions to finish starting.
 extern void extended_app_waiting_for_launch(void);
 void extended_app_waiting_for_launch2()
@@ -176,9 +229,9 @@ void extended_app_waiting_for_launch2()
 	// wait 100ms at the start.
 	// TCP is being setup in a different thread, and there does not seem to be a way to find out if it's complete yet?
 	// so just wait a bit, and then start.
-	int startDelay = 100;
+	uint8_t startDelay = START_MS_DELAY;
 	bk_printf("\r\ndelaying start\r\n");
-	for(int i = 0; i < startDelay / 10; i++)
+	for(uint8_t i = 0; i < startDelay / 10; i++)
 	{
 		rtos_delay_milliseconds(10);
 		bk_printf("#Startup delayed %dms#\r\n", i * 10);
@@ -196,7 +249,7 @@ void extended_app_waiting_for_launch2(void) {
 #endif
 
 
-#if PLATFORM_LN882H || PLATFORM_ESPIDF || PLATFORM_ESP8266 || PLATFORM_REALTEK_NEW
+#if PLATFORM_ESPIDF || PLATFORM_REALTEK_NEW
 
 int LWIP_GetMaxSockets() {
 	return 0;
@@ -206,7 +259,7 @@ int LWIP_GetActiveSockets() {
 }
 #endif
 
-#if PLATFORM_BL602 || PLATFORM_W800 || PLATFORM_W600 || PLATFORM_LN882H \
+#if PLATFORM_BL602 || PLATFORM_W800 || PLATFORM_W600 || PLATFORM_LN882H || PLATFORM_LN8825 \
 	|| PLATFORM_ESPIDF || PLATFORM_TR6260 || PLATFORM_REALTEK || PLATFORM_ECR6600 \
 	|| PLATFORM_XRADIO || PLATFORM_ESP8266
 
@@ -297,6 +350,53 @@ OSStatus rtos_suspend_thread(beken_thread_t* thread)
 	return kNoErr;
 }
 
+#elif PLATFORM_RDA5981
+
+#include "rt_TypeDef.h"
+
+OSStatus rtos_create_thread(beken_thread_t thread,
+	uint8_t priority, const char* name,
+	beken_thread_function_t function,
+	uint32_t stack_size, beken_thread_arg_t arg)
+{
+	osThreadDef_t def;
+	osThreadId     id;
+
+	def.pthread = (os_pthread)function;
+	def.tpriority = osPriorityNormal;
+	def.stacksize = stack_size;
+	def.stack_pointer = malloc(stack_size);
+	if(def.stack_pointer == NULL)
+	{
+		printf("Error allocating the stack memory");
+		return 1;
+	}
+	thread = osThreadCreate(&def, arg);
+	if(thread == NULL)
+	{
+		free(def.stack_pointer);
+		printf("Thread create %s - err\n", name);
+		return 1;
+	}
+	//printf("Thread stack at 0x%lx %lu\n", (uint32_t)def.stack_pointer, stack_size);
+	return 0;
+}
+
+OSStatus rtos_delete_thread(beken_thread_t thread)
+{
+	if(thread == NULL)
+	{
+		thread = osThreadGetId();
+	}
+	P_TCB tcb = rt_tid2ptcb(thread);
+	uint32_t* stk = tcb->stack;
+	if(stk == NULL) printf("rtos_delete_thread stk is null\n");
+	//printf("Freeing stack at 0x%lx %u\n", (uint32_t)stk, tcb->priv_stack);
+	free(stk);
+	osThreadTerminate(thread);
+	return kNoErr;
+}
+
 #endif
 
 void MAIN_ScheduleUnsafeInit(int delSeconds) {
@@ -329,7 +429,7 @@ void ScheduleDriverStart(const char* name, int delay) {
 	}
 }
 
-#if defined(PLATFORM_LN882H)
+#if defined(PLATFORM_LN882H) || PLATFORM_LN8825
 // LN882H hack, maybe place somewhere else?
 // this will be applied after WiFi connect
 extern int g_ln882h_pendingPowerSaveCommand;
@@ -407,10 +507,12 @@ void Main_OnWiFiStatusChange(int code)
 	case WIFI_STA_DISCONNECTED:
 		// try to connect again in few seconds
 		// if we are already disconnected, why must we call disconnect again?
-		//if (g_bHasWiFiConnected != 0)
-		//{
-		//	HAL_DisconnectFromWifi();
-		//}
+#if PLATFORM_BEKEN
+		if (g_bHasWiFiConnected != 0)
+		{
+			HAL_DisconnectFromWifi();
+		}
+#endif
 		if(g_secondsElapsed < 30)
 		{
 			g_connectToWiFi = 5;
@@ -462,8 +564,11 @@ void Main_OnWiFiStatusChange(int code)
 				ScheduleDriverStart("SSDP", 5);
 				//DRV_SSDP_Restart(); // this kills things
 			}
+			if (DRV_MDNS_Active) {
+				ScheduleDriverStart("MDNS", 5);
+			}
 		}
-#if defined(PLATFORM_LN882H)
+#if defined(PLATFORM_LN882H) || PLATFORM_LN8825
 		// LN882H hack, maybe place somewhere else?
 		// this will be applied only if WiFi is connected
 		if (g_ln882h_pendingPowerSaveCommand != -1) {
@@ -613,7 +718,7 @@ bool Main_HasFastConnect() {
 	}
 	return false;
 }
-#if PLATFORM_LN882H || PLATFORM_ESPIDF || PLATFORM_ESP8266
+#if PLATFORM_LN882H || PLATFORM_ESPIDF || PLATFORM_ESP8266 || PLATFORM_LN8825
 // Quick hack to display LN-only temperature,
 // we may improve it in the future
 extern float g_wifi_temperature;
@@ -624,6 +729,12 @@ float g_wifi_temperature = 0;
 static byte g_secondsSpentInLowMemoryWarning = 0;
 void Main_OnEverySecond()
 {
+#if PLATFORM_W600 || PLATFORM_W800
+#define TimeOut_t xTimeOutType 
+#endif
+#if ! ( WINDOWS || PLATFORM_TXW81X  || PLATFORM_RDA5981) 
+	TimeOut_t myTimeout;	// to get uptime from xTicks - not working on WINDOWS and TXW81X and RDA5981
+#endif
 	int newMQTTState;
 	const char* safe;
 	int i;
@@ -639,11 +750,16 @@ void Main_OnEverySecond()
 #if PLATFORM_BEKEN
 		UINT32 temperature;
 		temp_single_get_current_temperature(&temperature);
-#if PLATFORM_BK7231T
-		g_wifi_temperature = 2.21f * (temperature / 25.0f) - 65.91f;
 #if PLATFORM_BEKEN_NEW
-		g_wifi_temperature = temperature * 0.04f;
-#endif
+	#if PLATFORM_BK7231N
+		g_wifi_temperature = (-0.38f * temperature) + 156.0f;
+	#elif PLATFORM_BK7238 || PLATFORM_BK7252N
+		g_wifi_temperature = (-0.4f * temperature) + 131.0f;
+	#else
+		g_wifi_temperature = temperature * 0.128f;
+	#endif
+#elif PLATFORM_BK7231T
+		g_wifi_temperature = 2.21f * (temperature / 25.0f) - 65.91f;
 #else
 		g_wifi_temperature = (-0.457f * temperature) + 188.474f;
 #endif
@@ -795,8 +911,14 @@ void Main_OnEverySecond()
 			}
 		}
 	}
-
+#if (WINDOWS || PLATFORM_TXW81X || PLATFORM_RDA5981)
 	g_secondsElapsed++;
+#elif defined(PLATFORM_ESPIDF)
+	g_secondsElapsed = (int)(esp_timer_get_time() / 1000000);
+#else
+	vTaskSetTimeOutState( &myTimeout );
+	g_secondsElapsed = (int)((((uint64_t) myTimeout.xOverflowCount << (sizeof(portTickType)*8) | myTimeout.xTimeOnEntering)*portTICK_RATE_MS ) / 1000 );
+#endif
 	if (bSafeMode) {
 		safe = "[SAFE] ";
 	}
@@ -948,8 +1070,13 @@ void Main_OnEverySecond()
 			{
 				BL09XX_SaveEmeteringStatistics();
 			}
-#endif            
-			ADDLOGF_INFO("Going to call HAL_RebootModule\r\n");
+#endif       
+#if ENABLE_DRIVER_HLW8112SPI
+			HLW8112_Save_Statistics();
+#endif 
+			ADDLOGF_INFO("Rebooting...\r\n");
+			// call disconnect so that fast connect wouldn't fail
+			HAL_DisconnectFromWifi();
 			HAL_RebootModule();
 		}
 		else {
@@ -996,6 +1123,7 @@ void QuickTick(void* param)
 {
 	if (g_bWantPinDeepSleep) {
 		g_bWantPinDeepSleep = 0;
+		HAL_DisconnectFromWifi();
 		PINS_BeginDeepSleepWithPinWakeUp(g_pinDeepSleepWakeUp);
 		return;
 	}
@@ -1073,18 +1201,14 @@ void QuickTick(void* param)
 
 }
 
-#if PLATFORM_ESP8266 || PLATFORM_TR6260
-#define QT_STACK_SIZE 1536
-#else
 #define QT_STACK_SIZE 2048
-#endif
 
 ////////////////////////////////////////////////////////
 // this is the bit which runs the quick tick timer
 #if WINDOWS
 
 #elif PLATFORM_BL602 || PLATFORM_W600 || PLATFORM_W800 || PLATFORM_TR6260 || defined(PLATFORM_REALTEK) || PLATFORM_ECR6600 \
-	|| PLATFORM_ESP8266 || PLATFORM_ESPIDF || PLATFORM_XRADIO || PLATFORM_LN882H || PLATFORM_TXW81X
+	|| PLATFORM_ESP8266 || PLATFORM_ESPIDF || PLATFORM_XRADIO || PLATFORM_LN882H || PLATFORM_TXW81X || PLATFORM_RDA5981 || PLATFORM_LN8825
 void quick_timer_thread(void* param)
 {
 	while (1) {
@@ -1100,10 +1224,12 @@ void QuickTick_StartThread(void)
 #if WINDOWS
 
 #elif PLATFORM_BL602 || PLATFORM_W600 || PLATFORM_W800 || PLATFORM_TR6260 || defined(PLATFORM_REALTEK) || PLATFORM_ECR6600 \
-	|| PLATFORM_ESP8266 || PLATFORM_ESPIDF || PLATFORM_XRADIO || PLATFORM_LN882H
+	|| PLATFORM_ESP8266 || PLATFORM_ESPIDF || PLATFORM_XRADIO || PLATFORM_LN882H || PLATFORM_LN8825
 	xTaskCreate(quick_timer_thread, "quick", QT_STACK_SIZE, NULL, 15, NULL);
 #elif PLATFORM_TXW81X
 	os_task_create("quick", quick_timer_thread, NULL, 15, 0, NULL, QT_STACK_SIZE);
+#elif PLATFORM_RDA5981
+	rda_thread_new("quick", quick_timer_thread, NULL, QT_STACK_SIZE, osPriorityNormal);
 #else
 	OSStatus result;
 
@@ -1142,8 +1268,15 @@ int Main_IsConnectedToWiFi()
 
 // called from idle thread each loop.
 // - just so we know it is running.
+#if PLATFORM_ESPIDF || PLATFORM_ESP8266 || PLATFORM_BL602 || (PLATFORM_REALTEK && !PLATFORM_REALTEK_NEW) \
+|| PLATFORM_XRADIO || PLATFORM_LN8825 || PLATFORM_LN882H
+inline __attribute__((always_inline))
+#endif
 void isidle() {
 	idleCount++;
+#ifdef WFI_FUNC
+	if(g_use_wfi) WFI_FUNC();
+#endif
 }
 
 bool g_unsafeInitDone = false;
@@ -1234,6 +1367,12 @@ void Main_Init_BeforeDelay_Unsafe(bool bAutoRunScripts) {
 	CMD_Init_Early();
 #if WINDOWS
 	CMD_InitSimulatorOnlyCommands();
+#else
+	HAL_RegisterPlatformSpecificCommands();
+#if ENABLE_BT_PROXY
+	extern void HAL_BTProxy_RegisterCommands();
+	HAL_BTProxy_RegisterCommands();
+#endif
 #endif
 
 	/* Automatic disable of PIN MONITOR after reboot */
@@ -1299,6 +1438,9 @@ void Main_Init_BeforeDelay_Unsafe(bool bAutoRunScripts) {
 			{
 				DRV_StartDriver("GN6932");
 			}
+			if (PIN_FindPinIndexForRole(IOR_HLW8112_SCSN, -1) != -1) {
+				DRV_StartDriver("HLW8112SPI");
+			}
 //			if ((PIN_FindPinIndexForRole(IOR_TM1638_CLK, -1) != -1) &&
 //				(PIN_FindPinIndexForRole(IOR_TM1638_DAT, -1) != -1) &&
 //				(PIN_FindPinIndexForRole(IOR_TM1638_STB, -1) != -1))
@@ -1342,6 +1484,8 @@ void Main_Init_Before_Delay()
 	// it registers a cllback from RTOS IDLE function.
 	// why is it called IRDA??  is this where they check for IR?
 	bg_register_irda_check_func(isidle);
+#elif PLATFORM_TR6260
+	system_register_idle_callback(isidle);
 #endif
 
 	g_bootFailures = HAL_FlashVars_GetBootFailures();
@@ -1506,4 +1650,12 @@ void Main_Init()
 
 }
 
+#if PLATFORM_ESPIDF || PLATFORM_ESP8266 || PLATFORM_BL602 || (PLATFORM_REALTEK && !PLATFORM_REALTEK_NEW) \
+|| PLATFORM_XRADIO || PLATFORM_W600 || PLATFORM_W800 || PLATFORM_LN8825 || PLATFORM_LN882H
 
+void vApplicationIdleHook(void)
+{
+	isidle();
+}
+
+#endif

@@ -56,4 +56,4 @@ Do not add anything here, as it will overwritten with next rebuild.
 | 48 | [PWR] Invert AC dir |
 | 49 | [HTTP] Hide ON/OFF for relays (only red/green buttons) |
 | 50 | [MQTT] Never add GET suffix |
-| 51 | [WiFi] (RTL/BK) Enhanced fast connect by saving AP data to flash (preferable with Flag 37 & static ip). Quick reset 3 times to connect normally |
+| 51 | [WiFi] (RTL/BK/BL602) Enhanced fast connect by saving AP data to flash (preferable with Flag 37 & static ip). Quick reset 3 times to connect normally |

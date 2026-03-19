@@ -17,12 +17,15 @@
 #include "lib/net/eloop/eloop.h"
 #include "lib/video/dvp/jpeg/jpg.h"
 #include "project_config.h"
+#include "../libraries/obktime/obktime.h"	// for time functions
 
 extern struct vpp_device* vpp_test;
 bool isStarted = false;
 bool showTimestamp = false;
 extern time_t g_ntpTime;
 extern void set_time_watermark(uint16 year, uint16 month, uint16 day, uint16 hour, uint16 min, uint16 sec);
+int dvp_scl = PC_2;
+int dvp_sda = PC_3;
 
 uint8 vcam_en()
 {
@@ -72,6 +75,8 @@ void TXW_Cam_Init(void)
 {
 	if(!isStarted)
 	{
+		dvp_scl = PIN_FindPinIndexForRole(IOR_SOFT_SCL, dvp_scl);
+		dvp_sda = PIN_FindPinIndexForRole(IOR_SOFT_SDA, dvp_sda);
 		uint32_t buf_size = Tokenizer_GetArgIntegerDefault(1, 60 * 1000);
 		uint8 vcam;
 		vcam = vcam_en();
@@ -102,8 +107,14 @@ void TXW_Cam_RunEverySecond(void)
 {
 	if(showTimestamp)
 	{
+/*
 		struct tm* ltm = gmtime(&g_ntpTime);
 		set_time_watermark(ltm->tm_year + 1900, ltm->tm_mon + 1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min, ltm->tm_sec);
+*/
+		TimeComponents tc;
+		tc=calculateComponents(TIME_GetCurrentTime());
+		set_time_watermark(tc.year, tc.month, tc.day, tc.hour, tc.minute, tc.second);
+
 	}
 }
 

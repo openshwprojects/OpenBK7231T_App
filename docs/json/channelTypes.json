@@ -371,7 +371,7 @@
     "name": "Pressure_div100",
     "title": "TODO",
     "descr": "Pressure in hPa, but divided by 100",
-    "enum": "Pressure_div100",
+    "enum": "ChType_Pressure_div100",
     "file": "new_pins.h",
     "driver": ""
   },
@@ -403,7 +403,7 @@
     "name": "Motion",
     "title": "TODO",
     "descr": "Motion",
-    "enum": "Motion",
+    "enum": "ChType_Motion",
     "file": "new_pins.h",
     "driver": ""
   },
@@ -459,7 +459,7 @@
     "name": "Motion_n",
     "title": "TODO",
     "descr": "Motion_n",
-    "enum": "Motion_n",
+    "enum": "ChType_Motion_n",
     "file": "new_pins.h",
     "driver": ""
   },
@@ -484,6 +484,62 @@
     "title": "Percent",
     "descr": "TODO",
     "enum": "ChType_Percent",
+    "file": "new_pins.h",
+    "driver": ""
+  },
+  {
+    "name": "StopUpDown",
+    "title": "StopUpDown",
+    "descr": "TODO",
+    "enum": "ChType_StopUpDown",
+    "file": "new_pins.h",
+    "driver": ""
+  },
+  {
+    "name": "EnergyImport_kWh_div1000",
+    "title": "EnergyImport_kWh_div1000",
+    "descr": "TODO",
+    "enum": "ChType_EnergyImport_kWh_div1000",
+    "file": "new_pins.h",
+    "driver": ""
+  },
+  {
+    "name": "Enum",
+    "title": "Enum",
+    "descr": "This channel type allows creating custom Enum types in combination with SetChannelEnum command. Ideal for defining TuyaMCU enum mappings.",
+    "enum": "ChType_Enum",
+    "file": "new_pins.h",
+    "driver": ""
+  },
+  {
+    "name": "ReadOnlyEnum",
+    "title": "ReadOnlyEnum",
+    "descr": "Read Only Enum Channel type for use in combination with SetChannelEnum command. Ideal for defining TuyaMCU enum mappings.",
+    "enum": "ChType_ReadOnlyEnum",
+    "file": "new_pins.h",
+    "driver": ""
+  },
+  {
+    "name": "Current_div10",
+    "title": "TODO",
+    "descr": "For TuyaMCU power metering. Not used for BL09** and CSE** sensors. Divider is used by TuyaMCU, because TuyaMCU sends always values as integers so we have to divide them before displaying on UI",
+    "enum": "ChType_Current_div10",
+    "file": "new_pins.h",
+    "driver": ""
+  },
+  {
+    "name": "Illuminance_div10",
+    "title": "Illuminance_div10",
+    "descr": "Illuminance in Lux",
+    "enum": "ChType_Illuminance_div10",
+    "file": "new_pins.h",
+    "driver": ""
+  },
+  {
+    "name": "Frequency",
+    "title": "TODO",
+    "descr": "For TuyaMCU power metering. Not used for BL09** and CSE** sensors.",
+    "enum": "ChType_Frequency",
     "file": "new_pins.h",
     "driver": ""
   },

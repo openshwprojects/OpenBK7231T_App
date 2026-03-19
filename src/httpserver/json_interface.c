@@ -16,10 +16,16 @@
 #include "../mqtt/new_mqtt.h"
 #include "hass.h"
 #include "../cJSON/cJSON.h"
-#include <time.h>
+//#include <time.h>
 #include "../driver/drv_ntp.h"
+#include "../driver/drv_deviceclock.h"
 #include "../driver/drv_local.h"
 #include "../driver/drv_bl_shared.h"
+#include "../driver/drv_ds1820_simple.h"
+#include "../driver/drv_ds1820_full.h"
+
+
+#include "../libraries/obktime/obktime.h"	// for time functions
 
 #if ENABLE_TASMOTA_JSON
 
@@ -228,6 +234,7 @@ static int http_tasmota_json_ENERGY(void* request, jsonCb_t printer) {
 		printer(request, "\"Factor\":%f,", _getReading_NanToZero(OBK_POWER_FACTOR));
 		printer(request, "\"Voltage\":%f,", _getReading_NanToZero(OBK_VOLTAGE));
 		printer(request, "\"Current\":%f,", _getReading_NanToZero(OBK_CURRENT));
+		printer(request, "\"Frequency\":%f,", _getReading_NanToZero(OBK_FREQUENCY));
 		printer(request, "\"ConsumptionTotal\":%f,", _getReading_NanToZero(OBK_CONSUMPTION_TOTAL));
 		printer(request, "\"Yesterday\": %f,", _getReading_NanToZero(OBK_CONSUMPTION_YESTERDAY));
 		printer(request, "\"ConsumptionLastHour\":%f", _getReading_NanToZero(OBK_CONSUMPTION_LAST_HOUR));
@@ -261,6 +268,10 @@ static int http_tasmota_json_SENSOR(void* request, jsonCb_t printer) {
 	float chan_val1, chan_val2;
 	int channel_1, channel_2, g_pin_1 = 0;
 	printer(request, ",");
+#ifndef NO_CHIP_TEMPERATURE
+//		printer(request, "\"%s\":{\"Temperature\": %.1f},", PLATFORM_MCU_NAME, g_wifi_temperature);
+		printer(request, "\"ESP32\":{\"Temperature\": %.1f},", g_wifi_temperature);
+#endif
 	if (DRV_IsRunning("SHT3X")) {
 		g_pin_1 = PIN_FindPinIndexForRole(IOR_SHT3X_DAT, g_pin_1);
 		channel_1 = g_cfg.pins.channels[g_pin_1];
@@ -278,6 +289,36 @@ static int http_tasmota_json_SENSOR(void* request, jsonCb_t printer) {
 		// close ENERGY block
 		printer(request, "},");
 	}
+#if (ENABLE_DRIVER_DS1820)
+	if (DRV_IsRunning("DS1820")) {		//DS1820_simple.c with one sensor
+		g_pin_1 = PIN_FindPinIndexForRole(IOR_DS1820_IO, g_pin_1);
+		channel_1 = g_cfg.pins.channels[g_pin_1];
+		chan_val1 = CHANNEL_GetFloat(channel_1) / 100.0f;
+
+		// writer header
+		printer(request, "\"DS18B20\":");
+		// following check will clear NaN values
+		printer(request, "{");
+		printer(request, "\"Temperature\": %.1f", chan_val1);
+		// close ENERGY block
+		printer(request, "},");
+	}
+#endif
+#if (ENABLE_DRIVER_DS1820_FULL)
+	if (DRV_IsRunning("DS1820_full")) {		//DS1820_full.c with possibly multiple sensors
+		char *str = DS1820_full_jsonSensors();
+		int toprint = strlen(str);
+		while (*str && toprint > 250) {		// string can be long, longer than request, this would break output if not split
+			char t = str[250];
+			str[250]=0;
+			printer(request, str);
+			str[250]=t;
+			str+=250;
+			toprint -= 250;
+		}	 
+		printer(request, str);
+	}
+#endif
 	if (DRV_IsRunning("CHT83XX")) {
 		g_pin_1 = PIN_FindPinIndexForRole(IOR_CHT83XX_DAT, g_pin_1);
 		channel_1 = g_cfg.pins.channels[g_pin_1];
@@ -295,6 +336,7 @@ static int http_tasmota_json_SENSOR(void* request, jsonCb_t printer) {
 		// close ENERGY block
 		printer(request, "},");
 	}
+
 	for (int i = 0; i < PLATFORM_GPIO_MAX; i++) {
 		int role = PIN_GetPinRoleForPinIndex(i);
 		if (role != IOR_DHT11 && role != IOR_DHT12 && role != IOR_DHT21 && role != IOR_DHT22)
@@ -339,10 +381,12 @@ static int http_tasmota_json_SENSOR(void* request, jsonCb_t printer) {
 /*
 {"StatusSNS":{"Time":"2023-04-10T10:19:55"}}
 */
-static void format_date(char *buffer, int buflength, struct tm *ltm)
+/*static void format_date(char *buffer, int buflength, struct tm *ltm)
 {
 	snprintf(buffer, buflength, "%04d-%02d-%02dT%02d:%02d:%02d",ltm->tm_year+1900, ltm->tm_mon+1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min, ltm->tm_sec);
 }
+*/
+// use obktimes ISO_8601 for this, e.g. TS2STR(TIME_GetCurrentTime(),TIME_FORMAT_ISO_8601)
 
 static int http_tasmota_json_status_SNS(void* request, jsonCb_t printer, bool bAppendHeader) {
 	char buff[20];
@@ -352,9 +396,11 @@ static int http_tasmota_json_status_SNS(void* request, jsonCb_t printer, bool bA
 	}
 	printer(request, "{");
 
-	time_t localTime = (time_t)NTP_GetCurrentTime();
+/*	time_t localTime = (time_t)TIME_GetCurrentTime();
 	format_date(buff, sizeof(buff), gmtime(&localTime));
 	JSON_PrintKeyValue_String(request, printer, "Time", buff, false);
+*/
+	JSON_PrintKeyValue_String(request, printer, "Time", TS2STR(TIME_GetCurrentTime(),TIME_FORMAT_ISO_8601), false);
 
 #ifndef OBK_DISABLE_ALL_DRIVERS
 #ifdef ENABLE_DRIVER_BL0937
@@ -374,7 +420,11 @@ static int http_tasmota_json_status_SNS(void* request, jsonCb_t printer, bool bA
 		bHasAnyDHT = true;
 		break;
 	}
+#ifdef NO_CHIP_TEMPERATURE	
 	if (DRV_IsSensor() || bHasAnyDHT) {
+#else
+	if (1) {
+#endif
 		http_tasmota_json_SENSOR(request, printer);
 		JSON_PrintKeyValue_String(request, printer, "TempUnit", "C", false);
 	}
@@ -423,14 +473,16 @@ void format_time(int total_seconds, char* output, int outLen) {
 
 static int http_tasmota_json_status_STS(void* request, jsonCb_t printer, bool bAppendHeader) {
 	char buff[20];
-	time_t localTime = (time_t)NTP_GetCurrentTime();
+	time_t localTime = (time_t)TIME_GetCurrentTime();
 
 	if (bAppendHeader) {
 		printer(request, "\"StatusSTS\":");
 	}
 	printer(request, "{");
-	format_date(buff, sizeof(buff), gmtime(&localTime));
-	JSON_PrintKeyValue_String(request, printer, "Time", buff, true);
+//	format_date(buff, sizeof(buff), gmtime(&localTime));
+//	JSON_PrintKeyValue_String(request, printer, "Time", buff, true);
+	JSON_PrintKeyValue_String(request, printer, "Time", TS2STR(TIME_GetCurrentTime(),TIME_FORMAT_ISO_8601), true);
+	
 	format_time(g_secondsElapsed, buff, sizeof(buff));
 	JSON_PrintKeyValue_String(request, printer, "Uptime", buff, true);
 	//JSON_PrintKeyValue_String(request, printer, "Uptime", "30T02:59:30", true);
@@ -473,16 +525,29 @@ static int http_tasmota_json_status_STS(void* request, jsonCb_t printer, bool bA
 static int http_tasmota_json_status_TIM(void* request, jsonCb_t printer) {
 	char buff[20];
 
-	time_t localTime = (time_t)NTP_GetCurrentTime();
-	time_t localUTC = (time_t)NTP_GetCurrentTimeWithoutOffset();
+//	time_t localTime = (time_t)TIME_GetCurrentTime();
+//	time_t localUTC = (time_t)TIME_GetCurrentTimeWithoutOffset();
 	printer(request, "\"StatusTIM\":{");
-	format_date(buff, sizeof(buff), gmtime(&localUTC));
-	JSON_PrintKeyValue_String(request, printer, "UTC", buff, true);
-	format_date(buff, sizeof(buff), gmtime(&localTime));
-	JSON_PrintKeyValue_String(request, printer, "Local", buff, true);
+//	format_date(buff, sizeof(buff), gmtime(&localUTC));
+//	JSON_PrintKeyValue_String(request, printer, "UTC", buff, true);
+	JSON_PrintKeyValue_String(request, printer, "UTC", TS2STR(TIME_GetCurrentTimeWithoutOffset(),TIME_FORMAT_ISO_8601), true);
+//	format_date(buff, sizeof(buff), gmtime(&localTime));
+//	JSON_PrintKeyValue_String(request, printer, "Local", buff, true);
+	JSON_PrintKeyValue_String(request, printer, "Local", TS2STR(TIME_GetCurrentTime(),TIME_FORMAT_ISO_8601), true);
+#if ENABLE_TIME_DST
+	uint32_t DST[2]={0,0};
+	// only get DST settings, if DST is set
+	if (getDST_offset() > 0) getDSTtransition(DST);
+	JSON_PrintKeyValue_String(request, printer, "StartDST", TS2STR(DST[0],TIME_FORMAT_ISO_8601) , true);
+	JSON_PrintKeyValue_String(request, printer, "EndDST", TS2STR(DST[1],TIME_FORMAT_ISO_8601), true);
+#else
 	JSON_PrintKeyValue_String(request, printer, "StartDST", "2022-03-27T02:00:00", true);
 	JSON_PrintKeyValue_String(request, printer, "EndDST", "2022-10-30T03:00:00", true);
-	JSON_PrintKeyValue_String(request, printer, "Timezone", "+01:00", true);
+#endif
+	int TZ=TIME_GetCurrentTime() - TIME_GetCurrentTimeWithoutOffset(); 
+	char tmp[8];
+	sprintf(tmp,"%+03i:%02i",(int8_t)TZ/3600,(uint8_t)abs((TZ%3600)/60));
+	JSON_PrintKeyValue_String(request, printer, "Timezone", tmp, true);
 	JSON_PrintKeyValue_String(request, printer, "Sunrise", "07:50", true);
 	JSON_PrintKeyValue_String(request, printer, "Sunset", "17:17", false);
 	printer(request, "}");
@@ -692,17 +757,20 @@ static int http_tasmota_json_status_generic(void* request, jsonCb_t printer) {
 	JSON_PrintKeyValue_String(request, printer, "OtaUrl", "https://github.com/openshwprojects/OpenBK7231T_App/releases/latest", true);
 	JSON_PrintKeyValue_String(request, printer, "RestartReason", "HardwareWatchdog", true);
 	JSON_PrintKeyValue_Int(request, printer, "Uptime", g_secondsElapsed, true);
-	struct tm* ltm;
+//	struct tm* ltm;
 	time_t ntpTime = 0; // if no NTP_time set, we will not change this value, but just stick to 0 and hence "fake" start of epoch 1970-01-01T00:00:00
-	if (NTP_GetCurrentTimeWithoutOffset() > g_secondsElapsed) {	// would be negative else, leading to unwanted results when converted to (unsigned) time_t 
-		ntpTime = (time_t)NTP_GetCurrentTimeWithoutOffset() - (time_t)g_secondsElapsed;
+	if (TIME_GetCurrentTimeWithoutOffset() > g_secondsElapsed) {	// would be negative else, leading to unwanted results when converted to (unsigned) time_t 
+		ntpTime = (time_t)TIME_GetCurrentTimeWithoutOffset() - (time_t)g_secondsElapsed;
 	}
+/*
 	ltm = gmtime(&ntpTime);
 	if (ltm != 0) {
 		printer(request, "\"StartupUTC\":\"%04d-%02d-%02dT%02d:%02d:%02d\",", ltm->tm_year + 1900, ltm->tm_mon + 1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min, ltm->tm_sec);
 	}
 	else {
 	}
+*/
+	printer(request, "\"StartupUTC\":\"%s\",", TS2STR(TIME_GetCurrentTime(),TIME_FORMAT_ISO_8601));
 	JSON_PrintKeyValue_Int(request, printer, "Sleep", 50, true);
 	JSON_PrintKeyValue_Int(request, printer, "CfgHolder", 4617, true);
 	JSON_PrintKeyValue_Int(request, printer, "BootCount", 22, true);
@@ -938,7 +1006,7 @@ int JSON_ProcessCommandReply(const char* cmd, const char* arg, void* request, js
 		}
 #endif
 	}
-	else if (!wal_strnicmp(cmd, "SENSOR", 5)) {
+	else if (!wal_strnicmp(cmd, "SENSOR", 6)) {
 		// not a Tasmota command, but still required for us
 		http_tasmota_json_status_SNS(request, printer, false);
 #if ENABLE_MQTT
@@ -1056,7 +1124,7 @@ int JSON_ProcessCommandReply(const char* cmd, const char* arg, void* request, js
 		printer(request, "}");
 	}
 #endif
-	else if (!wal_strnicmp(cmd, "MQTTClient", 8)) {
+	else if (!wal_strnicmp(cmd, "MQTTClient", 10)) {
 		printer(request, "{");
 		JSON_PrintKeyValue_String(request, printer, "MQTTClient", CFG_GetMQTTClientId(), false);
 		printer(request, "}");

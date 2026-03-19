@@ -8,7 +8,7 @@
 
 int HAL_FlashRead(char*buffer, int readlen, int startaddr) {
 	int res;
-	res = 0;
+	res = flash_read(buffer, readlen, startaddr);
 	return res;
 }
 

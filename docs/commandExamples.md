@@ -27,6 +27,11 @@ This will create a new repeating events with 1 repeat count and 60 seconds delay
 
 
 
+This will Change Handler will turn off Channel 1 if the BL0XXX driver's Frequency is over 52.95hz
+<br>```addChangeHandler Frequncy > 5295 setChannel 1 0```<br>
+
+
+
 This is another approach to sending GET for change. As you can see, it's using addEventHandler instead of addChangeHandler. This will fire with every change. The index 1 here is a channel index. The $CH1 macro in URL will get expended to current channel value, usually 1 or 0
 <br>```addEventHandler OnChannelChange 1 http://192.168.0.112/cm?cmnd=Power0%20$CH1```<br>
 

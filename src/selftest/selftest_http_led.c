@@ -213,7 +213,7 @@ void Test_Http_LED_RGB() {
 	SELFTEST_ASSERT_JSON_VALUE_INTEGER("StatusSTS", "Dimmer", 100);
 	SELFTEST_ASSERT_JSON_VALUE_STRING("StatusSTS", "POWER", "ON");
 	// Tasmota colors are scalled by Dimmer in this case. Confirmed.
-	SELFTEST_ASSERT_JSON_VALUE_STRING("StatusSTS", "Color", "127,255,0");
+	SELFTEST_ASSERT_JSON_VALUE_STRING("StatusSTS", "Color", "55,255,0");
 	// check Tasmota HSBColor
 	/*
 	NOTE:

@@ -5,7 +5,9 @@
 #include "../hal/hal_ota.h"
 // Commands register, execution API and cmd tokenizer
 #include "../cmnds/cmd_public.h"
+#include "../cmnds/cmd_enums.h"
 #include "../driver/drv_tuyaMCU.h"
+#include "../driver/drv_girierMCU.h"
 #include "../driver/drv_public.h"
 #include "../driver/drv_bl_shared.h"
 #include "../hal/hal_wifi.h"
@@ -18,6 +20,7 @@
 #include "../cJSON/cJSON.h"
 #include <time.h>
 #include "../driver/drv_ntp.h"
+#include "../driver/drv_deviceclock.h"		// to set clock via Javascript in pmntp
 #include "../driver/drv_local.h"
 #ifdef PLATFORM_BEKEN
 #include "start_type_pub.h"
@@ -204,6 +207,38 @@ int http_fn_testmsg(http_request_t* request) {
 	return 0;
 
 }
+
+#if ENABLE_TIME_PMNTP
+// poor mans NTP
+int http_fn_pmntp(http_request_t* request) {
+	char tmpA[128];
+	uint32_t actepoch=0;
+	// javascripts "getTime()" should return time since 01.01.1970 (UTC)
+	if (http_getArg(request->url, "EPOCH", tmpA, sizeof(tmpA))) {
+		actepoch = (uint32_t)strtoul(tmpA,0,10);
+		TIME_setDeviceTime(actepoch);
+		addLogAdv(LOG_DEBUG, LOG_FEATURE_HTTP,"Set clock to %u! \n",actepoch);	
+	}
+#if ENABLE_TIME_DST
+	if (! IsDST_initialized()) {
+#endif
+		if (http_getArg(request->url, "OFFSET", tmpA, sizeof(tmpA)) && actepoch != 0 ) {
+		// if actual time is during DST period, javascript will return 
+		// an offset including the one additional hour of DST  
+		// if we don't handle DST, simply accept this as "offset"
+		TIME_setDeviceTimeOffset(atoi(tmpA));
+		addLogAdv(LOG_DEBUG, LOG_FEATURE_HTTP,"Clock - set g_UTCoffset to %i! \n",
+			atoi(tmpA));	
+		}
+#if ENABLE_TIME_DST
+	// ignore JS offset, if we can/will calculate DST on our own
+	} else setDST();
+#endif
+	poststr(request, "HTTP/1.1 302 OK\nLocation: /index\nConnection: close\n\n");
+	poststr(request, NULL);
+	return 0;
+}
+#endif
 
 // bit mask telling which channels are hidden from HTTP
 // If given bit is set, then given channel is hidden
@@ -494,6 +529,56 @@ int http_fn_index(http_request_t* request) {
 			else {
 				hprintf255(request, "Channel %s = %i", CHANNEL_GetLabel(i), iValue);
 			}
+			poststr(request, "</td></tr>");
+		} else if (channelType == ChType_Enum) {
+			iValue = CHANNEL_Get(i);
+			channelEnum_t *en;
+
+
+			// if setChannelEnum has not been defined, treat ChType_Enum as a textfield
+			if (g_enums == NULL || g_enums[i]->numOptions == 0 ) {
+				//en = g_enums[i];
+				poststr(request, "<tr><td>");
+				hprintf255(request, "<p>Change channel %s enum:</p><form action=\"index\">", CHANNEL_GetLabel(i));
+				hprintf255(request, "<input type=\"hidden\" name=\"setIndex\" value=\"%i\">", i);
+				hprintf255(request, "<input type=\"number\" name=\"set\" value=\"%i\" onblur=\"this.form.submit()\">", iValue);
+				hprintf255(request, "<input type=\"submit\" value=\"Set!\"/></form>");
+				hprintf255(request, "</form>");
+				poststr(request, "</td></tr>");
+			} else {
+				en = g_enums[i];
+
+				poststr(request, "<tr><td>");
+				hprintf255(request, "<form action=\"index\"><label for=\"select%i\">Channel %s Enum:</label>", i, CHANNEL_GetLabel(i));
+				hprintf255(request, "<input type=\"hidden\" name=\"setIndex\" value=\"%i\">", i);
+				hprintf255(request, "<select id=\"select%i\" name=\"set\" onchange=\"this.form.submit()\">", i);
+
+				bool found = false;
+				for (int o = 0; o < en->numOptions; o++) {
+					const char* selected;
+					if (en->options[o].value == iValue) {
+						selected = "selected";
+						found = true;
+					} else
+						selected = "";
+					hprintf255(request, "<option value=\"%i\" %s>%s [%i]</option>", en->options[o].value, selected, en->options[o].label,en->options[o].value);
+				}
+				if (!found) // create an item if no label is found
+					hprintf255(request, "<option value=\"%i\" selected>undefined enum [%i]</option>", iValue,iValue);
+				hprintf255(request, "</select></form>");
+				poststr(request, "</td></tr>");
+			}
+		}
+		else if (channelType == ChType_ReadOnlyEnum) {
+			iValue = CHANNEL_Get(i);
+			const char* oLabel;
+			if (g_enums == NULL || g_enums[i]->numOptions == 0)
+				oLabel = CHANNEL_GetLabel(i);
+			else
+				oLabel = CMD_FindChannelEnumLabel(g_enums[i], iValue);
+
+			poststr(request, "<tr><td>");
+			hprintf255(request, "Channel %s = %s [%i]", CHANNEL_GetLabel(i), oLabel, iValue);
 			poststr(request, "</td></tr>");
 		}
 		else if ((types = Channel_GetOptionsForChannelType(channelType, &numTypes)) != 0) {
@@ -903,7 +988,7 @@ typedef enum {
 	char reason[26];
 	bl_sys_rstinfo_getsting(reason);
 	hprintf255(request, "<h5>Reboot reason: %s</h5>", reason);
-#elif PLATFORM_LN882H
+#elif PLATFORM_LN882H || PLATFORM_LN8825
 	// type is chip_reboot_cause_t
 	g_rebootReason = ln_chip_get_reboot_cause();
 	{
@@ -1000,7 +1085,7 @@ typedef enum {
 	/* Format current PINS input state for all unused pins */
 	if (CFG_HasFlag(OBK_FLAG_HTTP_PINMONITOR))
 	{
-		for (i = 0; i < 29; i++)
+		for (i = 0; i < PLATFORM_GPIO_MAX; i++)
 		{
 			if ((PIN_GetPinRoleForPinIndex(i) == IOR_None) && (i != 0) && (i != 1))
 			{
@@ -1009,7 +1094,7 @@ typedef enum {
 		}
 
 		hprintf255(request, "<h5> PIN States<br>");
-		for (i = 0; i < 29; i++)
+		for (i = 0; i < PLATFORM_GPIO_MAX; i++)
 		{
 			if ((PIN_GetPinRoleForPinIndex(i) != IOR_None) || (i == 0) || (i == 1))
 			{
@@ -1090,7 +1175,9 @@ typedef enum {
 		}
 		poststr(request, "<form action=\"/app\" target=\"_blank\"><input type=\"submit\" value=\"Launch Web Application\"></form> ");
 		poststr(request, "<form action=\"about\"><input type=\"submit\" value=\"About\"/></form>");
-
+#if ENABLE_TIME_PMNTP
+		poststr(request, "<input type='submit' value='Set clock to PC time' onclick='location.href =\"/pmntp?EPOCH=\"+((e=new Date)/1e3|0)+\"&OFFSET=\"+-60*e.getTimezoneOffset()'><p>");
+#endif
 		poststr(request, htmlFooterRefreshLink);
 		http_html_end(request);
 	}
@@ -1185,6 +1272,7 @@ int http_fn_cfg_mqtt(http_request_t* request) {
 	add_label_text_field(request, "Group Topic (Secondary Topic to only receive cmnds)", "group", CFG_GetMQTTGroupTopic(), "<br>");
 	add_label_text_field(request, "User", "user", CFG_GetMQTTUserName(), "<br>");
 	add_label_password_field(request, "Password", "password", CFG_GetMQTTPass(), "<br>");
+	poststr(request, "<span style=\"float:right;\"><input type=\"checkbox\" onclick=\"e=getElement('password');if(this.checked){e.type='text'}else e.type='password'\" > enable clear text password</span><br>");
 
 	poststr(request, "<br><input type=\"submit\" value=\"Submit\" onclick=\"return confirm('Are you sure? Please check MQTT data twice?')\"></form> ");
 	poststr(request, htmlFooterReturnToCfgOrMainPage);
@@ -1259,7 +1347,9 @@ int http_fn_cfg_webapp(http_request_t* request) {
 	hprintf255(request, "<label for=\"enable_web_server\">Web Server Enabled</label><br>");
 #endif
 
-	poststr(request, SUBMIT_AND_END_FORM);
+	poststr(request, "<br><input type=\"submit\" value=\"Submit\">");
+	poststr(request, "<br><input class=\"bgrn\" type=\"submit\" value=\"Reset to default\" onclick=\"if(!confirm('Reset WebApp URL to default?')) return false; document.getElementById('url').value='https://openbekeniot.github.io/webapp/'; return true;\">");
+	poststr(request, "</form>");
 	poststr(request, htmlFooterReturnToCfgOrMainPage);
 	http_html_end(request);
 	poststr(request, NULL);
@@ -1478,14 +1568,14 @@ int http_fn_cfg_wifi(http_request_t* request) {
 </form>");
 	poststr_h2(request, "Use this to connect to your WiFi");
 	add_label_text_field(request, "SSID", "ssid", CFG_GetWiFiSSID(), "<form action=\"/cfg_wifi_set\">");
-	add_label_password_field(request, "", "pass", CFG_GetWiFiPass(), "<br>Password<span  style=\"float:right;\"><input type=\"checkbox\" onclick=\"e=getElement('pass');if(this.checked){e.value='';e.type='text'}else e.type='password'\" > enable clear text password (clears existing)</span>");
+	add_label_password_field(request, "", "pass", CFG_GetWiFiPass(), "<br>Password<span  style=\"float:right;\"><input type=\"checkbox\" onclick=\"e=getElement('pass');if(this.checked){e.type='text'}else e.type='password'\" > enable clear text password</span>");
 	poststr_h2(request, "Alternate WiFi (used when first one is not responding)");
 	poststr(request, "Note: It is possible to retain used SSID using command setStartupSSIDChannel in early.bat");
 #ifndef PLATFORM_BEKEN
 	poststr_h2(request, "SSID2 only on Beken Platform (BK7231T, BK7231N)");
 #endif
 	add_label_text_field(request, "SSID2", "ssid2", CFG_GetWiFiSSID2(), "");
-	add_label_password_field(request, "", "pass2", CFG_GetWiFiPass2(), "<br>Password2<span  style=\"float:right;\"><input type=\"checkbox\" onclick=\"e=getElement('pass2');if(this.checked){e.value='';e.type='text'}else e.type='password'\" > enable clear text password (clears existing)</span>");
+	add_label_password_field(request, "", "pass2", CFG_GetWiFiPass2(), "<br>Password2<span  style=\"float:right;\"><input type=\"checkbox\" onclick=\"e=getElement('pass2');if(this.checked){e.type='text'}else e.type='password'\" > enable clear text password</span>");
 #if ALLOW_WEB_PASSWORD
 	int web_password_enabled = strcmp(CFG_GetWebPassword(), "") == 0 ? 0 : 1;
 	poststr_h2(request, "Web Authentication");
@@ -1785,6 +1875,50 @@ int http_fn_startup_command(http_request_t* request) {
 #endif
 
 #if ENABLE_HA_DISCOVERY
+HassDeviceInfo *hass_createEnumChannelInfo(int i) {
+	HassDeviceInfo *dev_info = 0;
+	channelEnum_t *en;
+	if (g_enums != NULL && g_enums[i]->numOptions != 0) {
+		en = g_enums[i];
+	}
+	else {
+		// revert to textfield if no enums are defined
+		dev_info = hass_init_textField_info(i);
+		return dev_info;;
+	}
+
+	char **options = (char**)malloc(en->numOptions * sizeof(char *));
+	for (int o = 0; o < en->numOptions; o++) {
+		options[o] = en->options[o].label;
+	}
+
+	if (en->options != NULL && en->numOptions > 0) {
+		// backlog setChannelType 1 Enum; setChannelEnum 0:red 2:blue 3:green; scheduleHADiscovery 1
+		char stateTopic[32];
+		char cmdTopic[32];
+		char title[64];
+		char value_tmp[1024];
+		char command_tmp[1024];
+
+		CMD_GenEnumValueTemplate(en, value_tmp, sizeof(value_tmp));
+		CMD_GenEnumCommandTemplate(en, command_tmp, sizeof(command_tmp));
+
+		strcpy(title, CHANNEL_GetLabel(i));
+		sprintf(stateTopic, "~/%i/get", i);
+		sprintf(cmdTopic, "~/%i/set", i);
+		dev_info = hass_createSelectEntityIndexedCustom(
+			stateTopic,
+			cmdTopic,
+			en->numOptions,
+			(const char**)options,
+			title,
+			value_tmp,
+			command_tmp
+		);
+	}
+	os_free(options);
+	return dev_info;
+}
 void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 	int i;
 	int relayCount;
@@ -1819,8 +1953,8 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 
 #ifdef ENABLE_DRIVER_BL0937
 	measuringPower = DRV_IsMeasuringPower();
-	measuringBattery = DRV_IsMeasuringBattery();
 #endif
+	measuringBattery = DRV_IsMeasuringBattery();
 
 	PIN_get_Relay_PWM_Count(&relayCount, &pwmCount, &dInputCount);
 	addLogAdv(LOG_INFO, LOG_FEATURE_HTTP, "HASS counts: %i rels, %i pwms, %i inps, %i excluded", relayCount, pwmCount, dInputCount, excludedCount);
@@ -1841,6 +1975,7 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 	cJSON_InitHooks(&hooks);
 
 	DRV_OnHassDiscovery(topic);
+	EventHandlers_FireEvent(CMD_EVENT_ON_DISCOVERY, 0);
 
 #if ENABLE_ADVANCED_CHANNELTYPES_DISCOVERY
 	// try to pair toggles with dimmers. This is needed only for TuyaMCU, 
@@ -1893,6 +2028,7 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 			dev_info = hass_init_light_singleColor_onChannels(toggle, dimmer, brightness_scale);
 			MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
 			hass_free_device_info(dev_info);
+			discoveryQueued = true;
 		}
 	}
 #endif
@@ -2022,6 +2158,13 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 			discoveryQueued = true;
 		}
 	}
+	//{
+	//	HassDeviceInfo*dev_info = hass_createGarageEntity("~/1/get", "~/1/set",
+	//	 "Main Door");
+	//	MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
+	//	hass_free_device_info(dev_info);
+	//	discoveryQueued = true;
+	//}
 #if ENABLE_ADVANCED_CHANNELTYPES_DISCOVERY
 	for (i = 0; i < CHANNEL_MAX; i++) {
 		type = g_cfg.pins.channelTypes[i];
@@ -2201,6 +2344,16 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 				dev_info = hass_init_sensor_device_info(ENERGY_SENSOR, i, 3, 2, 1);
 			}
 			break;
+			case ChType_EnergyExport_kWh_div1000:
+			{
+				dev_info = hass_init_sensor_device_info(ENERGY_SENSOR, i, 3, 3, 1);
+			}
+			break;
+			case ChType_EnergyImport_kWh_div1000:
+			{
+				dev_info = hass_init_sensor_device_info(ENERGY_SENSOR, i, 3, 3, 1);
+			}
+			break;
 			case ChType_EnergyTotal_kWh_div1000:
 			{
 				dev_info = hass_init_sensor_device_info(ENERGY_SENSOR, i, 3, 3, 1);
@@ -2226,6 +2379,21 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 				dev_info = hass_init_textField_info(i);
 			}
 			break;
+			case ChType_ReadOnlyEnum:
+			{
+				dev_info = hass_init_sensor_device_info(HASS_READONLYENUM, i, -1, -1, -1);
+			}
+			break;
+			case ChType_Enum:
+			{			
+				dev_info = hass_createEnumChannelInfo(i);
+			}
+			break;
+			case ChType_Illuminance_div10:
+			{
+				dev_info = hass_init_sensor_device_info(ILLUMINANCE_SENSOR, i, 2, 1, 1);
+			}
+			break;
 			default:
 			{
 				int numOptions;
@@ -2233,11 +2401,9 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 				if (options && numOptions) {
 					// backlog setChannelType 2 LowMidHigh; scheduleHADiscovery 1
 					// backlog setChannelType 3 OpenStopClose; scheduleHADiscovery 1
-					char stateTopic[32];
-					char cmdTopic[32];
-					char title[64];
+					char stateTopic[16];
+					char cmdTopic[16];
 					// TODO: lengths
-					strcpy(title, CHANNEL_GetLabel(i));
 					sprintf(stateTopic, "~/%i/get", i);
 					sprintf(cmdTopic, "~/%i/set", i);
 					dev_info = hass_createSelectEntityIndexed(
@@ -2245,7 +2411,7 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 						cmdTopic,
 						numOptions,
 						options,
-						title
+						CHANNEL_GetLabel(i)
 					);
 				}
 			}
@@ -2956,7 +3122,8 @@ const char* g_obk_flagNames[] = {
 	"[PWR] Invert AC dir",
 	"[HTTP] Hide ON/OFF for relays (only red/green buttons)",
 	"[MQTT] Never add GET suffix",
-	"[WiFi] (RTL/BK) Enhanced fast connect by saving AP data to flash (preferable with Flag 37 & static ip). Quick reset 3 times to connect normally",
+	"[WiFi] (RTL/BK/BL602) Enhanced fast connect by saving AP data to flash (preferable with Flag 37 & static ip). Quick reset 3 times to connect normally",
+	"error",
 	"error",
 	"error",
 	"error",

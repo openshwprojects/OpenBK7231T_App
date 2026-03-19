@@ -104,6 +104,9 @@ generateNotes:
         - RTL87x1DA (AmebaDplus family) (eg BW20, WR11-U, WR11-2S)
         - RTL87x0E (AmebaLite family) (eg PKM8710ECF)
         - ECR6600 (eg AXYU, AXY2S, WG236, DSM-036, CDI-WX56600A-00, BL-M6600XT1, HF-LPT6200)
+        - TXW81X (eg TXW817-810)
+        - RDA5981 (eg RDA5981AM, RDA5981BM, WRD2L, TYWRD3S, HLK-M50)
+        - LN8825B (eg SCW-T503)
 
       footerPartial: |
         {{#if noteGroups}}
@@ -157,6 +160,7 @@ generateNotes:
         | RTL8710A       | OTA Update | [OpenRTL8710A_{{version}}_ota.img]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenRTL8710A_{{version}}_ota.img)               |
         | RTL8710B       | UART Flash | [OpenRTL8710B_{{version}}.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenRTL8710B_{{version}}.bin)                       |
         | RTL8710B       | OTA Update | [OpenRTL8710B_{{version}}_ota.img]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenRTL8710B_{{version}}_ota.img)               |
+        | RTL8710B       | CCtr Flash | [OpenRTL8710B_UG_{{version}}.img]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenRTL8710B_UG_{{version}}.img)                 |
         | RTL87X0C       | UART Flash | [OpenRTL87X0C_{{version}}.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenRTL87X0C_{{version}}.bin)                       |
         | RTL87X0C       | OTA Update | [OpenRTL87X0C_{{version}}_ota.img]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenRTL87X0C_{{version}}_ota.img)               |
         | RTL8720D       | UART Flash | [OpenRTL8720D_{{version}}.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenRTL8720D_{{version}}.bin)                       |
@@ -190,7 +194,11 @@ generateNotes:
         | ESP8266 1MB    | UART Flash | [OpenESP8266_1MB_{{version}}.factory.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenESP8266_1MB_{{version}}.factory.bin) |
         | ESP8266 2MB    | UART Flash | [OpenESP8266_2MB_{{version}}.factory.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenESP8266_2MB_{{version}}.factory.bin) |
         | ESP8266 2MB    | OTA Update | [OpenESP8266_{{version}}.img]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenESP8266_{{version}}.img)                         |
+        | RDA5981        | UART Flash | [OpenRDA5981_{{version}}.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenRDA5981_{{version}}.bin)                         |
+        | RDA5981        | OTA Update | [OpenRDA5981_{{version}}_ota.img]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenRDA5981_{{version}}_ota.img)                 |
         | TXW81X         |            | [OpenTXW81X_{{version}}.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenTXW81X_{{version}}.bin)                           |
+        | LN8825B        | UART Flash | [OpenLN8825_{{version}}.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenLN8825_{{version}}.bin)                           |
+        | LN8825B        | OTA Update | [OpenLN8825_{{version}}_ota.img]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenLN8825_{{version}}_ota.img)                   |
         | Win32          |            | [obkSimulator_{{version}}.zip]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/obkSimulator_{{version}}.zip)                       |
 
 
@@ -253,12 +261,13 @@ publish:
       - path: "output/**/OpenBL602*"
       - path: "output/**/OpenW600*"
       - path: "output/**/OpenW800*"
-      - path: "output/**/OpenLN882H*"
+      - path: "output/**/OpenLN882*"
       - path: "output/**/OpenTR6260*"
       - path: "output/**/OpenRTL87*"
       - path: "output/**/OpenESP*"
       - path: "output/**/OpenECR*"
       - path: "output/**/OpenTXW*"
+      - path: "output/**/OpenRDA*"
       - path: "output/**/obkSimulator*"
 
 success:

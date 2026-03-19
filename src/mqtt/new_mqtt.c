@@ -12,9 +12,11 @@
 #include "../cmnds/cmd_public.h"
 #include "../hal/hal_wifi.h"
 #include "../driver/drv_public.h"
-#include "../driver/drv_ntp.h"
+//#include "../driver/drv_ntp.h"
+#include "../driver/drv_deviceclock.h"
 #include "../driver/drv_tuyaMCU.h"
 #include "../hal/hal_ota.h"
+#include <math.h>
 #ifndef WINDOWS
 #include <lwip/dns.h>
 #endif
@@ -1442,6 +1444,9 @@ OBK_Publish_Result MQTT_PublishMain_StringInt(const char* sChannel, int iv, int 
 OBK_Publish_Result MQTT_PublishMain_StringFloat(const char* sChannel, float f, int maxDecimalPlaces, int flags)
 {
 	char valueStr[16];
+	if (isnan(f)) {
+		f = 0;
+	}
 
 	sprintf(valueStr, "%f", f);
 	// fix decimal places
@@ -1555,7 +1560,7 @@ commandResult_t MQTT_PublishFile(const void* context, const char* cmd, const cha
 	int flags = 0;
 	byte*data;
 
-	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_ALLOW_ESCAPING_QUOTATIONS);
+	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_ALLOW_ESCAPING_QUOTATIONS | TOKENIZER_EXPAND_EARLY);
 
 	if (Tokenizer_GetArgsCount() < 2) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "Publish command requires two arguments (topic and value)");
@@ -1567,7 +1572,7 @@ commandResult_t MQTT_PublishFile(const void* context, const char* cmd, const cha
 	if (Tokenizer_GetArgIntegerDefault(2, 0) != 0) {
 		flags = OBK_PUBLISH_FLAG_RAW_TOPIC_NAME;
 	}
-	data = LFS_ReadFile(fname);
+	data = LFS_ReadFileExpanding(fname);
 	if (data) {
 		ret = MQTT_PublishMain_StringString(topic, (const char*)data, flags);
 		free(data);
@@ -1626,6 +1631,21 @@ commandResult_t MQTT_PublishCommandFloat(const void* context, const char* cmd, c
 	// optional fourth argument to set rounding
 	decimalPlaces = Tokenizer_GetArgIntegerDefault(3, -1);
 	ret = MQTT_PublishMain_StringFloat(topic, value, decimalPlaces, flags);
+
+	return CMD_RES_OK;
+}
+commandResult_t MQTT_PublishCommandDriver(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	const char* driver;
+	OBK_Publish_Result ret;
+
+	Tokenizer_TokenizeString(args, 0);
+
+	driver = Tokenizer_GetArg(0);
+	bool bOn = DRV_IsRunning(driver);
+
+	char full[32];
+	sprintf(full,"driver/%s", driver);
+	ret = MQTT_PublishMain_StringInt(full, bOn, OBK_PUBLISH_FLAG_FORCE_REMOVE_GET);
 
 	return CMD_RES_OK;
 }
@@ -1767,7 +1787,7 @@ static BENCHMARK_TEST_INFO* info = NULL;
 #if WINDOWS
 
 #elif PLATFORM_BL602 || PLATFORM_W600 || PLATFORM_W800 || PLATFORM_ESPIDF || PLATFORM_TR6260 \
-	|| PLATFORM_REALTEK || PLATFORM_ECR6600 || PLATFORM_ESP8266 || PLATFORM_TXW81X
+	|| PLATFORM_REALTEK || PLATFORM_ECR6600 || PLATFORM_ESP8266 || PLATFORM_TXW81X || PLATFORM_RDA5981 || PLATFORM_LN8825
 static void mqtt_timer_thread(void* param)
 {
 	while (1)
@@ -1808,10 +1828,12 @@ commandResult_t MQTT_StartMQTTTestThread(const void* context, const char* cmd, c
 #if WINDOWS
 
 #elif PLATFORM_BL602 || PLATFORM_W600 || PLATFORM_W800 || PLATFORM_ESPIDF || PLATFORM_TR6260 \
-	|| PLATFORM_REALTEK || PLATFORM_ECR6600 || PLATFORM_ESP8266
+	|| PLATFORM_REALTEK || PLATFORM_ECR6600 || PLATFORM_ESP8266 || PLATFORM_LN8825
 	xTaskCreate(mqtt_timer_thread, "mqtt", 1024, (void*)info, 15, NULL);
 #elif PLATFORM_TXW81X
 	os_task_create("mqtt", mqtt_timer_thread, (void*)info, 15, 0, NULL, 1024);
+#elif PLATFORM_RDA5981
+	rda_thread_new("mqtt", mqtt_timer_thread, NULL, 1024, osPriorityNormal);
 #elif PLATFORM_XRADIO || PLATFORM_LN882H
 	OS_TimerSetInvalid(&timer);
 	if (OS_TimerCreate(&timer, OS_TIMER_PERIODIC, MQTT_Test_Tick, (void*)info, MQTT_TMR_DURATION) != OS_OK)
@@ -1976,6 +1998,13 @@ void MQTT_init()
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("publishFile", MQTT_PublishFile, NULL);
 #endif
+
+
+	//cmddetail:{"name":"publishDriver","args":"TODO",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"MQTT_PublishCommandDriver","file":"mqtt/new_mqtt.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("publishDriver", MQTT_PublishCommandDriver, NULL);
 }
 static float getInternalTemperature() {
 	return g_wifi_temperature;
@@ -2043,19 +2072,31 @@ OBK_Publish_Result MQTT_DoItemPublish(int idx)
 
 
 	case PUBLISHITEM_SELF_DATETIME:
-		//Drivers are only built on BK7231 chips
+// TIME_GetCurrentTime() is allways present
+/*		//Drivers are only built on BK7231 chips
 #ifndef OBK_DISABLE_ALL_DRIVERS
+
 		if (DRV_IsRunning("NTP")) {
-			sprintf(dataStr, "%d", NTP_GetCurrentTime());
-			return MQTT_DoItemPublishString("datetime", dataStr);
-		}
+*/
+#ifdef PLATFORM_ESP8266
+		// while all other platforms will accept uint32_t as long unsigned, ESP8266 needs %u 
+		// biuild fails otherwise because of -Werror=format
+		// src/mqtt/new_mqtt.c:2036:24: error: format '%ld' expects argument of type 'long int', but argument 3 has type 'uint32_t' {aka 'unsigned int'} [-Werror=format=]
+		// al other ESP:
+		/// src/mqtt/new_mqtt.c:2036:44: error: format '%d' expects argument of type 'int', but argument 3 has type 'uint32_t' {aka 'long unsigned int'} [-Werror=format=]
+		sprintf(dataStr, "%u", TIME_GetCurrentTime());
+#else
+		sprintf(dataStr, "%lu", TIME_GetCurrentTime());
+#endif
+		return MQTT_DoItemPublishString("datetime", dataStr);
+/*		}
 		else {
 			return OBK_PUBLISH_WAS_NOT_REQUIRED;
 		}
 #else
 		return OBK_PUBLISH_WAS_NOT_REQUIRED;
 #endif
-
+*/
 	case PUBLISHITEM_SELF_SOCKETS:
 		sprintf(dataStr, "%d", LWIP_GetActiveSockets());
 		return MQTT_DoItemPublishString("sockets", dataStr);
@@ -2406,6 +2447,11 @@ void MQTT_QueuePublishWithCommand(const char* topic, const char* channel, const 
 
 		if (newItem == NULL) {
 			newItem = os_malloc(sizeof(MqttPublishItem_t));
+			if(newItem == NULL)
+			{
+				//addLogAdv(LOG_ERROR, LOG_FEATURE_MQTT, "os_malloc failed for MqttPublishItem_t");
+				return;
+			}
 			newItem->next = NULL;
 			get_queue_tail(g_MqttPublishQueueHead)->next = newItem; //Append new item
 		}
@@ -2544,18 +2590,20 @@ struct tm* cvt_date(char const* date, char const* time, struct tm* t)
 	return t;
 }
 struct tm* mbedtls_platform_gmtime_r(const mbedtls_time_t* tt, struct tm* tm_buf) {
-	// If NTP time not synced return compile time
+	// If time not synced return compile time
 	struct tm* ltm;
-	if (!NTP_IsTimeSynced()) {	
+	if (!TIME_IsTimeSynced()) {	
 		ltm = cvt_date(__DATE__, __TIME__, tm_buf);
 		if (log_gmtime_alt) {
-			addLogAdv(LOG_INFO, LOG_FEATURE_NTP, "MBEDTLS: NTP not synchronized. Using compile time: %04d/%02d/%02d %02d:%02d:%02d",
+			addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "MBEDTLS: TIME not synchronized. Using compile time: %04d/%02d/%02d %02d:%02d:%02d",
 				ltm->tm_year + 1900, ltm->tm_mon + 1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min, ltm->tm_sec);
 			log_gmtime_alt = false; 
 		}			
 		return ltm;
 	}
-	return gmtime_r((time_t*)&g_ntpTime, tm_buf);
+	time_t devTime;
+	devTime=(time_t)TIME_GetCurrentTime();
+	return gmtime_r((time_t*)&devTime, tm_buf);
 }
 #endif  //MBEDTLS_PLATFORM_GMTIME_R_ALT
 

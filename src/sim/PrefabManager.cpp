@@ -11,6 +11,7 @@
 #include "Controller_Pot.h"
 #include "Controller_WS2812.h"
 #include "Controller_DHT11.h"
+#include "Controller_MAX7219.h"
 #include "Junction.h"
 
 class CShape *PrefabManager::generateVDD() {
@@ -117,6 +118,64 @@ class CShape *PrefabManager::generateBL0942() {
 	CControllerBL0942 *cntr = new CControllerBL0942(rx, tx, tx_voltage, tx_current, tx_power, tx_freq);
 	o->setController(cntr);
 	return o;
+}
+class CShape *PrefabManager::generateMAX7219x4() {
+
+	CShape *o = new CShape();
+	o->setName("MAX7219x4");
+	int cols = 8*4;   // 4 * 8
+	int rows = 8;
+	int cellSize = 20;
+	int w = cols * cellSize;
+	int sh = rows * cellSize;
+	int margin = 2;      // margin between cells
+	for (int i = 0; i < 4; i++) {
+		for (int y = 7; y >= 0; y--) {
+			for (int x = 0; x < 8; x++) {
+				int cx = -w / 2 + (i*8 + 7-x) * cellSize + margin;
+				int cy = -sh / 2 + y * cellSize + margin;
+				int rw = cellSize - 2 * margin;
+				int rh = cellSize - 2 * margin;
+				//o->addRect(cx, cy, rw, rh)->setFill(false)->
+				//	setFillColor(CColor(1, 0, 0,1));
+				o->addPoint(cx + rw / 2, cy + rh / 2)->setActive(true);
+			}
+		}
+	}
+	o->addText(-w / 2 - 5, -sh / 2 - 5, "MAX7219x4");
+
+	o->addRect(-w / 2, -sh / 2, w, sh);
+
+	int h = -40;
+	w /= 2;
+	CJunction *gnd = o->addJunction(w + 20, h, "GND");
+	o->addLine(w + 20, h, w, h);
+	gnd->setName("GND");
+	gnd->addText(-5, -5, "GND");
+	h += 20;
+	CJunction *CS = o->addJunction(w + 20, h, "CS");
+	o->addLine(w + 20, h, w, h);
+	CS->setName("CS");
+	CS->addText(-5, -5, "CS");
+	h += 20;
+	CJunction *DIN = o->addJunction(w + 20, h, "DIN");
+	o->addLine(w + 20, h, w, h);
+	DIN->setName("DIN");
+	DIN->addText(-5, -5, "DIN");
+	h += 20;
+	CJunction *CLK = o->addJunction(w + 20, h, "CLK");
+	o->addLine(w + 20, h, w, h);
+	CLK->setName("CLK");
+	CLK->addText(-5, -5, "CLK");
+	h += 20;
+	CJunction *vdd = o->addJunction(w + 20, h, "VDD");
+	o->addLine(w + 20, h, w, h);
+	vdd->setName("VDD");
+	vdd->addText(-5, -5, "VDD");
+	CControllerMAX7219 *cntr = new CControllerMAX7219();
+	o->setController(cntr);
+	return o;
+
 }
 class CShape *PrefabManager::generateDHT11() {
 
@@ -544,6 +603,7 @@ void PrefabManager::createDefaultPrefabs() {
 	addPrefab(generatePot());
 	addPrefab(generateWS2812B());
 	addPrefab(generateDHT11());
+	addPrefab(generateMAX7219x4());
 }
 
 

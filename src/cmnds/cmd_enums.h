@@ -16,9 +16,11 @@ typedef struct channelEnum_s {
 
 extern channelEnum_t **g_enums;
 
+void CMD_GenEnumValueTemplate(channelEnum_t *e, char *out, int outSize);
+void CMD_GenEnumCommandTemplate(channelEnum_t *e, char *out, int outSize);
+void CMD_FormatEnumTemplate(channelEnum_t *e, char *out, int outSize, bool isCommand);
 
-void CMD_FormatEnumTemplate(channelEnum_t *e, char *out, int outSize);
-
+char* CMD_FindChannelEnumLabel(channelEnum_t *channelEnum, int value);
 
 
 

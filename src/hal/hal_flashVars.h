@@ -19,14 +19,21 @@ typedef struct ENERGY_METERING_DATA {
 #else
 	float ConsumptionHistory[2];
 #endif
-#ifdef PLATFORM_BEKEN_NEW
-	unsigned int ConsumptionResetTime;
-#else
 	time_t ConsumptionResetTime;
-#endif
 	unsigned char reseved[3];
 	char actual_mday;
 } ENERGY_METERING_DATA;
+
+// size 8 bytes
+typedef struct {
+	float Import;
+	float Export;
+} ENERGY_DATA;
+
+typedef enum {
+	ENERGY_CHANNEL_A = 0,
+	ENERGY_CHANNEL_B = 1,
+} ENERGY_CHANNEL;
 
 typedef struct flash_vars_structure
 {
@@ -61,6 +68,11 @@ int HAL_SetEnergyMeterStatus(ENERGY_METERING_DATA* data);
 void HAL_FlashVars_SaveTotalConsumption(float total_consumption);
 void HAL_FlashVars_SaveEnergyExport(float f);
 float HAL_FlashVars_GetEnergyExport();
+
+#ifdef ENABLE_DRIVER_HLW8112SPI
+void HAL_FlashVars_SaveEnergy(ENERGY_DATA** data, int channel_count);
+void HAL_FlashVars_GetEnergy(ENERGY_DATA* data, ENERGY_CHANNEL channel);
+#endif
 
 #endif /* __HALK_FLASH_VARS_H__ */
 

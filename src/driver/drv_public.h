@@ -8,6 +8,7 @@ typedef enum energySensor_e {
 	OBK_VOLTAGE = OBK__FIRST, // must match order in cmd_public.h
 	OBK_CURRENT,
 	OBK_POWER,
+	OBK_FREQUENCY,
 	OBK_POWER_APPARENT,
 	OBK_POWER_REACTIVE,
 	OBK_POWER_FACTOR,
@@ -86,6 +87,7 @@ bool DRV_IsSensor();
 void TuyaMCU_OnRGBCWChange(const float *rgbcw, int bLightEnableAll, int iLightMode, float brightnessRange01, float temperatureRange01);
 bool TuyaMCU_IsLEDRunning();
 
+void Shutter_MoveByIndex(int index, float frac, bool bStopOnDuplicate);
 
 #endif /* __DRV_PUBLIC_H__ */
 

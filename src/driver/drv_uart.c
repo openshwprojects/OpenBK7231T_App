@@ -205,7 +205,7 @@ commandResult_t CMD_UART_FakeHex(const void *context, const char *cmd, const cha
     }
     while (*args) {
         byte b;
-        if (*args == ' ') {
+        if (*args == ' ' || *args == '\t') {
             args++;
             continue;
         }
@@ -272,26 +272,29 @@ void UART_LogBufState(int auartindex) {
   );
 }
 void UART_DebugTool_Run(int auartindex) {
-    byte b;
-    char tmp[128];
-    char *p = tmp;
-    int i;
+	byte b;
+	char tmp[128];
+	char *p = tmp;
+	int bytes = 0;
 
-    for (i = 0; i < sizeof(tmp) - 4; i++) {
-		if (UART_GetDataSizeEx(auartindex)==0) {
-            break;
-        }
-        b = UART_GetByteEx(auartindex,0);
-        if (i) {
-            *p = ' ';
-            p++;
-        }
-        sprintf(p, "%02X", b);
-        p += 2;
-        UART_ConsumeBytesEx(auartindex,1);
-    }
-    *p = 0;
-    addLogAdv(LOG_INFO, LOG_FEATURE_CMD, "UART %i received: %s\n", auartindex, tmp);
+	while (UART_GetDataSizeEx(auartindex) > 0) {
+		b = UART_GetByteEx(auartindex, 0);
+
+		int needed = (bytes ? 3 : 2);  // 2 for first byte, 3 (space + 2 hex) after
+		if ((p - tmp) + needed >= sizeof(tmp) - 1) break;
+
+		if (bytes) *p++ = ' ';
+		sprintf(p, "%02X", b);
+		p += 2;
+		UART_ConsumeBytesEx(auartindex, 1);
+		bytes++;
+	}
+
+	*p = 0;
+	if (bytes) {
+		addLogAdv(LOG_INFO, LOG_FEATURE_CMD,
+			"UART %i received %i bytes: %s\n", auartindex, bytes, tmp);
+	}
 }
 
 void UART_RunEverySecond() {
@@ -301,7 +304,8 @@ void UART_RunEverySecond() {
     }
   }
 }
-
+// uartInit 115200
+// uartSendASCII Hello123
 commandResult_t CMD_UART_Init(const void *context, const char *cmd, const char *args, int cmdFlags) {
     int baud;
 

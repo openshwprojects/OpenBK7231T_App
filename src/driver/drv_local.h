@@ -8,26 +8,35 @@ void DRV_DGR_RunQuickTick();
 void DRV_DGR_RunEverySecond();
 void DRV_DGR_Shutdown();
 void DRV_DGR_OnChannelChanged(int ch, int value);
-void DRV_DGR_AppendInformationToHTTPIndexPage(http_request_t *request);
+void DRV_DGR_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState);
 
 void DRV_DDP_Init();
 void DRV_DDP_RunFrame();
 void DRV_DDP_Shutdown();
-void DRV_DDP_AppendInformationToHTTPIndexPage(http_request_t *request);
+void DRV_DDP_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState);
+
+void DRV_Shutters_RunQuickTick();
+void DRV_Shutters_RunEverySecond();
+void DRV_Shutters_AddToHtmlPage(http_request_t *request, int bPreState);
+void DRV_Shutters_Init();
+void DRV_Shutters_DoDiscovery(const char *topic);
 
 void BMP280_Init();
 void BMP280_OnEverySecond();
-void BMP280_AppendInformationToHTTPIndexPage(http_request_t *request);
+void BMP280_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState);
 
 void DoorDeepSleep_Init();
 void DoorDeepSleep_OnEverySecond();
 void DoorDeepSleep_StopDriver();
-void DoorDeepSleep_AppendInformationToHTTPIndexPage(http_request_t *request);
+void DoorDeepSleep_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState);
 void DoorDeepSleep_OnChannelChanged(int ch, int value);
 
 void DRV_MAX72XX_Clock_OnEverySecond();
 void DRV_MAX72XX_Clock_RunFrame();
 void DRV_MAX72XX_Clock_Init();
+
+void SSD1306_DRV_Init();
+void SSD1306_OnEverySecond();
 
 void DRV_ADCButton_Init();
 void DRV_ADCButton_RunFrame();
@@ -61,6 +70,9 @@ void DRV_GosundSW2_RunFrame();
 void DRV_PinMutex_Init();
 void DRV_PinMutex_RunFrame();
 
+void MultiPinI2CScanner_Init();
+void MultiPinI2CScanner_RunFrame();
+void MultiPinI2CScanner_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState);
 
 void SM16703P_Init();
 void SM16703P_Shutdown();
@@ -152,6 +164,9 @@ void Batt_OnEverySecond();
 void Batt_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState);
 void Batt_StopDriver();
 
+void BKPartitions_Init();
+void BKPartitions_QuickFrame();
+ 
 void Shift_Init();
 void Shift_OnEverySecond();
 void Shift_OnChannelChanged(int ch, int value);
@@ -164,6 +179,13 @@ void PIR_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState
 void TMGN_RunQuickTick();
 
 void DRV_MAX72XX_Init();
+void DRV_MAX72XX_Shutdown();
+int MAX72XXSingle_CountPixels(bool bOn);
+int MAX72XXSingle_GetScrollCount();
+
+void EEPROM_Init();
+void EEPROM_OnEverySecond();
+void EEPROM_AppendInformationToHTTPIndexPage(http_request_t*r, int pre);
 
 void apply_smart_light();
 
@@ -211,6 +233,15 @@ void PixelAnim_SetAnimQuickTick();
 void PixelAnim_SetAnim(int j);
 void PixelAnim_CreatePanel(http_request_t* request);
 
+typedef struct ledAnim_s
+{
+	const char* name;
+	void(*runFunc)();
+} ledAnim_t;
+extern ledAnim_t g_anims[];
+extern int g_numAnims;
+extern int activeAnim;
+
 void Drawers_Init();
 void Drawers_QuickTick();
 
@@ -231,7 +262,7 @@ void TCL_DoDiscovery(const char *topic);
 void DRV_DDPSend_Init();
 void DRV_DDPSend_Shutdown();
 void DRV_DDPSend_RunFrame();
-void DRV_DDPSend_AppendInformationToHTTPIndexPage(http_request_t* request);
+void DRV_DDPSend_AppendInformationToHTTPIndexPage(http_request_t* request, int bPreState);
 
 void TXW_Cam_Init(void);
 void TXW_Cam_RunEverySecond(void);
@@ -271,3 +302,18 @@ void Bridge_driver_DeInit();
 void Bridge_driver_QuickFrame();
 void Bridge_driver_OnChannelChanged(int ch, int value);
 /*************************************************************/
+
+/* Roomba driver *********************************************/
+void Roomba_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState);
+/*************************************************************/
+void LTR_Init();
+void LTR_OnEverySecond();
+void LTR_AppendInformationToHTTPIndexPage(http_request_t* request, int bPreState);
+
+void TinyIR_NEC_Init();
+void TinyIR_NEC_Deinit();
+void TinyIR_NEC_RunFrame();
+
+void DRV_ESPHome_API_Init();
+void DRV_ESPHome_API_Deinit();
+void DRV_ESPHome_API_OnEverySecond();

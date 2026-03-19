@@ -941,17 +941,6 @@ int http_rest_post_flash(http_request_t* request, int startaddr, int maxaddr)
 
 	ctx.otaTargetHdr = malloc(sizeof(update_ota_target_hdr));
 	memset(ctx.otaTargetHdr, 0, sizeof(update_ota_target_hdr));
-	writebuf = request->received;
-	if (!writelen) writelen = recv(request->fd, writebuf, request->receivedLenmax, 0);
-	// for some reason we receive data along with HTTP header. Skip it.
-	int skip = 0;
-	for (; skip < writelen - 5; skip++)
-	{
-		if (*(uint32_t*)&writebuf[skip] == 0xFFFFFFFF && writebuf[skip + 4] == 0x01) break;
-	}
-	writebuf += skip;
-	writelen -= skip;
-	towrite -= skip;
 	update_file_hdr* pOtaFileHdr = (update_file_hdr*)(writebuf);
 	ctx.otaTargetHdr->FileHdr.FwVer = pOtaFileHdr->FwVer;
 	ctx.otaTargetHdr->FileHdr.HdrNum = pOtaFileHdr->HdrNum;
@@ -979,8 +968,8 @@ int http_rest_post_flash(http_request_t* request, int startaddr, int maxaddr)
 	ctx.otactrl->IsGetOTAHdr = 1;
 	writebuf += RevHdrLen;
 	// magic values to make it somewhat work.
-	writelen -= RevHdrLen + 5 - 384;
-	towrite -= RevHdrLen + 5 - 384;
+	writelen -= RevHdrLen;
+	towrite -= RevHdrLen;
 	ctx.otactrl->NextImgLen = towrite;
 	do
 	{

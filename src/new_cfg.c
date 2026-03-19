@@ -26,11 +26,7 @@ int g_cfg_pendingChanges = 0;
 #define MAIN_CFG_VERSION_V3 3
 // version 4 - bumped size by 1024,
 // added alternate ssid fields
-#if PLATFORM_W600
-#define MAIN_CFG_VERSION 3
-#else
 #define MAIN_CFG_VERSION 5
-#endif
 
 static byte CFG_CalcChecksum(mainConfig_t *inf) {
 	int header_size;
@@ -439,6 +435,50 @@ const char *CFG_GetMQTTPass() {
 	return g_cfg.mqtt_pass;
 }
 
+bool CHANNEL_IsHumidity(int type) {
+	if (type == ChType_Humidity)
+		return true;
+	if (type == ChType_Humidity_div10)
+		return true;
+	return false;
+}
+bool CHANNEL_IsTemperature(int type) {
+	if (type == ChType_Temperature)
+		return true;
+	if (type == ChType_Temperature_div10)
+		return true;
+	if (type == ChType_Temperature_div100)
+		return true;
+	if (type == ChType_Temperature_div2)
+		return true;
+	return false;
+}
+bool CHANNEL_IsPressure(int type) {
+	if (type == ChType_Pressure_div100)
+		return true;
+	return false;
+}
+bool CHANNEL_GetGenericOfType(float *out, bool(*checker)(int type)) {
+	int i, t;
+
+	for (i = 0; i < CHANNEL_MAX; i++) {
+		t = g_cfg.pins.channelTypes[i];
+		if (checker(t)) {
+			*out = CHANNEL_GetFinalValue(i);
+			return true;
+		}
+	}
+	return false;
+}
+bool CHANNEL_GetGenericHumidity(float *out) {
+	return CHANNEL_GetGenericOfType(out, CHANNEL_IsHumidity);
+}
+bool CHANNEL_GetGenericTemperature(float *out) {
+	return CHANNEL_GetGenericOfType(out, CHANNEL_IsTemperature);
+}
+bool CHANNEL_GetGenericPressure(float *out) {
+	return CHANNEL_GetGenericOfType(out, CHANNEL_IsPressure);
+}
 void CHANNEL_SetType(int ch, int type) {
 	if (g_cfg.pins.channelTypes[ch] != type) {
 		g_cfg.pins.channelTypes[ch] = type;
@@ -827,7 +867,16 @@ void CFG_InitAndLoad() {
 #if ALLOW_WEB_PASSWORD
 	// add web admin password configuration
 	if (g_cfg.version<5) {
+#if defined(PLATFORM_W600)
+	// W600 changed from V3 to V5, so at this point
+	// we read a valid V3 config but need a V5 config.
+	// Memory might contain old data (from flash_vars)
+	// so let's zero complete additional memory (including g_cfg.webPassword, making it empty).
+		memset((char*)(&g_cfg) + MAGIC_CONFIG_SIZE_V3, 0, sizeof(mainConfig_t) - MAGIC_CONFIG_SIZE_V3);
+		g_cfg_pendingChanges ++;
+#else
 		strcpy_safe(g_cfg.webPassword, "", sizeof(g_cfg.webPassword));
+#endif
 	}
 #endif
 	g_cfg.version = MAIN_CFG_VERSION;

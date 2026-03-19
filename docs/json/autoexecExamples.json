@@ -146,5 +146,9 @@
 {
 "title": "[Scripting custom light animation/styles for TuyaMCU](https://www.elektroda.com/rtvforum/topic4014389.html)",
 "file": "autoexecs/tuyamcu_light_styles.bat"
+},
+{
+"title": "[Tongou TOVTH-216WTTDA MCB with BK7231N CB2S with Enum types](https://www.elektroda.com/rtvforum/topic4147513.html)",
+"file": "autoexecs/tongou_tuyamcu_enums.bat"
 }
 ]

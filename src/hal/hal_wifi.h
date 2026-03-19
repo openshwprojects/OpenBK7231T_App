@@ -33,8 +33,13 @@ typedef struct
 #if PLATFORM_REALTEK
 	unsigned char wpa_global_PSK[40];
 	char pwd[128 + 1];
+#elif PLATFORM_LN882H
+	unsigned char psk[40];
 #else
 	char psk[64];
+#endif
+#if PLATFORM_BL602
+	char pwd[64 + 1];
 #endif
 } obkFastConnectData_t;
 

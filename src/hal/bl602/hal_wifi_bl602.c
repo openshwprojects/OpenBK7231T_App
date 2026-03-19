@@ -3,6 +3,8 @@
 #include "../hal_wifi.h"
 #include "../../new_common.h"
 #include "../../new_cfg.h"
+#include "../../new_pins.h"
+#include "../../logging/logging.h"
 #include <string.h>
 #include <FreeRTOS.h>
 #include <task.h>
@@ -14,30 +16,38 @@
 #include <wifi_mgmr_ext.h>
 #include <aos/kernel.h>
 #include <aos/yloop.h>
+#include <easyflash.h>
 
 // lenght of "192.168.103.103" is 15 but we also need a NULL terminating character
-static char g_ipStr[32] = "unknown";
+static char g_ipStr[16] = "unknown";
+static char g_gwStr[16] = "unknown";
+static char g_maskStr[16] = "unknown";
+static char g_dnsStr[16] = "unknown";
 static int g_bAccessPointMode = 1;
 static void (*g_wifiStatusCallback)(int code);
 extern bool g_powersave;
+static obkFastConnectData_t fcdata = { 0 };
+extern uint16_t phy_channel_to_freq(uint8_t band, int channel);
 
 void HAL_ConnectToWiFi(const char *ssid, const char *psk, obkStaticIP_t *ip)
 {
     wifi_interface_t wifi_interface;
-    if (ip->localIPAddr[0] == 0) {
-	wifi_mgmr_sta_ip_unset();
+    if(ip->localIPAddr[0] == 0)
+    {
+        wifi_mgmr_sta_ip_unset();
     }
-    else {
-	wifi_mgmr_sta_ip_set(*(int*)ip->localIPAddr, *(int*)ip->netMask, *(int*)ip->gatewayIPAddr, *(int*)ip->dnsServerIpAddr, 0);
+    else
+    {
+        wifi_mgmr_sta_ip_set(*(int*)ip->localIPAddr, *(int*)ip->netMask, *(int*)ip->gatewayIPAddr, *(int*)ip->dnsServerIpAddr, 0);
     }
     if(g_powersave) wifi_mgmr_sta_ps_exit();
     wifi_interface = wifi_mgmr_sta_enable();
 
     // sending WIFI_CONNECT_PMF_CAPABLE is crucial here, without it, wpa3 or wpa2/3 mixed mode does not work and
-	// connection is unstable, mqtt disconnects every few minutes
-    wifi_mgmr_sta_connect_mid(wifi_interface, ssid, psk, NULL, NULL, 0, 0, ip->localIPAddr[0] == 0 ?1:0, WIFI_CONNECT_PMF_CAPABLE);
+    // connection is unstable, mqtt disconnects every few minutes
+    wifi_mgmr_sta_connect_mid(wifi_interface, (char*)ssid, (char*)psk, NULL, NULL, 0, 0, ip->localIPAddr[0] == 0 ? 1 : 0, WIFI_CONNECT_PMF_CAPABLE);
 
-	g_bAccessPointMode = 0;
+    g_bAccessPointMode = 0;
 }
 
 // BL_Err_Type EF_Ctrl_Write_MAC_Address_Opt(uint8_t slot,uint8_t mac[6],uint8_t program)
@@ -56,7 +66,7 @@ int WiFI_SetMacAddress(char *mac) {
 }
 void HAL_DisconnectFromWifi()
 {
-    
+    wifi_mgmr_sta_disconnect();
 }
 
 int HAL_SetupWiFiOpenAccessPoint(const char *ssid) {
@@ -68,7 +78,7 @@ int HAL_SetupWiFiOpenAccessPoint(const char *ssid) {
 
     wifi_interface = wifi_mgmr_ap_enable();
     /*no password when only one param*/
-    wifi_mgmr_ap_start(wifi_interface, ssid, hidden_ssid, NULL, 1);
+    wifi_mgmr_ap_start(wifi_interface, (char*)ssid, hidden_ssid, NULL, 1);
 
 	g_bAccessPointMode = 1;
 
@@ -129,10 +139,29 @@ static void event_cb_wifi_event(input_event_t *event, void *private_data)
         {
             printf("[APP] [EVT] GOT IP %lld\r\n", aos_now_ms());
             printf("[SYS] Memory left is %d Bytes\r\n", xPortGetFreeHeapSize());
-			if(g_wifiStatusCallback!=0) {
-				g_wifiStatusCallback(WIFI_STA_CONNECTED);
-			}
-			if(g_powersave) wifi_mgmr_sta_ps_enter(2);
+            if(g_wifiStatusCallback!=0) {
+                g_wifiStatusCallback(WIFI_STA_CONNECTED);
+            }
+            if(g_powersave) wifi_mgmr_sta_ps_enter(2);
+
+            if(CFG_HasFlag(OBK_FLAG_WIFI_ENHANCED_FAST_CONNECT))
+            {
+                wifi_mgmr_sta_connect_ind_stat_info_t info;
+                wifi_mgmr_sta_connect_ind_stat_get(&info);
+                ef_get_env_blob("fcdata", &fcdata, sizeof(obkFastConnectData_t), NULL);
+                if(strcmp((const char*)info.passphr, fcdata.pwd) != 0 ||
+                    memcmp(&info.bssid, fcdata.bssid, 6) != 0 ||
+                    info.chan_id != fcdata.channel)
+                {
+                    ADDLOG_INFO(LOG_FEATURE_GENERAL, "Saved fast connect data differ to current one, saving...");
+                    memset(&fcdata, 0, sizeof(obkFastConnectData_t));
+                    strcpy(fcdata.pwd, (const char*)info.passphr);
+                    fcdata.channel = info.chan_id;
+                    wifi_mgmr_psk_cal(info.passphr, info.ssid, strlen(info.ssid), fcdata.psk);
+                    memcpy(&fcdata.bssid, (char*)&info.bssid, sizeof(fcdata.bssid));
+                    ef_set_env_blob("fcdata", &fcdata, sizeof(obkFastConnectData_t));
+                }
+            }
         }
         break;
         case CODE_WIFI_ON_PROV_SSID:
@@ -225,30 +254,51 @@ int HAL_GetWifiStrength() {
     return rssi;	
 }
 
-const char *HAL_GetMyIPString() {
-	uint32_t ip;
-	uint32_t gw;
-	uint32_t mask;
+const char *HAL_GetMyIPString()
+{
+    uint32_t ip;
+    uint32_t gw;
+    uint32_t mask;
 
-	if(g_bAccessPointMode == 1) {
-		wifi_mgmr_ap_ip_get(&ip, &gw, &mask);
-	} else {
-		wifi_mgmr_sta_ip_get(&ip, &gw, &mask);
-	}
+    if(g_bAccessPointMode == 1)
+    {
+        wifi_mgmr_ap_ip_get(&ip, &gw, &mask);
+    }
+    else
+    {
+        wifi_mgmr_sta_ip_get(&ip, &gw, &mask);
+    }
 
-	strcpy(g_ipStr,inet_ntoa(ip));
+    strcpy(g_ipStr,inet_ntoa(ip));
+    strcpy(g_gwStr, inet_ntoa(gw));
+    strcpy(g_maskStr, inet_ntoa(mask));
 
-	return g_ipStr;
+    return g_ipStr;
 }
 
-const char* HAL_GetMyGatewayString() {
-	return "192.168.0.1";
+const char* HAL_GetMyGatewayString()
+{
+    return g_gwStr;
 }
-const char* HAL_GetMyDNSString() {
-	return "192.168.0.1";
+const char* HAL_GetMyDNSString()
+{
+    uint32_t dns1;
+    uint32_t dns2;
+
+    if(g_bAccessPointMode == 1)
+    {
+        return "none";
+    }
+    else
+    {
+        wifi_mgmr_sta_dns_get(&dns1, &dns2);
+    }
+    strcpy(g_dnsStr, inet_ntoa(dns1));
+    return g_dnsStr;
 }
-const char* HAL_GetMyMaskString() {
-	return "255.255.255.0";
+const char* HAL_GetMyMaskString()
+{
+    return g_maskStr;
 }
 
 void WiFI_GetMacAddress(char *mac) {
@@ -262,8 +312,59 @@ const char *HAL_GetMACStr(char *macstr) {
 	} else {
 		wifi_mgmr_sta_mac_get(mac);
 	}
-	sprintf(macstr,"%02X%02X%02X%02X%02X%02X",mac[0],mac[1],mac[2],mac[3],mac[4],mac[5]);
+	sprintf(macstr, MACSTR, MAC2STR(mac));
 	return macstr;
+}
+
+void HAL_FastConnectToWiFi(const char* oob_ssid, const char* connect_key, obkStaticIP_t* ip)
+{
+    int len = ef_get_env_blob("fcdata", &fcdata, sizeof(obkFastConnectData_t), NULL);
+    if(len == sizeof(obkFastConnectData_t))
+    {
+        ADDLOG_INFO(LOG_FEATURE_GENERAL, "We have fast connection data, connecting...");
+        if(ip->localIPAddr[0] == 0)
+        {
+            wifi_mgmr_sta_ip_unset();
+        }
+        else
+        {
+            wifi_mgmr_sta_ip_set(*(int*)ip->localIPAddr, *(int*)ip->netMask, *(int*)ip->gatewayIPAddr, *(int*)ip->dnsServerIpAddr, 0);
+        }
+
+        struct ap_connect_adv ext_param = { 0 };
+        char psk[65] = { 0 };
+        memcpy(psk, fcdata.psk, 64);
+        printf("strlen psk = %i\r\n", strlen(psk));
+        ext_param.psk = psk;
+        ext_param.ap_info.type = AP_INFO_TYPE_SUGGEST;
+        ext_param.ap_info.time_to_live = 30;
+        ext_param.ap_info.bssid = (uint8_t*)fcdata.bssid;
+        ext_param.ap_info.band = 0;
+        ext_param.ap_info.freq = phy_channel_to_freq(0, fcdata.channel);
+        ext_param.ap_info.use_dhcp = ip->localIPAddr[0] == 0 ? 1 : 0;
+        ext_param.flags = WIFI_CONNECT_PMF_CAPABLE | WIFI_CONNECT_STOP_SCAN_ALL_CHANNEL_IF_TARGET_AP_FOUND | WIFI_CONNECT_STOP_SCAN_CURRENT_CHANNEL_IF_TARGET_AP_FOUND;
+
+        if(g_powersave) wifi_mgmr_sta_ps_exit();
+        wifi_interface_t wifi_interface;
+        wifi_interface = wifi_mgmr_sta_enable();
+        wifi_mgmr_sta_connect_ext(wifi_interface, (char*)oob_ssid, (char*)connect_key, &ext_param);
+        g_bAccessPointMode = 0;
+        return;
+    }
+    else if(len)
+    {
+        ADDLOG_INFO(LOG_FEATURE_GENERAL, "Fast connect data len (%i) != saved len (%i)", sizeof(obkFastConnectData_t), len);
+    }
+    else
+    {
+        ADDLOG_INFO(LOG_FEATURE_GENERAL, "Fast connect data is empty, connecting normally");
+    }
+    HAL_ConnectToWiFi(oob_ssid, connect_key, ip);
+}
+
+void HAL_DisableEnhancedFastConnect()
+{
+    ef_del_env("fcdata");
 }
 
 #endif // PLATFORM_BL602

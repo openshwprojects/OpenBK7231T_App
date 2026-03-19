@@ -120,81 +120,87 @@
     "requires": ""
   },
   {
+    "name": "$frequency",
+    "title": "$frequency",
+    "descr": "Current value of frequency from energy metering chip",
+    "requires": ""
+  },
+  {
     "name": "$energy",
     "title": "$energy",
     "descr": "Current value of energy counter from energy metering chip",
     "requires": ""
   },
   {
-    "name": "$day",
-    "title": "$day",
-    "descr": "Current weekday from NTP",
-    "requires": ""
-  },
-  {
-    "name": "$hour",
-    "title": "$hour",
-    "descr": "Current hour from NTP",
-    "requires": ""
-  },
-  {
-    "name": "$minute",
-    "title": "$minute",
-    "descr": "Current minute from NTP",
-    "requires": ""
-  },
-  {
-    "name": "$second",
-    "title": "$second",
-    "descr": "Current second from NTP",
-    "requires": ""
-  },
-  {
-    "name": "$mday",
-    "title": "$mday",
-    "descr": "TODO",
-    "requires": ""
-  },
-  {
-    "name": "$month",
-    "title": "$month",
-    "descr": "TODO",
-    "requires": ""
-  },
-  {
-    "name": "$year",
-    "title": "$year",
-    "descr": "TODO",
-    "requires": ""
-  },
-  {
     "name": "$yesterday",
     "title": "$yesterday",
-    "descr": "TODO",
+    "descr": "Yesterdays energy consuption",
     "requires": ""
   },
   {
     "name": "$today",
     "title": "$today",
-    "descr": "TODO",
+    "descr": "Todays energy consuption",
+    "requires": ""
+  },
+  {
+    "name": "$day",
+    "title": "$day",
+    "descr": "Current weekday from device clock",
+    "requires": ""
+  },
+  {
+    "name": "$hour",
+    "title": "$hour",
+    "descr": "Current hour from device clock",
+    "requires": ""
+  },
+  {
+    "name": "$minute",
+    "title": "$minute",
+    "descr": "Current minute from device clock",
+    "requires": ""
+  },
+  {
+    "name": "$second",
+    "title": "$second",
+    "descr": "Current second from device clock",
+    "requires": ""
+  },
+  {
+    "name": "$mday",
+    "title": "$mday",
+    "descr": "Current mday from device clock",
+    "requires": ""
+  },
+  {
+    "name": "$month",
+    "title": "$month",
+    "descr": "Current month from device clock",
+    "requires": ""
+  },
+  {
+    "name": "$year",
+    "title": "$year",
+    "descr": "Current Year from device clock",
     "requires": ""
   },
   {
     "name": "$isDST",
     "title": "$isDST",
-    "descr": "TODO",
+    "descr": "Returns 1 if DST (daylight saving time) is active, otherwise 0",
     "requires": ""
   },
   {
     "name": "$sunrise",
     "title": "$sunrise",
-    "descr": "TODO",
+    "descr": "Next sunrise as a TimerSeconds from midnight - will also print time to log",
     "requires": ""
   },
   {
     "name": "$sunset",
     "title": "$sunset",
-    "descr": "TODO",
+    "descr": "Next sunset as a TimerSeconds from midnight - will also print time to log",
     "requires": ""
   },
   {

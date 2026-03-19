@@ -292,6 +292,11 @@ void Start_UART_TCP(void* arg)
 
 // startDriver UartTCP [baudrate] [buffer size] [connection channel] [hw flow control]
 // connection is for led, -1 if not used.
+// Sample:
+// startDriver UartTCP 115200 8192
+// Then connect to 8888
+
+// backlog stopDriver UartTCP; startDriver UartTCP 115200 8192
 void UART_TCP_Init()
 {
 	g_baudRate = Tokenizer_GetArgIntegerDefault(1, g_baudRate);

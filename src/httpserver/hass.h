@@ -100,8 +100,17 @@ typedef enum {
 	HASS_SELECT,
 	HASS_PERCENT,
 	HASS_TEXTFIELD,
+	HASS_BUTTON,
+	// @Brief ChType_ReadOnlyEnum, readonly with value_template
+	HASS_READONLYENUM,
+	HASS_GARAGE,
+
 } ENTITY_TYPE;
 
+typedef enum {
+	HASS_CATEGORY_CONFIG = 0,
+	HASS_CATEGORY_DIAGNOSTIC = 1,
+} HASS_CATEGORY_TYPE;
 //unique_id is defined in hass_populate_unique_id and is based on CFG_GetDeviceName() whose size is CGF_DEVICE_NAME_SIZE.
 //Sample unique_id would be deviceName_entityType_index.
 //Currently supported entityType is `relay` or `light` - 5 char.
@@ -140,6 +149,11 @@ HassDeviceInfo* hass_createSelectEntity(const char* state_topic, const char* com
 	const char* options[], const char* title);
 HassDeviceInfo* hass_createSelectEntityIndexed(const char* state_topic, const char* command_topic, int numoptions,
 	const char* options[], const char* title);
+HassDeviceInfo* hass_createSelectEntityIndexedCustom(const char* state_topic, const char* command_topic, int numoptions,
+	const char* options[], const char* title, char* value_template, char* command_template);
+HassDeviceInfo* hass_createGarageEntity(const char* state_topic, const char* command_topic,
+	const char *title);
+HassDeviceInfo* hass_createShutter(int index);
 
 HassDeviceInfo* hass_createToggle(const char *label, const char *stateTopic, const char *commandTopic);
 HassDeviceInfo* hass_init_textField_info(int index);
@@ -147,5 +161,5 @@ const char* hass_build_discovery_json(HassDeviceInfo* info);
 void hass_free_device_info(HassDeviceInfo* info); 
 char *hass_generate_multiplyAndRound_template(int decimalPlacesForRounding, int decimalPointOffset, int divider);
 HassDeviceInfo* hass_init_textField_info(int index);
-
+HassDeviceInfo* hass_init_button_device_info(char* title,char* cmd_id, char* press_payload, HASS_CATEGORY_TYPE type);
 #endif // ENABLE_HA_DISCOVERY

@@ -15,6 +15,7 @@ CShape *CRect::cloneShape() {
 void CRect::drawShape() {
 	if (bFill) {
 		glColor3fv(getFillColor());
+		glDisable(GL_CULL_FACE);
 		glBegin(GL_QUADS);
 		glVertex2f(getX(), getY());
 		glVertex2f(getX() + w, getY());

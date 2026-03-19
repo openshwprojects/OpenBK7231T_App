@@ -42,10 +42,17 @@ extern unsigned char hexbyte(const char* hex);
 void OTA_RequestDownloadFromHTTP(const char *s);
 
 #if WINDOWS
+#ifndef LINUX
 #define DEVICENAME_PREFIX_FULL "WinTest"
 #define DEVICENAME_PREFIX_SHORT "WT"
 #define PLATFORM_MCU_NAME "WIN32"
 #define MANUFACTURER "Microsoft"
+#else
+#define DEVICENAME_PREFIX_FULL "LinuxSim"
+#define DEVICENAME_PREFIX_SHORT "LS"
+#define PLATFORM_MCU_NAME "LIN"
+#define MANUFACTURER "Linux"
+#endif
 #elif PLATFORM_XR806
 #define DEVICENAME_PREFIX_FULL "OpenXR806"
 #define DEVICENAME_PREFIX_SHORT "oxr"
@@ -113,6 +120,11 @@ typedef long BaseType_t;
 #define DEVICENAME_PREFIX_FULL "OpenLN882H"
 #define DEVICENAME_PREFIX_SHORT "ln882h"
 #define PLATFORM_MCU_NAME "LN882H"
+#define MANUFACTURER "LightningSemi"
+#elif PLATFORM_LN8825
+#define DEVICENAME_PREFIX_FULL "OpenLN8825"
+#define DEVICENAME_PREFIX_SHORT "ln8825"
+#define PLATFORM_MCU_NAME "LN8825"
 #define MANUFACTURER "LightningSemi"
 #elif PLATFORM_ESPIDF
 #define MANUFACTURER "Espressif"
@@ -187,6 +199,11 @@ typedef long BaseType_t;
 #define DEVICENAME_PREFIX_SHORT "txw81x"
 #define PLATFORM_MCU_NAME "TXW81X"
 #define MANUFACTURER "Taixin"
+#elif PLATFORM_RDA5981
+#define DEVICENAME_PREFIX_FULL "OpenRDA5981"
+#define DEVICENAME_PREFIX_SHORT "rda5981"
+#define PLATFORM_MCU_NAME "RDA5981"
+#define MANUFACTURER "RDA Microelectronics"
 #else
 #error "You must define a platform.."
 This platform is not supported, error!
@@ -197,7 +214,11 @@ This platform is not supported, error!
 // but it may not be set while doing a test build on developer PC
 #ifndef USER_SW_VER
 #ifdef WINDOWS
+#ifndef LINUX
 #define USER_SW_VER "Win_Test"
+#else
+#define USER_SW_VER "Lin_Test"
+#endif
 #elif PLATFORM_XR809
 #define USER_SW_VER "XR809_Test"
 #elif PLATFORM_XR872
@@ -216,6 +237,8 @@ This platform is not supported, error!
 #define USER_SW_VER "W800_Test"
 #elif defined(PLATFORM_LN882H)
 #define USER_SW_VER "LN882H_Test"
+#elif defined(PLATFORM_LN8825)
+#define USER_SW_VER "LN8825_Test"
 #elif defined(PLATFORM_ESPIDF)
 #define USER_SW_VER PLATFORM_MCU_NAME "_Test"
 #elif defined(PLATFORM_TR6260)
@@ -246,6 +269,8 @@ This platform is not supported, error!
 #define USER_SW_VER "RTL8720E_Test"
 #elif PLATFORM_TXW81X
 #define USER_SW_VER "TXW81X_Test"
+#elif PLATFORM_RDA5981
+#define USER_SW_VER "RDA5981_Test"
 #else
 #warning "USER_SW_VER undefined"
 #define USER_SW_VER "unknown"
@@ -302,6 +327,8 @@ This platform is not supported, error!
 #define bk_printf printf
 
 // generic
+#include <stdbool.h>
+
 typedef int bool;
 #define true 1
 #define false 0
@@ -471,6 +498,8 @@ OSStatus rtos_suspend_thread(beken_thread_t* thread);
 #include <portable.h>
 #include <semphr.h>
 #include "lwip/sys.h"
+#include <stdbool.h>
+
 
 #define GLOBAL_INT_DECLARATION()	;
 #define GLOBAL_INT_DISABLE()		;
@@ -513,7 +542,7 @@ OSStatus rtos_suspend_thread(beken_thread_t* thread);
 
 #define OBK_OTA_EXTENSION ".img"
 
-#elif PLATFORM_LN882H
+#elif PLATFORM_LN882H || PLATFORM_LN8825
 
 #include <FreeRTOS.h>
 #include <task.h>
@@ -527,7 +556,6 @@ OSStatus rtos_suspend_thread(beken_thread_t* thread);
 
 #define lwip_close_force(x) lwip_close(x)
 #define bk_printf printf
-
 #define kNoErr                      0       //! No error occurred.
 #define rtos_delay_milliseconds OS_MsDelay
 typedef void *beken_thread_arg_t;
@@ -546,8 +574,26 @@ OSStatus rtos_create_thread( beken_thread_t* thread,
 							uint32_t stack_size, beken_thread_arg_t arg );
 OSStatus rtos_suspend_thread(beken_thread_t* thread);
 
+#if PLATFORM_LN8825
+#define malloc os_malloc
+#include "utils/debug/log.h"
+#undef bk_printf
+#define bk_printf(...) LOG(LOG_LVL_INFO, __VA_ARGS__)
+#define printf(...) LOG(LOG_LVL_INFO, __VA_ARGS__)
+#define hal_flash_read FLASH_Read
+#define hal_flash_program FLASH_Program
+#define hal_flash_erase FLASH_Erase
+#define HAL_ADC_Init OBK_HAL_ADC_Init
+#define OBK_OTA_EXTENSION		".img"
+#define OBK_OTA_NAME_EXTENSION	"_ota"
+#else
 #define OBK_OTA_EXTENSION		".bin"
 #define OBK_OTA_NAME_EXTENSION	"_OTA"
+
+extern void soc_module_clk_gate_enable(uint32_t gate_cfg);
+extern void soc_module_clk_gate_disable(uint32_t gate_cfg);
+#endif
+
 
 #elif PLATFORM_ESPIDF || PLATFORM_ESP8266
 
@@ -701,8 +747,10 @@ extern u32 pwmout_pin2chan(PinName pin);
 #define os_free vPortFree
 
 #if PLATFORM_RTL8720D
+#undef vsprintf
 #undef vsnprintf
 #undef sprintf
+#undef snprintf
 #undef atoi
 #undef printf
 #endif
@@ -859,6 +907,56 @@ OSStatus rtos_suspend_thread(beken_thread_t* thread);
 #define GLOBAL_INT_DISABLE()		;
 #define GLOBAL_INT_RESTORE()		;
 
+#elif PLATFORM_RDA5981
+
+#include "stdbool.h"
+#include "rda_sys_wrapper.h"
+#include "cmsis_os.h"
+#include "lwip/err.h"
+#include "lwip/sockets.h"
+#include "lwip/sys.h"
+#include "lwip/netdb.h"
+#include "lwip/dns.h"
+
+#define bk_printf printf
+
+#define rtos_delay_milliseconds osDelay
+#define delay_ms osDelay
+#define os_malloc malloc
+#define os_free free
+
+#define lwip_close_force(x) lwip_close(x)
+#define kNoErr                      0       //! No error occurred.
+typedef void* beken_thread_arg_t;
+typedef void* beken_thread_t;
+typedef void (*beken_thread_function_t)(beken_thread_arg_t arg);
+typedef int OSStatus;
+typedef void* SemaphoreHandle_t;
+#define xSemaphoreCreateMutex rda_mutex_create
+#define xSemaphoreTake(a, b) (rda_mutex_wait(a, b) == 0)
+#define xSemaphoreGive rda_mutex_realease
+#define pdTRUE true
+
+#define portTICK_RATE_MS osKernelSysTickMicroSec(1000 * 1000) 
+typedef int BaseType_t;
+typedef uint64_t portTickType;
+#define xTaskGetTickCount osKernelSysTick
+
+#define BEKEN_DEFAULT_WORKER_PRIORITY      (6)
+#define BEKEN_APPLICATION_PRIORITY         (7)
+
+OSStatus rtos_delete_thread(beken_thread_t thread);
+OSStatus rtos_create_thread(beken_thread_t thread,
+	uint8_t priority, const char* name,
+	beken_thread_function_t function,
+	uint32_t stack_size, beken_thread_arg_t arg);
+OSStatus rtos_suspend_thread(beken_thread_t thread);
+
+#define GLOBAL_INT_DECLARATION()	;
+#define GLOBAL_INT_DISABLE()		;
+#define GLOBAL_INT_RESTORE()		;
+
+
 #else
 
 #include "gw_intf.h"
@@ -938,6 +1036,7 @@ char *strdup(const char *s);
 const char* skipToNextWord(const char* p);
 void stripDecimalPlaces(char *p, int maxDecimalPlaces);
 int wal_stricmp(const char *a, const char *b);
+char *wal_stristr(const char *haystack, const char *needle);
 int wal_strnicmp(const char *a, const char *b, int count);
 int strcat_safe(char *tg, const char *src, int tgMaxLen);
 int strcpy_safe(char *tg, const char *src, int tgMaxLen);
@@ -946,7 +1045,7 @@ void urldecode2_safe(char *dst, const char *srcin, int maxDstLen);
 int strIsInteger(const char *s);
 
 #if !defined(PLATFORM_ESPIDF) && !defined(PLATFORM_TR6260) && !defined(PLATFORM_ECR6600) && !defined(PLATFORM_BL602) && \
-	!defined(PLATFORM_ESP8266)
+	!defined(PLATFORM_ESP8266) && !defined(PLATFORM_W800)
 
 const char* strcasestr(const char* str1, const char* str2);
 #endif
@@ -1006,7 +1105,8 @@ typedef enum
     EXCELLENT,
 } WIFI_RSSI_LEVEL;
 
-#if PLATFORM_LN882H || PLATFORM_REALTEK || PLATFORM_ECR6600 || PLATFORM_TR6260 || PLATFORM_XRADIO || PLATFORM_TXW81X
+#if PLATFORM_LN882H || PLATFORM_REALTEK || PLATFORM_ECR6600 || PLATFORM_TR6260 || PLATFORM_XRADIO \
+ || PLATFORM_TXW81X || PLATFORM_LN8825 || PLATFORM_ESP8266
 #define IP_STRING_FORMAT	"%u.%u.%u.%u"
 #else
 #define IP_STRING_FORMAT	"%hhu.%hhu.%hhu.%hhu"

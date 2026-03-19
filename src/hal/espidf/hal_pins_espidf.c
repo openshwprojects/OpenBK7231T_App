@@ -313,20 +313,23 @@ espPinMapping_t g_pins[] = {
 #elif PLATFORM_ESP8266
 
 espPinMapping_t g_pins[] = {
-	{ "IO0", GPIO_NUM_0, false },
-	{ "IO1", GPIO_NUM_1, false },
-	{ "IO2", GPIO_NUM_2, false },
-	{ "IO3", GPIO_NUM_3, false },
-	{ "IO4", GPIO_NUM_4, false },
-	{ "IO5", GPIO_NUM_5, false },
-	{ "IO9", GPIO_NUM_9, false },
-	{ "IO10", GPIO_NUM_10, false },
-	{ "IO12", GPIO_NUM_12, false },
-	{ "IO13", GPIO_NUM_13, false },
-	{ "IO14", GPIO_NUM_14, false },
-	{ "IO15", GPIO_NUM_15, false },
-	{ "IO16", GPIO_NUM_15, false },
+	{ "IO0", GPIO_NUM_0, false }, // 0
+	{ "IO1", GPIO_NUM_1, false }, // 1
+	{ "IO2", GPIO_NUM_2, false }, // 2
+	{ "IO3", GPIO_NUM_3, false }, // 3
+	{ "IO4", GPIO_NUM_4, false }, // 4
+	{ "IO5", GPIO_NUM_5, false }, // 5
+	{ "IO9", GPIO_NUM_9, false }, // 6
+	{ "IO10", GPIO_NUM_10, false }, // 7
+	{ "IO12", GPIO_NUM_12, false }, // 8
+	{ "IO13", GPIO_NUM_13, false }, // 9
+	{ "IO14", GPIO_NUM_14, false }, // 10
+	{ "IO15", GPIO_NUM_15, false }, // 11
+	{ "IO16", GPIO_NUM_16, false }, // 12
+	// ADC only I guess (no GPIO)
+	{ "ADC", GPIO_NUM_NC, false }, // 13
 };
+
 
 #else
 

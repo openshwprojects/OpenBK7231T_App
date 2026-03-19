@@ -147,8 +147,11 @@ void DoorDeepSleep_StopDriver() {
 
 }
 
-void DoorDeepSleep_AppendInformationToHTTPIndexPage(http_request_t* request)
+void DoorDeepSleep_AppendInformationToHTTPIndexPage(http_request_t* request, int bPreState)
 {
+	if (bPreState){
+		return;
+	}
 	int untilSleep;
 
 	if (Main_HasMQTTConnected()) {

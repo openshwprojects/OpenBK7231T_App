@@ -50,9 +50,12 @@ static commandResult_t Test_Cmd_Start(const void * context, const char *cmd, con
 	return CMD_RES_OK;
 }
 
-void Test_AppendInformationToHTTPIndexPage(http_request_t *request)
+void Test_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState)
 {
 
+	if (bPreState){
+		return;
+	}
 	if (http_getArgInteger(request->url, "restart")) {
 		Test_Cmd_Start(0, 0, 0, 0);
 	}

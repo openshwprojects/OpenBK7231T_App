@@ -5,6 +5,8 @@
 #include "../hal/hal_wifi.h"
 #include "../driver/drv_public.h"
 #include "../new_pins.h"
+#include "../cmnds/cmd_enums.h"
+#include "../driver/drv_local.h"
 
 #if ENABLE_HA_DISCOVERY
 
@@ -17,7 +19,7 @@ Sensor - https://www.home-assistant.io/integrations/sensor.mqtt/
 
 //Buffer used to populate values in cJSON_Add* calls. The values are based on
 //CFG_GetShortDeviceName and clientId so it needs to be bigger than them. +64 for light/switch/etc.
-static char g_hassBuffer[CGF_MQTT_CLIENT_ID_SIZE + 64];
+static char g_hassBuffer[CGF_MQTT_CLIENT_ID_SIZE + 128];
 const char *g_template_lowMidHigh = "{% if value == '0' %}\n"
 			"	Low\n"
 			"{% elif value == '1' %}\n"
@@ -131,6 +133,12 @@ void hass_populate_unique_id(ENTITY_TYPE type, int index, char* uniq_id, int ase
 	case HASS_PERCENT:
 		sprintf(uniq_id, "%s_%s_%d", longDeviceName, "number", index);
 		break;
+	case HASS_BUTTON:
+		sprintf(uniq_id, "%s_%s", longDeviceName, "button");
+		break;
+	case HASS_SELECT:
+		sprintf(uniq_id, "%s_%s", longDeviceName, "select");
+		break;
 	default:
 		// TODO: USE type here as well?
 		// If type is not set, and we use "sensor" naming, we can easily make collision
@@ -203,6 +211,9 @@ void hass_populate_device_config_channel(ENTITY_TYPE type, char* uniq_id, HassDe
 	case TEMPERATURE_SENSOR:
 	case HUMIDITY_SENSOR:
 		sprintf(info->channel, "sensor/%s/config", uniq_id);
+		break;
+	case HASS_BUTTON:
+		sprintf(info->channel, "button/%s/config", uniq_id);
 		break;
 	default:
 		sprintf(info->channel, "sensor/%s/config", uniq_id);
@@ -316,6 +327,44 @@ static void generate_command_template(int numoptions, const char* options[], cha
 
 HassDeviceInfo* hass_createSelectEntityIndexed(const char* state_topic, const char* command_topic, int numoptions,
 	const char* options[], const char* title) {
+
+	char value_template[512];
+	generate_value_template(numoptions, options, value_template, sizeof(value_template));
+
+	char command_template[512];
+	generate_command_template(numoptions, options, command_template, sizeof(command_template));
+
+	return hass_createSelectEntityIndexedCustom(state_topic, command_topic, numoptions, options, title,
+		value_template, command_template);
+}
+
+
+HassDeviceInfo* hass_createGarageEntity(const char* state_topic, const char* command_topic,
+	const char *title) {
+	HassDeviceInfo* info = hass_init_device_info(HASS_GARAGE, 0, NULL, NULL, 0, title);
+
+	cJSON_AddStringToObject(info->root, "name", title);
+	cJSON_AddStringToObject(info->root, "unique_id", title);
+	cJSON_AddStringToObject(info->root, "device_class", "garage");
+	cJSON_AddStringToObject(info->root, "state_topic", state_topic);
+	cJSON_AddStringToObject(info->root, "command_topic", command_topic);
+	// publish [Topic] [Value]
+	// publish 1 open
+	// publish 1 closed
+	// publish 1 opening  
+	// obk0696FB33/[Topic]/get
+	cJSON_AddStringToObject(info->root, "payload_open", "OPEN");
+	cJSON_AddStringToObject(info->root, "payload_close", "CLOSE");
+	cJSON_AddStringToObject(info->root, "payload_stop", "STOP");
+	cJSON_AddStringToObject(info->root, "state_open", "open");
+	cJSON_AddStringToObject(info->root, "state_closed", "closed");
+
+	sprintf(info->channel, "cover/%s/config", info->unique_id);
+	return info;
+}
+
+HassDeviceInfo* hass_createSelectEntityIndexedCustom(const char* state_topic, const char* command_topic, int numoptions,
+	const char* options[], const char* title, char* value_template, char* command_template) {
 	HassDeviceInfo* info = hass_init_device_info(HASS_SELECT, 0, NULL, NULL, 0, title);
 
 	cJSON_AddStringToObject(info->root, "name", title);
@@ -329,23 +378,20 @@ HassDeviceInfo* hass_createSelectEntityIndexed(const char* state_topic, const ch
 	}
 	cJSON_AddItemToObject(info->root, "options", select_options);
 
-	char value_template[512];
-	generate_value_template(numoptions, options, value_template, sizeof(value_template));
 	cJSON_AddStringToObject(info->root, "value_template", value_template);
-
-	char command_template[512];
-	generate_command_template(numoptions, options, command_template, sizeof(command_template));
 	cJSON_AddStringToObject(info->root, "command_template", command_template);
 
-	cJSON_AddStringToObject(info->root, "availability_topic", "~/status");
-	cJSON_AddStringToObject(info->root, "payload_available", "online");
-	cJSON_AddStringToObject(info->root, "payload_not_available", "offline");
+	if (!CFG_HasFlag(OBK_FLAG_NOT_PUBLISH_AVAILABILITY)) {
+		cJSON_AddStringToObject(info->root, "availability_topic", "~/connected");
+		cJSON_AddStringToObject(info->root, "payload_available", "online");
+		cJSON_AddStringToObject(info->root, "payload_not_available", "offline");
+	}
 
 	sprintf(info->channel, "select/%s/config", info->unique_id);
 
-	cJSON* dev = info->device;
-	cJSON_ReplaceItemInObject(dev, "manufacturer", cJSON_CreateString("Custom"));
-	cJSON_ReplaceItemInObject(dev, "model", cJSON_CreateString("C-Swing-Control"));
+	//cJSON* dev = info->device;
+	//cJSON_ReplaceItemInObject(dev, "manufacturer", cJSON_CreateString("Custom"));
+	//cJSON_ReplaceItemInObject(dev, "model", cJSON_CreateString("C-Swing-Control"));
 
 	return info;
 }
@@ -441,6 +487,42 @@ HassDeviceInfo* hass_createHVAC(float min, float max, float step, const char **f
 
 	return info;
 }
+HassDeviceInfo* hass_createShutter(int index) {
+	HassDeviceInfo* info = hass_init_device_info(HASS_GARAGE, index, NULL, NULL, 0, 0);
+
+	char buffer[64];
+
+	//cJSON_AddStringToObject(info->root, "name", title);
+	//cJSON_AddStringToObject(info->root, "unique_id", title);
+	cJSON_AddStringToObject(info->root, "device_class", "garage");
+
+	if (0) {
+		sprintf(buffer, "~/shutterState%i/get", index);
+		cJSON_AddStringToObject(info->root, "state_topic", buffer);
+	}
+	sprintf(buffer, "cmnd/%s/ShutterMove%d", CFG_GetMQTTClientId(), index);
+	cJSON_AddStringToObject(info->root, "command_topic", buffer);
+
+	cJSON_AddStringToObject(info->root, "state_open", "open");
+	cJSON_AddStringToObject(info->root, "state_closed", "closed");
+	cJSON_AddStringToObject(info->root, "payload_open", "OPEN");
+	cJSON_AddStringToObject(info->root, "payload_close", "CLOSE");
+	cJSON_AddStringToObject(info->root, "payload_stop", "STOP");
+
+	if (1) {
+		sprintf(buffer, "~/shutterPos%i/get", index);
+		cJSON_AddStringToObject(info->root, "position_topic", buffer);
+		sprintf(buffer, "cmnd/%s/ShutterMove%d", CFG_GetMQTTClientId(), index);
+		cJSON_AddStringToObject(info->root, "set_position_topic", buffer);
+
+		cJSON_AddNumberToObject(info->root, "position_open", 100);
+		cJSON_AddNumberToObject(info->root, "position_closed", 0);
+	}
+
+	sprintf(info->channel, "cover/%s/config", info->unique_id);
+	return info;
+}
+
 /// @brief Initializes HomeAssistant device discovery storage with common values.
 /// @param type 
 /// @param index This is used to generate generate unique_id and name. 
@@ -555,6 +637,9 @@ HassDeviceInfo* hass_init_device_info(ENTITY_TYPE type, int index, const char* p
 			break;
 		case HASS_IP:
 			sprintf(g_hassBuffer, "IP");
+			break; 
+		case HASS_GARAGE:
+			sprintf(g_hassBuffer, "Garage");
 			break;
 		case ENERGY_SENSOR:
 			isSensor = true;
@@ -563,13 +648,18 @@ HassDeviceInfo* hass_init_device_info(ENTITY_TYPE type, int index, const char* p
 		case TIMESTAMP_SENSOR:
 			sprintf(g_hassBuffer, "Timestamp");
 			break;
+		case HASS_BUTTON:
+			sprintf(g_hassBuffer, "%s" , "");
+			break;
+		case HASS_READONLYENUM:
 		default:
 			sprintf(g_hassBuffer, "%s", CHANNEL_GetLabel(index));
 			break;
 		}
 	}
 	if (title) {
-		strcat(g_hassBuffer, "_");
+		if (type!=HASS_BUTTON) 
+			strcat(g_hassBuffer, "_");
 		strcat(g_hassBuffer, title);
 	}
 	cJSON_AddStringToObject(info->root, "name", g_hassBuffer);
@@ -587,9 +677,21 @@ HassDeviceInfo* hass_init_device_info(ENTITY_TYPE type, int index, const char* p
 		}
 	}
 
-	if (!isSensor && type != HASS_TEXTFIELD) {	//Sensors (except binary_sensor) don't use payload 
-		cJSON_AddStringToObject(info->root, "pl_on", payload_on);    //payload_on
-		cJSON_AddStringToObject(info->root, "pl_off", payload_off);   //payload_off
+	if (!isSensor && type != HASS_TEXTFIELD && type != HASS_GARAGE) {	//Sensors (except binary_sensor) don't use payload 
+		if(type == HASS_BUTTON) {
+			cJSON_AddStringToObject(info->root, "payload_press", payload_on);
+		}
+		else if(type != HASS_TEXTFIELD){
+			cJSON_AddStringToObject(info->root, "pl_on", payload_on);    //payload_on
+			cJSON_AddStringToObject(info->root, "pl_off", payload_off);   //payload_off	
+		}
+	}
+
+	if (type == HASS_READONLYENUM) {
+		// Sorry, you can't do that on stack
+		//char value_template[1024];
+		CMD_GenEnumValueTemplate(g_enums[index], g_hassBuffer, sizeof(g_hassBuffer));
+		cJSON_AddStringToObject(info->root, "value_template", g_hassBuffer);
 	}
 
 	cJSON_AddStringToObject(info->root, "uniq_id", info->unique_id);  //unique_id
@@ -729,6 +831,31 @@ HassDeviceInfo* hass_init_light_device_info(ENTITY_TYPE type) {
 
 	cJSON_AddNumberToObject(info->root, "bri_scl", brightness_scale);	//brightness_scale
 
+#if ENABLE_DRIVER_PIXELANIM
+	if((DRV_IsRunning("SM16703P") || DRV_IsRunning("DMX")) && DRV_IsRunning("PixelAnim"))
+	{
+		cJSON_AddStringToObject(info->root, "fx_stat_t", "~/currentAnim/get");
+		sprintf(g_hassBuffer, "cmnd/%s/anim", CFG_GetMQTTClientId());
+		cJSON_AddStringToObject(info->root, "fx_cmd_t", g_hassBuffer);
+
+		char entry[64];
+		cJSON* fxmodes = cJSON_CreateArray();
+		cJSON_AddItemToArray(fxmodes, cJSON_CreateString("None"));
+		strcpy(g_hassBuffer, "{{ {");
+		strcat(g_hassBuffer, "'None':-1");
+		for(int i = 0; i < g_numAnims; i++)
+		{
+			const char* mode = g_anims[i].name;
+			cJSON_AddItemToArray(fxmodes, cJSON_CreateString(mode));
+			snprintf(entry, sizeof(entry), ",'%s':%d", g_anims[i].name, i);
+			strcat(g_hassBuffer, entry);
+		}
+		strcat(g_hassBuffer, "}[value] }}");
+		cJSON_AddItemToObject(info->root, "fx_list", fxmodes);
+		cJSON_AddItemToObject(info->root, "fx_cmd_tpl", cJSON_CreateString(g_hassBuffer));
+	}
+#endif
+
 	return info;
 }
 #endif
@@ -804,8 +931,22 @@ HassDeviceInfo* hass_init_energy_sensor_device_info(int index, int asensdataseti
 	// }
 	return info;
 }
-
 #endif
+
+HassDeviceInfo* hass_init_button_device_info(char* title,char* cmd_id, char* press_payload, HASS_CATEGORY_TYPE type) {
+	HassDeviceInfo* info = 0;
+	const char* clientId = CFG_GetMQTTClientId();
+	info = hass_init_device_info(HASS_BUTTON, 0, press_payload, NULL, 0, title);
+	if (type == HASS_CATEGORY_DIAGNOSTIC){
+		cJSON_AddStringToObject(info->root, "entity_category", "diagnostic");
+	}
+	else {
+		cJSON_AddStringToObject(info->root, "entity_category", "config");
+	}
+	sprintf(g_hassBuffer, "cmnd/%s/%s", clientId, cmd_id);
+	cJSON_AddStringToObject(info->root, "command_topic", g_hassBuffer);
+	return info;
+}
 
 // generate string like "{{ float(value)*0.1|round(2) }}"
 // {{ float(value)*0.1 }} for value=12 give 1.2000000000000002, using round() to limit the decimal places
@@ -983,6 +1124,11 @@ HassDeviceInfo* hass_init_sensor_device_info(ENTITY_TYPE type, int channel, int 
 		sprintf(g_hassBuffer, "~/%d/get", channel);
 		cJSON_AddStringToObject(info->root, "stat_t", g_hassBuffer);
 		break;
+	case HASS_READONLYENUM:
+		sprintf(g_hassBuffer, "~/%d/get", channel);
+		cJSON_AddStringToObject(info->root, "stat_t", g_hassBuffer);
+		// str sensor can't have state_class, so return before it gets set
+		return info;
 	case CUSTOM_SENSOR:
 		sprintf(g_hassBuffer, "~/%d/get", channel);
 		cJSON_AddStringToObject(info->root, "stat_t", g_hassBuffer);

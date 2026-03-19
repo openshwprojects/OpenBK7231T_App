@@ -37,18 +37,6 @@ int http_rest_post_flash(http_request_t* request, int startaddr, int maxaddr)
 		goto update_ota_exit;
 	}
 
-	writebuf = request->received;
-
-	for(int i = 0; i < writelen; i++)
-	{
-		if(writebuf[i] == 0x69 && writebuf[i + 1] == 0x5a && writebuf[i + 2] == 0x00 && writebuf[i + 3] == 0x1c)
-		{
-			writelen -= i;
-			towrite -= i;
-			writebuf = &writebuf[i];
-			break;
-		}
-	}
 	do
 	{
 		int res = libota_write_fw(request->contentLength, startaddr, writebuf, writelen);
