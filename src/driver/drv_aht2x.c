@@ -312,6 +312,8 @@ void AHT2X_OnEverySecond() {
         if (sensor->secondsUntilNextMeasurement == 0) {
             if (sensor->isWorking)
                 AHT2X_Measure(sensor);
+            else
+            	_DoReinit(sensor);
             sensor->secondsUntilNextMeasurement = sensor->secondsBetweenMeasurements;
         }
         sensor->secondsUntilNextMeasurement--;
