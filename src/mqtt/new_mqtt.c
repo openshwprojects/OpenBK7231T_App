@@ -2947,15 +2947,15 @@ void MQTT_BuildAndPublishBatch_ByIndex(int *indices, int count, uint8_t* leh, in
     // =====================================================
     // ===== PHASE 1: SYSTEM ITEMS (idx < 0) =====
     // =====================================================
+	int defaultIndices[] = {
+		-13,//#define PUBLISHITEM_SELF_MAC                    -13  //Device mac
+		-9,//#define PUBLISHITEM_SELF_DATETIME               -9  //Current unix datetime
+		-4,//#define PUBLISHITEM_SELF_IP                     -4  //ip address
+		-7,//#define PUBLISHITEM_SELF_RSSI                   -7  //Link strength
+		-6,//#define PUBLISHITEM_SELF_UPTIME                 -6  //Uptime
+		-5,//#define PUBLISHITEM_SELF_FREEHEAP               -5  //Free heap
+	};
 	if (!indices || count == 0) {
-		int defaultIndices[] = {
-				-13,//#define PUBLISHITEM_SELF_MAC                    -13  //Device mac
-				-9,//#define PUBLISHITEM_SELF_DATETIME               -9  //Current unix datetime
-				-4,//#define PUBLISHITEM_SELF_IP                     -4  //ip address
-				-7,//#define PUBLISHITEM_SELF_RSSI                   -7  //Link strength
-				-6,//#define PUBLISHITEM_SELF_UPTIME                 -6  //Uptime
-				-5,//#define PUBLISHITEM_SELF_FREEHEAP               -5  //Free heap
-				};
 		indices = defaultIndices;
 		count = 6; // truc tiep cho gon
 	}
