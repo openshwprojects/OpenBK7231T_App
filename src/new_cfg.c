@@ -336,6 +336,7 @@ void CFG_SetDeviceName(const char *s) {
 		// mark as dirty (value has changed)
 		g_cfg_pendingChanges++;
 	}
+	g_mqtt_bBaseTopicDirty++; //hieu modify de dùng 0_1_2_40 ~ chi dinh publish channel value
 }
 void CFG_SetMQTTPort(int p) {
 	// is there a change?
