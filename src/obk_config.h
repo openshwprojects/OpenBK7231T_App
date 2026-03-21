@@ -720,6 +720,11 @@
 
 
 #define ENABLE_DRIVER_XHTXX				1
+// disable all other drivers included in xhtxx
+#undef ENABLE_DRIVER_AHT2X
+#undef ENABLE_DRIVER_CHT83XX
+#undef ENABLE_DRIVER_SHT3X
+
 
 // closing OBK_CONFIG_H
 #endif
