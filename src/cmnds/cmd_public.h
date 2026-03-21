@@ -2,6 +2,10 @@
 #define __CMD_PUBLIC_H__
 
 #include "../new_common.h"
+#define UNDEF_OR_ZERO(X) ( 1 -X +1  == 2 )
+#define DEFINED_AND_NOT_ZERO(x) !(UNDEF_OR_ZERO(x))
+
+
 
 typedef enum commandResult_e {
 	CMD_RES_OK,
@@ -226,6 +230,26 @@ bool Tokenizer_IsArgInteger(int i);
 float Tokenizer_GetArgFloat(int i);
 int Tokenizer_GetArgIntegerRange(int i, int rangeMax, int rangeMin);
 void Tokenizer_TokenizeString(const char* s, int flags);
+
+// return value for index "out of range", 
+// we will check range in all Tokenizer_Get<XY> functions or return default
+// MAX_INT for 16 bit is 32,767
+// use -2 since we will later call return-value +1 !
+#define INDEX_NOTFOUND_VALUE	(32767 - 2)
+int Tokenizer_GetStringIndex(const char *search);
+
+#define TOKENIZER_PARAM_EXTENSION
+#if UNDEF_OR_ZERO(TOKENIZER_PARAM_EXTENSION)
+#define Tokenizer_GetPinEqual(STR,DEF) Tokenizer_GetPin(Tokenizer_GetStringIndex(STR) + 1,DEF)
+#define Tokenizer_GetArgEqualInteger(STR,DEF) Tokenizer_GetArgIntegerDefault(Tokenizer_GetStringIndex(STR) + 1,DEF)
+#define Tokenizer_GetArgEqualDefault(STR,DEF) (Tokenizer_GetStringIndex(STR) + 1 < Tokenizer_GetArgsCount()) ? Tokenizer_GetArg(Tokenizer_GetStringIndex(STR) +1 ) : DEF
+#define Tokenizer_IsStringPresent(STR) (Tokenizer_GetStringIndex(STR) < INDEX_NOTFOUND_VALUE)
+#else
+int Tokenizer_GetPinEqual(const char *search, int def);
+int Tokenizer_GetArgEqualInteger(const char *search, int def);
+bool Tokenizer_IsStringPresent(const char *search);
+const char *Tokenizer_GetArgEqualDefault(const char *search, const char *def);
+#endif
 // cmd_repeatingEvents.c
 void RepeatingEvents_Init();
 void RepeatingEvents_RunUpdate(float deltaTimeSeconds);
