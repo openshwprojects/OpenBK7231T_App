@@ -618,7 +618,7 @@ const char *skipExpected(const char *p, const char *tok) {
  *
  * @return Pointer to the command part of the topic, or NULL if the topic
  *         does not target this device or its group.
- */
+
 
 const char* MQTT_RemoveClientFromTopic(const char* topic, const char *prefix) {
 
@@ -701,6 +701,121 @@ const char* MQTT_RemoveClientFromTopic(const char* topic, const char *prefix) {
 	}
 
 	return 0;
+}
+*/
+
+
+const char* MQTT_RemoveClientFromTopic(const char* topic, const char *prefix) {
+    if (!topic)
+        return 0;
+
+    const char *p = topic;
+
+    // skip prefix neu co(vd: "cmnd/")
+    if (prefix) {
+        p = skipExpected(p, prefix);
+        if (!p)
+            return 0;
+    }
+
+    //uu tien deviceId
+    const char *clientId = CFG_GetMQTTClientId();
+    if (clientId) {
+        const char *p2 = skipExpected(p, clientId);
+        if (p2)
+            return p2;
+    }
+
+    const char *group = CFG_GetMQTTGroupTopic();
+    if (!group)
+        return 0;
+
+    // ===== TACH ROOT (ID) NEU CO =====
+    const char *slash = strchr(group, '/');
+    size_t rootLen = 0;
+
+    if (slash) {
+        rootLen = slash - group;
+
+        // tranh case "ID/" gay loi
+        if (*(slash + 1) == '\0')
+            return 0;
+    }
+
+    // neu co root thi phai match
+    if (rootLen) {
+        if (strncmp(p, group, rootLen) != 0)
+            return 0;
+
+        if (p[rootLen] != '/')
+            return 0;
+
+        p += rootLen + 1; // skip "ID/"
+    }
+
+    // ===== HANDLE OPTIONAL PREFIX LAYER (dynamic) =====
+    // detect theo so luong '/' thay vi ky tu co dinh
+    const char *p1 = strchr(p, '/');
+    if (!p1)
+        return 0;
+
+    const char *p2 = strchr(p1 + 1, '/');
+
+    // neu co 2 dau '/', nghia la prefix layer: <prefix>/<groupList>/<cmd>
+    if (p2) {
+        p = p1 + 1; // skip prefix
+    }
+
+    // ===== tach GROUP LIST Va COMMAND =====
+    const char *cmd = strchr(p, '/');
+    if (!cmd)
+        return 0;
+
+    size_t listLen = cmd - p;
+    if (listLen == 0)
+        return 0;
+
+    const char *command = cmd + 1;
+
+    // ===== LaY GROUP cuoi cung cua DEVICE =====
+    // ho tro: "1", "ID/1", "ID/<prefix>/1"
+    const char *deviceGroup = strrchr(group, '/');
+    if (deviceGroup)
+        deviceGroup++;
+    else
+        deviceGroup = group;
+
+    size_t deviceGroupLen = strlen(deviceGroup);
+
+    // ===== duyet danh sach group GROUP =====
+    const char *s = p;
+    const char *end = p + listLen;
+
+    while (s < end) {
+        const char *gStart = s;
+
+        while (s < end && *s != ',')
+            s++;
+
+        size_t gLen = s - gStart;
+
+        // match group
+        if (gLen == deviceGroupLen &&
+            strncmp(gStart, deviceGroup, gLen) == 0)
+            return command;
+
+        // match broadcast "all"
+        if ((gLen == 3 && strncasecmp(gStart, "all", 3) == 0) ||
+        (gLen == 1 && gStart[0] == '*'))
+        {
+    	return command;
+        }
+
+        if (s < end)
+            s++; // skip ','
+    }
+
+    return 0;
 }
 
 bool stribegins(const char *str, const char *needle) {
@@ -1757,7 +1872,7 @@ commandResult_t MQTT_PublishAll(const void* context, const char* cmd, const char
  * 3. Gọi nội bộ firmware:
  *      /topic/PublishAll ***chugicungduoc_mienlaco***
  *      => fallback toàn bộ trạng thái thiết bị
- */
+
 commandResult_t MQTT_PublishAll(const void* context, const char* cmd, const char* args, int cmdFlags) {
     // tokenize args tu broker hoac CLI
     Tokenizer_TokenizeString(args, 0);
@@ -1785,7 +1900,44 @@ commandResult_t MQTT_PublishAll(const void* context, const char* cmd, const char
 
     return CMD_RES_OK;
 }
+*/
 
+commandResult_t MQTT_PublishAll(const void* context, const char* cmd, const char* args, int cmdFlags) {
+    Tokenizer_TokenizeString(args, 0);
+    int argc = Tokenizer_GetArgsCount();
+
+    if (argc >= 2) {
+        const char* arg0 = Tokenizer_GetArg(0);
+        int indices[32];
+        int count = 0;
+
+         // Neu co nhieu token hoac token 0 khong phai "all"
+        if (argc > 2 || strcmp(arg0, "all") != 0) {
+            for (int i = 1; i < argc && count < 32; i++) {
+                int val = Tokenizer_GetArgInteger(i);
+                if (val >= 0) indices[count++] = val;
+            }
+        }
+
+        uint8_t leh[64] = {0x01, 0x01, 0x02, 0x05, 0x01};
+
+        // Skip "all" prefix neu co
+        const char* p = arg0 + ((strcmp(arg0, "all") == 0) ? 3 : 0);
+
+        // Chi copy vao leh neu token dai > 4  va 2 byte dau KO phai la ascii
+        if (strlen(p) >= 4 && (unsigned char)p[0] >= 0x80 && (unsigned char)p[1] >= 0x80) {
+            memset(leh, 0, sizeof(leh));
+            size_t token_len = strlen(p);
+            memcpy(leh, p, token_len > sizeof(leh) ? sizeof(leh) : token_len);
+        }
+
+        MQTT_BuildAndPublishBatch_ByIndex(indices, count, leh, sizeof(leh));
+    } else {
+        MQTT_PublishWholeDeviceState_Internal(true);
+    }
+
+    return CMD_RES_OK;
+}
 
 // This console command will trigger a publish of runtime variables
 commandResult_t MQTT_PublishChannels(const void* context, const char* cmd, const char* args, int cmdFlags) {
@@ -2177,8 +2329,23 @@ void MQTT_InitCallbacks() {
 	// to control them together
 	// register the TAS cmnd callback
 	if (*groupId) {
+		/*
 		snprintf(cbtopicbase, sizeof(cbtopicbase), "cmnd/%s/", groupId);
 		snprintf(cbtopicsub, sizeof(cbtopicsub), "cmnd/%s/+", groupId);
+		*/
+
+		// lay root:
+		// "1"       -> "1"
+		// "ID/1"    -> "ID"
+		// "ID/G/1"  -> "ID"
+		const char *slash = strchr(groupId, '/');
+		int rootLen = slash ? (int)(slash - groupId) : strlen(groupId);
+
+		// base: cmnd/<root>/
+		snprintf(cbtopicbase, sizeof(cbtopicbase), "cmnd/%.*s/", rootLen, groupId);
+		// sub: cmnd/<root>/+/+
+		snprintf(cbtopicsub, sizeof(cbtopicsub), "cmnd/%.*s/+/+", rootLen, groupId);
+
 		// note: this may REPLACE an existing entry with the same ID.  ID 4 !!!
 		MQTT_RegisterCallback(cbtopicbase, cbtopicsub, 4, tasCmnd);
 	}
@@ -2870,7 +3037,8 @@ bool MQTT_GetItemValue(int idx, char *out, int outLen) {
             return true;
 
         case PUBLISHITEM_SELF_BUILD:
-            snprintf(out, outLen, "%s", BUILD_AND_VERSION_FOR_MQTT);
+			//	uint8_t g_oneAllDelimiter = 0x1F;
+            snprintf(out, outLen, "%s%c", CFG_GetMQTTGroupTopic(),0x1F);
             return true;
 
         case PUBLISHITEM_SELF_MAC:
@@ -2954,6 +3122,7 @@ void MQTT_BuildAndPublishBatch_ByIndex(int *indices, int count, uint8_t* leh, in
     // ===== PHASE 1: SYSTEM ITEMS (idx < 0) =====
     // =====================================================
 	int defaultIndices[] = {
+		-14,  //Build origin PUBLISHITEM_SELF_BUILD           -14  //Build        chuyen sang lay MQTT_GROUP
 		-13,//#define PUBLISHITEM_SELF_MAC                    -13  //Device mac
 		-9,//#define PUBLISHITEM_SELF_DATETIME               -9  //Current unix datetime
 		-4,//#define PUBLISHITEM_SELF_IP                     -4  //ip address
@@ -2963,7 +3132,7 @@ void MQTT_BuildAndPublishBatch_ByIndex(int *indices, int count, uint8_t* leh, in
 	};
 	if (!indices || count == 0) {
 		indices = defaultIndices;
-		count = 6; // truc tiep cho gon
+		count = 7; // truc tiep cho gon
 	}
 	
     char value[64];
