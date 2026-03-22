@@ -2329,11 +2329,11 @@ void MQTT_InitCallbacks() {
 	// to control them together
 	// register the TAS cmnd callback
 	if (*groupId) {
-		
+		/*
 		snprintf(cbtopicbase, sizeof(cbtopicbase), "cmnd/%s/", groupId);
 		snprintf(cbtopicsub, sizeof(cbtopicsub), "cmnd/%s/+", groupId);
-		
-		/*
+		*/
+
 		// lay root:
 		// "1"       -> "1"
 		// "ID/1"    -> "ID"
@@ -2345,7 +2345,7 @@ void MQTT_InitCallbacks() {
 		snprintf(cbtopicbase, sizeof(cbtopicbase), "cmnd/%.*s/", rootLen, groupId);
 		// sub: cmnd/<root>/+/+
 		snprintf(cbtopicsub, sizeof(cbtopicsub), "cmnd/%.*s/+/+", rootLen, groupId);
-		*/
+	
 		// note: this may REPLACE an existing entry with the same ID.  ID 4 !!!
 		MQTT_RegisterCallback(cbtopicbase, cbtopicsub, 4, tasCmnd);
 	}
