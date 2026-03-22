@@ -679,10 +679,10 @@ void apply_smart_light() {
 						CHANNEL_Set_FloatPWM(channelToUse, chVal, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
 					}
 				}
-				else {
-					if (!isCWMode() && channelToUse == emulatedCool && g_lightMode == Light_Temperature) {
-						LED_ApplyEmulatedCool(firstChannelIndex, chVal);
-					}
+			}
+			else {
+				if (!isCWMode() && channelToUse == emulatedCool && g_lightMode == Light_Temperature) {
+					LED_ApplyEmulatedCool(firstChannelIndex, chVal);
 				}
 			}
 		}
