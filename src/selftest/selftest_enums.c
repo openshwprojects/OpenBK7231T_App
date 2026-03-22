@@ -24,8 +24,8 @@ void Test_Enum_LowMidH() {
 
 	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY_4KEY("homeassistant", true, 0, 0,
 		"state_topic", "~/13/get",
-		"uniq_id", "Windows_Enum_select_13",
-		"uniq_id", "Windows_Enum_select_13",
+		"command_topic", "~/13/set",
+		"~", "obkEnumDemo",
 		"uniq_id", "Windows_Enum_select_13");
 
 	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY_4KEY("homeassistant", true, 0, 0,
@@ -63,8 +63,8 @@ void Test_Enum_LowMidHighOff() {
 
 	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY_4KEY("homeassistant", true, 0, 0,
 		"state_topic", "~/12/get",
-		"uniq_id", "Windows_Enum_select_12",
-		"uniq_id", "Windows_Enum_select_12",
+		"command_topic", "~/12/set",
+		"~", "obkEnumDemo",
 		"uniq_id", "Windows_Enum_select_12");
 
 	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY_4KEY("homeassistant", true, 0, 0,
@@ -123,8 +123,8 @@ void Test_Enum_3opts() {
 
 	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY_4KEY("homeassistant", true, 0, 0,
 		"state_topic", "~/14/get",
-		"unique_id", "14",
-		"unique_id", "14",
+		"command_topic", "~/14/set",
+		"~", "obkEnumDemo",
 		"uniq_id", "Windows_Enum_select_14");
 
 	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY_4KEY("homeassistant", true, 0, 0,
@@ -195,8 +195,8 @@ void Test_Enum_BadOk() {
 
 	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY_4KEY("homeassistant", true, 0, 0,
 		"state_topic", "~/4/get",
-		"unique_id", "4",
-		"unique_id", "4",
+		"command_topic", "~/4/set",
+		"~", "obkEnumDemo",
 		"uniq_id", "Windows_Enum_select_4");
 
 	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY_4KEY("homeassistant", true, 0, 0,
