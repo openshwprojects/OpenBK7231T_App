@@ -805,7 +805,7 @@ const char* MQTT_RemoveClientFromTopic(const char* topic, const char *prefix) {
             return command;
 
         // match broadcast "all"
-        if ((gLen == 3 && strncasecmp(gStart, "all", 3) == 0) ||
+        if ((gLen == 3 && memcmp(gStart, "all", 3) == 0) ||
         (gLen == 1 && gStart[0] == '*'))
         {
     	return command;
