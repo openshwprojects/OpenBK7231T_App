@@ -259,6 +259,14 @@ void TCL_UART_RunEverySecond(void);
 void TCL_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState);
 void TCL_DoDiscovery(const char *topic);
 
+void Dreo_Init(void);
+void Dreo_Shutdown(void);
+void Dreo_RunEverySecond(void);
+void Dreo_RunFrame(void);
+void Dreo_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState);
+void Dreo_OnChannelChanged(int ch, int value);
+void Dreo_OnHassDiscovery(const char *topic);
+
 void DRV_DDPSend_Init();
 void DRV_DDPSend_Shutdown();
 void DRV_DDPSend_RunFrame();
