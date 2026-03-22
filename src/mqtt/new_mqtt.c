@@ -1907,37 +1907,34 @@ commandResult_t MQTT_PublishAll(const void* context, const char* cmd, const char
 
     if (argc >= 2) {
         const char* arg0 = Tokenizer_GetArg(0);
-        int arg0_len = Tokenizer_GetArgLength(0); // 🔹 length thực token 0
         int indices[32];
         int count = 0;
 
-        // parse các chỉ số từ token 1 trở đi
+        // parse indices từ token 1 trở đi
         for (int i = 1; i < argc; i++) {
             indices[count++] = Tokenizer_GetArgInteger(i);
             if (count >= 32) break;
         }
 
-        // default leh
         uint8_t leh[64] = {0x01, 0x01, 0x02, 0x05, 0x01};
-        int leh_len = 5;
+        int leh_len = 5; // default length
 
-        // Skip "all" prefix nếu có
-        int isAll = (arg0_len >= 3 && strncmp(arg0, "all", 3) == 0);
+        // Check prefix "all" (3 byte đầu) và skip
+        int isAll = (strlen(arg0) >= 3 && strncmp(arg0, "all", 3) == 0);
         const char* p = arg0 + (isAll ? 3 : 0);
-        int p_len = arg0_len - (isAll ? 3 : 0);
+        size_t p_len = strlen(p); // dùng strlen tạm, chỉ áp dụng với token ASCII / nhị phân không chứa \0
 
-        // 🔹 Build leh nếu token nhị phân hợp lệ
+        // Build leh nếu token nhị phân hợp lệ
         if (p_len >= 4 &&
             ((unsigned char)p[0] <= 0x1F || p[0] == 0x7F || (unsigned char)p[0] >= 0x80) &&
             ((unsigned char)p[1] <= 0x1F || p[1] == 0x7F || (unsigned char)p[1] >= 0x80))
         {
-            int copy_len = (p_len > sizeof(leh)) ? sizeof(leh) : p_len;
+            size_t copy_len = (p_len > sizeof(leh)) ? sizeof(leh) : p_len;
             memcpy(leh, p, copy_len);
-            leh_len = copy_len;
+            leh_len = (int)copy_len;
         }
 
         MQTT_BuildAndPublishBatch_ByIndex(indices, count, leh, leh_len);
-
     } else {
         MQTT_PublishWholeDeviceState_Internal(true);
     }
