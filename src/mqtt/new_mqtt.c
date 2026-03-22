@@ -1911,10 +1911,12 @@ commandResult_t MQTT_PublishAll(const void* context, const char* cmd, const char
         int count = 0;
 
         // parse indices từ token 1 trở đi
-        for (int i = 1; i < argc; i++) {
-            indices[count++] = Tokenizer_GetArgInteger(i);
-            if (count >= 32) break;
-        }
+		if (argc>2 || strncmp(arg0,"all",3)!=0){
+			for (int i = 1; i < argc; i++) {
+				indices[count++] = Tokenizer_GetArgInteger(i);
+				if (count >= 32) break;
+			}
+		}
 
         uint8_t leh[64] = {0x01, 0x01, 0x02, 0x05, 0x01};
         int leh_len = 5; // default length
