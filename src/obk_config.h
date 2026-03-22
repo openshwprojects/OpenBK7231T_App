@@ -224,6 +224,7 @@
 #define ENABLE_DRIVER_WEMO						1
 #define ENABLE_DRIVER_FREEZE					0
 #define ENABLE_DRIVER_DHT						1
+#define ENABLE_DRIVER_BRIDGE					1
 // parse things like $CH1 or $hour etc
 #define ENABLE_EXPAND_CONSTANT					1
 #define ENABLE_TASMOTA_JSON						1
