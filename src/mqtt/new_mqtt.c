@@ -1901,37 +1901,43 @@ commandResult_t MQTT_PublishAll(const void* context, const char* cmd, const char
     return CMD_RES_OK;
 }
 */
-
 commandResult_t MQTT_PublishAll(const void* context, const char* cmd, const char* args, int cmdFlags) {
     Tokenizer_TokenizeString(args, 0);
     int argc = Tokenizer_GetArgsCount();
 
     if (argc >= 2) {
         const char* arg0 = Tokenizer_GetArg(0);
+        int arg0_len = Tokenizer_GetArgLength(0); // 🔹 length thực token 0
         int indices[32];
         int count = 0;
 
-         // Neu co nhieu token hoac token 0 khong phai "all"
-        if (argc > 2 || strcmp(arg0, "all") != 0) {
-            for (int i = 1; i < argc; i++) {
-                indices[count++] = Tokenizer_GetArgInteger(i);
-                if (count >= 32) break;
-            }
+        // parse các chỉ số từ token 1 trở đi
+        for (int i = 1; i < argc; i++) {
+            indices[count++] = Tokenizer_GetArgInteger(i);
+            if (count >= 32) break;
         }
-		
+
+        // default leh
         uint8_t leh[64] = {0x01, 0x01, 0x02, 0x05, 0x01};
+        int leh_len = 5;
 
-        // Skip "all" prefix neu co
-        const char* p = arg0 + ((strcmp(arg0, "all") == 0) ? 3 : 0);
+        // Skip "all" prefix nếu có
+        int isAll = (arg0_len >= 3 && strncmp(arg0, "all", 3) == 0);
+        const char* p = arg0 + (isAll ? 3 : 0);
+        int p_len = arg0_len - (isAll ? 3 : 0);
 
-        // Chi copy vao leh neu token dai > 4  va 2 byte dau KO phai la ascii
-        if (strlen(p) >= 4 && (unsigned char)p[0] >= 0x80 && (unsigned char)p[1] >= 0x80) {
-            memset(leh, 0, sizeof(leh));
-            size_t token_len = strlen(p);
-            memcpy(leh, p, token_len > sizeof(leh) ? sizeof(leh) : token_len);
+        // 🔹 Build leh nếu token nhị phân hợp lệ
+        if (p_len >= 4 &&
+            ((unsigned char)p[0] <= 0x1F || p[0] == 0x7F || (unsigned char)p[0] >= 0x80) &&
+            ((unsigned char)p[1] <= 0x1F || p[1] == 0x7F || (unsigned char)p[1] >= 0x80))
+        {
+            int copy_len = (p_len > sizeof(leh)) ? sizeof(leh) : p_len;
+            memcpy(leh, p, copy_len);
+            leh_len = copy_len;
         }
 
-        MQTT_BuildAndPublishBatch_ByIndex(indices, count, leh, sizeof(leh));
+        MQTT_BuildAndPublishBatch_ByIndex(indices, count, leh, leh_len);
+
     } else {
         MQTT_PublishWholeDeviceState_Internal(true);
     }
@@ -3037,8 +3043,8 @@ bool MQTT_GetItemValue(int idx, char *out, int outLen) {
             return true;
 
         case PUBLISHITEM_SELF_BUILD:
-			//	uint8_t g_oneAllDelimiter = 0x1F;
-            snprintf(out, outLen, "%s%c", CFG_GetMQTTGroupTopic(),0x1F);
+			//	uint8_t g_oneAllDelimiter = 0x1D;
+            snprintf(out, outLen, "%s%c", CFG_GetMQTTGroupTopic(),0x1D);
             return true;
 
         case PUBLISHITEM_SELF_MAC:
