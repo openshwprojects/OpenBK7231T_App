@@ -1913,12 +1913,12 @@ commandResult_t MQTT_PublishAll(const void* context, const char* cmd, const char
 
          // Neu co nhieu token hoac token 0 khong phai "all"
         if (argc > 2 || strcmp(arg0, "all") != 0) {
-            for (int i = 1; i < argc && count < 32; i++) {
-                int val = Tokenizer_GetArgInteger(i);
-                if (val >= 0) indices[count++] = val;
+            for (int i = 1; i < argc; i++) {
+                indices[count++] = Tokenizer_GetArgInteger(i);
+                if (count >= 32) break;
             }
         }
-
+		
         uint8_t leh[64] = {0x01, 0x01, 0x02, 0x05, 0x01};
 
         // Skip "all" prefix neu co
