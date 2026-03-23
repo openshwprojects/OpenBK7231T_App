@@ -718,9 +718,12 @@
 #undef ENABLE_DRIVER_IR
 #endif
 
-#if ! WINDOWS
-// for testing: enable new driver SHTxx for all platforms
+
+// for testing: enable new driver SHTxx for all platforms instead of SHT3X
+#if ENABLE_DRIVER_SHT3X
 #define ENABLE_DRIVER_SHTXX                                            1
+#undef ENABLE_DRIVER_SHT3X
 #endif
+
 // closing OBK_CONFIG_H
 #endif
