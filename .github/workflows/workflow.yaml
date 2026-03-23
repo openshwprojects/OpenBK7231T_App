@@ -15,7 +15,6 @@ jobs:
   refs:
     name: Prepare CI Environment
     runs-on: ubuntu-22.04
-    env:
     outputs:
       sha_short: ${{ steps.refs.outputs.sha_short }}
       short_ref: ${{ steps.refs.outputs.short_ref }}
@@ -59,7 +58,6 @@ jobs:
     name: Build Simulator
     needs: refs
     runs-on: windows-2022
-    env:
 
     steps:
     - name: Checkout repository
@@ -108,7 +106,6 @@ jobs:
     name: Build Linux Simulator and Run Tests With Address Sanitizer
     needs: refs
     runs-on: ubuntu-22.04
-    env:
 
     steps:
     - name: Checkout repository
@@ -131,7 +128,6 @@ jobs:
     name: Build Linux Simulator and Run Tests With Undefined Behavior Sanitizer
     needs: refs
     runs-on: ubuntu-22.04
-    env:
 
     steps:
     - name: Checkout repository
@@ -154,7 +150,6 @@ jobs:
     name: Build
     needs: refs
     runs-on: ubuntu-22.04
-    env:
     strategy:
       fail-fast: false
       matrix:
@@ -346,7 +341,6 @@ jobs:
     name: Build IDF
     needs: refs
     runs-on: ubuntu-24.04
-    env:
     strategy:
       fail-fast: false
       matrix:
@@ -464,7 +458,6 @@ jobs:
     name: Build TXW81X
     needs: refs
     runs-on: windows-latest
-    env:
     defaults:
       run:
         shell: wsl-bash {0}
@@ -498,7 +491,6 @@ jobs:
     name: Merge Artifacts
     runs-on: ubuntu-22.04
     needs: [refs, build, build2, build_idf, build_txw81x]
-    env:
     #if: always() && needs.refs.outputs.new_release == 'true' && (github.ref == 'refs/heads/main' || github.ref_name == 'alpha')
     steps:
       - name: Merge Artifacts
@@ -511,7 +503,6 @@ jobs:
     name: Semantic Release Images and Artifacts
     runs-on: ubuntu-22.04
     needs: [merge, refs]
-    env:
     if: always() && needs.refs.outputs.new_release == 'true' && (github.ref == 'refs/heads/main' || github.ref_name == 'alpha')
     steps:
       - name: Source checkout
@@ -540,3 +531,4 @@ jobs:
           echo ${{ steps.semantic.outputs.new_release_major_version }}
           echo ${{ steps.semantic.outputs.new_release_minor_version }}
           echo ${{ steps.semantic.outputs.new_release_patch_version }}
+          
