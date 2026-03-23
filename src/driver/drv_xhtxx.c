@@ -430,7 +430,7 @@ static void XHTXX_AHT2x_Measure(xhtxx_dev_t *dev)
     //int16_t h10 = (int16_t)((raw_h * 1000u + 524288u) / 1048576u) + dev->calHum;
     //int16_t t10 = (int16_t)((raw_t * 2000u + 524288u) / 1048576u) - 500 + dev->calTemp;
     int16_t t10 = (int16_t)((2000u * (raw_t & 0xFFFFF) + 524288u) >> 20) - 500 + dev->calTemp;
-    int16_t h10 = (int16_t)((1000u * (raw_h >> 4) + 524288u) >> 20) + (int16_t)dev->calHum;
+    int16_t h10 = (int16_t)((raw_h * 1000u + 524288u) >> 20) + (int16_t)dev->calHum;
     XHTXX_StoreAndLog(dev, t10, h10);
 }
 static void XHTXX_AHT2x_Reset(xhtxx_dev_t *dev)
@@ -574,9 +574,9 @@ static void XHTXX_SHT3x_WriteAlertReg(xhtxx_dev_t *dev, uint8_t sub,
 static void XHTXX_SHT3x_ReadAlertReg(xhtxx_dev_t *dev, uint8_t sub, 
                                      int16_t *out_h10, int16_t *out_t10)
 {
-    uint8_t d[2];
+    uint8_t d[3];	// two bytes + CRC (ignored for now)
     I2C_Write(dev, 0xE1, sub, 0, 2);
-    I2C_Read(dev, d, 2);
+    I2C_Read(dev, d, 3);
     uint16_t w = ((uint16_t)d[0] << 8) | d[1];
     
     // Fixed-point conversion:
@@ -584,6 +584,8 @@ static void XHTXX_SHT3x_ReadAlertReg(xhtxx_dev_t *dev, uint8_t sub,
     *out_h10 = (int16_t)((1000u * (uint32_t)(w & 0xFE00u) + 32767u) / 65535u);
     // Temp: (175 * (raw / 65535) - 45) * 10 -> (1750 * raw) / 65535 - 450
     *out_t10 = (int16_t)((1750u * (uint32_t)((uint16_t)(w << 7)) + 32767u) / 65535u) - 450;
+//    ADDLOG_INFO(LOG_FEATURE_CMD, "ReadAlertReg read 0x%02x 0x%02x 0x%02x - w=%i out_h10=%i out_t10=%i",d[0], d[1], d[2],w,*out_h10,*out_t10);
+
 }
 
 static void XHTXX_SHT3x_WriteAlertReg(xhtxx_dev_t *dev, uint8_t sub, 
@@ -591,25 +593,31 @@ static void XHTXX_SHT3x_WriteAlertReg(xhtxx_dev_t *dev, uint8_t sub,
 {
     // Range check using fixed point (-450 to 1300 instead of -45.0 to 130.0)
     if(h10 < 0 || h10 > 1000 || t10 < -450 || t10 > 1300)
-        { ADDLOG_INFO(LOG_FEATURE_CMD, "XHTXX: Alert value out of range."); return; }
+        { ADDLOG_INFO(LOG_FEATURE_CMD, "SHT3x: Alert out of range."); return; }
 
     // Reverse conversion:
     // rawH = (h / 100) * 65535 -> (h10 * 65535) / 1000
     uint16_t rawH = (uint16_t)(((uint32_t)h10 * 65535u + 500u) / 1000u);
     // rawT = ((t + 45) / 175) * 65535 -> ((t10 + 450) * 65535) / 1750
     uint16_t rawT = (uint16_t)(((uint32_t)(t10 + 450) * 65535u + 875u) / 1750u);
-    
+//    ADDLOG_INFO(LOG_FEATURE_CMD, "WriteAlertReg rawH=%i rawT=%i",rawH, rawT);
     uint16_t w    = (rawH & 0xFE00u) | ((rawT >> 7) & 0x01FFu);
     uint8_t  d[2] = { (uint8_t)(w >> 8), (uint8_t)(w & 0xFF) };
     uint8_t  crc  = XHTXX_CRC8(d, 2);
     
+    bool ACK=false;
+    int rep=1;
+    do {
     Soft_I2C_Start(&dev->i2c, dev->i2cAddr);
     Soft_I2C_WriteByte(&dev->i2c, 0x61);
     Soft_I2C_WriteByte(&dev->i2c, sub);
     Soft_I2C_WriteByte(&dev->i2c, d[0]);
     Soft_I2C_WriteByte(&dev->i2c, d[1]);
-    Soft_I2C_WriteByte(&dev->i2c, crc);
+    ACK=Soft_I2C_WriteByte(&dev->i2c, crc);
+//    ADDLOG_INFO(LOG_FEATURE_CMD, "WriteAlertReg try %i/3 writing 0x%02x 0x%02x 0x%02x returned %s",rep, d[0], d[1], crc, ACK ? "ACK":"NACK");
     Soft_I2C_Stop(&dev->i2c);
+    rep++;
+    } while ( !ACK && rep <= 3);
 }
 #endif // XHTXX_ENABLE_SHT3_EXTENDED_FEATURES
 
@@ -900,6 +908,9 @@ commandResult_t XHTXX_CMD_ReadAlert(const void *context, const char *cmd,
     ADDLOG_INFO(LOG_FEATURE_SENSOR, "Alert T: %d.%d/%d.%d/%d.%d/%d.%d", 
                 t[0]/10, abs16(t[0]%10), t[1]/10, abs16(t[1]%10), 
                 t[2]/10, abs16(t[2]%10), t[3]/10, abs16(t[3]%10));
+    ADDLOG_INFO(LOG_FEATURE_SENSOR, "Alert H: %d.%d/%d.%d/%d.%d/%d.%d", 
+                h[0]/10, abs16(h[0]%10), h[1]/10, abs16(h[1]%10), 
+                h[2]/10, abs16(h[2]%10), h[3]/10, abs16(h[3]%10));
     return CMD_RES_OK;
 }
 
@@ -913,16 +924,26 @@ commandResult_t XHTXX_CMD_SetAlert(const void *context, const char *cmd,
     if(!dev) return CMD_RES_BAD_ARGUMENT;
     REQUIRE_SHT3X(dev, CMD_RES_ERROR);
 
+/*
     // Convert input to fixed-point immediately
     int16_t tHS = (int16_t)(Tokenizer_GetArgFloat(0) * 10.0f);
     int16_t tLS = (int16_t)(Tokenizer_GetArgFloat(1) * 10.0f);
     int16_t hHS = (int16_t)(Tokenizer_GetArgFloat(2) * 10.0f);
     int16_t hLS = (int16_t)(Tokenizer_GetArgFloat(3) * 10.0f);
+*/
+    int16_t tHS = (int16_t)(Tokenizer_GetArgInteger(0)*10);
+    int16_t tLS = (int16_t)(Tokenizer_GetArgInteger(1)*10);
+    int16_t hHS = (int16_t)(Tokenizer_GetArgInteger(2)*10);
+    int16_t hLS = (int16_t)(Tokenizer_GetArgInteger(3)*10);
+//    ADDLOG_INFO(LOG_FEATURE_SENSOR, "XHTXX: Writing alerts: tHS=%i tLS=%i / hHS=%i hLS=%i.", tHS, tLS, hHS, hLS);
 
     // Using 5 (0.5 * 10) for hysteresis offset
     XHTXX_SHT3x_WriteAlertReg(dev, 0x1D, hHS,     tHS);
+    usleep(1);
     XHTXX_SHT3x_WriteAlertReg(dev, 0x16, hHS - 5, tHS - 5);
+    usleep(1);
     XHTXX_SHT3x_WriteAlertReg(dev, 0x0B, hLS + 5, tLS + 5);
+    usleep(1);
     XHTXX_SHT3x_WriteAlertReg(dev, 0x00, hLS,     tLS);
     return CMD_RES_OK;
 }
