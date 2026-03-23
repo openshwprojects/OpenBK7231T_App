@@ -49,7 +49,7 @@ void Test_Flags() {
 		bool bSet = (i == 33 || i == 0 || i == 1 || i == 55 || i == 63);
 		SELFTEST_ASSERT_FLAG(i, bSet);
 	}
-	// clear flag 63
+	// clear flag 55
 	CMD_ExecuteCommand("SetFlag 55 0", 0);
 	for (int i = 0; i < 64; i++) {
 		bool bSet = (i == 33 || i == 0 || i == 1 || i == 63);
