@@ -19,7 +19,6 @@
 // Commands register, execution API and cmd tokenizer
 #include "../cmnds/cmd_public.h"
 #include "../logging/logging.h"
-#include "../devicegroups/deviceGroups_public.h"
 #include "lwip/sockets.h"
 #include "lwip/ip_addr.h"
 #include "lwip/inet.h"
@@ -125,7 +124,6 @@ static void DRV_SSDP_CreateSocket_Receive() {
     struct sockaddr_in addr;
     struct ip_mreq mreq;
     int flag = 1;
-	int broadcast = 1;
 	int iResult = 1;
 
     // create what looks like an ordinary UDP socket
@@ -137,31 +135,13 @@ static void DRV_SSDP_CreateSocket_Receive() {
         return ;
     }
 
-	if(broadcast)
+	iResult = setsockopt(g_ssdp_socket_receive, SOL_SOCKET, SO_BROADCAST, (char *)&flag, sizeof(flag));
+	if (iResult != 0)
 	{
-
-		iResult = setsockopt(g_ssdp_socket_receive, SOL_SOCKET, SO_BROADCAST, (char *)&flag, sizeof(flag));
-		if (iResult != 0)
-		{
-			addLogAdv(LOG_ERROR, LOG_FEATURE_HTTP,"DRV_SSDP_CreateSocket_Receive: failed to do setsockopt SO_BROADCAST\n");
-			close(g_ssdp_socket_receive);
-			g_ssdp_socket_receive = -1;
-			return ;
-		}
-	}
-	else{
-		// allow multiple sockets to use the same PORT number
-		//
-		if (
-			setsockopt(
-				g_ssdp_socket_receive, SOL_SOCKET, SO_REUSEADDR, (char*) &flag, sizeof(flag)
-			) < 0
-		){
-			addLogAdv(LOG_ERROR, LOG_FEATURE_HTTP,"DRV_SSDP_CreateSocket_Receive: failed to do setsockopt SO_REUSEADDR\n");
-			close(g_ssdp_socket_receive);
-			g_ssdp_socket_receive = -1;
-		  return ;
-		}
+		addLogAdv(LOG_ERROR, LOG_FEATURE_HTTP,"DRV_SSDP_CreateSocket_Receive: failed to do setsockopt SO_BROADCAST\n");
+		close(g_ssdp_socket_receive);
+		g_ssdp_socket_receive = -1;
+		return ;
 	}
 
     // set up destination address
@@ -180,13 +160,7 @@ static void DRV_SSDP_CreateSocket_Receive() {
         return ;
     }
 
-/*	if(broadcast)
 	{
-
-	}
-	else*/
-	{
-
 	  // use setsockopt() to request that the kernel join a multicast group
 		//
 		mreq.imr_multiaddr.s_addr = inet_addr(ssdp_group);
@@ -235,15 +209,13 @@ void DRV_WEMO_Send_Advert_To(int mode, struct sockaddr_in *addr);
 void DRV_HUE_Send_Advert_To(struct sockaddr_in *addr);
 
 void DRV_SSDP_SendReply(struct sockaddr_in *addr, const char *message) {
-
-	int nbytes;
 	if (g_ssdp_socket_receive <= 0) {
 		addLogAdv(LOG_ERROR, LOG_FEATURE_HTTP, "DRV_SSDP_SendReply: no socket");
 		return;
 	}
 	// set up destination address
 	//
-	nbytes = sendto(
+	sendto(
 		g_ssdp_socket_receive,
 		(const char*)message,
 		strlen(message),
@@ -257,7 +229,7 @@ static void DRV_SSDP_Send_Advert_To(struct sockaddr_in *addr) {
 
 
     if (!advert_message){
-        advert_maxlen = strlen(message_template) +  100;
+        advert_maxlen = sizeof(message_template) + 99;
         advert_message = (char *)malloc(advert_maxlen+1);
     }
 
@@ -309,7 +281,7 @@ static void DRV_SSDP_Send_Notify() {
     const char *myip = HAL_GetMyIPString();
 
     if (!notify_message){
-        notify_maxlen = strlen(notify_template) +  100;
+        notify_maxlen = sizeof(notify_template) + 99;
         notify_message = (char *)malloc(notify_maxlen+1);
     }
 
@@ -317,7 +289,7 @@ static void DRV_SSDP_Send_Notify() {
 
     int len = strlen(notify_message);
 
-	addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_HTTP,"DRV_SSDP_Send_Notify: space: %d msg:%d", strlen(notify_template) +  100, len);
+	addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_HTTP,"DRV_SSDP_Send_Notify: space: %d msg:%d", notify_maxlen, len);
 	addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_HTTP,"DRV_SSDP_Send_Notify: \r\n%s\r\n", notify_message);
 
     // set up destination address
@@ -493,7 +465,6 @@ void DRV_SSDP_RunQuickTick() {
         (struct sockaddr *) &addr,
         &addrlen
     );
-    udp_msgbuf[UDP_MSGBUF_LEN] = 0;
     if (nbytes <= 0) {
         //addLogAdv(LOG_INFO, LOG_FEATURE_HTTP,"nothing\n");
         return ;
@@ -505,7 +476,6 @@ void DRV_SSDP_RunQuickTick() {
     addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_HTTP,"Received %i bytes from %s",nbytes,inet_ntoa(((struct sockaddr_in *)&addr)->sin_addr));
     udp_msgbuf[nbytes] = 0;
     addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_HTTP,"data: %s",udp_msgbuf);
-    udp_msgbuf[nbytes] = '\0';
 
     /* we may get:
     M-SEARCH * HTTP/1.1
@@ -522,7 +492,8 @@ void DRV_SSDP_RunQuickTick() {
         addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_HTTP,"Is MSEARCH - responding");
 #if ENABLE_DRIVER_WEMO
 		if (DRV_IsRunning("WEMO")) {
-			if (strcasestr(udp_msgbuf, "urn:belkin:device:**")) {
+			if (strcasestr(udp_msgbuf, "urn:belkin:device:**")
+				|| strcasestr(udp_msgbuf, "urn:belkin:device:controllee:1")) {
 				DRV_WEMO_Send_Advert_To(1, &addr);
 				return;
 			}

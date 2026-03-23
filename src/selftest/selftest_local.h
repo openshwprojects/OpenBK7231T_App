@@ -152,6 +152,7 @@ void Test_MAX72XX();
 void Test_OpenWeatherMap();
 void Test_Shutters();
 void Test_Pins();
+void Test_Wemo();
 
 void Test_GetJSONValue_Setup(const char *text);
 void Test_FakeHTTPClientPacket_GET(const char *tg);
