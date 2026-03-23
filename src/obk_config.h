@@ -714,7 +714,7 @@
 #endif
 
 // just for testing: enable SHT3x driver for all plattforms
-#define ENABLE_DRIVER_SHT3X						1
+// #define ENABLE_DRIVER_SHT3X						1
 
 
 // ensure that there would be no conflicts
