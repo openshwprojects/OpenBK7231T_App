@@ -547,7 +547,7 @@ int Tokenizer_GetPinEqual(const char *str, int def){
 int Tokenizer_GetArgEqualInteger(const char *str, int def){
 	int x = checkTokens(str);
 	if (x == -1) return def;
-	return Tokenizer_GetArgEqualInteger(x+1,def);
+	return Tokenizer_GetArgIntegerDefault(x+1,def);
 }
 
 
