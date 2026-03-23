@@ -159,7 +159,7 @@ static const char *g_wemo_eventService =
 "</serviceStateTable>\r\n"
 "</scpd>\r\n";
 
-static const char *g_wemo_response_1 =
+static const char *g_wemo_soap_response_prefix =
 "<?xml version=\"1.0\" encoding=\"utf-8\"?>"
 "<s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\" s:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">"
 "<s:Body>";
@@ -167,22 +167,17 @@ static const char *g_wemo_response_1 =
 static const char *g_wemo_response_2_fmt =
 "<u:%cetBinaryStateResponse xmlns:u=\"urn:Belkin:service:basicevent:1\">"
 "<BinaryState>%i</BinaryState>"
-"</u:%cetBinaryStateResponse>"
-"</s:Body>"
-"</s:Envelope>\r\n";
+"</u:%cetBinaryStateResponse>";
 
 // Minimal SOAP response templates for MetaInfo (used by /upnp/control/metainfo1)
-static const char *g_wemo_metainfo_response_1 =
-"<?xml version=\"1.0\" encoding=\"utf-8\"?>"
-"<s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\" s:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">"
-"<s:Body>";
-
 static const char *g_wemo_metainfo_response_2_fmt =
 "<u:%sResponse xmlns:u=\"urn:Belkin:service:metainfo:1\">"
 "<%s>%s</%s>"
-"</u:%sResponse>"
+"</u:%sResponse>";
+
+static const char *g_wemo_soap_response_suffix =
 "</s:Body>"
-"</s:Envelope>";
+"</s:Envelope>\r\n";
 
 // ------------------------------------------------------------
 // Globals / stats
@@ -379,8 +374,9 @@ static int WEMO_BasicEvent1(http_request_t* request) {
 
 	// Always respond with the live state.
 	http_setup(request, httpMimeTypeXML);
-	poststr(request, g_wemo_response_1);
+	poststr(request, g_wemo_soap_response_prefix);
 	hprintf255(request, g_wemo_response_2_fmt, verb, WEMO_GetMainPowerState(), verb);
+	poststr(request, g_wemo_soap_response_suffix);
 	poststr(request, NULL);
 
 	stat_eventsReceived++;
@@ -408,9 +404,10 @@ static int WEMO_MetaInfo1(http_request_t* request)
 	}
 
 	http_setup(request, httpMimeTypeXML);
-	poststr(request, g_wemo_metainfo_response_1);
+	poststr(request, g_wemo_soap_response_prefix);
 	// Value kept intentionally simple; this endpoint is informational.
 	hprintf255(request, g_wemo_metainfo_response_2_fmt, action, tag, "0", tag, action);
+	poststr(request, g_wemo_soap_response_suffix);
 	poststr(request, NULL);
 	return 0;
 }
