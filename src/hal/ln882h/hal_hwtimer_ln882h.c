@@ -1,9 +1,11 @@
+#include "../../new_common.h"
 #include "../hal_hwtimer.h"
 
 #if PLATFORM_LN882H
 
 #include "hal/hal_timer.h"
 #include "hal/hal_clock.h"
+#include "utils/power_mgmt/ln_pm.h"
 
 #define MAX_TIMERS 3
 
@@ -38,8 +40,9 @@ void TIMER2_IRQHandler()
 	}
 }
 
-int8_t HAL_RequestHWTimer(uint32_t period_us, HWTimerCB callback, void* arg)
+int8_t HAL_RequestHWTimer(float requestPeriodUs, float* realPeriodUs, HWTimerCB callback, void* arg)
 {
+	if(realPeriodUs) *realPeriodUs = requestPeriodUs;
 	if(callback == NULL) return -1;
 	uint8_t freetimer;
 	for(freetimer = 0; freetimer < MAX_TIMERS; freetimer++) if(((g_used_timers >> freetimer) & 1U) == 0) break;
@@ -52,16 +55,17 @@ int8_t HAL_RequestHWTimer(uint32_t period_us, HWTimerCB callback, void* arg)
 	tim_init_t_def tim_init;
 	memset(&tim_init, 0, sizeof(tim_init));
 	tim_init.tim_mode = TIM_USER_DEF_CNT_MODE;
-	if(period_us < 1000)
+	if(requestPeriodUs < 1000)
 	{
 		tim_init.tim_div = 0;
-		tim_init.tim_load_value = period_us * (uint32_t)(hal_clock_get_apb0_clk() / 1000000) - 1;
+		tim_init.tim_load_value = (uint32_t)requestPeriodUs * (uint32_t)(hal_clock_get_apb0_clk() / 1000000) - 1;
 	}
 	else
 	{
 		tim_init.tim_div = (uint32_t)(hal_clock_get_apb0_clk() / 1000000) - 1;
-		tim_init.tim_load_value = period_us - 1;
+		tim_init.tim_load_value = (uint32_t)requestPeriodUs - 1;
 	}
+	soc_module_clk_gate_enable(CLK_G_TIM1 + freetimer);
 	hal_tim_init(TIMER_BASE + 0x18U * freetimer, &tim_init);
 	hal_tim_clr_it_flag(TIMER_BASE + 0x18U * freetimer, TIM_IT_FLAG_ACTIVE);
 	switch(freetimer)
@@ -106,6 +110,7 @@ void HAL_HWTimerDeinit(int8_t timer)
 		case 1: NVIC_DisableIRQ(TIMER1_IRQn); break;
 		case 2: NVIC_DisableIRQ(TIMER2_IRQn); break;
 	}
+	soc_module_clk_gate_disable(CLK_G_TIM1 + timer);
 	timerHandlers[timer] = NULL;
 	timerArguments[timer] = NULL;
 	g_used_timers &= ~(1 << timer);
@@ -121,8 +126,9 @@ void HAL_HWTimerDeinit(int8_t timer)
 
 static uint8_t g_used_timers = 0b0;
 
-int8_t HAL_RequestHWTimer(uint32_t period_us, HWTimerCB callback, void* arg)
+int8_t HAL_RequestHWTimer(float requestPeriodUs, float* realPeriodUs, HWTimerCB callback, void* arg)
 {
+	if(realPeriodUs) *realPeriodUs = requestPeriodUs;
 	if(callback == NULL) return -1;
 	uint8_t freetimer;
 	for(freetimer = FIRST_TIMER; freetimer <= MAX_TIMER; freetimer++) if(((g_used_timers >> freetimer) & 1U) == 0) break;
@@ -140,7 +146,7 @@ int8_t HAL_RequestHWTimer(uint32_t period_us, HWTimerCB callback, void* arg)
 	hwtimer_cfg.timer_cb.arg = arg;
 
 	HAL_TIMER_Init(&hwtimer_cfg);
-	HAL_TIMER_LoadCount_Set(freetimer, (hwtimer_cfg.user_freq / 1000000) * period_us);
+	HAL_TIMER_LoadCount_Set(freetimer, (hwtimer_cfg.user_freq / 1000000) * (uint32_t)requestPeriodUs);
 	hal_sleep_register((hal_peripheral_module_t)(14 + freetimer), NULL, NULL, NULL);
 	HAL_TIMER_Enable(freetimer, TIMER_DISABLE);
 	NVIC_EnableIRQ(TIMER_IRQn);

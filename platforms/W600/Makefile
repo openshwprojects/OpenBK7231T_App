@@ -45,6 +45,7 @@ EXTRA_CCFLAGS += $(OBK_CFLAGS)
 EXTRA_CCFLAGS += -D__FILE__=\"\" -Wno-builtin-macro-redefined
 
 CSRCS += $(TOP_DIR)/src/network/lwip2.0.3/apps/mqtt/mqtt.c
+CSRCS += $(TOP_DIR)/src/network/lwip2.0.3/apps/mdns/mdns.c
 
 #############################################################
 # Configuration i.e. compile options etc.

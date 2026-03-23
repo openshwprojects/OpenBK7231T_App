@@ -39,6 +39,7 @@
 
 
 #include "driver/drv_ntp.h"
+#include "driver/drv_mdns.h"
 #include "driver/drv_ssdp.h"
 #include "driver/drv_uart.h"
 
@@ -104,6 +105,7 @@ uint8_t g_StartupDelayOver = 0;
 uint32_t idleCount = 0;
 
 int DRV_SSDP_Active = 0;
+int DRV_MDNS_Active = 0;
 
 #define LOG_FEATURE LOG_FEATURE_MAIN
 
@@ -561,6 +563,9 @@ void Main_OnWiFiStatusChange(int code)
 			if (DRV_SSDP_Active) {
 				ScheduleDriverStart("SSDP", 5);
 				//DRV_SSDP_Restart(); // this kills things
+			}
+			if (DRV_MDNS_Active) {
+				ScheduleDriverStart("MDNS", 5);
 			}
 		}
 #if defined(PLATFORM_LN882H) || PLATFORM_LN8825
@@ -1364,6 +1369,10 @@ void Main_Init_BeforeDelay_Unsafe(bool bAutoRunScripts) {
 	CMD_InitSimulatorOnlyCommands();
 #else
 	HAL_RegisterPlatformSpecificCommands();
+#if ENABLE_BT_PROXY
+	extern void HAL_BTProxy_RegisterCommands();
+	HAL_BTProxy_RegisterCommands();
+#endif
 #endif
 
 	/* Automatic disable of PIN MONITOR after reboot */

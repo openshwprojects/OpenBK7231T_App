@@ -8,6 +8,7 @@ CSRC  += $(PLDIR)/main.c
 #CSRC  += hal/realtek/rtl8720d/hal_main_rtl8710b.c
 CSRC  += hal/realtek/rtl8720d/hal_uart_rtl8720d.c
 CSRC  += hal/realtek/rtl8720d/hal_pins_rtl8720d.c
+CSRC  += hal/realtek/rtl8720d/hal_bt_proxy_rtl8720d.c
 CSRC  += hal/realtek/hal_flashConfig_realtek.c
 CSRC  += hal/realtek/hal_flashVars_realtek.c
 CSRC  += hal/realtek/hal_generic_realtek.c

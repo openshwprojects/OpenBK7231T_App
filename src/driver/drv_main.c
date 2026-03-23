@@ -11,6 +11,7 @@
 #include "drv_ntp.h"
 #include "drv_deviceclock.h"
 #include "drv_public.h"
+#include "drv_mdns.h"
 #include "drv_ssdp.h"
 #include "drv_test_drivers.h"
 #include "drv_tuyaMCU.h"
@@ -21,6 +22,13 @@
 #include "drv_ds1820_common.h"
 #include "drv_ds3231.h"
 #include "drv_hlw8112.h"
+#include "drv_DCF77.h"
+
+void DRV_MQTTServer_Init();
+void DRV_MQTTServer_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState);
+void DRV_MQTTServer_RunEverySecond();
+void DRV_MQTTServer_RunQuickTick();
+void DRV_MQTTServer_Stop();
 
 
 typedef struct driver_s {
@@ -69,6 +77,22 @@ static driver_t g_drivers[] = {
 	NULL,                                    // onChannelChanged
 	NULL,                                    // onHassDiscovery
 	false,                                   // loaded
+	},
+#endif
+#if ENABLE_DRIVER_ROOMBA
+	//drvdetail:{"name":"Roomba",
+	//drvdetail:"title":"Roomba",
+	//drvdetail:"descr":"Roomba OI Driver",
+	//drvdetail:"requires":""}
+	{ "Roomba",                                 // Driver Name
+	Roomba_Init,                                // Init
+	Roomba_RunEverySecond,                      // onEverySecond
+	Roomba_AppendInformationToHTTPIndexPage,    // appendInformationToHTTPIndexPage
+	Roomba_OnQuickTick,                         // runQuickTick
+	NULL,                                       // stopFunction
+	NULL,                                       // onChannelChanged
+	Roomba_OnHassDiscovery,                     // onHassDiscovery
+	false,                                      // loaded
 	},
 #endif
 #ifdef ENABLE_DRIVER_GIRIERMCU
@@ -130,6 +154,22 @@ static driver_t g_drivers[] = {
 	NULL,                                    // appendInformationToHTTPIndexPage
 	Freeze_RunFrame,                         // runQuickTick
 	NULL,                                    // stopFunction
+	NULL,                                    // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
+	},
+#endif
+#if ENABLE_DRIVER_ESPHOME_API
+	//drvdetail:{"name":"ESPHomeAPI",
+	//drvdetail:"title":"ESPHome Protocol Bridge",
+	//drvdetail:"descr":"Native ESPHome API server (port 6053) for discovering and controlling BT Proxy and other entities seamlessly in Home Assistant.",
+	//drvdetail:"requires":"BT Proxy"}
+	{ "ESPHomeAPI",                          // Driver Name
+	DRV_ESPHome_API_Init,                    // Init
+	DRV_ESPHome_API_OnEverySecond,           // onEverySecond
+	NULL,                                    // appendInformationToHTTPIndexPage
+	NULL,                                    // runQuickTick
+	DRV_ESPHome_API_Deinit,                  // stopFunction
 	NULL,                                    // onChannelChanged
 	NULL,                                    // onHassDiscovery
 	false,                                   // loaded
@@ -354,6 +394,22 @@ static driver_t g_drivers[] = {
    	DS3231_AppendInformationToHTTPIndexPage, // appendInformationToHTTPIndexPage
    	NULL,                                    // runQuickTick
    	DS3231_Stop,                             // stopFunction
+   	NULL,                                    // onChannelChanged
+   	NULL,                                    // onHassDiscovery
+   	false,                                   // loaded
+	},
+#endif
+#if ENABLE_DRIVER_DCF77
+	//drvdetail:{"name":"DSCF77",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"Decoding DCF77 signal (german radio time source sending near Frankfurt Main, Germany)",
+	//drvdetail:"requires":""}
+	{ "DCF77",                              // Driver Name
+   	DCF77_Init,                              // Init
+   	DCF77_OnEverySecond,                     // onEverySecond
+   	DCF77_AppendInformationToHTTPIndexPage,  // appendInformationToHTTPIndexPage
+   	DCF77_QuickTick,                         // runQuickTick
+   	DCF77_Stop,                              // stopFunction
    	NULL,                                    // onChannelChanged
    	NULL,                                    // onHassDiscovery
    	false,                                   // loaded
@@ -791,6 +847,22 @@ static driver_t g_drivers[] = {
 	false,                                   // loaded
 	},
 #endif
+#if ENABLE_DRIVER_SHUTTERS
+	//drvdetail:{"name":"Shutters",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"ShutterShutters",
+	//drvdetail:"requires":""}
+	{ "Shutters",                                 // Driver Name
+	DRV_Shutters_Init,                            // Init
+	DRV_Shutters_RunEverySecond,                                    // onEverySecond
+	DRV_Shutters_AddToHtmlPage, // appendInformationToHTTPIndexPage
+	DRV_Shutters_RunQuickTick,                        // runQuickTick
+	NULL,                        // stopFunction
+	NULL,                                    // onChannelChanged
+	DRV_Shutters_DoDiscovery,                 // onHassDiscovery
+	false,                                   // loaded
+	},
+#endif
 #if ENABLE_DRIVER_DDP
 	//drvdetail:{"name":"DDP",
 	//drvdetail:"title":"TODO",
@@ -802,6 +874,22 @@ static driver_t g_drivers[] = {
 	DRV_DDP_AppendInformationToHTTPIndexPage, // appendInformationToHTTPIndexPage
 	DRV_DDP_RunFrame,                        // runQuickTick
 	DRV_DDP_Shutdown,                        // stopFunction
+	NULL,                                    // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
+	},
+#endif
+#if ENABLE_DRIVER_MDNS
+	//drvdetail:{"name":"MDNS",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"mDNS/DNS-SD discovery service. Publishes the device hostname and HTTP service on local network.",
+	//drvdetail:"requires":""}
+	{ "MDNS",                                // Driver Name
+	DRV_MDNS_Init,                           // Init
+	DRV_MDNS_RunEverySecond,                 // onEverySecond
+	NULL,                                    // appendInformationToHTTPIndexPage
+	DRV_MDNS_RunQuickTick,                   // runQuickTick
+	DRV_MDNS_Shutdown,                       // stopFunction
 	NULL,                                    // onChannelChanged
 	NULL,                                    // onHassDiscovery
 	false,                                   // loaded
@@ -1402,6 +1490,38 @@ static driver_t g_drivers[] = {
 	false,                                // loaded
 	},
 #endif
+#if ENABLE_DRIVER_TINYIR_NEC
+	//drvdetail:{"name":"TinyIR_NEC",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"NEC-only IR receiver",
+	//drvdetail:"requires":""}
+	{ "TinyIR_NEC",      // Driver Name
+	TinyIR_NEC_Init,     // Init
+	NULL,                // onEverySecond
+	NULL,                // appendInformationToHTTPIndexPage
+	TinyIR_NEC_RunFrame, // runQuickTick
+	TinyIR_NEC_Deinit,   // stopFunction
+	NULL,                // onChannelChanged
+	NULL,                // onHassDiscovery
+	false,               // loaded
+	},
+#endif
+#if ENABLE_DRIVER_MQTTSERVER
+	//drvdetail:{"name":"mqttServer",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"MQTT Server driver.",
+	//drvdetail:"requires":""}
+	{ "mqttServer",                          // Driver Name
+	DRV_MQTTServer_Init,                     // Init
+	DRV_MQTTServer_RunEverySecond,           // onEverySecond
+	DRV_MQTTServer_AppendInformationToHTTPIndexPage, // appendInformationToHTTPIndexPage
+	DRV_MQTTServer_RunQuickTick,             // runQuickTick
+	DRV_MQTTServer_Stop,                     // stopFunction
+	NULL,                                    // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
+	}
+#endif
 	//{ "", NULL, NULL, NULL, NULL, NULL, NULL, NULL, false },
 };
 
@@ -1554,6 +1674,7 @@ void DRV_StartDriver(const char* name) {
 
 			}
 			else {
+				addLogAdv(LOG_INFO, LOG_FEATURE_MAIN, "Starting %s.\n", name);
 				if (g_drivers[i].initFunc) {
 					g_drivers[i].initFunc();
 				}

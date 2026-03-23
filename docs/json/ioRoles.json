@@ -202,7 +202,7 @@
   {
     "name": "BP1658CJ_DAT",
     "title": "TODO",
-    "descr": "BP1658CJ DAT pin for BP5758D modified-I2C twowire LED driver, used in RGBCW lights. Set both required BP1658CJ pins to autostart the related driver. Don't forget to Map the colors order later, so colors are not mixed.",
+    "descr": "BP1658CJ DAT pin for BP1658CJ modified-I2C twowire LED driver, used in RGBCW lights. Set both required BP1658CJ pins to autostart the related driver. Don't forget to Map the colors order later, so colors are not mixed.",
     "enum": "IOR_BP1658CJ_DAT",
     "file": "new_pins.h",
     "driver": ""
@@ -210,7 +210,7 @@
   {
     "name": "BP1658CJ_CLK",
     "title": "TODO",
-    "descr": "BP1658CJ CLK pin for BP5758D modified-I2C twowire LED driver, used in RGBCW lights. Set both required BP1658CJ pins to autostart the related driver. Don't forget to Map the colors order later, so colors are not mixed.",
+    "descr": "BP1658CJ CLK pin for BP1658CJ modified-I2C twowire LED driver, used in RGBCW lights. Set both required BP1658CJ pins to autostart the related driver. Don't forget to Map the colors order later, so colors are not mixed.",
     "enum": "IOR_BP1658CJ_CLK",
     "file": "new_pins.h",
     "driver": ""
@@ -298,7 +298,7 @@
   {
     "name": "SM16703P_DIN",
     "title": "TODO",
-    "descr": "WIP driver, write a post on Elektroda if you need it working",
+    "descr": "SPI DIN data pin for SM16703P RGB LED driver. Set this role and call startDriver SM16703P to use it. Also used by the SM15155E 5-channel LED driver; set this same role and call startDriver SM15155E to use it.",
     "enum": "IOR_SM16703P_DIN",
     "file": "new_pins.h",
     "driver": ""
@@ -546,7 +546,7 @@
   {
     "name": "ADC_Button",
     "title": "TODO",
-    "descr": "Single ADC with multiple buttons connected.d",
+    "descr": "Single ADC with multiple buttons connected.",
     "enum": "IOR_ADC_Button",
     "file": "new_pins.h",
     "driver": ""
@@ -554,7 +554,7 @@
   {
     "name": "GN6932_CLK",
     "title": "TODO",
-    "descr": "GN6932 LED Display Driver - Clock pi",
+    "descr": "GN6932 LED Display Driver - Clock pin",
     "enum": "IOR_GN6932_CLK",
     "file": "new_pins.h",
     "driver": ""
@@ -626,7 +626,7 @@
   {
     "name": "DS1820_IO",
     "title": "TODO",
-    "descr": "vers simple OneWire Temp sensor DS1820",
+    "descr": "very simple OneWire Temp sensor DS1820",
     "enum": "IOR_DS1820_IO",
     "file": "new_pins.h",
     "driver": ""
@@ -634,7 +634,7 @@
   {
     "name": "PWM_ScriptOnly",
     "title": "TODO",
-    "descr": "",
+    "descr": "Like PWM, but excluded from automatic LED/light generation logic. Intended for direct channel control such as scripts or manual channel updates.",
     "enum": "IOR_PWM_ScriptOnly",
     "file": "new_pins.h",
     "driver": ""
@@ -642,7 +642,7 @@
   {
     "name": "PWM_ScriptOnly_n",
     "title": "TODO",
-    "descr": "",
+    "descr": "Like PWM_ScriptOnly, but with inverted duty cycle. Excluded from automatic LED/light generation logic and intended for direct channel control.",
     "enum": "IOR_PWM_ScriptOnly_n",
     "file": "new_pins.h",
     "driver": ""
@@ -722,7 +722,7 @@
   {
     "name": "Button_pd_n",
     "title": "TODO",
-    "descr": "same as Button but with pulldown instead pullup",
+    "descr": "Same as Button_pd, but with inverted logic.",
     "enum": "IOR_Button_pd_n",
     "file": "new_pins.h",
     "driver": ""

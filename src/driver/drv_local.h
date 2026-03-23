@@ -15,6 +15,12 @@ void DRV_DDP_RunFrame();
 void DRV_DDP_Shutdown();
 void DRV_DDP_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState);
 
+void DRV_Shutters_RunQuickTick();
+void DRV_Shutters_RunEverySecond();
+void DRV_Shutters_AddToHtmlPage(http_request_t *request, int bPreState);
+void DRV_Shutters_Init();
+void DRV_Shutters_DoDiscovery(const char *topic);
+
 void BMP280_Init();
 void BMP280_OnEverySecond();
 void BMP280_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState);
@@ -298,6 +304,17 @@ void Bridge_driver_QuickFrame();
 void Bridge_driver_OnChannelChanged(int ch, int value);
 /*************************************************************/
 
+/* Roomba driver *********************************************/
+void Roomba_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState);
+/*************************************************************/
 void LTR_Init();
 void LTR_OnEverySecond();
 void LTR_AppendInformationToHTTPIndexPage(http_request_t* request, int bPreState);
+
+void TinyIR_NEC_Init();
+void TinyIR_NEC_Deinit();
+void TinyIR_NEC_RunFrame();
+
+void DRV_ESPHome_API_Init();
+void DRV_ESPHome_API_Deinit();
+void DRV_ESPHome_API_OnEverySecond();

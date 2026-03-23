@@ -26,4 +26,24 @@ int HAL_Configuration_SaveConfigMemory(void* src, int dataLen)
 	return 1;
 }
 
+#if PLATFORM_RTL8720D || PLATFORM_RTL87X0C
+
+uint32_t ftl_save_to_storage(void* pdata_tmp, uint16_t offset, uint16_t size)
+{
+	InitEasyFlashIfNeeded();
+	char buf[20];
+	int n = snprintf(buf, sizeof(buf), "ftl%u", offset);
+	return ef_set_env_blob(buf, pdata_tmp, size) != EF_NO_ERR;
+}
+
+uint32_t ftl_load_from_storage(void* pdata, uint16_t offset, uint16_t size)
+{
+	InitEasyFlashIfNeeded();
+	char buf[20];
+	int n = snprintf(buf, sizeof(buf), "ftl%u", offset);
+	return ef_get_env_blob(buf, pdata, size, NULL) == 0;
+}
+
+#endif
+
 #endif // PLATFORM_REALTEK

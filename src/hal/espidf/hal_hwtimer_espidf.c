@@ -29,8 +29,9 @@ static bool IRAM_ATTR timer_cb(gptimer_handle_t timer, const gptimer_alarm_event
 	return false;
 }
 
-int8_t HAL_RequestHWTimer(uint32_t period_us, HWTimerCB callback, void* arg)
+int8_t HAL_RequestHWTimer(float requestPeriodUs, float* realPeriodUs, HWTimerCB callback, void* arg)
 {
+	if(realPeriodUs) *realPeriodUs = requestPeriodUs;
 	if(callback == NULL) return -1;
 
 	int8_t idx;
@@ -54,7 +55,7 @@ int8_t HAL_RequestHWTimer(uint32_t period_us, HWTimerCB callback, void* arg)
 
 	gptimer_alarm_config_t alarm_cfg =
 	{
-		.alarm_count = period_us,
+		.alarm_count = (uint32_t)requestPeriodUs,
 		.reload_count = 0,
 		.flags.auto_reload_on_alarm = true,
 	};
@@ -109,13 +110,14 @@ void HAL_HWTimerDeinit(int8_t timer)
 
 static bool isTimerInit = false;
 
-int8_t HAL_RequestHWTimer(uint32_t period_us, HWTimerCB callback, void* arg)
+int8_t HAL_RequestHWTimer(float requestPeriodUs, float* realPeriodUs, HWTimerCB callback, void* arg)
 {
+	if(requestPeriodUs < 50) requestPeriodUs = 50;
+	if(realPeriodUs) *realPeriodUs = requestPeriodUs;
 	if(isTimerInit) return -1;
 	isTimerInit = true;
-	if(period_us < 50) period_us = 50;
 	hw_timer_init(callback, arg);
-	hw_timer_alarm_us(50, false);
+	hw_timer_alarm_us((uint32_t)requestPeriodUs, false);
 	hw_timer_enable(false);
 	return 0;
 }

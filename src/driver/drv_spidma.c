@@ -608,6 +608,7 @@ void SPIDMA_Deinit(void)
 #include "../hal/ln882h/hal_pinmap_ln882h.h"
 #include "hal/hal_dma.h"
 #include "hal/hal_spi.h"
+#include "utils/power_mgmt/ln_pm.h"
 
 extern int spidma_led_pin;
 static int current_pin = 6;
@@ -616,6 +617,8 @@ void SPIDMA_Init(struct spi_message* msg)
 {
 	current_pin = spidma_led_pin >= 0 ? spidma_led_pin : 6;
 	lnPinMapping_t* pin = g_pins + current_pin;
+	soc_module_clk_gate_enable(CLK_G_SPI0);
+	soc_module_clk_gate_enable(CLK_G_DMA);
 
 	hal_gpio_pin_afio_select(pin->base, pin->pin, SPI0_MOSI);
 	hal_gpio_pin_afio_en(pin->base, pin->pin, HAL_ENABLE);
@@ -674,6 +677,8 @@ void SPIDMA_Deinit(void)
 	hal_spi_deinit(SPI0_BASE);
 	lnPinMapping_t* pin = g_pins + current_pin;
 	hal_gpio_pin_afio_en(pin->base, pin->pin, HAL_DISABLE);
+	soc_module_clk_gate_disable(CLK_G_SPI0);
+	soc_module_clk_gate_disable(CLK_G_DMA);
 }
 
 #elif PLATFORM_REALTEK

@@ -5,12 +5,13 @@
 #include "wm_include.h"
 #include "wm_timer.h"
 
-int8_t HAL_RequestHWTimer(uint32_t period_us, HWTimerCB callback, void* arg)
+int8_t HAL_RequestHWTimer(float requestPeriodUs, float* realPeriodUs, HWTimerCB callback, void* arg)
 {
+	if(realPeriodUs) *realPeriodUs = requestPeriodUs;
 	struct tls_timer_cfg timer_cfg;
 
 	timer_cfg.unit = TLS_TIMER_UNIT_US;
-	timer_cfg.timeout = period_us;
+	timer_cfg.timeout = (uint32_t)requestPeriodUs;
 	timer_cfg.is_repeat = 1;
 	timer_cfg.callback = callback;
 	timer_cfg.arg = arg;

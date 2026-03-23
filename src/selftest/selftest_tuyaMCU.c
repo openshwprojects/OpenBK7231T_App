@@ -736,4 +736,111 @@ void Test_TuyaMCU_Calib() {
 
 }
 
+// ---------------------------------------------------------------------------
+// Test_TuyaMCU_Robustness
+//
+// Verifies that the truncation guards in TuyaMCU_ParseStateMessage() and
+// TuyaMCU_V0_ParseRealTimeWithRecordStorage() reject malformed packets without
+// crashing and without corrupting channel state.
+//
+// Each malformed packet below advertises sectorLen=4 for a VALUE datapoint but
+// only carries 3 data bytes after the 4-byte sector header. That directly
+// targets the 32-bit scalar decode path: on an unguarded build, the parser
+// would attempt to read the missing fourth byte past the end of the payload.
+//
+// The test strategy is:
+//   1. Set a channel to a known sentinel value.
+//   2. Feed a truncated packet for the same dpId/channel mapping.
+//   3. Assert the channel is unchanged.
+//   4. Feed a valid packet on the same path and assert normal parsing still works.
+//
+// Note: the allocation-failure path in the rawData realloc guard cannot be
+// reliably exercised under the Windows simulation (there is no OOM injection
+// mechanism), so it is not tested here. The logic is statically correct by
+// inspection: the temp-pointer pattern is the standard safe-realloc idiom.
+// ---------------------------------------------------------------------------
+void Test_TuyaMCU_Robustness() {
+	// -----------------------------------------------------------------------
+	// Part 1: Truncated STATE packet (v3, cmd 0x07)
+	//
+	// Malformed packet: 55AA030700060102000400172D
+	//   version=3, cmd=STATE(0x07), payload_len=6
+	//   payload: dpId=1 type=2(value) sectorLen=4, data bytes present=2
+	//   remaining after header = 2, so 4 > 2 => guard fires, break.
+	// -----------------------------------------------------------------------
+	SIM_ClearOBK(0);
+	SIM_UART_InitReceiveRingBuffer(2048);
+	CMD_ExecuteCommand("startDriver TuyaMCU", 0);
+	CMD_ExecuteCommand("linkTuyaMCUOutputToChannel 1 val 20", 0);
+
+	CMD_ExecuteCommand("setChannel 20 99", 0);
+	SELFTEST_ASSERT_CHANNEL(20, 99);
+
+	// inject the truncated STATE packet
+	CMD_ExecuteCommand("uartFakeHex 55AA030700060102000400172D", 0);
+	Sim_RunFrames(100, false);
+
+	// channel must be untouched - guard prevented parsing
+	SELFTEST_ASSERT_CHANNEL(20, 99);
+
+	// Now inject a well-formed STATE packet setting dpId 1 value = 1.
+	CMD_ExecuteCommand("uartFakeHex 55AA03070008010200040000000119", 0);
+	Sim_RunFrames(100, false);
+	SELFTEST_ASSERT_CHANNEL(20, 1);
+
+	// -----------------------------------------------------------------------
+	// Part 2: Truncated V0 cmd 0x05 packet (no datetime prefix)
+	//
+	// Malformed packet: 55AA0005000601020004001223
+	//   version=0, cmd=0x05(TUYA_CMD_WIFI_SELECT), payload_len=6
+	//   payload: dpId=1 type=2(value) sectorLen=4, data bytes present=2
+	//   remaining=2, guard fires.
+	// -----------------------------------------------------------------------
+	SIM_ClearOBK(0);
+	SIM_UART_InitReceiveRingBuffer(2048);
+	CMD_ExecuteCommand("startDriver TuyaMCU", 0);
+	CMD_ExecuteCommand("linkTuyaMCUOutputToChannel 1 val 21", 0);
+
+	CMD_ExecuteCommand("setChannel 21 77", 0);
+	SELFTEST_ASSERT_CHANNEL(21, 77);
+
+	// inject truncated V0 no-date packet
+	CMD_ExecuteCommand("uartFakeHex 55AA0005000601020004001223", 0);
+	Sim_RunFrames(100, false);
+
+	SELFTEST_ASSERT_CHANNEL(21, 77);
+
+	// confirm the parser still works normally after seeing the bad packet
+	CMD_ExecuteCommand("uartFakeHex 55AA00050008010200040000000114", 0);
+	Sim_RunFrames(100, false);
+	SELFTEST_ASSERT_CHANNEL(21, 1);
+
+	// -----------------------------------------------------------------------
+	// Part 3: Truncated V0 cmd 0x08 packet (with 7-byte datetime prefix)
+	//
+	// Malformed packet: 55AA0008000D0000000000000001020004001C37
+	//   version=0, cmd=0x08(TUYA_CMD_QUERY_STATE), payload_len=14
+	//   7 datetime bytes (all zero) + dpId=1 type=2(value) sectorLen=4
+	//   data bytes present=2, so remaining=2 and the guard fires.
+	// -----------------------------------------------------------------------
+	SIM_ClearOBK(0);
+	SIM_UART_InitReceiveRingBuffer(2048);
+	CMD_ExecuteCommand("startDriver TuyaMCU", 0);
+	CMD_ExecuteCommand("linkTuyaMCUOutputToChannel 1 val 22", 0);
+
+	CMD_ExecuteCommand("setChannel 22 55", 0);
+	SELFTEST_ASSERT_CHANNEL(22, 55);
+
+	// inject truncated V0 with-date packet
+	CMD_ExecuteCommand("uartFakeHex 55AA0008000D0000000000000001020004001C37", 0);
+	Sim_RunFrames(100, false);
+
+	SELFTEST_ASSERT_CHANNEL(22, 55);
+
+	// confirm the parser still works normally after seeing the bad packet
+	CMD_ExecuteCommand("uartFakeHex 55AA0008000F0000000000000001020004000000011E", 0);
+	Sim_RunFrames(100, false);
+	SELFTEST_ASSERT_CHANNEL(22, 1);
+}
+
 #endif

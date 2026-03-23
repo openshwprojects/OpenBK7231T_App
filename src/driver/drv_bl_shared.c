@@ -783,10 +783,16 @@ void BL_ProcessUpdate(float voltage, float current, float power,
             snprintf(datetime, sizeof(datetime), "%04i-%02i-%02iT%02i:%02i%+03i:%02i",
                 ltm->tm_year+1900, ltm->tm_mon+1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min,
                 TIME_GetTimesZoneOfsSeconds()/3600, (abs(TIME_GetTimesZoneOfsSeconds())/60) % 60);
-*/            
+*/
+#if PLATFORM_ECR6600
+			  // for ECR6000 printf("%+03i", 1); will not be "+01" but "0+1" ...
+            int ttm = TIME_GetTimesZoneOfsSeconds()/60;	// used to get +/- sign and minutes
+			snprintf(datetime, sizeof(datetime), "%.16s%c%02i:%02i",TS2STR(ConsumptionResetTime, TIME_FORMAT_ISO_8601),
+                ttm < 0 ? '-': '+', abs(ttm/60), abs(ttm) % 60);
+#else
             snprintf(datetime, sizeof(datetime), "%.16s%+03i:%02i",TS2STR(ConsumptionResetTime, TIME_FORMAT_ISO_8601),
                 TIME_GetTimesZoneOfsSeconds()/3600, (abs(TIME_GetTimesZoneOfsSeconds())/60) % 60);
-
+#endif
             cJSON_AddStringToObject(root, "consumption_clear_date", datetime);
           }
 
@@ -924,8 +930,15 @@ void BL_ProcessUpdate(float voltage, float current, float power,
                 ltm->tm_year+1900, ltm->tm_mon+1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min,
                 TIME_GetTimesZoneOfsSeconds()/3600, (abs(TIME_GetTimesZoneOfsSeconds())/60) % 60);
 */
+#if PLATFORM_ECR6600
+            // for ECR6000 printf("%+03i", 1); will not be "+01" but "0+1" ...
+            int ttm = TIME_GetTimesZoneOfsSeconds()/60;	// used to get +/- sign and minutes
+			snprintf(datetime, sizeof(datetime), "%.16s%c%02i:%02i",TS2STR(ConsumptionResetTime, TIME_FORMAT_ISO_8601),
+                ttm < 0 ? '-': '+', abs(ttm/60), abs(ttm) % 60);
+#else
             snprintf(datetime, sizeof(datetime), "%.16s%+03i:%02i",TS2STR(ConsumptionResetTime, TIME_FORMAT_ISO_8601),
                 TIME_GetTimesZoneOfsSeconds()/3600, (abs(TIME_GetTimesZoneOfsSeconds())/60) % 60);
+#endif
             
             MQTT_PublishMain_StringString(sensdataset->sensors[i].names.name_mqtt, datetime, 0);
           }
