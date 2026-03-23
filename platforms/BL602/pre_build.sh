@@ -36,3 +36,16 @@
 # and then in pre_build.sh you apply this patch with:
 #
 # patch -p 1 -d sdk/OpenBL602 < platforms/BL602/my_change.diff
+
+LWIP_MK="sdk/OpenBL602/components/network/lwip/bouffalo.mk"
+
+if [ -f "$LWIP_MK" ]; then
+	if grep -q 'src/apps/mdns' "$LWIP_MK"; then
+		echo "PREBUILD BL602: lwIP mdns source already enabled"
+	else
+		echo "PREBUILD BL602: enabling lwIP mdns source"
+		sed -i 's@src/apps/mqtt@src/apps/mqtt src/apps/mdns@' "$LWIP_MK"
+	fi
+else
+	echo "PREBUILD BL602: WARN lwip component makefile not found: $LWIP_MK"
+fi

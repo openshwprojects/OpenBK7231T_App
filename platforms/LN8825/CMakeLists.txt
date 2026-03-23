@@ -46,6 +46,7 @@ set(PROJ_ALL_SRC
 	${CMAKE_SOURCE_DIR}/components/libc/newlib_stub.c
 	${CMAKE_SOURCE_DIR}/components/atcmd/console.c
 	${COMP_LWIP_DIR}/apps/mqtt/mqtt.c
+	${COMP_LWIP_DIR}/apps/mdns/mdns.c
 )
 
 link_directories(${CMAKE_SOURCE_DIR}/lib/gcclib)
