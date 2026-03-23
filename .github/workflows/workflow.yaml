@@ -10,14 +10,12 @@ on:
 env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   APP_NAME: ${{ github.event.repository.name }}
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   refs:
     name: Prepare CI Environment
     runs-on: ubuntu-22.04
     env:
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     outputs:
       sha_short: ${{ steps.refs.outputs.sha_short }}
       short_ref: ${{ steps.refs.outputs.short_ref }}
@@ -25,7 +23,7 @@ jobs:
       new_release: ${{ steps.refs.outputs.new_release }}
     steps:
       - name: Source checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Semantic Release
         id: semantic
         if: github.ref == 'refs/heads/main' || github.ref_name == 'alpha'
@@ -62,11 +60,10 @@ jobs:
     needs: refs
     runs-on: windows-2022
     env:
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
 
     - name: Checkout berry submodule
       run: |
@@ -102,7 +99,7 @@ jobs:
         mkdir -Force output/${{ needs.refs.outputs.version }}
         cp obkSimulator_win32_${{ needs.refs.outputs.version }}.zip output/${{ needs.refs.outputs.version }}/obkSimulator_${{ needs.refs.outputs.version }}.zip
     - name: Upload build assets
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v6
       with:
         name: ${{ env.APP_NAME }}_${{ needs.refs.outputs.version }}_sim
         path: output/${{ needs.refs.outputs.version }}/obkSimulator_${{ needs.refs.outputs.version }}.zip
@@ -112,11 +109,10 @@ jobs:
     needs: refs
     runs-on: ubuntu-22.04
     env:
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
 
     - name: Checkout berry submodule
       run: |
@@ -136,11 +132,10 @@ jobs:
     needs: refs
     runs-on: ubuntu-22.04
     env:
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
 
     - name: Checkout berry submodule
       run: |
@@ -160,7 +155,6 @@ jobs:
     needs: refs
     runs-on: ubuntu-22.04
     env:
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     strategy:
       fail-fast: false
       matrix:
@@ -291,7 +285,7 @@ jobs:
             gcc: 10.3-2021.10
     steps:
       - name: Source checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - uses: actions/setup-python@v5
         if: ${{ matrix.platform == 'OpenBL602' || matrix.platform == 'OpenRTL8721DA' || matrix.platform == 'OpenRTL8720E' || matrix.platform == 'OpenRDA5981' }}
@@ -327,7 +321,7 @@ jobs:
         run: make APP_VERSION=${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }} APP_NAME=${{ matrix.platform }} VARIANT="${{ matrix.variant }}" ${{ matrix.platform }}
 
       - name: Save build assets
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: ${{ env.APP_NAME }}_${{ needs.refs.outputs.version }}_${{ matrix.platform }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}
           path: |
@@ -353,7 +347,6 @@ jobs:
     needs: refs
     runs-on: ubuntu-24.04
     env:
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     strategy:
       fail-fast: false
       matrix:
@@ -406,10 +399,10 @@ jobs:
             sdk: OpenESP8266
     steps:
       - name: Source checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: ESP-IDF checkout
         if: ${{ matrix.platform != 'OpenESP8266' }}
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: espressif/esp-idf
           path: sdk/esp-idf
@@ -418,7 +411,7 @@ jobs:
 
       - name: OpenESP8266 checkout
         if: ${{ matrix.platform == 'OpenESP8266' }}
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: NonPIayerCharacter/OpenESP8266
           path: sdk/OpenESP8266
@@ -440,7 +433,7 @@ jobs:
           version: 1.0
       - name: Cache toolchain
         id: cache-toolchain
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.espressif # cache whole folder, not just dist
           key: ${{ matrix.sdk }}_toolchain_${{ matrix.version }}_${{ steps.pysetup.outputs.python-version }}
@@ -457,7 +450,7 @@ jobs:
           cd ../..
           make APP_VERSION=${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }} APP_NAME=${{ matrix.platform }} VARIANT="${{ matrix.variant }}" ${{ matrix.platform }}
       - name: Save build assets
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: ${{ env.APP_NAME }}_${{ needs.refs.outputs.version }}_${{ matrix.platform }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}
           path: |
@@ -472,7 +465,6 @@ jobs:
     needs: refs
     runs-on: windows-latest
     env:
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     defaults:
       run:
         shell: wsl-bash {0}
@@ -484,7 +476,7 @@ jobs:
             variant: default
     steps:
       - name: Source checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - uses: Vampire/setup-wsl@v6
         with:
           wsl-version: 1
@@ -494,7 +486,7 @@ jobs:
         run: |
           make APP_VERSION=${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }} APP_NAME=${{ matrix.platform }} VARIANT="${{ matrix.variant }}" ${{ matrix.platform }}
       - name: Save build assets
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: ${{ env.APP_NAME }}_${{ needs.refs.outputs.version }}_${{ matrix.platform }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}
           path: |
@@ -507,11 +499,10 @@ jobs:
     runs-on: ubuntu-22.04
     needs: [refs, build, build2, build_idf, build_txw81x]
     env:
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     #if: always() && needs.refs.outputs.new_release == 'true' && (github.ref == 'refs/heads/main' || github.ref_name == 'alpha')
     steps:
       - name: Merge Artifacts
-        uses: actions/upload-artifact/merge@v4
+        uses: actions/upload-artifact/merge@v6
         with:
           name: ${{ env.APP_NAME }}_${{ needs.refs.outputs.version }}
           #delete-merged: true
@@ -521,13 +512,12 @@ jobs:
     runs-on: ubuntu-22.04
     needs: [merge, refs]
     env:
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     if: always() && needs.refs.outputs.new_release == 'true' && (github.ref == 'refs/heads/main' || github.ref_name == 'alpha')
     steps:
       - name: Source checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Fetch build assets
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: ${{ env.APP_NAME }}_${{ needs.refs.outputs.version }}
           path: output/${{ needs.refs.outputs.version }}
