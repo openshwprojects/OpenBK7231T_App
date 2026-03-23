@@ -290,9 +290,9 @@ static void SHTXX_SHT3x_FetchPeriodic(shtxx_dev_t *dev)
 static void SHTXX_SHT3x_ReadAlertReg(shtxx_dev_t *dev, uint8_t sub,
                                       int16_t *out_h10, int16_t *out_t10)
 {
-    uint8_t d[2];
+    uint8_t d[3];	// two bytes + CRC (ignored for now)
     I2C_Write(dev, 0xE1, sub, 2);
-    I2C_Read(dev, d, 2);
+    I2C_Read(dev, d, 3);
     uint16_t w = ((uint16_t)d[0] << 8) | d[1];
     *out_h10 = (int16_t)((1000u * (uint32_t)(w & 0xFE00u) + 32767u) / 65535u);
     *out_t10 = (int16_t)((1750u * (uint32_t)((uint16_t)(w << 7)) + 32767u) / 65535u) - 450;
@@ -308,13 +308,20 @@ static void SHTXX_SHT3x_WriteAlertReg(shtxx_dev_t *dev, uint8_t sub,
     uint16_t w    = (rawH & 0xFE00u) | ((rawT >> 7) & 0x01FFu);
     uint8_t  buf[2] = { (uint8_t)(w >> 8), (uint8_t)(w & 0xFF) };
     uint8_t  crc  = SHTXX_CRC8(buf, 2);
+
+    // For me setting values often failed on first attempt. So try again if sensor "NACK"s the values
+    bool ACK=false;
+    int rep=1;
+    do {
     Soft_I2C_Start(&dev->i2c, dev->i2cAddr);
     Soft_I2C_WriteByte(&dev->i2c, 0x61);
     Soft_I2C_WriteByte(&dev->i2c, sub);
     Soft_I2C_WriteByte(&dev->i2c, buf[0]);
     Soft_I2C_WriteByte(&dev->i2c, buf[1]);
-    Soft_I2C_WriteByte(&dev->i2c, crc);
+    ACK=Soft_I2C_WriteByte(&dev->i2c, crc);
     Soft_I2C_Stop(&dev->i2c);
+    rep++;
+    } while ( !ACK && rep <= 3);
 }
 
 #endif // SHTXX_ENABLE_SHT3_EXTENDED_FEATURES
