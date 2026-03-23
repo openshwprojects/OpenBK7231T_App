@@ -6,13 +6,18 @@
 #include "lwip/sockets.h"
 #include "lwip/ip_addr.h"
 #include "lwip/inet.h"
+#include <string.h>
 #include "../logging/logging.h"
+#include "../hal/hal_ota.h"
 #include "new_http.h"
 #if PLATFORM_ESP8266
 #define MAX_SOCKETS_TCP 2
+#endif
+#if PLATFORM_ESP8266
 #define REPLY_BUFFER_SIZE			1024
 #define INCOMING_BUFFER_SIZE		1024
 #define HTTP_CLIENT_STACK_SIZE		4096
+#define HTTP_CLIENT_STACK_SIZE		6144
 #endif
 #ifndef MAX_SOCKETS_TCP
 #define MAX_SOCKETS_TCP MEMP_NUM_TCP_PCB
@@ -79,6 +84,7 @@ static void tcp_client_thread(tcp_thread_t* arg)
 			break;
 		}
 		request.receivedLen += received;
+		request.received[request.receivedLen] = 0;
 		if(received < remaining)
 		{
 			break;

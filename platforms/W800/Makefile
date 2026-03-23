@@ -45,6 +45,7 @@ include $(_SHARED_APP)/../libraries/berry.mk
 CSRCS += $(BERRY_SRC_C)
 
 CSRCS += $(TOP_DIR)/src/network/lwip2.0.3/apps/mqtt/mqtt.c
+CSRCS += $(TOP_DIR)/src/network/lwip2.0.3/apps/mdns/mdns.c
 
 sinclude $(TOP_DIR)/tools/w800/rules.mk
 

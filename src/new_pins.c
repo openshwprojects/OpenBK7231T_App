@@ -2305,6 +2305,7 @@ void PIN_ticks(void* param)
 				g_cfg.pins.roles[i] == IOR_DigitalInput_NoPup || g_cfg.pins.roles[i] == IOR_DigitalInput_NoPup_n
 				|| g_cfg.pins.roles[i] == IOR_DoorSensorWithDeepSleep || g_cfg.pins.roles[i] == IOR_DoorSensorWithDeepSleep_NoPup
 				|| g_cfg.pins.roles[i] == IOR_DoorSensorWithDeepSleep_pd) {
+
 				// read pin digital value (and already invert it if needed)
 				value = PIN_ReadDigitalInputValue_WithInversionIncluded(i);
 
@@ -2317,7 +2318,9 @@ void PIN_ticks(void* param)
 						if (g_lastValidState[i] != value) {
 							// became up
 							g_lastValidState[i] = value;
-							CHANNEL_Set(g_cfg.pins.channels[i], value, 0);
+							if (CFG_HasFlag(OBK_FLAG_BUTTON_DISABLE_ALL) == false) {
+								CHANNEL_Set(g_cfg.pins.channels[i], value, 0);
+							}
 						}
 					}
 					else {
@@ -2330,7 +2333,9 @@ void PIN_ticks(void* param)
 						if (g_lastValidState[i] != value) {
 							// became down
 							g_lastValidState[i] = value;
-							CHANNEL_Set(g_cfg.pins.channels[i], value, 0);
+							if (CFG_HasFlag(OBK_FLAG_BUTTON_DISABLE_ALL) == false) {
+								CHANNEL_Set(g_cfg.pins.channels[i], value, 0);
+							}
 						}
 					}
 					else {
