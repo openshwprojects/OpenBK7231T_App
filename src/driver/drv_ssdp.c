@@ -522,7 +522,8 @@ void DRV_SSDP_RunQuickTick() {
         addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_HTTP,"Is MSEARCH - responding");
 #if ENABLE_DRIVER_WEMO
 		if (DRV_IsRunning("WEMO")) {
-			if (strcasestr(udp_msgbuf, "urn:belkin:device:**")) {
+			if (strcasestr(udp_msgbuf, "urn:belkin:device:**")
+				|| strcasestr(udp_msgbuf, "urn:belkin:device:controllee:1")) {
 				DRV_WEMO_Send_Advert_To(1, &addr);
 				return;
 			}

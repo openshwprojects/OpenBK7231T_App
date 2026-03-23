@@ -1,13 +1,8 @@
 #include "../new_common.h"
 #include "../new_pins.h"
 #include "../new_cfg.h"
-// Commands register, execution API and cmd tokenizer
-#include "../cmnds/cmd_public.h"
-#include "../mqtt/new_mqtt.h"
 #include "../logging/logging.h"
-#include "../hal/hal_pins.h"
 #include "../hal/hal_wifi.h"
-#include "drv_public.h"
 #include "drv_local.h"
 #include "drv_ssdp.h"
 #include "../httpserver/new_http.h"
@@ -222,26 +217,6 @@ static const char *WEMO_FindHeader(http_request_t *request, const char *namePref
 	return 0;
 }
 
-static void WEMO_PostXMLSafe(http_request_t *request, const char *s) {
-	const char *p;
-	if (!s) return;
-	for (p = s; *p; p++) {
-		switch (*p) {
-			case '&': poststr(request, "&amp;"); break;
-			case '<': poststr(request, "&lt;"); break;
-			case '>': poststr(request, "&gt;"); break;
-			case '"': poststr(request, "&quot;"); break;
-			case '\'': poststr(request, "&apos;"); break;
-			default: {
-				char c[2];
-				c[0] = *p;
-				c[1] = 0;
-				poststr(request, c);
-			} break;
-		}
-	}
-}
-
 static int WEMO_FindMainChannel(void) {
 	int i;
 	// Prefer a relay-type channel; fallback to toggle type.
@@ -341,17 +316,20 @@ void DRV_WEMO_Send_Advert_To(int mode, struct sockaddr_in *addr) {
 	}
 
 	stat_searchesReceived++;
+	if (buffer_out == 0) {
+		outBufferLen = (int)strlen(g_wemo_msearch) + 256;
+		buffer_out = (char*)malloc(outBufferLen);
+		if (buffer_out == 0) {
+			addLogAdv(LOG_ERROR, LOG_FEATURE_HTTP, "WEMO failed to allocate SSDP response buffer");
+			return;
+		}
+	}
 
 	// mode is decided by SSDP driver (historically: 1=Belkin device wildcard, 0=rootdevice).
 	// For compatibility, when asked for Belkin wildcard, also reply for explicit controllee.
 	if (mode == 1) {
 		// 1) urn:Belkin:device:**
 		useType = "urn:Belkin:device:**";
-
-		if (buffer_out == 0) {
-			outBufferLen = (int)strlen(g_wemo_msearch) + 256;
-			buffer_out = (char*)malloc(outBufferLen);
-		}
 		snprintf(buffer_out, outBufferLen, g_wemo_msearch, HAL_GetMyIPString(), useType, g_uid, useType);
 		DRV_SSDP_SendReply(addr, buffer_out);
 
@@ -362,11 +340,6 @@ void DRV_WEMO_Send_Advert_To(int mode, struct sockaddr_in *addr) {
 	}
 	else {
 		useType = "upnp:rootdevice";
-
-		if (buffer_out == 0) {
-			outBufferLen = (int)strlen(g_wemo_msearch) + 256;
-			buffer_out = (char*)malloc(outBufferLen);
-		}
 		snprintf(buffer_out, outBufferLen, g_wemo_msearch, HAL_GetMyIPString(), useType, g_uid, useType);
 		DRV_SSDP_SendReply(addr, buffer_out);
 	}
@@ -486,7 +459,7 @@ static int WEMO_Setup(http_request_t* request) {
 	}
 
 	poststr(request, g_wemo_setup_1);
-	WEMO_PostXMLSafe(request, fname);
+	poststr_escaped(request, (char*)fname);
 	poststr(request, g_wemo_setup_2);
 	poststr(request, g_uid);
 	poststr(request, g_wemo_setup_3);
@@ -502,18 +475,41 @@ static int WEMO_Setup(http_request_t* request) {
 }
 
 void WEMO_Init() {
-	// (Re)enable Wemo emulation.
-	g_wemo_enabled = 1;
 	char uid[64];
 	char serial[32];
 	unsigned char mac[8];
+	char *newSerial;
+	char *newUid;
 
 	WiFI_GetMacAddress((char*)mac);
 	snprintf(serial, sizeof(serial), "201612%02X%02X%02X%02X", mac[2], mac[3], mac[4], mac[5]);
 	snprintf(uid, sizeof(uid), "Socket-1_0-%s", serial);
 
-	g_serial = strdup(serial);
-	g_uid = strdup(uid);
+	newSerial = strdup(serial);
+	newUid = strdup(uid);
+	if (!newSerial || !newUid) {
+		addLogAdv(LOG_ERROR, LOG_FEATURE_HTTP, "WEMO_Init failed to allocate identity strings");
+		if (newSerial) {
+			free(newSerial);
+		}
+		if (newUid) {
+			free(newUid);
+		}
+		g_wemo_enabled = 0;
+		return;
+	}
+
+	if (g_serial) {
+		free(g_serial);
+		g_serial = 0;
+	}
+	if (g_uid) {
+		free(g_uid);
+		g_uid = 0;
+	}
+	g_serial = newSerial;
+	g_uid = newUid;
+	g_wemo_enabled = 1;
 
 	HTTP_RegisterCallback("/upnp/control/basicevent1", HTTP_POST, WEMO_BasicEvent1, 0);
 	HTTP_RegisterCallback("/upnp/control/metainfo1", HTTP_POST, WEMO_MetaInfo1, 0);
@@ -524,6 +520,19 @@ void WEMO_Init() {
 
 void WEMO_Shutdown(void) {
 	// OpenBeken cannot unregister HTTP callbacks at runtime.
-	// Disable responses/SSDP adverts without freeing identity strings (callbacks may still be hit).
+	// Disable responses/SSDP adverts and free runtime buffers.
 	g_wemo_enabled = 0;
+	if (g_serial) {
+		free(g_serial);
+		g_serial = 0;
+	}
+	if (g_uid) {
+		free(g_uid);
+		g_uid = 0;
+	}
+	if (buffer_out) {
+		free(buffer_out);
+		buffer_out = 0;
+		outBufferLen = 0;
+	}
 }
