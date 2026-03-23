@@ -56,15 +56,15 @@ bool isWhiteSpace(char ch) {
 }
 
 // helper testing index and writing error message
-static int __check_arg_range(int i, const char* f) {
+static int __check_arg_range(int i) {
         if (i >= g_numArgs || i < 0) {
-            ADDLOG_ERROR(LOG_FEATURE_CMD, "%s(%i) called - g_numArgs=%i", f, i, g_numArgs);
+            ADDLOG_ERROR(LOG_FEATURE_CMD, "Index=%i g_numArgs=%i", i, g_numArgs);
             return 1;
         }
         return 0;
 }
 // small wrapper macro to include caller name and return value if i is "invalid"
-#define CHECK_INDEX_AND_RET_DEFAULT(i, retval) if (__check_arg_range(i, __func__)) return (retval)
+#define CHECK_INDEX_AND_RET_DEFAULT(i, retval) if (__check_arg_range(i)) return (retval)
 
 bool Tokenizer_CheckArgsCountAndPrintWarning(const char *cmdString, int reqCount) {
 	if (g_numArgs >= reqCount)

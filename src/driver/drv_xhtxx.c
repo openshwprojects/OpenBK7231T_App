@@ -879,7 +879,8 @@ commandResult_t XHTXX_CMD_SetAlert(const void *context, const char *cmd,
     return CMD_RES_OK;
 }
 */
-
+// try avoiding "abs"
+static inline int16_t abs16(int16_t x) { return x < 0 ? -x : x; }
 commandResult_t XHTXX_CMD_ReadAlert(const void *context, const char *cmd,
                                      const char *args, int cmdFlags)
 {
@@ -897,8 +898,8 @@ commandResult_t XHTXX_CMD_ReadAlert(const void *context, const char *cmd,
 
     // Use integer formatting to save space
     ADDLOG_INFO(LOG_FEATURE_SENSOR, "Alert T: %d.%d/%d.%d/%d.%d/%d.%d", 
-                t[0]/10, abs(t[0]%10), t[1]/10, abs(t[1]%10), 
-                t[2]/10, abs(t[2]%10), t[3]/10, abs(t[3]%10));
+                t[0]/10, abs16(t[0]%10), t[1]/10, abs16(t[1]%10), 
+                t[2]/10, abs16(t[2]%10), t[3]/10, abs16(t[3]%10));
     return CMD_RES_OK;
 }
 
@@ -968,9 +969,12 @@ void XHTXX_Init(void)
 
     const char *fam = Tokenizer_GetArgEqualDefault("-family", "default");
     uint8_t reqFam = XHTXX_FAMILY_AUTO;
-    if     (fam[0]=='s'||fam[0]=='S') reqFam = (fam[3]=='4') ? XHTXX_FAMILY_SHT4X : XHTXX_FAMILY_SHT3X;
-    else if(fam[0]=='a'||fam[0]=='A') reqFam = XHTXX_FAMILY_AHT2X;
-    else if(fam[0]=='c'||fam[0]=='C') reqFam = XHTXX_FAMILY_CHT83XX;
+    // keep it simple, just compare first (or in case of SHT first and 4st) char of given type
+    switch(fam[0] | 0x20) {   // "fold" char to lowercase in one op
+        case 's': reqFam = (fam[3] == '4') ? XHTXX_FAMILY_SHT4X : XHTXX_FAMILY_SHT3X; break;
+        case 'a': reqFam = XHTXX_FAMILY_AHT2X;   break;
+        case 'c': reqFam = XHTXX_FAMILY_CHT83XX; break;
+    }
 
     uint8_t addrArg = (uint8_t)Tokenizer_GetArgEqualInteger("-address", 0);
     if(reqFam == XHTXX_FAMILY_AUTO) {
@@ -983,8 +987,10 @@ void XHTXX_Init(void)
 
     Soft_I2C_PreInit(&dev->i2c);
     rtos_delay_milliseconds(50);
+#if ENABLE_USED_PIN
     setPinUsedString(dev->i2c.pin_clk,  "XHTXX SCL");
     setPinUsedString(dev->i2c.pin_data, "XHTXX SDA");
+#endif
     g_families[dev->familyIdx].init_fn(dev);
 
     if(g_numSensors == 0) {

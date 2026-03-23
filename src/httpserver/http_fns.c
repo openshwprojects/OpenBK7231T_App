@@ -208,6 +208,7 @@ int http_fn_testmsg(http_request_t* request) {
 
 }
 
+#if ENABLE_USED_PIN
 // START add code to show pins in use py driver w/o IORole
 // array to hold possible used function names
 char *pinUsedName[PLATFORM_GPIO_MAX];
@@ -237,7 +238,7 @@ int setPinUsedString(int index, const char *str) {
 
     return 0; // Success
 }
-
+#endif
 
 // END add code to show pins in use py driver w/o IORole
 
@@ -3011,6 +3012,7 @@ int http_fn_cfg_pins(http_request_t* request) {
 		"d.innerHTML = \"<span class='disp-inline' style='min-width: 15ch'>\"+alias+\"</span>\";"
 		"f.appendChild(d);"
 		"var y = document.createElement(\"input\");"
+#if ENABLE_USED_PIN
 // START add code to show pins in use py driver w/o IORole
 		"if (typeof c =='string'){"
 		"y.disabled = true;"
@@ -3021,6 +3023,7 @@ int http_fn_cfg_pins(http_request_t* request) {
 		"return;"
 		"}"
 // END add code to show pins in use py driver w/o IORole
+#endif
 		"let s = document.createElement(\"select\");"
 		"s.className = \"hele\";"
 		"s.name = id;"
@@ -3078,15 +3081,18 @@ int http_fn_cfg_pins(http_request_t* request) {
 		else {
 			hprintf255(request, "P%i ", i);
 		}
-//		hprintf255(request, "\",%i,%i, %i,", i, si, !bCanThisPINbePWM);
-// START changed code to show pins in use py driver w/o IORole
+#if ENABLE_USED_PIN
+		// START changed code to show pins in use py driver w/o IORole
 		hprintf255(request, "\",%i,", i);
 		if (pinUsedName[i]){
 			hprintf255(request, "'%s',", pinUsedName[i]);
 		} else {
 			hprintf255(request, "%i, %i,", si, !bCanThisPINbePWM);
 		}
-// END changed code to show pins in use py driver w/o IORole
+		// END changed code to show pins in use py driver w/o IORole
+#else
+		hprintf255(request, "\",%i,%i, %i,", i, si, !bCanThisPINbePWM);
+#endif
 		// Primary linked channel
 		int NofC = PIN_IOR_NofChan(si);
 		if (NofC >= 1)

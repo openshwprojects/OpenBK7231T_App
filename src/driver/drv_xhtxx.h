@@ -9,13 +9,13 @@
 //   CHT83xx– CHT8305 / CHT8310 / CHT8315     (addr 0x40)
 //
 // startDriver syntax:
-//   startDriver XHTXX [SDA=<pin>] [SCL=<pin>]
-//                     [family=sht3|sht4|aht2|cht]  ; omit → auto-detect
-//                     [address=<7-bit hex>]          ; override I²C addr
-//                     [chan_t=<ch>] [chan_h=<ch>]
+//   startDriver XHTXX [-SDA <pin>] [-SCL <pin>]
+//                     [-family sht3|sht4|aht2|cht]    		omit → auto-detect
+//                     [-address <7-bit hex>]          		override I²C addr
+//                     [-chan_t <ch>] [chan_h <ch>]
 //
 // Additional sensors:
-//   XHTXX_AddSensor SDA=<pin> SCL=<pin> [family=…] [address=…] …
+//   XHTXX_AddSensor -SDA <pin> -SCL <pin> [-family …] [-address …] …
 //
 // Feature gates (define before including or in build flags):
 //   XHTXX_ENABLE_SERIAL_LOG          – store + print SHT serial numbers
