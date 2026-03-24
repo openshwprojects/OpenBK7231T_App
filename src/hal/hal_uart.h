@@ -1,7 +1,7 @@
 #include "../new_common.h"
 #include "../driver/drv_uart.h"
 
-#if PLATFORM_BEKEN
+#if PLATFORM_BEKEN || PLATFORM_ESPIDF
 #define UART_2_UARTS_CONCURRENT
 #endif
 
