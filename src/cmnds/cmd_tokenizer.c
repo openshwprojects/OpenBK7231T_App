@@ -395,10 +395,11 @@ void Tokenizer_TokenizeString(const char *s, int flags) {
 				if(g_bAllowQuotes && p[1] == '"') { 
 					p++;
 					goto quote;
+				}else{
+					g_args[g_numArgs] = p+1;
+					g_argsFrom[g_numArgs] = (s+((p+1)-g_buffer));
+					g_numArgs++;
 				}
-				g_args[g_numArgs] = p+1;
-				g_argsFrom[g_numArgs] = (s+((p+1)-g_buffer));
-				g_numArgs++;
 			}
 		}
 		//if(*p == ',') {
