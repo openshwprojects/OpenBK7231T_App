@@ -461,6 +461,7 @@
 //#define ENABLE_TIME_DST						1
 #define ENABLE_DRIVER_LED						1
 #define ENABLE_DRIVER_TUYAMCU					1
+#define ENABLE_DRIVER_DREO						1
 #define ENABLE_LITTLEFS							1
 #define ENABLE_DRIVER_BMPI2C					1
 #define ENABLE_DRIVER_DS1820					1
