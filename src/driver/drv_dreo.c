@@ -60,6 +60,9 @@ static byte g_dreoSeq = 0;
 static int g_dreoHeartbeatTimer = 0;
 static int g_dreoInitState = 0;
 static int g_dreoInitTimer = 0;
+static int g_dreoBytesSent = 0;
+static int g_dreoBytesReceived = 0;
+static int g_dreoBytesInvalid = 0;
 
 // -----------------------------------------------------------------------
 // Mapping Management
@@ -156,6 +159,8 @@ static void Dreo_SendRaw(byte cmd, const byte *payload, int payloadLen) {
 	byte checksum = (byte)((sum - 1) & 0xFF);
 	UART_SendByte(checksum);
 
+	g_dreoBytesSent += 8 + payloadLen + 1;  // header(8) + payload + checksum(1)
+
 	addLogAdv(LOG_DEBUG, LOG_FEATURE_GENERAL, "Dreo: sent cmd 0x%02X, %i payload bytes", cmd, payloadLen);
 }
 
@@ -224,6 +229,7 @@ static int Dreo_TryGetPacket(byte *out, int maxSize) {
 		cs--;
 	}
 	if (c_garbage > 0) {
+		g_dreoBytesInvalid += c_garbage;
 		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "Dreo: skipped %i garbage bytes", c_garbage);
 	}
 	if (cs < DREO_MIN_PACKET_SIZE)
@@ -254,6 +260,7 @@ static int Dreo_TryGetPacket(byte *out, int maxSize) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,
 			"Dreo: checksum mismatch, got 0x%02X expected 0x%02X, dropping byte",
 			receivedChecksum, expectedChecksum);
+		g_dreoBytesInvalid++;
 		UART_ConsumeBytes(1);
 		return 0;
 	}
@@ -269,6 +276,7 @@ static int Dreo_TryGetPacket(byte *out, int maxSize) {
 		out[i] = UART_GetByte(i);
 	}
 	UART_ConsumeBytes(packetLen);
+	g_dreoBytesReceived += packetLen;
 	return packetLen;
 }
 
@@ -539,7 +547,8 @@ void Dreo_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreStat
 	if (bPreState)
 		return;
 
-	poststr(request, "<h5>Dreo Heater DPs:</h5>");
+	hprintf255(request, "<h5>Dreo Heater (sent: %i, recv: %i, invalid: %i bytes)</h5>",
+		g_dreoBytesSent, g_dreoBytesReceived, g_dreoBytesInvalid);
 	poststr(request, "<table border=1 style='border-collapse:collapse;'>");
 	poststr(request, "<tr><th>dpID</th><th>Type</th><th>Value</th><th>Channel</th></tr>");
 
