@@ -118,7 +118,11 @@ int HAL_UART_Init(int baud, int parity, bool hwflowc, int txOverride, int rxOver
 {
 	if (CFG_HasFlag(OBK_FLAG_USE_SECONDARY_UART))
 	{
+		#ifdef CONFIG_IDF_TARGET_ESP32
+		uartnum = UART_NUM_2;
+		#elif
 		uartnum = UART_NUM_1;
+		#endif
 		esp_log_level_set("*", ESP_LOG_INFO);
 	}
 	else
