@@ -564,13 +564,19 @@ static commandResult_t CMD_StartupCommand(const void* context, const char* cmd, 
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	cmdToSet = Tokenizer_GetArg(0);
+
+	char *s = (char*)cmdToSet;
+	while (*s) {
+		if (*s == '\'') *s = '"';
+		s++;
+	}
+
 	if (Tokenizer_GetArgIntegerDefault(1, 0) == 1) {
 		CFG_SetShortStartupCommand_AndExecuteNow(cmdToSet);
 	}
 	else {
 		CFG_SetShortStartupCommand(cmdToSet);
 	}
-
 
 	return CMD_RES_OK;
 }
