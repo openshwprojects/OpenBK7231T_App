@@ -329,7 +329,6 @@ void expandQuotes(char* str) {
 
 void Tokenizer_TokenizeString(const char *s, int flags) {
 	char *p;
-	uint8_t inQuote = 0; // <<< ADD: track đang ở trong quote
 
 	tok_flags = flags;
 	g_numArgs = 0;
@@ -367,10 +366,10 @@ void Tokenizer_TokenizeString(const char *s, int flags) {
 
 	p = g_buffer;
 
-	// ---- START TOKEN ----
 	if (*p == '"') {
 		goto quote;
 	}
+
 	g_args[g_numArgs] = p;
 	g_argsFrom[g_numArgs] = (s+(p-g_buffer));
 	g_numArgs++;
@@ -380,24 +379,18 @@ void Tokenizer_TokenizeString(const char *s, int flags) {
 		if(isWhiteSpace(*p)) {
 			*p = 0;
 			if(p[1] != 0 && isWhiteSpace(p[1])==false) {
-
-				// ==== FIX: KHÔNG cho re-enter quote nếu đang ở trong quote ====
-				if(g_bAllowQuotes && p[1] == '"' && !inQuote) {  // <<< CHANGED
+				if(g_bAllowQuotes && p[1] == '"') { 
 					p++;
 					goto quote;
 				}
-
 				g_args[g_numArgs] = p+1;
 				g_argsFrom[g_numArgs] = (s+((p+1)-g_buffer));
 				g_numArgs++;
 			}
 		}
 
-		// ==== FIX: chỉ cho phép vào quote nếu chưa ở trong quote ====
-		if(g_bAllowQuotes && *p == '"' && !inQuote && ((p <= g_buffer) || isWhiteSpace(p[-1]))) { // <<< CHANGED
+		if(g_bAllowQuotes && *p == '"' && ((p <= g_buffer) || isWhiteSpace(p[-1]))) {
 quote:
-			inQuote = 1; // <<< ADD
-
 			*p = 0;
 			g_argsFrom[g_numArgs] = (s+((p+1)-g_buffer));
 			p++;
@@ -406,10 +399,26 @@ quote:
 
 			while(*p != 0) {
 				if (flags & TOKENIZER_ALLOW_ESCAPING_QUOTATIONS) {
-					if (*p == '"' && p[-1] != '\\') {
-						*p = 0;
-						break;
+
+					// ===== FIX DUY NHẤT: escape detection =====
+					if (*p == '"') {
+						int slashCount = 0;
+						char *q = p - 1;
+
+						// đếm số '\' liên tiếp phía trước
+						while (q >= g_buffer && *q == '\\') {
+							slashCount++;
+							q--;
+						}
+
+						// chỉ đóng quote nếu số '\' là chẵn
+						if ((slashCount % 2) == 0) {
+							*p = 0;
+							break;
+						}
 					}
+					// ===== END FIX =====
+
 				}
 				else {
 					if (*p == '"') {
@@ -423,8 +432,6 @@ quote:
 			if (flags & TOKENIZER_ALLOW_ESCAPING_QUOTATIONS) {
 				expandQuotes(g_args[g_numArgs - 1]);
 			}
-
-			inQuote = 0; // <<< ADD: thoát quote
 		}
 
 		if(g_numArgs>=MAX_ARGS) {
