@@ -548,13 +548,13 @@ static commandResult_t CMD_Echo(const void* context, const char* cmd, const char
 static commandResult_t CMD_StartupCommand(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	const char *cmdToSet;
 
-	//Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES);
+	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES);
 	
 	    // ==== SUA: bat TOKENIZER_ALLOW_ESCAPING_QUOTATIONS ====
     // Truoc day chi dung TOKENIZER_ALLOW_QUOTES,
     // dan den truong hop input co \" trong quote terminate som
     // Minimal fix: them TOKENIZER_ALLOW_ESCAPING_QUOTATIONS
-	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_ALLOW_ESCAPING_QUOTATIONS);
+	//Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_ALLOW_ESCAPING_QUOTATIONS);
 
 	// following check must be done after 'Tokenizer_TokenizeString',
 	// so we know arguments count in Tokenizer. 'cmd' argument is
