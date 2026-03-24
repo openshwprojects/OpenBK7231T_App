@@ -368,12 +368,25 @@ void Tokenizer_TokenizeString(const char *s, int flags) {
 	}
 	p = g_buffer;
 	// we need to rewrite this function and check it well with unit tests
-	if (*p == '"') {
-		goto quote;
-	}
-	g_args[g_numArgs] = p;
-	g_argsFrom[g_numArgs] = (s+(p-g_buffer));
-	g_numArgs++;
+	//if (*p == '"') {
+	//	goto quote;
+	//}
+	//g_args[g_numArgs] = p;
+	//g_argsFrom[g_numArgs] = (s+(p-g_buffer));
+	//g_numArgs++;
+	
+    // -----------------------------
+    // TEST: token dau tien
+    // neu p la quote thi jump quote, else set token
+    // -----------------------------
+    if (*p == '"') {
+        goto quote;
+    } else {
+        g_args[g_numArgs] = p;
+        g_argsFrom[g_numArgs] = (s + (p - g_buffer));
+        g_numArgs++;
+    }
+
 	while(*p != 0) {
 		if(isWhiteSpace(*p)) {
 			*p = 0;
