@@ -151,11 +151,14 @@ int HAL_UART_Init(int baud, int parity, bool hwflowc, int txOverride, int rxOver
 	uart_enable_rx_intr(uartnum);
 
 #if PLATFORM_ESPIDF
-	if (txOverride != -1) {
-		uart_set_pin(uartnum,
-			txOverride, 21,
-			UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE);
-	}
+    int tx_pin = (uartnum == UART_NUM_0) ? UART_PIN_NO_CHANGE : TX1_PIN;
+    int rx_pin = (uartnum == UART_NUM_0) ? UART_PIN_NO_CHANGE : RX1_PIN;
+
+    // respect overrides passed by higher-level drivers (TuyaMCU, DMX, etc.)
+    if (txOverride != -1) tx_pin = txOverride;
+    if (rxOverride != -1) rx_pin = rxOverride;
+
+    uart_set_pin(uartnum, tx_pin, rx_pin, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE);s
 #endif
 
 #if 0//PLATFORM_ESPIDF
