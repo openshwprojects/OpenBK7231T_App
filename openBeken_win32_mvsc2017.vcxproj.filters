@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="..\..\platforms\bk7231t\bk7231t_os\beken378\driver\common\dd.c" />
@@ -49,6 +49,7 @@
     <ClCompile Include="src\driver\drv_dht.c" />
     <ClCompile Include="src\driver\drv_dht_internal.c" />
     <ClCompile Include="src\driver\drv_doorSensorWithDeepSleep.c" />
+    <ClCompile Include="src\driver\drv_dreo.c" />
     <ClCompile Include="src\driver\drv_gn6932.c" />
     <ClCompile Include="src\driver\drv_ht16k33.c" />
     <ClCompile Include="src\driver\drv_httpButtons.c" />
@@ -338,6 +339,7 @@
     <ClCompile Include="src\driver\drv_pixelAnim.c" />
     <ClCompile Include="src\driver\drv_hd2015.c" />
     <ClCompile Include="src\selftest\selftest_doorSensor.c" />
+    <ClCompile Include="src\selftest\selftest_dreo.c" />
     <ClCompile Include="src\driver\drv_drawers.c" />
     <ClCompile Include="src\driver\drv_spiLED.c" />
     <ClCompile Include="src\driver\drv_sm15155e.c" />
