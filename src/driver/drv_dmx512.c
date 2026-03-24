@@ -98,7 +98,8 @@ void DMX_SetLEDCount(int pixel_count, int pixel_size) {
 }
 
 void DMX_Init() {
-	dmx_pin = Tokenizer_GetArgIntegerDefault(1, dmx_pin);
+//	dmx_pin = Tokenizer_GetArgIntegerDefault(1, dmx_pin);
+	dmx_pin = Tokenizer_GetPin(1, dmx_pin);
 
 	g_dmxBuffer = (byte*)malloc(DMX_BUFFER_SIZE);
 	memset(g_dmxBuffer, 0, DMX_BUFFER_SIZE);

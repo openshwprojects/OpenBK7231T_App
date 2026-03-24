@@ -2,7 +2,6 @@
 # It allows you to make changes to the SDK, for example..
 # For example, you can use changed files in the SDK for the automated build during the checks for a PR without changing the SDK itself:
 # So your PR needs a modified define in the SDK, for example ? This script can make this change directly before the build.
-
 #
 #
 # As an example you will find a script below which will copy all content of the "override"
@@ -27,7 +26,6 @@
 #done
 ## restore IFS to whatever it was before ...
 #IFS=$OFS
-
 # you can also use all other commands to change files, like
 # sed -i "s/#define FOO bar/#define FOO baz/" sdk/OpenW800/platform/drivers/gpio/file_to_change.c
 # or, let's assume you made a local change to your SDK
@@ -39,3 +37,28 @@
 #
 # patch -p 1 -d sdk/OpenW800 < platforms/W800/my_change.diff
 
+LWIPOPTS="sdk/OpenW800/src/network/lwip2.0.3/include/lwip/lwipopts.h"
+
+if [ -f "$LWIPOPTS" ]; then
+	echo "PREBUILD W800: enabling lwIP mDNS options"
+
+	if grep -q '^[[:space:]]*#define LWIP_MDNS_RESPONDER' "$LWIPOPTS"; then
+		sed -i 's/^[[:space:]]*#define LWIP_MDNS_RESPONDER.*/#define LWIP_MDNS_RESPONDER             1/' "$LWIPOPTS"
+	else
+		sed -i '/^[[:space:]]*#define LWIP_IGMP[[:space:]]\+/a #define LWIP_MDNS_RESPONDER             1' "$LWIPOPTS"
+	fi
+
+	if grep -q '^[[:space:]]*#define LWIP_NUM_NETIF_CLIENT_DATA' "$LWIPOPTS"; then
+		sed -i 's/^[[:space:]]*#define LWIP_NUM_NETIF_CLIENT_DATA.*/#define LWIP_NUM_NETIF_CLIENT_DATA      1/' "$LWIPOPTS"
+	else
+		sed -i '/^[[:space:]]*#define LWIP_IGMP[[:space:]]\+/a #define LWIP_NUM_NETIF_CLIENT_DATA      1' "$LWIPOPTS"
+	fi
+
+	if grep -q '^[[:space:]]*#define MEMP_NUM_UDP_PCB' "$LWIPOPTS"; then
+		sed -i 's/^[[:space:]]*#define MEMP_NUM_UDP_PCB.*/#define MEMP_NUM_UDP_PCB                5/' "$LWIPOPTS"
+	else
+		sed -i '/^[[:space:]]*#define LWIP_IGMP[[:space:]]\+/a #define MEMP_NUM_UDP_PCB                5' "$LWIPOPTS"
+	fi
+else
+	echo "PREBUILD W800: WARN lwipopts.h not found: $LWIPOPTS"
+fi

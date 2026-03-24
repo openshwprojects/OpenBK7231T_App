@@ -9,6 +9,7 @@ set(PROJ_ALL_SRC
 	${OBK_SRCS}hal/espidf/hal_flashConfig_espidf.c
 	${OBK_SRCS}hal/espidf/hal_flashVars_espidf.c
 	${OBK_SRCS}hal/espidf/hal_generic_espidf.c
+	${OBK_SRCS}hal/espidf/hal_hwtimer_espidf.c
 	${OBK_SRCS}hal/espidf/hal_main_espidf.c
 	${OBK_SRCS}hal/espidf/hal_pins_espidf.c
 	${OBK_SRCS}hal/espidf/hal_wifi_espidf.c
@@ -16,6 +17,7 @@ set(PROJ_ALL_SRC
 	${OBK_SRCS}hal/espidf/hal_ota_espidf.c
 	${OBKM_SRC}
 	${BERRY_SRC_C}
+	../../../sdk/OpenESP8266/components/lwip/lwip/src/apps/mdns/mdns.c
 	../../../libraries/mqtt_patched.c
 )
 idf_component_register(SRCS ${PROJ_ALL_SRC}

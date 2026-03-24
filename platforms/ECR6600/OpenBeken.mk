@@ -1,4 +1,5 @@
 CFLAGS += -DPLATFORM_ECR6600 -Wno-error -DTCP_MSL=3000
+CFLAGS += -DENABLE_DRIVER_MDNS=1
 VPATH += $(TOPDIR)/../../src
 VPATH += $(TOPDIR)/../../platforms/ECR6600
 
@@ -11,6 +12,7 @@ CSRCS   = hal/ecr6600/hal_adc_ecr6600.c
 CSRCS  += hal/ecr6600/hal_flashConfig_ecr6600.c
 CSRCS  += hal/ecr6600/hal_flashVars_ecr6600.c
 CSRCS  += hal/ecr6600/hal_generic_ecr6600.c
+CSRCS  += hal/ecr6600/hal_hwtimer_ecr6600.c
 CSRCS  += hal/ecr6600/hal_main_ecr6600.c
 CSRCS  += hal/ecr6600/hal_pins_ecr6600.c
 CSRCS  += hal/ecr6600/hal_wifi_ecr6600.c

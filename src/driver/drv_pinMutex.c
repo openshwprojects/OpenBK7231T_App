@@ -103,8 +103,11 @@ static commandResult_t CMD_setMutex(const void *context, const char *cmd, const 
 	int idx = Tokenizer_GetArgInteger(0);
 	int channel = Tokenizer_GetArgInteger(1);
 	int delayMs = Tokenizer_GetArgInteger(2);
-	int pinDown = Tokenizer_GetArgInteger(3);
-	int pinUp = Tokenizer_GetArgInteger(4);
+//	int pinDown = Tokenizer_GetArgInteger(3);
+//	int pinUp = Tokenizer_GetArgInteger(4);
+	int pinDown = Tokenizer_GetPin(3,-1);
+	int pinUp = Tokenizer_GetPin(4,-1);
+	if (pinDown == -1 || pinUp == -1) return CMD_RES_BAD_ARGUMENT;
 
 	if (idx < 0 || idx >= MAX_PINMUTEX) {
 		addLogAdv(LOG_ERROR, LOG_FEATURE_GENERAL, "setMutex: index %d out of range (0..%d)", idx, MAX_PINMUTEX - 1);

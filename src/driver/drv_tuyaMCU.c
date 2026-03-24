@@ -250,6 +250,7 @@ enum TuyaMCUV0State {
 static byte g_tuyaBatteryPoweredState = 0;
 static byte g_hello[] = { 0x55, 0xAA, 0x00, 0x01, 0x00, 0x00, 0x00 };
 //static byte g_request_state[] = { 0x55, 0xAA, 0x00, 0x02, 0x00, 0x01, 0x04, 0x06 };
+static bool g_tuyaMCU_batteryPoweredMode = false;
 
 typedef struct tuyaMCUPacket_s {
 	byte *data;
@@ -1435,6 +1436,19 @@ void TuyaMCU_V0_ParseRealTimeWithRecordStorage(const byte* data, int len, bool b
 		sectorLen = data[ofs + 2] << 8 | data[ofs + 3];
 		dpId = data[ofs];
 		dataType = data[ofs + 1];
+
+		// Guard against malformed/truncated payloads (same vulnerability as ParseStateMessage).
+		// A corrupt sectorLen can point past the end of the buffer, causing OOB reads on the
+		// data[ofs+4..] accesses below and an unbounded ofs advance on the next iteration.
+		// "remaining" is how many data bytes actually follow the 4-byte sector header.
+		const int remaining = len - (ofs + 4);
+		if (sectorLen > remaining) {
+			addLogAdv(LOG_ERROR, LOG_FEATURE_TUYAMCU,
+				"V0_ParseRealTime: truncated DP payload (id=%i type=%i-%s len=%i rem=%i)\n",
+				dpId, dataType, TuyaMCU_GetDataTypeString(dataType), sectorLen, remaining, ofs, len);
+			break;
+		}
+
 		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "V0_ParseRealTimeWithRecordStorage: processing id %i, dataType %i-%s and %i data bytes\n",
 			dpId, dataType, TuyaMCU_GetDataTypeString(dataType), sectorLen);
 
@@ -1469,6 +1483,10 @@ void TuyaMCU_V0_ParseRealTimeWithRecordStorage(const byte* data, int len, bool b
 		}
 	}
 }
+// CALLER CONTRACT: This function trusts that sectorLen (data[ofs+2..3]) has already been
+// validated by the caller to fit within the packet buffer (i.e. sectorLen <= len - (ofs+4)).
+// Do NOT call this from a new code path without first performing that bounds check.
+// Currently the only call site is TuyaMCU_ParseStateMessage(), which enforces the guard.
 void TuyaMCU_PublishDPToMQTT(const byte *data, int ofs) {
 	int sectorLen;
 	int dpId;
@@ -1546,6 +1564,8 @@ void TuyaMCU_PublishDPToMQTT(const byte *data, int ofs) {
 	MQTT_PublishMain_StringString(sName, s, OBK_PUBLISH_FLAG_FORCE_REMOVE_GET);
 #endif
 }
+// CALLER CONTRACT: Same constraint as TuyaMCU_PublishDPToMQTT above.
+// sectorLen must have been bounds-checked by the caller before this is invoked.
 void TuyaMCU_PublishDPToBerry(const byte *data, int ofs) {
 	int sectorLen;
 	int dpId;
@@ -1617,6 +1637,15 @@ void TuyaMCU_ParseStateMessage(const byte* data, int len) {
 		sectorLen = data[ofs + 2] << 8 | data[ofs + 3];
 		dpId = data[ofs];
 		dataType = data[ofs + 1];
+		// Guard against malformed/truncated STATE payloads (prevents OOB reads/copies)
+		int remaining = len - (ofs + 4);
+		if (sectorLen > remaining) {
+			addLogAdv(LOG_ERROR, LOG_FEATURE_TUYAMCU,
+				"ParseState: truncated DP payload (id=%i type=%i-%s len=%i rem=%i)\n",
+				dpId, dataType, TuyaMCU_GetDataTypeString(dataType), sectorLen, remaining, ofs, len);
+			break;
+		}
+
 		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "ParseState: id %i type %i-%s len %i\n",
 			dpId, dataType, TuyaMCU_GetDataTypeString(dataType), sectorLen);
 
@@ -1638,13 +1667,24 @@ void TuyaMCU_ParseStateMessage(const byte* data, int len) {
 				// add space for NULL terminating character
 				int useLen = sectorLen + 1;
 				if (mapping->rawBufferSize < useLen) {
-					mapping->rawData = realloc(mapping->rawData, useLen);
-					mapping->rawBufferSize = useLen;
+					byte *tmp = (byte*)realloc(mapping->rawData, useLen);
+					if (tmp == NULL) {
+						addLogAdv(LOG_ERROR, LOG_FEATURE_TUYAMCU,
+							"ParseState: rawData alloc failed (id=%i type=%i-%s need=%i)\n",
+							dpId, dataType, TuyaMCU_GetDataTypeString(dataType), useLen);
+					} else {
+						mapping->rawData = tmp;
+						mapping->rawBufferSize = useLen;
+					}
 				}
-				mapping->rawDataLen = sectorLen;
-				memcpy(mapping->rawData, data + ofs + 4, sectorLen);
-				// TuyaMCU strings are without NULL terminating character
-				mapping->rawData[sectorLen] = 0;
+				if (mapping->rawData && mapping->rawBufferSize >= useLen) {
+					mapping->rawDataLen = sectorLen;
+					memcpy(mapping->rawData, data + ofs + 4, sectorLen);
+					// TuyaMCU strings are without NULL terminating character
+					mapping->rawData[sectorLen] = 0;
+				} else {
+					mapping->rawDataLen = 0;
+				}
 			}
 		}
 
@@ -1936,12 +1976,40 @@ void TuyaMCU_V0_SendDPCacheReply() {
 #endif
 }
 void TuyaMCU_ParseReportStatusType(const byte *value, int len) {
-	int command = value[0];
-	addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "0x34 command %i\n", command);
-	// query: 55 AA 03 34 00 01 04 3B
-	// reply: 55 aa 00 34 00 02 04 00 39
-	byte reply[2] = { 0x04, 00 };
-	TuyaMCU_SendCommandWithData(0x34, reply, 2);
+	int subcommand = value[0];
+	addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "0x%X command, subcommand 0x%X\n", TUYA_CMD_REPORT_STATUS_RECORD_TYPE, subcommand);
+	byte reply[2] = { 0x00, 0x00 };
+	reply[0] = subcommand;
+	switch (subcommand)
+	{
+	case 0x04:
+		// query: 55 AA 03 34 00 01 04 3B
+		// reply: 55 aa 00 34 00 02 04 00 39
+		// No processing, just reply
+		break;
+	
+	case 0x0B:
+		// TuyaMCU version 3 equivalent packet to version 0 0x08 packet
+		// This packet includes first DateTime (skip past), then DataUnits.
+		// Layout: [1 subcommand][8 datetime bytes (year/month/day/hour/min/sec/...)]
+		// So we need at least 9 bytes before attempting the slice; if the packet is
+		// shorter than that, data + 9 would be past the buffer end.
+		if (len < 9) {
+			addLogAdv(LOG_ERROR, LOG_FEATURE_TUYAMCU,
+				"ParseReportStatusType: ERROR: 0x0B payload too short to contain datetime header (len=%i need>=9)\n",
+				len);
+			break;
+		}
+		TuyaMCU_ParseStateMessage(value + 9, len - 9);
+		state_updated = true;
+		g_sendQueryStatePackets = 0;
+		break;
+
+	default:
+		// Unknown subcommand, ignore
+		return;
+	}
+	TuyaMCU_SendCommandWithData(TUYA_CMD_REPORT_STATUS_RECORD_TYPE, reply, 2);
 }
 void TuyaMCU_ProcessIncoming(const byte* data, int len) {
 	int checkLen;
@@ -2250,6 +2318,20 @@ commandResult_t Cmd_TuyaMCU_EnableAutoSend(const void* context, const char* cmd,
 	return CMD_RES_OK;
 }
 
+commandResult_t Cmd_TuyaMCU_BatteryPoweredMode(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	int enable = 1;
+
+	Tokenizer_TokenizeString(args, 0);
+
+	if (Tokenizer_GetArgsCount() > 0) {
+		enable = Tokenizer_GetArgInteger(0);
+	}
+	addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "TuyaMCU power saving %s\n", enable ? "enabled" : "disabled");
+	TuyaMCU_BatteryPoweredMode(enable != 0);
+
+	return CMD_RES_OK;
+}
+
 void TuyaMCU_RunWiFiUpdateAndPackets() {
 	//addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"WifiCheck %d ", wifi_state_timer);
 	/* Monitor WIFI and MQTT connection and apply Wifi state
@@ -2324,6 +2406,31 @@ void TuyaMCU_RunReceive() {
 	}
 }
 void TuyaMCU_RunStateMachine_V3() {
+
+	/* For power saving mode */
+	/* Devices are powered by the TuyaMCU, transmit information and get turned off */
+	/* Use the minimal amount of communications */
+	if (g_tuyaMCU_batteryPoweredMode) {
+		/* Don't worry about connection after state is updated device will be turned off */
+		if (!state_updated) {
+			/* Don't send heartbeats just work on product information */
+			heartbeat_valid = true;
+			if (product_information_valid == false)
+			{
+				addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_TUYAMCU, "Will send TUYA_CMD_QUERY_PRODUCT.\n");
+				/* Request production information */
+				TuyaMCU_SendCommandWithData(TUYA_CMD_QUERY_PRODUCT, NULL, 0);
+			}
+			else 
+			{
+				/* Don't bother with MCU config */
+				working_mode_valid = true;
+				/* No query state. Will be updated when connected to wifi/mqtt */
+				TuyaMCU_RunWiFiUpdateAndPackets();
+			}
+		}
+		return;
+	}
 
 	//addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"UART ring buffer state: %i %i\n",g_recvBufIn,g_recvBufOut);
 
@@ -2523,6 +2630,10 @@ static int g_previousLEDPower = -1;
 
 void TuyaMCU_EnableAutomaticSending(bool enable) {
 	g_tuyaMCU_allowAutomaticSending = enable;
+}
+
+void TuyaMCU_BatteryPoweredMode(bool enable) {
+	g_tuyaMCU_batteryPoweredMode = enable;
 }
 
 void TuyaMCU_OnRGBCWChange(const float *rgbcw, int bLightEnableAll, int iLightMode, float brightnessRange01, float temperatureRange01) {
@@ -2758,6 +2869,12 @@ void TuyaMCU_Init()
 	//cmddetail:"fn":"Cmd_TuyaMCU_EnableAutoSend","file":"driver/drv_tuyaMCU.c","requires":"",
 	//cmddetail:"examples":"tuyaMcu_enableAutoSend 0"}
 	CMD_RegisterCommand("tuyaMcu_enableAutoSend", Cmd_TuyaMCU_EnableAutoSend, NULL);
+
+	//cmddetail:{"name":"tuyaMcu_batteryPoweredMode","args": "[Optional 1 or 0, by default 1 is assumed]",
+	//cmddetail:"descr":"Enables battery mode communications for version 3 TuyaMCU. tuyaMcu_batteryPoweredMode 0 can be used to disable the mode.",
+	//cmddetail:"fn":"Cmd_TuyaMCU_BatteryPoweredMode","file":"driver/drv_tuyaMCU.c","requires":"",
+	//cmddetail:"examples":"tuyaMcu_batteryPoweredMode"}
+	CMD_RegisterCommand("tuyaMcu_batteryPoweredMode", Cmd_TuyaMCU_BatteryPoweredMode, NULL);
 }
 
 

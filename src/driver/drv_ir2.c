@@ -272,7 +272,8 @@ static commandResult_t CMD_IR2_SetupIR2(const void* context, const char* cmd, co
 	myPeriodUs = Tokenizer_GetArgIntegerDefault(0, 50);
 	float duty_on_frac = Tokenizer_GetArgFloatDefault(1, 0.5f);
 	float duty_off_frac = Tokenizer_GetArgFloatDefault(2, 0.0f);
-	txpin = Tokenizer_GetArgIntegerDefault(3, 26);
+//	txpin = Tokenizer_GetArgIntegerDefault(3, 26);
+	txpin = Tokenizer_GetPin(3, 26);
 
 #if DEBUG_WAVE_WITH_GPIO
 	bk_gpio_config_output(txpin);

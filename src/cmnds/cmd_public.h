@@ -172,6 +172,8 @@ enum EventCode {
 
 	CMD_EVENT_ON_DISCOVERY,
 
+	CMD_EVENT_RC,
+
 	// must be lower than 256
 	CMD_EVENT_MAX_TYPES
 };
@@ -304,6 +306,7 @@ OBK_Publish_Result LED_SendCurrentLightModeParam_TempOrColor();
 void LED_ResetGlobalVariablesToDefaults();
 extern float led_temperature_min;
 extern float led_temperature_max;
+void LED_ResendCurrentColors();
 #endif
 
 // cmd_test.c

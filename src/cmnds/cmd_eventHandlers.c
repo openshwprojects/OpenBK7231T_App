@@ -193,7 +193,7 @@ int EVENT_ParseEventName(const char *s) {
     if(!stricmp(s,"energycounter_last_hour"))
         return CMD_EVENT_CHANGE_CONSUMPTION_LAST_HOUR;
 #endif
-#if ENABLE_DRIVER_IRREMOTEESP || ENABLE_DRIVER_IR || ENABLE_DRIVER_IR2 || WINDOWS
+#if ENABLE_DRIVER_IRREMOTEESP || ENABLE_DRIVER_IR || ENABLE_DRIVER_IR2 || ENABLE_DRIVER_TINYIR_NEC || WINDOWS
     if(!stricmp(s,"IR_RC5"))
         return CMD_EVENT_IR_RC5;
     if(!stricmp(s,"IR_RC6"))
@@ -234,6 +234,8 @@ int EVENT_ParseEventName(const char *s) {
 		return CMD_EVENT_ON_HTTP;
 	if (!stricmp(s, "OnDiscovery"))
 		return CMD_EVENT_ON_DISCOVERY;
+	if (!stricmp(s, "RC"))
+		return CMD_EVENT_RC;
 	if (isdigit((unsigned char)*s)) {
 		return atoi(s);
 	}

@@ -129,9 +129,17 @@ void Test_Scripting_Loop3() {
 		SELFTEST_ASSERT_INTEGER(CMD_GetCountActiveScriptThreads(), 1);
 		SELFTEST_ASSERT_CHANNEL(0, 1);
 	}
-	for (int i = 0; i < 2; i++) {
-		Sim_RunSeconds(1, false);
-	}
+	// Second 15: the script delay counts down to 0, but the final if/setChannel
+	// pair does not run until the following scheduler tick.
+	Sim_RunSeconds(1, false);
+	SELFTEST_ASSERT_INTEGER(CMD_GetCountActiveScriptThreads(), 1);
+	SELFTEST_ASSERT_CHANNEL(0, 1);
+	// After second 16 the final loop body has resumed and the script must have ended.
+	Sim_RunSeconds(1, false);
+	SELFTEST_ASSERT_INTEGER(CMD_GetCountActiveScriptThreads(), 0);
+	// Channel 0 should now be 0 because the script's final command has run.
+	SELFTEST_ASSERT_CHANNEL(0, 0);
+	// Run a couple more seconds to confirm nothing changes again
 	for (int i = 0; i < 3; i++) {
 		Sim_RunSeconds(1, false);
 		SELFTEST_ASSERT_INTEGER(CMD_GetCountActiveScriptThreads(), 0);

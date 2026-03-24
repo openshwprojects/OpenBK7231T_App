@@ -95,6 +95,22 @@ void Test_ButtonEvents() {
 	SELFTEST_ASSERT_CHANNEL(11, (123 + 123 + 123));
 	SELFTEST_ASSERT_CHANNEL(12, 22);
 	SELFTEST_ASSERT_CHANNEL(13, 1201);
+
+	PIN_SetPinRoleForPinIndex(10, IOR_ToggleChannelOnToggle_pd);
+	PIN_SetPinChannelForPinIndex(10, 5);
+	SIM_SetSimulatedPinValue(10, false);
+	CHANNEL_Set(5, 0, 0);
+	SELFTEST_ASSERT_CHANNEL(5, 0);
+	SIM_SetSimulatedPinValue(10, true);
+	Sim_RunFrames(100, false);
+	SELFTEST_ASSERT_CHANNEL(5, 1); // toggled
+	SIM_SetSimulatedPinValue(10, false);
+	Sim_RunFrames(100, false);
+	SELFTEST_ASSERT_CHANNEL(5, 0); // toggled
+	SIM_SetSimulatedPinValue(10, true);
+	Sim_RunFrames(100, false);
+	SELFTEST_ASSERT_CHANNEL(5, 1); // toggled
+
 }
 
 

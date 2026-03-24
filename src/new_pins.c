@@ -478,7 +478,8 @@ int PIN_IOR_NofChan(int test){
 	// Some roles don't need any channels
 	if (test == IOR_SGP_CLK || test == IOR_SHT3X_CLK || test == IOR_CHT83XX_CLK || test == IOR_Button_ToggleAll || test == IOR_Button_ToggleAll_n
 			|| test == IOR_BL0937_CF || test == IOR_BL0937_CF1 || test == IOR_BL0937_SEL
-			|| test == IOR_LED_WIFI || test == IOR_LED_WIFI_n || test == IOR_LED_WIFI_n
+			|| test == IOR_LED_WIFI || test == IOR_LED_WIFI_n || test == IOR_BL0937_SEL_n
+			|| test == IOR_RCRecv || test == IOR_RCRecv_nPup
 			|| (test >= IOR_IRRecv && test <= IOR_DHT11)
 			|| (test >= IOR_SM2135_DAT && test <= IOR_BP1658CJ_CLK)
 			|| (test == IOR_HLW8112_SCSN)) {
@@ -582,6 +583,18 @@ void Button_OnShortClick(int index)
 			return;
 		}
 #endif
+#if ENABLE_DRIVER_SHUTTERS
+		if (g_cfg.pins.roles[index] == IOR_Button_ShutterUp)
+		{
+			Shutter_MoveByIndex(g_cfg.pins.channels[index], 1.0f, true);
+			return;
+		}
+		if (g_cfg.pins.roles[index] == IOR_Button_ShutterDown)
+		{
+			Shutter_MoveByIndex(g_cfg.pins.channels[index], 0.0f, true);
+			return;
+		}
+#endif
 		if (g_cfg.pins.roles[index] == IOR_Button_NextDimmer || g_cfg.pins.roles[index] == IOR_Button_NextDimmer_n)
 		{
 			return;
@@ -627,6 +640,20 @@ void Button_OnDoubleClick(int index)
 		// double click toggles SECOND CHANNEL linked to this button
 		CHANNEL_Toggle(g_cfg.pins.channels2[index]);
 	}
+#if ENABLE_DRIVER_SHUTTERS
+	if (g_cfg.pins.roles[index] == IOR_Button_ShutterUp)
+	{
+		// issue stop order
+		Shutter_MoveByIndex(g_cfg.pins.channels[index], -1.0f, true);
+		return;
+	}
+	if (g_cfg.pins.roles[index] == IOR_Button_ShutterDown)
+	{
+		// issue stop order
+		Shutter_MoveByIndex(g_cfg.pins.channels[index], -1.0f, true);
+		return;
+	}
+#endif
 #if ENABLE_LED_BASIC
 	if (g_cfg.pins.roles[index] == IOR_SmartButtonForLEDs || g_cfg.pins.roles[index] == IOR_SmartButtonForLEDs_n) {
 		LED_NextColor();
@@ -719,7 +746,7 @@ bool BTN_ShouldInvert(int index) {
 		role == IOR_DigitalInput_n || role == IOR_DigitalInput_NoPup_n
 		|| role == IOR_Button_NextColor_n || role == IOR_Button_NextDimmer_n
 		|| role == IOR_Button_NextTemperature_n || role == IOR_Button_ScriptOnly_n
-		|| role == IOR_SmartButtonForLEDs_n) {
+		|| role == IOR_SmartButtonForLEDs_n || role == IOR_Button_pd_n) {
 		return true;
 	}
 	if (CFG_HasFlag(OBK_FLAG_DOORSENSOR_INVERT_STATE)) {
@@ -824,6 +851,10 @@ void CHANNEL_SetAll(int iVal, int iFlags) {
 		case IOR_Button_ScriptOnly_n:
 		case IOR_SmartButtonForLEDs:
 		case IOR_SmartButtonForLEDs_n:
+#if ENABLE_DRIVER_SHUTTERS
+		case IOR_Button_ShutterUp:
+		case IOR_Button_ShutterDown:
+#endif
 		{
 
 		}
@@ -967,6 +998,10 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 		case IOR_Button_ScriptOnly_n:
 		case IOR_SmartButtonForLEDs:
 		case IOR_SmartButtonForLEDs_n:
+#if ENABLE_DRIVER_SHUTTERS
+		case IOR_Button_ShutterUp:
+		case IOR_Button_ShutterDown:
+#endif
 		{
 			//pinButton_s *bt = &g_buttons[index];
 			// TODO: disable button
@@ -1029,14 +1064,20 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 		switch (role)
 		{
 		case IOR_Button:
+		case IOR_Button_pd: // TODO: is ok falling?
 		case IOR_Button_ToggleAll:
 		case IOR_Button_NextColor:
 		case IOR_Button_NextDimmer:
 		case IOR_Button_NextTemperature:
 		case IOR_Button_ScriptOnly:
 		case IOR_SmartButtonForLEDs:
+#if ENABLE_DRIVER_SHUTTERS
+		case IOR_Button_ShutterUp:
+		case IOR_Button_ShutterDown:
+#endif
 			falling = 1;
 		case IOR_Button_n:
+		case IOR_Button_pd_n: // TODO: is ok falling?
 		case IOR_Button_ToggleAll_n:
 		case IOR_Button_NextColor_n:
 		case IOR_Button_NextDimmer_n:
@@ -1050,7 +1091,12 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 			setGPIActive(index, 1, falling);
 
 			// digital input
-			HAL_PIN_Setup_Input_Pullup(index);
+			if (role == IOR_Button_pd_n || role == IOR_Button_pd) {
+				HAL_PIN_Setup_Input_Pulldown(index);
+			}
+			else {
+				HAL_PIN_Setup_Input_Pullup(index);
+			}
 
 			// init button after initializing pin role
 			NEW_button_init(bt, button_generic_get_gpio_value, 0);
@@ -1066,13 +1112,19 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 			break;
 
 		case IOR_ToggleChannelOnToggle:
+		case IOR_ToggleChannelOnToggle_pd:
 		{
 			// add to active inputs
 			falling = 1;
 			setGPIActive(index, 1, falling);
 
 			// digital input
-			HAL_PIN_Setup_Input_Pullup(index);
+			if (role == IOR_ToggleChannelOnToggle_pd) {
+				HAL_PIN_Setup_Input_Pulldown(index);
+			}
+			else {
+				HAL_PIN_Setup_Input_Pullup(index);
+			}
 			// otherwise we get a toggle on start			
 #ifdef PLATFORM_BEKEN
 			//20231217 XJIKKA
@@ -1173,7 +1225,18 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 			HAL_PIN_SetOutputValue(index, 0);
 		}
 		break;
+		case IOR_ShutterA:
+		case IOR_ShutterB:
+		{
+			int channelIndex;
+			int channelValue;
 
+			channelIndex = PIN_GetPinChannelForPinIndex(index);
+			channelValue = g_channelValues[channelIndex];
+
+			HAL_PIN_Setup_Output(index);
+		}
+		break;
 		case IOR_AlwaysHigh:
 		{
 			HAL_PIN_Setup_Output(index);
@@ -1333,10 +1396,8 @@ static void Channel_OnChanged(int ch, int prevValue, int iFlags) {
 	Channel_SaveInFlashIfNeeded(ch);
 }
 void CFG_ApplyChannelStartValues() {
-	int i;
+	int i, iValue;
 	for (i = 0; i < CHANNEL_MAX; i++) {
-		int iValue;
-
 		iValue = g_cfg.startChannelValues[i];
 		if (iValue == -1) {
 			g_channelValuesFloats[i] = g_channelValues[i] = HAL_FlashVars_GetChannelValue(i);
@@ -1345,6 +1406,22 @@ void CFG_ApplyChannelStartValues() {
 		else {
 			g_channelValuesFloats[i] = g_channelValues[i] = iValue;
 			//addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "CFG_ApplyChannelStartValues: Channel %i is being set to constant state %i", i, g_channelValues[i]);
+		}
+	}
+	// preload pin values from channels for pin types that look at g_lastValidState
+	for (i = 0; i < PLATFORM_GPIO_MAX; i++) {
+		switch (g_cfg.pins.roles[i]) {
+		case IOR_DigitalInput:
+		case IOR_DigitalInput_n:
+		case IOR_ToggleChannelOnToggle:
+		case IOR_DigitalInput_NoPup:
+		case IOR_DigitalInput_NoPup_n:
+		case IOR_DoorSensorWithDeepSleep:
+		case IOR_DoorSensorWithDeepSleep_NoPup:
+		case IOR_DoorSensorWithDeepSleep_pd:
+			iValue = g_cfg.pins.channels[i];
+			g_lastValidState[i] = g_channelValues[iValue];
+			//addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "CFG_ApplyChannelStartValues: Pin %i is being set channel state %i", i, g_channelValues[iValue]);
 		}
 	}
 }
@@ -1370,6 +1447,7 @@ int ChannelType_GetDivider(int type) {
 	case ChType_Frequency_div10:
 	case ChType_ReadOnly_div10:
 	case ChType_Current_div10:
+	case ChType_Illuminance_div10:
 		return 10;
 	case ChType_Frequency_div100:
 	case ChType_Current_div100:
@@ -1416,6 +1494,7 @@ const char *ChannelType_GetUnit(int type) {
 	case ChType_Power_div10:
 	case ChType_Power_div100:
 		return "W";
+	case ChType_Frequency:
 	case ChType_Frequency_div10:
 	case ChType_Frequency_div100:
 	case ChType_Frequency_div1000:
@@ -1439,6 +1518,7 @@ const char *ChannelType_GetUnit(int type) {
 	case ChType_ReactivePower:
 		return "vAr";
 	case ChType_Illuminance:
+	case ChType_Illuminance_div10:
 		return "Lux";
 	case ChType_Ph:
 		return "Ph";
@@ -1469,6 +1549,7 @@ const char *ChannelType_GetTitle(int type) {
 	case ChType_Power_div10:
 	case ChType_Power_div100:
 		return "Power";
+	case ChType_Frequency:
 	case ChType_Frequency_div10:
 	case ChType_Frequency_div100:
 	case ChType_Frequency_div1000:
@@ -1496,6 +1577,7 @@ const char *ChannelType_GetTitle(int type) {
 	case ChType_ReactivePower:
 		return "ReactivePower";
 	case ChType_Illuminance:
+	case ChType_Illuminance_div10:
 		return "Illuminance";
 	case ChType_Ph:
 		return "Ph Water Quality";
@@ -2205,7 +2287,11 @@ void PIN_ticks(void* param)
 				|| g_cfg.pins.roles[i] == IOR_Button_NextDimmer || g_cfg.pins.roles[i] == IOR_Button_NextDimmer_n
 				|| g_cfg.pins.roles[i] == IOR_Button_NextTemperature || g_cfg.pins.roles[i] == IOR_Button_NextTemperature_n
 				|| g_cfg.pins.roles[i] == IOR_Button_ScriptOnly || g_cfg.pins.roles[i] == IOR_Button_ScriptOnly_n
-				|| g_cfg.pins.roles[i] == IOR_SmartButtonForLEDs || g_cfg.pins.roles[i] == IOR_SmartButtonForLEDs_n) {
+				|| g_cfg.pins.roles[i] == IOR_SmartButtonForLEDs || g_cfg.pins.roles[i] == IOR_SmartButtonForLEDs_n
+#if ENABLE_DRIVER_SHUTTERS
+				|| g_cfg.pins.roles[i] == IOR_Button_ShutterUp || g_cfg.pins.roles[i] == IOR_Button_ShutterDown
+#endif
+				) {
 				//addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"Test hold %i\r\n",i);
 				PIN_Input_Handler(i, t_diff);
 			}
@@ -2214,6 +2300,7 @@ void PIN_ticks(void* param)
 				g_cfg.pins.roles[i] == IOR_DigitalInput_NoPup || g_cfg.pins.roles[i] == IOR_DigitalInput_NoPup_n
 				|| g_cfg.pins.roles[i] == IOR_DoorSensorWithDeepSleep || g_cfg.pins.roles[i] == IOR_DoorSensorWithDeepSleep_NoPup
 				|| g_cfg.pins.roles[i] == IOR_DoorSensorWithDeepSleep_pd) {
+
 				// read pin digital value (and already invert it if needed)
 				value = PIN_ReadDigitalInputValue_WithInversionIncluded(i);
 
@@ -2226,7 +2313,9 @@ void PIN_ticks(void* param)
 						if (g_lastValidState[i] != value) {
 							// became up
 							g_lastValidState[i] = value;
-							CHANNEL_Set(g_cfg.pins.channels[i], value, 0);
+							if (CFG_HasFlag(OBK_FLAG_BUTTON_DISABLE_ALL) == false) {
+								CHANNEL_Set(g_cfg.pins.channels[i], value, 0);
+							}
 						}
 					}
 					else {
@@ -2239,7 +2328,9 @@ void PIN_ticks(void* param)
 						if (g_lastValidState[i] != value) {
 							// became down
 							g_lastValidState[i] = value;
-							CHANNEL_Set(g_cfg.pins.channels[i], value, 0);
+							if (CFG_HasFlag(OBK_FLAG_BUTTON_DISABLE_ALL) == false) {
+								CHANNEL_Set(g_cfg.pins.channels[i], value, 0);
+							}
 						}
 					}
 					else {
@@ -2250,7 +2341,8 @@ void PIN_ticks(void* param)
 
 #endif
 			}
-			else if (g_cfg.pins.roles[i] == IOR_ToggleChannelOnToggle) {
+			else if (g_cfg.pins.roles[i] == IOR_ToggleChannelOnToggle
+				|| g_cfg.pins.roles[i] == IOR_ToggleChannelOnToggle_pd) {
 				value = PIN_ReadDigitalInputValue_WithInversionIncluded(i);
 			
 				if (value) {
@@ -2407,6 +2499,8 @@ const char* g_channelTypeNames[] = {
 	"Enum",
 	"ReadOnlyEnum",
 	"Current_div10",
+	"Illuminance_div10",
+	"Frequency",
 	"error",
 	"error",
 	"error",
@@ -2746,6 +2840,79 @@ int XJ_MovingAverage_int(int aprevvalue, int aactvalue) {
 	return res;
 }
 #endif
+
+
+// use "complete" search as default, only "simple" one for these platforms
+//#if !(PLATFORM_LN882H || PLATFORM_W800 || PLATFORM_TXW81X || (PLATFORM_ESPIDF && ! CONFIG_IDF_TARGET_ESP32C3))
+#if !(PLATFORM_LN882H || PLATFORM_TXW81X || (PLATFORM_ESPIDF && ! CONFIG_IDF_TARGET_ESP32C3))
+// start helpers for finding (su-)string in pinalias
+
+// code to find a pin index by name
+// we migth have "complex" or alternate names like
+// "IO0/A0" or even "IO2 (B2/TX1)" and would like all to match
+// so we need to make sure the substring is found an propperly "terminated"
+// by '\0', '/' , '(', ')' or ' '
+
+
+// Define valid start and end characters for a string (e.g. for "(RX1/IO10)" we would need "()/"
+int is_valid_start_end(char ch) {
+    // Check if character is in defined terminators
+    return strchr(" ()/\0", ch) != NULL;
+}
+
+// new version, case insensitive, use 
+// wal_stricmp() and (new introduced) wal_stristr()
+// from new_common.c
+int str_match_in_alias(const char* alias, const char* str) {
+    size_t alen = strlen(alias), slen = strlen(str);
+
+    if (slen > alen) return 0; // No match
+
+    // found at start of alisa, no test for a valid "start" 
+    if (wal_strnicmp(alias, str, slen) == 0) {
+        return (slen == alen || is_valid_start_end(alias[slen]));
+    }
+
+    // not at start, so found-1 is a valid position in string
+    for (char *found = wal_stristr(alias + 1, str); found; found = wal_stristr(found + 1, str)) {
+    
+        if (is_valid_start_end(*(found - 1)) && (is_valid_start_end(found[slen]) || found[slen] == '\0')) {
+            return 1; // Match found
+        }
+    }
+
+    return 0; // No match
+}
+
+// END helpers
+
+int PIN_FindIndexFromString(const char *name) {
+	if (strIsInteger(name)) {
+		return atoi(name);
+	}
+	for (int i = 0; i < PLATFORM_GPIO_MAX; i++) {
+		if (str_match_in_alias(HAL_PIN_GetPinNameAlias(i), name)) {
+			return i;
+		}
+	}
+	return -1;
+}
+#else
+int PIN_FindIndexFromString(const char *name) {
+	if (strIsInteger(name)) {
+		return atoi(name);
+	}
+	for (int i = 0; i < PLATFORM_GPIO_MAX; i++) {
+		if (!stricmp(HAL_PIN_GetPinNameAlias(i), name)) {
+			return i;
+		}
+	}
+	return -1;
+}
+
+#endif
+
+
 
 void PIN_AddCommands(void)
 {

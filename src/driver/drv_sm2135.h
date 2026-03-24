@@ -24,4 +24,3 @@
 #define SM2135_55MA         0x09
 #define SM2135_60MA         0x0A
 
-#define SM2135_DELAY         4

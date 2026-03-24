@@ -268,7 +268,11 @@ static commandResult_t CMD_SetPinRole(const void *context, const char *cmd, cons
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 
-	pin = Tokenizer_GetArgInteger(0);
+	pin = Tokenizer_GetPin(0,-1);
+	if (pin==-1){
+		ADDLOG_INFO(LOG_FEATURE_CMD, "Unknown pin %s",Tokenizer_GetArg(0));
+		return CMD_RES_BAD_ARGUMENT;
+	}
 	role = Tokenizer_GetArg(1);
 
 	roleIndex = PIN_ParsePinRoleName(role);

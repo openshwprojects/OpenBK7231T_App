@@ -155,3 +155,5 @@ char* __wrap_strsep(char** stringp, const char* delim)
 {
 	return _strsep(stringp, delim);
 }
+
+void _init(void) { }

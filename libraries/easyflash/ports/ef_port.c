@@ -30,7 +30,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
-#if !WINDOWS && !PLATFORM_TXW81X && !PLATFORM_RDA5981 && !LINUX
+#if !WINDOWS && !PLATFORM_TXW81X && !PLATFORM_RDA5981 && !LINUX && !defined(PLATFORM_W800) && !defined(PLATFORM_W600)
 #include "FreeRTOS.h"
 #include "semphr.h"
 #include "queue.h"
@@ -45,6 +45,10 @@ flash_t flash;
 
 #elif defined(PLATFORM_W800) || defined(PLATFORM_W600)
 
+#include "FreeRTOS.h"
+#include "rtoslist.h"
+#include "semphr.h"
+#include "rtosqueue.h"
 #include "wm_internal_flash.h"
 #include "wm_flash.h"
 #define QueueHandle_t xQueueHandle
@@ -81,6 +85,17 @@ typedef void* QueueHandle_t;
 #define xSemaphoreCreateMutex rda_mutex_create
 #define xSemaphoreTake rda_mutex_wait
 #define xSemaphoreGive rda_mutex_realease
+
+#elif PLATFORM_BEKEN
+
+#include "include.h"
+#include "flash_pub.h"
+#include "rtos_pub.h"
+#include "uart_pub.h"
+#include "drv_model_pub.h"
+#include "flash.h"
+extern int hal_flash_lock(void);
+extern int hal_flash_unlock(void);
 
 #elif WINDOWS
 
@@ -187,9 +202,6 @@ EfErrCode ef_port_init(ef_env const** default_env, size_t* default_env_size)
 	*default_env_size = sizeof(default_env_set) / sizeof(default_env_set[0]);
 
 	ef_mutex = xSemaphoreCreateMutex();
-#if defined(PLATFORM_W800) || defined(PLATFORM_W600)
-	tls_fls_init();
-#endif
 
 	return result;
 }
@@ -226,6 +238,11 @@ EfErrCode ef_port_read(uint32_t addr, uint32_t* buf, size_t size)
 	return EF_NO_ERR;
 #elif PLATFORM_TXW81X || PLATFORM_RDA5981
 	HAL_FlashRead(buf, size, addr);
+	return EF_NO_ERR;
+#elif PLATFORM_BEKEN
+	hal_flash_lock();
+	flash_read((char*)buf, (unsigned long)size, addr);
+	hal_flash_unlock();
 	return EF_NO_ERR;
 #endif
 }
@@ -266,6 +283,48 @@ EfErrCode ef_port_erase(uint32_t addr, size_t size)
 #elif PLATFORM_TXW81X || PLATFORM_RDA5981
 	HAL_FlashEraseSector(addr);
 	return EF_NO_ERR;
+#elif PLATFORM_BEKEN
+	int param;
+	UINT32 status;
+	int protect_type;
+	DD_HANDLE flash_handle;
+	unsigned int _size = size;
+
+	hal_flash_lock();
+
+	flash_handle = ddev_open(FLASH_DEV_NAME, &status, 0);
+	ddev_control(flash_handle, CMD_FLASH_GET_PROTECT, (void*)&protect_type);
+
+	if(FLASH_PROTECT_NONE != protect_type)
+	{
+		param = FLASH_PROTECT_NONE;
+		ddev_control(flash_handle, CMD_FLASH_SET_PROTECT, (void*)&param);
+	}
+
+	/* Calculate the start address of the flash sector(4kbytes) */
+	addr = addr & 0x00FFF000;
+
+	do
+	{
+		flash_ctrl(CMD_FLASH_ERASE_SECTOR, &addr);
+		addr += 4096;
+
+		if(_size < 4096)
+			_size = 0;
+		else
+			_size -= 4096;
+
+	} while(_size);
+
+	if(FLASH_PROTECT_NONE != protect_type)
+	{
+		param = protect_type;
+		ddev_control(flash_handle, CMD_FLASH_SET_PROTECT, (void*)&param);
+	}
+	hal_flash_unlock();
+
+	return EF_NO_ERR;
+
 #endif
 	return result;
 }
@@ -304,6 +363,33 @@ EfErrCode ef_port_write(uint32_t addr, const uint32_t* buf, size_t size)
 	return EF_NO_ERR;
 #elif PLATFORM_TXW81X || PLATFORM_RDA5981
 	HAL_FlashWrite(buf, size, addr);
+	return EF_NO_ERR;
+#elif PLATFORM_BEKEN
+	int param;
+	UINT32 status;
+	int protect_type;
+	DD_HANDLE flash_handle;
+
+	hal_flash_lock();
+
+	flash_handle = ddev_open(FLASH_DEV_NAME, &status, 0);
+	ddev_control(flash_handle, CMD_FLASH_GET_PROTECT, (void*)&protect_type);
+
+	if(FLASH_PROTECT_NONE != protect_type)
+	{
+		param = FLASH_PROTECT_NONE;
+		ddev_control(flash_handle, CMD_FLASH_SET_PROTECT, (void*)&param);
+	}
+
+	flash_write((char*)buf, (unsigned long)size, addr);
+	if(FLASH_PROTECT_NONE != protect_type)
+	{
+		param = protect_type;
+		ddev_control(flash_handle, CMD_FLASH_SET_PROTECT, (void*)&param);
+	}
+
+	hal_flash_unlock();
+
 	return EF_NO_ERR;
 #endif
 }
