@@ -329,6 +329,7 @@ void expandQuotes(char* str) {
 
 void Tokenizer_TokenizeString(const char *s, int flags) {
 	char *p;
+	uint8_t inQuote = 0; // <<< ADD: track đang ở trong quote
 
 	tok_flags = flags;
 	g_numArgs = 0;
@@ -345,9 +346,8 @@ void Tokenizer_TokenizeString(const char *s, int flags) {
 		return;
 	}
 
-	// not really needed, but nice for testing
-	memset(g_args, 0, sizeof(g_args)); // backing buffer is g_buffer, which is mutated where spaces on arg boundaries are set to null char
-	memset(g_argsFrom, 0, sizeof(g_argsFrom)); // backing buffer is s, original unmutated string
+	memset(g_args, 0, sizeof(g_args));
+	memset(g_argsFrom, 0, sizeof(g_argsFrom));
 	memset(g_argsExpanded, 0, sizeof(g_argsExpanded));
 
 	if (flags & TOKENIZER_EXPAND_EARLY) {
@@ -360,61 +360,50 @@ void Tokenizer_TokenizeString(const char *s, int flags) {
 	if (flags & TOKENIZER_FORCE_SINGLE_ARGUMENT_MODE) {
 		g_args[g_numArgs] = g_buffer;
 		g_argsFrom[g_numArgs] = g_buffer;
-		// some hack, but we fored to have only have one arg, so we can extend the string over array bondaries.
-		// probably better: introducing an union containing g_argsExpanded[][] and one sole string in the same memory area ...
 		CMD_ExpandConstantsWithinString(g_buffer,(char*)g_argsExpanded,sizeof(g_argsExpanded)-1);
 		g_numArgs = 1;
 		return;
 	}
+
 	p = g_buffer;
-	// we need to rewrite this function and check it well with unit tests
-	//if (*p == '"') {
-	//	goto quote;
-	//}
-	//g_args[g_numArgs] = p;
-	//g_argsFrom[g_numArgs] = (s+(p-g_buffer));
-	//g_numArgs++;
-	
-    // -----------------------------
-    // TEST: token dau tien
-    // neu p la quote thi jump quote, else set token
-    // -----------------------------
-    if (*p == '"') {
-        goto quote;
-    } else {
-        g_args[g_numArgs] = p;
-        g_argsFrom[g_numArgs] = (s + (p - g_buffer));
-        g_numArgs++;
-    }
+
+	// ---- START TOKEN ----
+	if (*p == '"') {
+		goto quote;
+	}
+	g_args[g_numArgs] = p;
+	g_argsFrom[g_numArgs] = (s+(p-g_buffer));
+	g_numArgs++;
 
 	while(*p != 0) {
+
 		if(isWhiteSpace(*p)) {
 			*p = 0;
 			if(p[1] != 0 && isWhiteSpace(p[1])==false) {
-				// we need to rewrite this function and check it well with unit tests
-				if(g_bAllowQuotes && p[1] == '"') { 
+
+				// ==== FIX: KHÔNG cho re-enter quote nếu đang ở trong quote ====
+				if(g_bAllowQuotes && p[1] == '"' && !inQuote) {  // <<< CHANGED
 					p++;
 					goto quote;
-				}else{
-					g_args[g_numArgs] = p+1;
-					g_argsFrom[g_numArgs] = (s+((p+1)-g_buffer));
-					g_numArgs++;
 				}
+
+				g_args[g_numArgs] = p+1;
+				g_argsFrom[g_numArgs] = (s+((p+1)-g_buffer));
+				g_numArgs++;
 			}
 		}
-		//if(*p == ',') {
-		//	*p = 0;
-		//	g_args[g_numArgs] = p+1;
-		//	g_argsFrom[g_numArgs] = (s+((p+1)-g_buffer));
-		//	g_numArgs++;
-		//}
-		if(g_bAllowQuotes && *p == '"' && ((p <= g_buffer) || isWhiteSpace(p[-1]))) {
+
+		// ==== FIX: chỉ cho phép vào quote nếu chưa ở trong quote ====
+		if(g_bAllowQuotes && *p == '"' && !inQuote && ((p <= g_buffer) || isWhiteSpace(p[-1]))) { // <<< CHANGED
 quote:
+			inQuote = 1; // <<< ADD
+
 			*p = 0;
 			g_argsFrom[g_numArgs] = (s+((p+1)-g_buffer));
 			p++;
 			g_args[g_numArgs] = p;
 			g_numArgs++;
+
 			while(*p != 0) {
 				if (flags & TOKENIZER_ALLOW_ESCAPING_QUOTATIONS) {
 					if (*p == '"' && p[-1] != '\\') {
@@ -430,16 +419,19 @@ quote:
 				}
 				p++;
 			}
+
 			if (flags & TOKENIZER_ALLOW_ESCAPING_QUOTATIONS) {
 				expandQuotes(g_args[g_numArgs - 1]);
 			}
+
+			inQuote = 0; // <<< ADD: thoát quote
 		}
+
 		if(g_numArgs>=MAX_ARGS) {
 			ADDLOG_ERROR(LOG_FEATURE_CMD, "Too many args, skipped all after 32nd.");
 			break;
 		}
+
 		p++;
 	}
-
-
 }
