@@ -548,7 +548,7 @@ static commandResult_t CMD_Echo(const void* context, const char* cmd, const char
 
 static commandResult_t CMD_StartupCommand(const void* context, const char* cmd, const char* args, int cmdFlags) {
 
-	ADDLOG_ERROR(LOG_FEATURE_CMD, ">>> ENTER CMD_StartupCommand, args=%s", args);
+	//ADDLOG_ERROR(LOG_FEATURE_CMD, ">>> ENTER CMD_StartupCommand, args=%s", args);
 
 	const char *cmdToSet;
 
