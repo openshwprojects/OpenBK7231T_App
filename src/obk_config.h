@@ -744,6 +744,7 @@
 #define ENABLE_TIME_PMNTP 					1
 #define ENABLE_DRIVER_MAX72XX					1
 #define ENABLE_DRIVER_DS3231					1
+#endif
 // ensure that there would be no conflicts
 #if ENABLE_DRIVER_IRREMOTEESP
 #undef ENABLE_DRIVER_IR
