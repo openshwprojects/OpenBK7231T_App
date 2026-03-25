@@ -531,6 +531,7 @@ static commandResult_t CMD_ClearIO(const void* context, const char* cmd, const c
 // setChannel 1 123
 // echo First channel is $CH1 and this is the test
 // will print echo First channel is 123 and this is the test
+/*
 static commandResult_t CMD_Echo(const void* context, const char* cmd, const char* args, int cmdFlags) {
 
 #if 0
@@ -542,6 +543,50 @@ static commandResult_t CMD_Echo(const void* context, const char* cmd, const char
 #endif
 
 	return CMD_RES_OK;
+}
+*/
+static commandResult_t CMD_Echo(const void* context, const char* cmd, const char* args, int cmdFlags) {
+
+    // Tokenize input, expand constants, allow quotes
+    Tokenizer_TokenizeString(args, TOKENIZER_EXPAND_EARLY | TOKENIZER_ALLOW_QUOTES);
+    uint8_t cnt = Tokenizer_GetArgsCount();
+
+    if(cnt == 0) {
+        ADDLOG_ERROR(LOG_FEATURE_CMD, "No arguments for echo");
+        return CMD_RES_OK;
+    }
+
+    const char *arg0 = Tokenizer_GetArg(0); // command name or first expanded token
+
+    if(cnt == 1) {
+        // Only 1 arg -> just print
+        ADDLOG_INFO(LOG_FEATURE_CMD, arg0);
+    } else {
+        // Multi-arg -> reuse g_buffer, join arg1..argN
+        char *out = Tokenizer_GetArg(1);
+        char *p = out;
+
+        // neu arg  cuoi cung = 1, bo no ra khoi chuoi
+		uint8_t executeFlag = Tokenizer_GetArgIntegerDefault(cnt - 1, 0);
+        if(executeFlag == 1) cnt--;
+
+        // noi arg1..arg(cnt-1)
+        for(uint8_t i = 1; i < cnt; i++) {
+            size_t len = strlen(Tokenizer_GetArg(i));
+            p += len;
+            if(i != cnt - 1) *p++ = ' '; // replace \0 bang space, tru cai cuoi cung
+        }
+        *p = 0; // null terminate cuoi cung
+
+        if(executeFlag == 1) {//thuc thi command
+            CMD_ExecuteCommand(out, cmdFlags);
+        }else{
+			// log ra buffer da noi cho giong nhu cu
+			ADDLOG_INFO(LOG_FEATURE_CMD, out);
+		}
+    }
+
+    return CMD_RES_OK;
 }
 
 
