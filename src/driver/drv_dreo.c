@@ -247,7 +247,7 @@ static int Dreo_TryGetPacket(byte *out, int maxSize) {
 	if (cs < packetLen)
 		return 0;  // incomplete
 
-	// Verify checksum: sum(bytes[2..end-1]) - 1  (this matches the real MCU responses)
+	// Verify checksum – exact ESPHome-style formula (sum from byte 2 to end-1, then -1)
 	uint32_t calcSum = 0;
 	for (int i = 2; i < packetLen - 1; i++) {
 		calcSum += UART_GetByte(i);
@@ -257,18 +257,8 @@ static int Dreo_TryGetPacket(byte *out, int maxSize) {
 
 	if (receivedChecksum != expectedChecksum) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,
-			"Dreo: checksum mismatch, got 0x%02X expected 0x%02X (seq=0x%02X), dropping packet",
-			receivedChecksum, expectedChecksum, UART_GetByte(3));
-
-		// DEBUG: dump the entire raw packet so we can confirm the fix
-		char hex[512];
-		int pos = 0;
-		pos += snprintf(hex, sizeof(hex), "Dreo: full packet bytes (len=%d): ", packetLen);
-		for (int j = 0; j < packetLen && pos < (int)sizeof(hex)-4; j++) {
-			pos += snprintf(hex + pos, sizeof(hex) - pos, "%02X ", UART_GetByte(j));
-		}
-		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "%s", hex);
-
+			"Dreo: checksum mismatch, got 0x%02X expected 0x%02X (seq=0x%02X cmd=0x%02X), dropping packet",
+			receivedChecksum, expectedChecksum, UART_GetByte(3), UART_GetByte(4));
 		g_dreoBytesInvalid++;
 		UART_ConsumeBytes(packetLen);   // consume whole bad packet to avoid desync
 		return 0;
@@ -364,6 +354,10 @@ static void Dreo_ProcessPacket(const byte *data, int len) {
 
 	case DREO_CMD_MCU_CONF:
 		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "Dreo: MCU conf response");
+		break;
+
+	case 0x0E:   // unknown command seen in logs (MCU reply, 3-byte payload)
+		addLogAdv(LOG_DEBUG, LOG_FEATURE_GENERAL, "Dreo: received unknown cmd 0x0E (3-byte payload)");
 		break;
 
 	case DREO_CMD_STATE:
