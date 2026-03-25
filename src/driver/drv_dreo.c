@@ -247,13 +247,12 @@ static int Dreo_TryGetPacket(byte *out, int maxSize) {
 	if (cs < packetLen)
 		return 0;  // incomplete
 
-	// Verify checksum: MCU responses use (seq + sum(payload only)) & 0xFF
-	// (our sends still use the original full-header formula so handshaking works)
-	uint32_t calcSum = UART_GetByte(3);           // seq byte (index 3)
-	for (int i = 8; i < packetLen - 1; i++) {     // payload starts at index 8
+	// Verify checksum: sum(bytes[2..end-1]) - 1  (this matches the real MCU responses)
+	uint32_t calcSum = 0;
+	for (int i = 2; i < packetLen - 1; i++) {
 		calcSum += UART_GetByte(i);
 	}
-	byte expectedChecksum = (byte)(calcSum & 0xFF);   // ← NO -1 (this matches the off-by-one pattern in your logs)
+	byte expectedChecksum = (byte)((calcSum - 1) & 0xFF);
 	byte receivedChecksum = UART_GetByte(packetLen - 1);
 
 	if (receivedChecksum != expectedChecksum) {
@@ -261,7 +260,7 @@ static int Dreo_TryGetPacket(byte *out, int maxSize) {
 			"Dreo: checksum mismatch, got 0x%02X expected 0x%02X (seq=0x%02X), dropping packet",
 			receivedChecksum, expectedChecksum, UART_GetByte(3));
 
-		// DEBUG: dump the entire raw packet so we can see exactly what the MCU sent
+		// DEBUG: dump the entire raw packet so we can confirm the fix
 		char hex[512];
 		int pos = 0;
 		pos += snprintf(hex, sizeof(hex), "Dreo: full packet bytes (len=%d): ", packetLen);
