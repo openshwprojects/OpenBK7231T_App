@@ -139,12 +139,16 @@ static void Dreo_SendRaw(byte cmd, const byte *payload, int payloadLen) {
 	sum += seq;
 
 	UART_SendByte(cmd);            // command
+	sum += cmd;
+
 	UART_SendByte(0x00);           // reserved zero
 
 	byte lenH = (payloadLen >> 8) & 0xFF;
 	byte lenL = payloadLen & 0xFF;
 	UART_SendByte(lenH);           // length high
 	UART_SendByte(lenL);           // length low
+	sum += lenH;
+	sum += lenL;
 
 	for (i = 0; i < payloadLen; i++) {
 		UART_SendByte(payload[i]);
@@ -243,8 +247,9 @@ static int Dreo_TryGetPacket(byte *out, int maxSize) {
 	if (cs < packetLen)
 		return 0;  // incomplete
 
-	// Verify checksum: sum = seq + sum(payload bytes), then (sum-1)&0xFF
-	uint32_t calcSum = UART_GetByte(3);           // seq byte
+	// Verify checksum: Dreo MCU replies use (seq + sum(payload only) - 1) & 0xFF
+	// (our sends use the original full-header sum so handshaking still works)
+	uint32_t calcSum = UART_GetByte(3);           // seq byte (index 3)
 	for (int i = 8; i < packetLen - 1; i++) {     // payload starts at index 8
 		calcSum += UART_GetByte(i);
 	}
