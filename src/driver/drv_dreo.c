@@ -1,4 +1,3 @@
-<DOCUMENT filename="drv_dreo.c">
 // Dreo Heater UART Protocol Driver for OpenBeken
 // Based on ESPHome dreo_heater.h reference implementation
 // Uses modified Tuya UART protocol with custom checksum
