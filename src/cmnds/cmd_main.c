@@ -579,17 +579,16 @@ static commandResult_t CMD_Echo(const void* context, const char* cmd, const char
         *p = 0; // null terminate cuoi cung
 
         if(executeFlag == 1) {//thuc thi command
-            CMD_ExecuteCommand(out, cmdFlags);
+            //CMD_ExecuteCommand(out, cmdFlags);
+			return CMD_ExecuteCommandArgs(arg0, out, cmdFlags);
         }else{
 			// log ra buffer da noi cho giong nhu cu
-			ADDLOG_INFO(LOG_FEATURE_CMD, out);
+			ADDLOG_INFO(LOG_FEATURE_CMD, "%s %s", Tokenizer_GetArg(0), out);
 		}
     }
 
     return CMD_RES_OK;
 }
-
-
 
 static commandResult_t CMD_StartupCommand(const void* context, const char* cmd, const char* args, int cmdFlags) {
 
