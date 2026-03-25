@@ -259,8 +259,18 @@ static int Dreo_TryGetPacket(byte *out, int maxSize) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,
 			"Dreo: checksum mismatch, got 0x%02X expected 0x%02X (seq=0x%02X cmd=0x%02X), dropping packet",
 			receivedChecksum, expectedChecksum, UART_GetByte(3), UART_GetByte(4));
+
+		// DEBUG: dump the entire raw packet so we can see exactly what the MCU sent
+		char hex[512];
+		int pos = 0;
+		pos += snprintf(hex, sizeof(hex), "Dreo: full packet bytes (len=%d): ", packetLen);
+		for (int j = 0; j < packetLen && pos < (int)sizeof(hex)-4; j++) {
+			pos += snprintf(hex + pos, sizeof(hex) - pos, "%02X ", UART_GetByte(j));
+		}
+		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "%s", hex);
+
 		g_dreoBytesInvalid++;
-		UART_ConsumeBytes(packetLen);   // consume whole bad packet to avoid desync
+		UART_ConsumeBytes(1);   // consume only 1 byte on failure – this prevents permanent desync
 		return 0;
 	}
 
