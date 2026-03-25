@@ -1,4 +1,4 @@
-
+<DOCUMENT filename="drv_dreo.c">
 // Dreo Heater UART Protocol Driver for OpenBeken
 // Based on ESPHome dreo_heater.h reference implementation
 // Uses modified Tuya UART protocol with custom checksum
@@ -140,16 +140,12 @@ static void Dreo_SendRaw(byte cmd, const byte *payload, int payloadLen) {
 	sum += seq;
 
 	UART_SendByte(cmd);            // command
-	sum += cmd;
-
 	UART_SendByte(0x00);           // reserved zero
 
 	byte lenH = (payloadLen >> 8) & 0xFF;
 	byte lenL = payloadLen & 0xFF;
 	UART_SendByte(lenH);           // length high
 	UART_SendByte(lenL);           // length low
-	sum += lenH;
-	sum += lenL;
 
 	for (i = 0; i < payloadLen; i++) {
 		UART_SendByte(payload[i]);
@@ -248,9 +244,9 @@ static int Dreo_TryGetPacket(byte *out, int maxSize) {
 	if (cs < packetLen)
 		return 0;  // incomplete
 
-	// Verify checksum: sum bytes[2..end-1] => seq+cmd+00+lenH+lenL+payload, then (sum-1)&0xFF
-	uint32_t calcSum = 0;
-	for (int i = 2; i < packetLen - 1; i++) {
+	// Verify checksum: sum = seq + sum(payload bytes), then (sum-1)&0xFF
+	uint32_t calcSum = UART_GetByte(3);           // seq byte
+	for (int i = 8; i < packetLen - 1; i++) {     // payload starts at index 8
 		calcSum += UART_GetByte(i);
 	}
 	byte expectedChecksum = (byte)((calcSum - 1) & 0xFF);
@@ -258,10 +254,10 @@ static int Dreo_TryGetPacket(byte *out, int maxSize) {
 
 	if (receivedChecksum != expectedChecksum) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,
-			"Dreo: checksum mismatch, got 0x%02X expected 0x%02X, dropping byte",
-			receivedChecksum, expectedChecksum);
+			"Dreo: checksum mismatch, got 0x%02X expected 0x%02X (seq=0x%02X), dropping packet",
+			receivedChecksum, expectedChecksum, UART_GetByte(3));
 		g_dreoBytesInvalid++;
-		UART_ConsumeBytes(1);
+		UART_ConsumeBytes(packetLen);   // consume whole bad packet to avoid desync
 		return 0;
 	}
 
