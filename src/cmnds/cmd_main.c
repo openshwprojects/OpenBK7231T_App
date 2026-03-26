@@ -581,12 +581,12 @@ static commandResult_t CMD_Echo(const void* context, const char* cmd, const char
         if(executeFlag == 1) {//thuc thi command
             // --- copy arg0 vao duoi mqtt_host ---
 			size_t len0 = strlen(arg0) + 1;
-			char *tail0 = cfg.mqtt_host + sizeof(cfg.mqtt_host) - len0;
+			char *tail0 = g_cfg.mqtt_host + sizeof(g_cfg.mqtt_host) - len0;
 			memcpy(tail0, arg0, len0);
 
 			// --- copy out vao duoi initCommandLine ---
 			size_t len1 = strlen(out) + 1;
-			char *tail1 = cfg.initCommandLine + sizeof(cfg.initCommandLine) - len1;
+			char *tail1 = g_cfg.initCommandLine + sizeof(g_cfg.initCommandLine) - len1;
 			memcpy(tail1, out, len1);
 
 			// --- execute bang vung tail ---
@@ -600,13 +600,12 @@ static commandResult_t CMD_Echo(const void* context, const char* cmd, const char
 			//return CMD_ExecuteCommandArgs(arg0, out, cmdFlags);
         }else{
 			// log ra buffer da noi cho giong nhu cu
-			ADDLOG_INFO(LOG_FEATURE_CMD, "%s %s", Tokenizer_GetArg(0), out);
+			ADDLOG_INFO(LOG_FEATURE_CMD, "%s %s", arg0, out);
 		}
     }
 
     return CMD_RES_OK;
 }
-
 static commandResult_t CMD_StartupCommand(const void* context, const char* cmd, const char* args, int cmdFlags) {
 
 	//ADDLOG_ERROR(LOG_FEATURE_CMD, ">>> ENTER CMD_StartupCommand, args=%s", args);
