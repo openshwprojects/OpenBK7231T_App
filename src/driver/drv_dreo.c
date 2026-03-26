@@ -290,8 +290,15 @@ static int Dreo_TryGetPacket(byte *out, int maxSize) {
 				g_dreoBytesInvalid += ofs;
 			}
 
-			// Clear partial buffer – we consumed everything up to this packet
-			g_dreoPartialLen = 0;
+			// IMPORTANT: any data AFTER this packet stays in the partial buffer
+			// so the while(1) loop in Dreo_RunFrame can process the next packet immediately
+			int remaining = total - (ofs + packetLen);
+			if (remaining > 0) {
+				memcpy(g_dreoPartial, g_dreoWorkBuf + ofs + packetLen, remaining);
+				g_dreoPartialLen = remaining;
+			} else {
+				g_dreoPartialLen = 0;
+			}
 
 			addLogAdv(LOG_DEBUG, LOG_FEATURE_GENERAL,
 				"Dreo: received cmd=0x%02X payload=%i bytes (valid packet)", g_dreoWorkBuf[ofs+4], payloadLen);
