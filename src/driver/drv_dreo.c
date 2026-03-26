@@ -206,89 +206,119 @@ static void Dreo_SendEnum(byte dpId, uint32_t value) {
 }
 
 // -----------------------------------------------------------------------
-// Dreo UART Packet Receive - ROBUST VERSION (race-free)
+// Dreo UART Packet Receive
 // -----------------------------------------------------------------------
 
 // Dreo packet format: 55 AA [ver] [seq] [cmd] [00] [lenH] [lenL] [payload...] [checksum]
 // Minimum packet: 8 header + 1 checksum = 9 bytes
 #define DREO_MIN_PACKET_SIZE 9
 
-// Temporary snapshot buffer (local copy of ring buffer - eliminates race with uart_event_task)
-static byte g_dreoSnapshot[512];
+// Persistent partial-packet buffer so we can correctly assemble large messages
+// (e.g. 126-byte status packets) that arrive across multiple Dreo_RunFrame calls.
+static byte g_dreoPartial[512];
+static int  g_dreoPartialLen = 0;
+
+// Temporary working buffer for snapshot + partial
+static byte g_dreoWorkBuf[1024];
 
 static int Dreo_TryGetPacket(byte *out, int maxSize) {
 	int cs = UART_GetDataSize();
-	if (cs < DREO_MIN_PACKET_SIZE)
+
+	// Nothing new and no leftover → nothing to do
+	if (cs == 0 && g_dreoPartialLen == 0)
 		return 0;
 
-	// Take a consistent snapshot of the ring buffer (this is the key fix)
-	// This prevents the producer task from changing the data while we parse
-	int snapLen = (cs > (int)sizeof(g_dreoSnapshot)) ? (int)sizeof(g_dreoSnapshot) : cs;
-	for (int i = 0; i < snapLen; i++) {
-		g_dreoSnapshot[i] = UART_GetByte(i);
+	// Build a contiguous view: leftover from last frame + new bytes from ring buffer
+	int total = g_dreoPartialLen + cs;
+	if (total > (int)sizeof(g_dreoWorkBuf)) {
+		// Extremely rare safety net – drop oldest data
+		int drop = total - (int)sizeof(g_dreoWorkBuf) + 64;
+		if (g_dreoPartialLen >= drop) {
+			g_dreoPartialLen -= drop;
+			memmove(g_dreoPartial, g_dreoPartial + drop, g_dreoPartialLen);
+		} else {
+			g_dreoPartialLen = 0;
+		}
+		total = g_dreoPartialLen + cs;
 	}
 
-	// Scan the snapshot for a valid packet (no more GetByte calls during parsing)
-	for (int ofs = 0; ofs <= snapLen - DREO_MIN_PACKET_SIZE; ofs++) {
-		if (g_dreoSnapshot[ofs] != 0x55 || g_dreoSnapshot[ofs + 1] != 0xAA)
+	// Copy partial + new data into work buffer
+	if (g_dreoPartialLen > 0)
+		memcpy(g_dreoWorkBuf, g_dreoPartial, g_dreoPartialLen);
+	for (int i = 0; i < cs; i++) {
+		g_dreoWorkBuf[g_dreoPartialLen + i] = UART_GetByte(i);
+	}
+
+	// Scan the combined buffer for a complete valid packet
+	for (int ofs = 0; ofs <= total - DREO_MIN_PACKET_SIZE; ofs++) {
+		if (g_dreoWorkBuf[ofs] != 0x55 || g_dreoWorkBuf[ofs + 1] != 0xAA)
 			continue;
 
-		byte lenH = g_dreoSnapshot[ofs + 6];
-		byte lenL = g_dreoSnapshot[ofs + 7];
+		byte lenH = g_dreoWorkBuf[ofs + 6];
+		byte lenL = g_dreoWorkBuf[ofs + 7];
 		int payloadLen = ((int)lenH << 8) | lenL;
 		int packetLen = 8 + payloadLen + 1;
 
-		// Safety: reject obviously bogus lengths (max realistic Dreo packet ~256 bytes)
-		if (payloadLen > 256 || packetLen > snapLen - ofs) {
-			// false header - continue scanning
-			continue;
-		}
+		// Not enough data yet for this packet → keep waiting
+		if (packetLen > total - ofs)
+			break;
 
-		// Verify checksum on the snapshot
+		// Checksum verification
 		uint32_t calcSum = 0;
 		for (int i = 2; i < packetLen - 1; i++) {
-			calcSum += g_dreoSnapshot[ofs + i];
+			calcSum += g_dreoWorkBuf[ofs + i];
 		}
-		byte expectedChecksum = (byte)((calcSum - 1) & 0xFF);
-		byte receivedChecksum = g_dreoSnapshot[ofs + packetLen - 1];
-
-		if (receivedChecksum == expectedChecksum) {
+		byte expected = (byte)((calcSum - 1) & 0xFF);
+		if (g_dreoWorkBuf[ofs + packetLen - 1] == expected) {
 			// VALID PACKET FOUND
 			if (packetLen > maxSize) {
 				addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "Dreo: packet too large (%i > %i)", packetLen, maxSize);
-				UART_ConsumeBytes(ofs + packetLen);   // discard
+				// consume everything up to and including this packet
+				UART_ConsumeBytes(g_dreoPartialLen + ofs + packetLen);
+				g_dreoPartialLen = 0;
 				return 0;
 			}
 
-			memcpy(out, g_dreoSnapshot + ofs, packetLen);
-			UART_ConsumeBytes(ofs + packetLen);       // consume exactly what we processed
+			memcpy(out, g_dreoWorkBuf + ofs, packetLen);
+
+			// Consume exactly the bytes we used from the ring buffer
+			UART_ConsumeBytes(g_dreoPartialLen + ofs + packetLen);
 			g_dreoBytesReceived += packetLen;
 
+			// If we had leading garbage before this packet, count it
+			if (ofs > 0) {
+				g_dreoBytesInvalid += ofs;
+			}
+
+			// Clear partial buffer – we consumed everything up to this packet
+			g_dreoPartialLen = 0;
+
 			addLogAdv(LOG_DEBUG, LOG_FEATURE_GENERAL,
-				"Dreo: received cmd=0x%02X payload=%i bytes (valid packet)", g_dreoSnapshot[ofs+4], payloadLen);
+				"Dreo: received cmd=0x%02X payload=%i bytes (valid packet)", g_dreoWorkBuf[ofs+4], payloadLen);
 
 			return packetLen;
 		}
 	}
 
-	// No valid packet found in snapshot - skip some garbage but keep last ~40 bytes
-	// in case a real header is split across frames
-	if (snapLen > 80) {
-		int skip = snapLen - 40;
-		g_dreoBytesInvalid += skip;
-		UART_ConsumeBytes(skip);
-
-		// Optional light diagnostic (only when there really was garbage)
-		if (skip > 5) {
-			char skipHex[128];
-			int pos = 0;
-			for (int i = 0; i < 32 && i < skip; i++) {
-				pos += snprintf(skipHex + pos, sizeof(skipHex) - pos, "%02X ", g_dreoSnapshot[i]);
-			}
-			addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "Dreo: skipped %i garbage bytes: %s", skip, skipHex);
+	// No complete valid packet in the current data.
+	// Keep everything (partial + new bytes) for the next frame.
+	if (total > (int)sizeof(g_dreoPartial)) {
+		// Safety: keep only the last 400 bytes (plenty for any Dreo packet)
+		int keep = 400;
+		memmove(g_dreoPartial, g_dreoWorkBuf + total - keep, keep);
+		g_dreoPartialLen = keep;
+	} else {
+		if (g_dreoPartialLen == 0) {
+			// first time – just copy the new data
+			memcpy(g_dreoPartial, g_dreoWorkBuf, total);
+		} else {
+			// already had partial – the work buffer already contains partial+new
+			memcpy(g_dreoPartial, g_dreoWorkBuf, total);
 		}
+		g_dreoPartialLen = total;
 	}
 
+	// Do NOT consume anything from the ring buffer yet
 	return 0;
 }
 
@@ -513,15 +543,20 @@ void Dreo_RunEverySecond(void) {
 	}
 
 	// Init sequence (mimics dreo.h setup)
+	// State 0: send heartbeat (cmd 0x00) — already done above on first call
+	// State 1: after ~1s, send MCU conf with init data
+	// State 2: after ~2s, send query state (cmd 0x02)
 	if (g_dreoInitState < 3) {
 		g_dreoInitTimer++;
 		switch (g_dreoInitState) {
 		case 0:
+			// Send initial heartbeat
 			Dreo_SendRaw(DREO_CMD_HEARTBEAT, NULL, 0);
 			g_dreoInitState = 1;
 			break;
 		case 1:
 			if (g_dreoInitTimer >= 1) {
+				// Send MCU conf init data: {0x02, 0x05, 0x00}
 				byte initData[] = { 0x02, 0x05, 0x00 };
 				Dreo_SendRaw(DREO_CMD_WIFI_STATE, initData, sizeof(initData));
 				g_dreoInitState = 2;
@@ -529,6 +564,7 @@ void Dreo_RunEverySecond(void) {
 			break;
 		case 2:
 			if (g_dreoInitTimer >= 2) {
+				// Send query state
 				Dreo_SendRaw(DREO_CMD_MCU_CONF, NULL, 0);
 				g_dreoInitState = 3;
 			}
