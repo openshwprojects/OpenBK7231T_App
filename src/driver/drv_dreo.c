@@ -249,19 +249,20 @@ static int Dreo_TryGetPacket(byte *out, int maxSize) {
 		g_dreoWorkBuf[g_dreoPartialLen + i] = UART_GetByte(i);
 	}
 
-	// Scan the combined buffer for a complete valid packet
+	// Scan the combined buffer for the FIRST complete valid packet
 	for (int ofs = 0; ofs <= total - DREO_MIN_PACKET_SIZE; ofs++) {
 		if (g_dreoWorkBuf[ofs] != 0x55 || g_dreoWorkBuf[ofs + 1] != 0xAA)
 			continue;
 
+		// Possible header at ofs
 		byte lenH = g_dreoWorkBuf[ofs + 6];
 		byte lenL = g_dreoWorkBuf[ofs + 7];
 		int payloadLen = ((int)lenH << 8) | lenL;
 		int packetLen = 8 + payloadLen + 1;
 
-		// Not enough data yet for this packet → keep waiting
+		// Not enough data yet for this packet → continue scanning (there might be a complete packet later)
 		if (packetLen > total - ofs)
-			break;
+			continue;
 
 		// Checksum verification
 		uint32_t calcSum = 0;
@@ -273,7 +274,6 @@ static int Dreo_TryGetPacket(byte *out, int maxSize) {
 			// VALID PACKET FOUND
 			if (packetLen > maxSize) {
 				addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "Dreo: packet too large (%i > %i)", packetLen, maxSize);
-				// consume everything up to and including this packet
 				UART_ConsumeBytes(g_dreoPartialLen + ofs + packetLen);
 				g_dreoPartialLen = 0;
 				return 0;
@@ -298,9 +298,10 @@ static int Dreo_TryGetPacket(byte *out, int maxSize) {
 
 			return packetLen;
 		}
+		// Bad checksum on a 55 AA → treat as false header, skip only this byte and continue scanning
 	}
 
-	// No complete valid packet in the current data.
+	// No complete valid packet found in the current combined buffer.
 	// Keep everything (partial + new bytes) for the next frame.
 	if (total > (int)sizeof(g_dreoPartial)) {
 		// Safety: keep only the last 400 bytes (plenty for any Dreo packet)
@@ -308,17 +309,11 @@ static int Dreo_TryGetPacket(byte *out, int maxSize) {
 		memmove(g_dreoPartial, g_dreoWorkBuf + total - keep, keep);
 		g_dreoPartialLen = keep;
 	} else {
-		if (g_dreoPartialLen == 0) {
-			// first time – just copy the new data
-			memcpy(g_dreoPartial, g_dreoWorkBuf, total);
-		} else {
-			// already had partial – the work buffer already contains partial+new
-			memcpy(g_dreoPartial, g_dreoWorkBuf, total);
-		}
+		memcpy(g_dreoPartial, g_dreoWorkBuf, total);
 		g_dreoPartialLen = total;
 	}
 
-	// Do NOT consume anything from the ring buffer yet
+	// Do NOT consume anything from the ring buffer yet – we are still waiting for a complete packet
 	return 0;
 }
 
