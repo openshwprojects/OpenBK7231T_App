@@ -219,17 +219,23 @@ static int Dreo_TryGetPacket(byte *out, int maxSize) {
 	if (cs < DREO_MIN_PACKET_SIZE)
 		return 0;
 
-	// Skip non-header bytes
+	// Skip non-header bytes — collect hex for diagnostics (max 32 bytes)
+	char skipHex[128];
+	int skipPos = 0;
 	while (cs > 1) {
 		if (UART_GetByte(0) == 0x55 && UART_GetByte(1) == 0xAA)
 			break;
+		byte b = UART_GetByte(0);
+		if (skipPos < 32) {
+			skipPos += snprintf(skipHex + skipPos, sizeof(skipHex) - skipPos, "%02X ", b);
+		}
 		UART_ConsumeBytes(1);
 		c_garbage++;
 		cs--;
 	}
 	if (c_garbage > 0) {
 		g_dreoBytesInvalid += c_garbage;
-		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "Dreo: skipped %i garbage bytes", c_garbage);
+		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "Dreo: skipped %i garbage bytes: %s", c_garbage, skipHex);
 	}
 	if (cs < DREO_MIN_PACKET_SIZE)
 		return 0;
@@ -270,7 +276,7 @@ static int Dreo_TryGetPacket(byte *out, int maxSize) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "%s", hex);
 
 		g_dreoBytesInvalid++;
-		UART_ConsumeBytes(1);   // <<< CRITICAL: only drop 1 byte on failure
+		UART_ConsumeBytes(1);   // only drop 1 byte on failure – this is what fixes the large garbage skips
 		return 0;
 	}
 
