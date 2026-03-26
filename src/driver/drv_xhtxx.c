@@ -103,9 +103,10 @@ static void I2C_Read(xhtxx_dev_t *dev, uint8_t *buf, uint8_t n)
     Soft_I2C_ReadBytes(&dev->i2c, buf, n);
     Soft_I2C_Stop(&dev->i2c);
 }
-static void I2C_ReadReg(xhtxx_dev_t *dev, uint8_t reg, uint8_t *buf, uint8_t n)
+static void I2C_ReadReg(xhtxx_dev_t *dev, uint8_t reg, uint8_t *buf, uint8_t n, uint8_t del)
 {
     I2C_Write(dev, reg, 0, 0, 1);
+    rtos_delay_milliseconds(del);
     I2C_Read(dev, buf, n);
 }
 
@@ -388,12 +389,12 @@ static bool XHTXX_AHT2x_Probe(xhtxx_dev_t *dev)
 {
     rtos_delay_milliseconds(40);
     uint8_t s;
-    I2C_ReadReg(dev, 0x71, &s, 1);
+    I2C_ReadReg(dev, 0x71, &s, 1, 1);
     if(s == 0xFF) return false;              // bus floating — no device
     if(!(s & 0x08)) {                        // cal bit clear → send init
         I2C_Write(dev, 0xBE, 0x08, 0x00, 3);
         rtos_delay_milliseconds(10);
-        I2C_ReadReg(dev, 0x71, &s, 1);
+        I2C_ReadReg(dev, 0x71, &s, 1, 1);
     }
     return (s != 0xFF) && (s & 0x08);       // [1] bit 3 only, not 0x68
 }
@@ -452,10 +453,10 @@ static void XHTXX_AHT2x_Reset(xhtxx_dev_t *dev)
 static bool XHTXX_CHT83xx_Probe(xhtxx_dev_t *dev)
 {
     uint8_t buf[2];
-    I2C_ReadReg(dev, 0xFE, buf, 2);
+    I2C_ReadReg(dev, 0xFE, buf, 2, 10);
     uint16_t mfr = ((uint16_t)buf[0] << 8) | buf[1];
     if(mfr == 0x0000u || mfr == 0xFFFFu) return false;   // [10] also reject float-high
-    I2C_ReadReg(dev, 0xFF, buf, 2);
+    I2C_ReadReg(dev, 0xFF, buf, 2, 10);
     uint16_t dev_id = ((uint16_t)buf[0] << 8) | buf[1];
     if(dev_id == 0xFFFFu) return false;
     dev->subtype = dev_id;
@@ -466,7 +467,7 @@ static void XHTXX_CHT83xx_Init(xhtxx_dev_t *dev)
 {
     if(IS_CHT831X(dev)) {
         uint8_t status;
-        I2C_ReadReg(dev, CHT_REG_STATUS, &status, 1);
+        I2C_ReadReg(dev, CHT_REG_STATUS, &status, 1, 10);
         if(status)
             ADDLOG_INFO(LOG_FEATURE_SENSOR, "XHTXX CHT831x wake status: 0x%02X", status);
         I2C_Write(dev, CHT_REG_CFG, 0x48, 0x80, 3);
@@ -482,12 +483,12 @@ static void XHTXX_CHT83xx_Measure(xhtxx_dev_t *dev)
     rtos_delay_milliseconds(20);
 
     uint8_t buf[4];
-    I2C_ReadReg(dev, CHT_REG_TEMP, buf, 4);
+    I2C_ReadReg(dev, CHT_REG_TEMP, buf, 4, 10);
 
     int16_t t10, h10;
     if(IS_CHT831X(dev)) {
         // Re-read humidity separately to avoid parity issues in burst read
-        I2C_ReadReg(dev, CHT_REG_HUM, buf+2, 2);
+        I2C_ReadReg(dev, CHT_REG_HUM, buf+2, 2, 10);
         // [5] clean int16_t sign extension; [11] correct formula: ×5/16 not ×50/16
         int16_t s13 = (int16_t)(((uint16_t)buf[0]<<8)|buf[1]) >> 3;
         t10 = (int16_t)((s13 * 5 + 8) / 16) + dev->calTemp;
