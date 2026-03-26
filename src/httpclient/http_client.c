@@ -1014,7 +1014,7 @@ int httpclient_common(httpclient_t *client, const char *url, int port, const cha
     utils_time_countdown_ms(&timer, timeout_ms);
 
      if ((NULL != client_data->response_buf)
-         || (0 != client_data->response_buf_len)) {
+         && (0 != client_data->response_buf_len)) {
         ret = httpclient_recv_response(client, iotx_time_left(&timer), client_data);
         if (ret < 0) {
             ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT, "httpclient_recv_response is error,ret = %d\r\n", ret);
@@ -1142,7 +1142,7 @@ static void httprequest_thread( beken_thread_arg_t arg )
     //rtos_delay_milliseconds(500);
 
     if ((NULL != client_data->response_buf)
-         || (0 != client_data->response_buf_len)) {
+         && (0 != client_data->response_buf_len)) {
         do {
             // parse headers, fill client_data->response_buf up to max client_data->response_buf_len-1
             ret = httpclient_recv_response(client, iotx_time_left(&timer), client_data);
@@ -1222,6 +1222,15 @@ int HTTPClient_Async_SendGeneric(httprequest_t *request){
     return 0;
 }
 
+static int HTTPClient_Async_SendPreparedRequest(httprequest_t *request) {
+	int ret;
+	ret = HTTPClient_Async_SendGeneric(request);
+	if (ret != 0) {
+		httpclient_freeMemory(request);
+	}
+	return ret;
+}
+
 // The malloc below is not responsible for 88 bytes mem leak in HTTP client
 // It is elsewhere
 //#define DBG_HTTPCLIENT_MEMLEAK 1
@@ -1271,7 +1280,8 @@ int HTTPClient_Async_SendGet(const char *url_in, const char *tgFile, const char 
 	//url = strdup(url_in);
 #endif
 	if(url == 0) {
-		ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT, "HTTPClient_Async_SendGet for %s, failed to alloc URL memory\r\n");
+		ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT, "HTTPClient_Async_SendGet for %s, failed to alloc URL memory\r\n",
+			url_in ? url_in : "(null)");
 		return 1;
 	}
 	if (postGetCommand && *postGetCommand) {
@@ -1283,7 +1293,12 @@ int HTTPClient_Async_SendGet(const char *url_in, const char *tgFile, const char 
 	request = (httprequest_t *) HTTPClient_Test_Malloc(HTTPCLIENT_TEST_FAIL_NONE, sizeof(httprequest_t));
 #endif
 	if(request == 0) {
-		ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT, "HTTPClient_Async_SendGet for %s, failed to alloc request memory\r\n");
+		ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT, "HTTPClient_Async_SendGet for %s, failed to alloc request memory\r\n",
+			url_in ? url_in : "(null)");
+		if (cmd) {
+			free(cmd);
+		}
+		free(url);
 		return 1;
 	}
     ADDLOG_INFO(LOG_FEATURE_HTTP_CLIENT, "HTTPClient_Async_SendGet for %s, sizeof(httprequest_t) == %i!\r\n",
@@ -1293,6 +1308,8 @@ int HTTPClient_Async_SendGet(const char *url_in, const char *tgFile, const char 
 	request->flags |= HTTPREQUEST_FLAG_FREE_SELFONDONE;
 	request->flags |= HTTPREQUEST_FLAG_FREE_URLONDONE;
 	request->flags |= HTTPREQUEST_FLAG_FREE_CMDONDONE;
+	request->url = url;
+	request->cmdToRun = cmd;
 	client = &request->client;
 	client_data = &request->client_data;
 
@@ -1304,22 +1321,23 @@ int HTTPClient_Async_SendGet(const char *url_in, const char *tgFile, const char 
 	client_data->post_content_type = "text/csv";  //Sets the content type.
 	request->data_callback = 0;
 	request->port = 80;//HTTP_PORT;
-	request->url = url;
-	request->cmdToRun = cmd;
 	request->method = HTTPCLIENT_GET;
 	request->timeout = 10000;
 	if (tgFile && *tgFile) {
+		client_data->response_buf = HTTPClient_Test_Malloc(HTTPCLIENT_TEST_FAIL_SENDGET_RESPONSEBUF_ALLOC, 2048);
+		if (client_data->response_buf == 0) {
+			ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT, "HTTPClient_Async_SendGet for %s, failed to alloc response buffer\r\n",
+				url_in ? url_in : "(null)");
+			httpclient_freeMemory(request);
+			return 1;
+		}
 		client_data->response_buf_len = 2048;
-		client_data->response_buf = HTTPClient_Test_Malloc(HTTPCLIENT_TEST_FAIL_SENDGET_RESPONSEBUF_ALLOC, client_data->response_buf_len);
 		request->flags |= HTTPREQUEST_FLAG_FREE_RESPONSEBUF;
 		strcpy_safe(request->targetFile, tgFile, sizeof(request->targetFile));
 		request->data_callback = HTTPClient_CB_Data;
 	}
 
-	HTTPClient_Async_SendGeneric(request);
-
-
-    return 0;
+	return HTTPClient_Async_SendPreparedRequest(request);
 }
 int HTTPClient_Async_SendPost(const char *url_in, int http_port, const char *content_type, const char *post_content, const char *post_header) {
 	httprequest_t *request;
@@ -1331,13 +1349,16 @@ int HTTPClient_Async_SendPost(const char *url_in, int http_port, const char *con
 	// So $CH5 gets changed to channel value integer, etc...
 	url = HTTPClient_Test_ExpandingStrdup(HTTPCLIENT_TEST_FAIL_NONE, url_in);
 	if (url == 0) {
-		ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT, "HTTPClient_Async_SendPost for %s, failed to alloc URL memory\r\n");
+		ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT, "HTTPClient_Async_SendPost for %s, failed to alloc URL memory\r\n",
+			url_in ? url_in : "(null)");
 		return 1;
 	}
 
 	request = (httprequest_t *)HTTPClient_Test_Malloc(HTTPCLIENT_TEST_FAIL_SENDPOST_REQUEST_ALLOC, sizeof(httprequest_t));
-	if (url == 0) {
-		ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT, "HTTPClient_Async_SendPost for %s, failed to alloc request memory\r\n");
+	if (request == 0) {
+		ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT, "HTTPClient_Async_SendPost for %s, failed to alloc request memory\r\n",
+			url_in ? url_in : "(null)");
+		free(url);
 		return 1;
 	}
 
@@ -1348,36 +1369,52 @@ int HTTPClient_Async_SendPost(const char *url_in, int http_port, const char *con
 	request->flags |= HTTPREQUEST_FLAG_FREE_SELFONDONE;
 	request->flags |= HTTPREQUEST_FLAG_FREE_URLONDONE;
 	request->flags |= HTTPREQUEST_FLAG_FREE_CMDONDONE;
+	request->url = url;
 	client = &request->client;
 	client_data = &request->client_data;
 
 	client_data->response_buf = 0;  //Sets a buffer to store the result.
 	client_data->response_buf_len = 0;  //Sets the buffer size.
 	if (post_header && *post_header) {
-		HTTPClient_SetCustomHeader(client, strdup(post_header));  //Sets the custom header if needed.
+		request->header = strdup(post_header);
+		if (request->header == 0) {
+			ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT, "HTTPClient_Async_SendPost for %s, failed to alloc header memory\r\n",
+				url_in ? url_in : "(null)");
+			httpclient_freeMemory(request);
+			return 1;
+		}
+		HTTPClient_SetCustomHeader(client, request->header);  //Sets the custom header if needed.
 		// NOTE: remember to free it!
 		request->flags |= HTTPREQUEST_FLAG_FREE_HEADER;
 	}
 
 	if (post_content) {
 		client_data->post_buf = HTTPClient_Test_ExpandingStrdup(HTTPCLIENT_TEST_FAIL_SENDPOST_POSTBUF_DUP, post_content);  //Sets the user data to be posted.
+		if (client_data->post_buf == 0) {
+			ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT, "HTTPClient_Async_SendPost for %s, failed to alloc post buffer\r\n",
+				url_in ? url_in : "(null)");
+			httpclient_freeMemory(request);
+			return 1;
+		}
 		client_data->post_buf_len = strlen(client_data->post_buf);  //Sets the post data length.
 		// NOTE: remember to free it!
 		request->flags |= HTTPREQUEST_FLAG_FREE_POST_BUF;
 		client_data->post_content_type = strdup(content_type);  //Sets the content type.
+		if (client_data->post_content_type == 0) {
+			ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT, "HTTPClient_Async_SendPost for %s, failed to alloc content type\r\n",
+				url_in ? url_in : "(null)");
+			httpclient_freeMemory(request);
+			return 1;
+		}
 		// NOTE: remember to free it!
 		request->flags |= HTTPREQUEST_FLAG_FREE_POST_CONTENT_TYPE;
 	}
 
 	request->data_callback = 0;
 	request->port = http_port;
-	request->url = url;
 	request->method = HTTPCLIENT_POST;
 	request->timeout = 10000;
-	HTTPClient_Async_SendGeneric(request);
-
-
-	return 0;
+	return HTTPClient_Async_SendPreparedRequest(request);
 }
 
 #endif // ENABLE_SEND_POSTANDGET
