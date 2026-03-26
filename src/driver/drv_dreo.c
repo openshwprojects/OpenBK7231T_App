@@ -1,3 +1,4 @@
+<DOCUMENT filename="drv_dreo.c">
 // Dreo Heater UART Protocol Driver for OpenBeken
 // Based on ESPHome dreo_heater.h reference implementation
 // Uses modified Tuya UART protocol with custom checksum
@@ -213,114 +214,69 @@ static void Dreo_SendEnum(byte dpId, uint32_t value) {
 // Minimum packet: 8 header + 1 checksum = 9 bytes
 #define DREO_MIN_PACKET_SIZE 9
 
-// Persistent partial-packet buffer so we can correctly assemble large messages
-// (e.g. 126-byte status packets) that arrive across multiple Dreo_RunFrame calls.
-static byte g_dreoPartial[512];
-static int  g_dreoPartialLen = 0;
-
-// Temporary working buffer for snapshot + partial
-static byte g_dreoWorkBuf[1024];
+// Single private buffer for safe snapshot (eliminates race with uart_event_task)
+static byte g_dreoBuffer[1024];
 
 static int Dreo_TryGetPacket(byte *out, int maxSize) {
 	int cs = UART_GetDataSize();
-
-	// Nothing new and no leftover → nothing to do
-	if (cs == 0 && g_dreoPartialLen == 0)
+	if (cs < DREO_MIN_PACKET_SIZE)
 		return 0;
 
-	// Build a contiguous view: leftover from last frame + new bytes from ring buffer
-	int total = g_dreoPartialLen + cs;
-	if (total > (int)sizeof(g_dreoWorkBuf)) {
-		// Extremely rare safety net – drop oldest data
-		int drop = total - (int)sizeof(g_dreoWorkBuf) + 64;
-		if (g_dreoPartialLen >= drop) {
-			g_dreoPartialLen -= drop;
-			memmove(g_dreoPartial, g_dreoPartial + drop, g_dreoPartialLen);
-		} else {
-			g_dreoPartialLen = 0;
-		}
-		total = g_dreoPartialLen + cs;
+	// Take a single consistent snapshot of the ring buffer
+	int snapLen = (cs > (int)sizeof(g_dreoBuffer)) ? (int)sizeof(g_dreoBuffer) : cs;
+	for (int i = 0; i < snapLen; i++) {
+		g_dreoBuffer[i] = UART_GetByte(i);
 	}
 
-	// Copy partial + new data into work buffer
-	if (g_dreoPartialLen > 0)
-		memcpy(g_dreoWorkBuf, g_dreoPartial, g_dreoPartialLen);
-	for (int i = 0; i < cs; i++) {
-		g_dreoWorkBuf[g_dreoPartialLen + i] = UART_GetByte(i);
-	}
-
-	// Scan the combined buffer for the FIRST complete valid packet
-	for (int ofs = 0; ofs <= total - DREO_MIN_PACKET_SIZE; ofs++) {
-		if (g_dreoWorkBuf[ofs] != 0x55 || g_dreoWorkBuf[ofs + 1] != 0xAA)
+	// Scan the snapshot for the first complete valid packet
+	for (int ofs = 0; ofs <= snapLen - DREO_MIN_PACKET_SIZE; ofs++) {
+		if (g_dreoBuffer[ofs] != 0x55 || g_dreoBuffer[ofs + 1] != 0xAA)
 			continue;
 
-		// Possible header at ofs
-		byte lenH = g_dreoWorkBuf[ofs + 6];
-		byte lenL = g_dreoWorkBuf[ofs + 7];
+		byte lenH = g_dreoBuffer[ofs + 6];
+		byte lenL = g_dreoBuffer[ofs + 7];
 		int payloadLen = ((int)lenH << 8) | lenL;
 		int packetLen = 8 + payloadLen + 1;
 
-		// Not enough data yet for this packet → continue scanning (there might be a complete packet later)
-		if (packetLen > total - ofs)
-			continue;
+		// Not enough data yet → keep waiting
+		if (packetLen > snapLen - ofs)
+			break;
 
-		// Checksum verification
+		// Checksum verification on snapshot
 		uint32_t calcSum = 0;
 		for (int i = 2; i < packetLen - 1; i++) {
-			calcSum += g_dreoWorkBuf[ofs + i];
+			calcSum += g_dreoBuffer[ofs + i];
 		}
 		byte expected = (byte)((calcSum - 1) & 0xFF);
-		if (g_dreoWorkBuf[ofs + packetLen - 1] == expected) {
-			// VALID PACKET FOUND
-			if (packetLen > maxSize) {
-				addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "Dreo: packet too large (%i > %i)", packetLen, maxSize);
-				UART_ConsumeBytes(g_dreoPartialLen + ofs + packetLen);
-				g_dreoPartialLen = 0;
-				return 0;
-			}
-
-			memcpy(out, g_dreoWorkBuf + ofs, packetLen);
-
-			// Consume exactly the bytes we used from the ring buffer
-			UART_ConsumeBytes(g_dreoPartialLen + ofs + packetLen);
-			g_dreoBytesReceived += packetLen;
-
-			// If we had leading garbage before this packet, count it
-			if (ofs > 0) {
-				g_dreoBytesInvalid += ofs;
-			}
-
-			// IMPORTANT: any data AFTER this packet stays in the partial buffer
-			// so the while(1) loop in Dreo_RunFrame can process the next packet immediately
-			int remaining = total - (ofs + packetLen);
-			if (remaining > 0) {
-				memcpy(g_dreoPartial, g_dreoWorkBuf + ofs + packetLen, remaining);
-				g_dreoPartialLen = remaining;
-			} else {
-				g_dreoPartialLen = 0;
-			}
-
-			addLogAdv(LOG_DEBUG, LOG_FEATURE_GENERAL,
-				"Dreo: received cmd=0x%02X payload=%i bytes (valid packet)", g_dreoWorkBuf[ofs+4], payloadLen);
-
-			return packetLen;
+		if (g_dreoBuffer[ofs + packetLen - 1] != expected) {
+			ofs++;   // false header
+			continue;
 		}
-		// Bad checksum on a 55 AA → treat as false header, skip only this byte and continue scanning
+
+		// VALID PACKET FOUND
+		if (packetLen > maxSize) {
+			addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "Dreo: packet too large (%i > %i)", packetLen, maxSize);
+			UART_ConsumeBytes(ofs + packetLen);
+			return 0;
+		}
+
+		memcpy(out, g_dreoBuffer + ofs, packetLen);
+
+		// Consume from the real ring buffer (atomic)
+		UART_ConsumeBytes(ofs + packetLen);
+		g_dreoBytesReceived += packetLen;
+
+		if (ofs > 0) {
+			g_dreoBytesInvalid += ofs;
+		}
+
+		addLogAdv(LOG_DEBUG, LOG_FEATURE_GENERAL,
+			"Dreo: received cmd=0x%02X payload=%i bytes (valid packet)", out[4], payloadLen);
+
+		return packetLen;
 	}
 
-	// No complete valid packet found in the current combined buffer.
-	// Keep everything (partial + new bytes) for the next frame.
-	if (total > (int)sizeof(g_dreoPartial)) {
-		// Safety: keep only the last 400 bytes (plenty for any Dreo packet)
-		int keep = 400;
-		memmove(g_dreoPartial, g_dreoWorkBuf + total - keep, keep);
-		g_dreoPartialLen = keep;
-	} else {
-		memcpy(g_dreoPartial, g_dreoWorkBuf, total);
-		g_dreoPartialLen = total;
-	}
-
-	// Do NOT consume anything from the ring buffer yet – we are still waiting for a complete packet
+	// No complete packet yet – leave everything in the ring buffer
 	return 0;
 }
 
@@ -668,3 +624,4 @@ void Dreo_OnChannelChanged(int ch, int value) {
 void Dreo_OnHassDiscovery(const char *topic) {
 	// Placeholder for future HA discovery support
 }
+</DOCUMENT>
