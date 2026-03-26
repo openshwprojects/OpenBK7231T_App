@@ -933,7 +933,13 @@ static commandResult_t runcmd(const void* context, const char* cmd, const char* 
             if(mode == 2) {
                 c[0] = '\0'; // clear history hoàn toàn (quan trọng hơn '0')
                 ADDLOG_INFO(LOG_FEATURE_CMD, "Loop reset");
-                return CMD_RES_OK; // reset xong thì thôi
+                //return CMD_RES_OK; // reset xong thì thôi
+				//OK Info:CMD:EXEC flags=1 -> 2222 2 
+				//OK Info:CMD:Loop reset
+				//NG -> Info:CMD:EXEC flags=2 -> 2222 1  đáng lẽ phải nhảy xuống error ..
+				//NG -> Info:CMD:EXEC flags=2 -> 2222 1 
+				//Error:CMD:LOOP DETECTED: 2222
+				mode = 1; //ép nó check lần đầu luôn
             }
 
             // ===== mode 1 = check loop =====
