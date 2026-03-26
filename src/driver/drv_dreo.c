@@ -1,3 +1,4 @@
+<DOCUMENT filename="drv_dreo.c">
 // Dreo Heater UART Protocol Driver for OpenBeken
 // Based on ESPHome dreo_heater.h reference implementation
 // Uses modified Tuya UART protocol with custom checksum
@@ -237,9 +238,9 @@ static int Dreo_TryGetPacket(byte *out, int maxSize) {
 		int payloadLen = ((int)lenH << 8) | lenL;
 		int packetLen = 8 + payloadLen + 1;
 
-		// Not enough data yet for this packet → keep waiting (do NOT break, continue scanning for possible later packets)
+		// Not enough data yet for this packet → STOP scanning and wait for more bytes
 		if (packetLen > snapLen - ofs)
-			continue;
+			break;
 
 		// Verify checksum on snapshot
 		uint32_t calcSum = 0;
@@ -500,20 +501,15 @@ void Dreo_RunEverySecond(void) {
 	}
 
 	// Init sequence (mimics dreo.h setup)
-	// State 0: send heartbeat (cmd 0x00) — already done above on first call
-	// State 1: after ~1s, send MCU conf with init data
-	// State 2: after ~2s, send query state (cmd 0x02)
 	if (g_dreoInitState < 3) {
 		g_dreoInitTimer++;
 		switch (g_dreoInitState) {
 		case 0:
-			// Send initial heartbeat
 			Dreo_SendRaw(DREO_CMD_HEARTBEAT, NULL, 0);
 			g_dreoInitState = 1;
 			break;
 		case 1:
 			if (g_dreoInitTimer >= 1) {
-				// Send MCU conf init data: {0x02, 0x05, 0x00}
 				byte initData[] = { 0x02, 0x05, 0x00 };
 				Dreo_SendRaw(DREO_CMD_WIFI_STATE, initData, sizeof(initData));
 				g_dreoInitState = 2;
@@ -521,7 +517,6 @@ void Dreo_RunEverySecond(void) {
 			break;
 		case 2:
 			if (g_dreoInitTimer >= 2) {
-				// Send query state
 				Dreo_SendRaw(DREO_CMD_MCU_CONF, NULL, 0);
 				g_dreoInitState = 3;
 			}
@@ -623,3 +618,4 @@ void Dreo_OnChannelChanged(int ch, int value) {
 void Dreo_OnHassDiscovery(const char *topic) {
 	// Placeholder for future HA discovery support
 }
+</DOCUMENT>
