@@ -125,14 +125,16 @@ static dreoMapping_t *Dreo_AutoStore(int dpId, int dpType) {
 // -----------------------------------------------------------------------
 
 // Send a raw Dreo packet:  55 AA [ver=0x00] [seq] [cmd] [0x00] [lenH] [lenL] [payload] [checksum]
-// Checksum = (sum(bytes from seq to last payload byte) - 1) & 0xFF
+// Checksum = (sum(bytes from ver to last payload byte) - 1) & 0xFF
 static void Dreo_SendRaw(byte cmd, const byte *payload, int payloadLen) {
 	int i;
 	uint32_t sum = 0;
 
 	UART_SendByte(0x55);
 	UART_SendByte(0xAA);
-	UART_SendByte(0x00);           // version
+	byte ver = 0x00;
+	UART_SendByte(ver);           // version
+	sum += ver;
 
 	byte seq = g_dreoSeq++;
 	UART_SendByte(seq);            // sequence
@@ -141,7 +143,9 @@ static void Dreo_SendRaw(byte cmd, const byte *payload, int payloadLen) {
 	UART_SendByte(cmd);            // command
 	sum += cmd;
 
-	UART_SendByte(0x00);           // reserved zero
+	byte reserved = 0x00;
+	UART_SendByte(reserved);       // reserved zero
+	sum += reserved;
 
 	byte lenH = (payloadLen >> 8) & 0xFF;
 	byte lenL = payloadLen & 0xFF;
@@ -236,6 +240,16 @@ static int Dreo_TryGetPacket(byte *out, int maxSize) {
 	if (c_garbage > 0) {
 		g_dreoBytesInvalid += c_garbage;
 		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "Dreo: skipped %i garbage bytes: %s", c_garbage, skipHex);
+		
+		// TEMPORARY DIAGNOSTIC DUMP (for this test run only)
+		// Full ring buffer whenever ANY garbage appears – even 1 byte should never happen in a healthy stream
+		char bufHex[768];
+		int pos = 0;
+		pos += snprintf(bufHex, sizeof(bufHex), "Dreo: FULL RING BUFFER DUMP after garbage skip (first %i bytes): ", cs);
+		for (int j = 0; j < cs && pos < (int)sizeof(bufHex)-4; j++) {
+			pos += snprintf(bufHex + pos, sizeof(bufHex) - pos, "%02X ", UART_GetByte(j));
+		}
+		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "%s", bufHex);
 	}
 	if (cs < DREO_MIN_PACKET_SIZE)
 		return 0;
@@ -249,6 +263,27 @@ static int Dreo_TryGetPacket(byte *out, int maxSize) {
 	byte lenL = UART_GetByte(7);
 	int payloadLen = (lenH << 8) | lenL;
 	int packetLen = 8 + payloadLen + 1;  // header(8) + payload + checksum(1)
+
+	// Safety check against false 55 AA headers with bogus lengths.
+	// This prevents permanent desync (when cs < packetLen for a bogus header)
+	// and reduces large garbage skips. Real state packets never exceed ~126 bytes payload.
+	if (payloadLen > 160) {
+		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "Dreo: suspiciously large payload %i bytes, likely false header - skipping 1 byte", payloadLen);
+		
+		// TEMPORARY DIAGNOSTIC DUMP (for this test run only)
+		// Shows exactly what bytes are currently sitting in the ring buffer when we hit a desync
+		char bufHex[768];
+		int pos = 0;
+		pos += snprintf(bufHex, sizeof(bufHex), "Dreo: FULL RING BUFFER DUMP at desync (first %i bytes): ", cs);
+		for (int j = 0; j < cs && pos < (int)sizeof(bufHex)-4; j++) {
+			pos += snprintf(bufHex + pos, sizeof(bufHex) - pos, "%02X ", UART_GetByte(j));
+		}
+		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "%s", bufHex);
+
+		UART_ConsumeBytes(1);
+		g_dreoBytesInvalid++;
+		return 0;
+	}
 
 	if (cs < packetLen)
 		return 0;  // incomplete
@@ -276,7 +311,7 @@ static int Dreo_TryGetPacket(byte *out, int maxSize) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "%s", hex);
 
 		g_dreoBytesInvalid++;
-		UART_ConsumeBytes(1);   // only drop 1 byte on failure – this is what fixes the large garbage skips
+		UART_ConsumeBytes(1);   // <<< ONLY 1 BYTE – this is the fix for large garbage skips
 		return 0;
 	}
 
@@ -479,7 +514,7 @@ void Dreo_Init(void) {
 	g_dreoInitTimer = 0;
 
 	UART_InitUART(115200, 0, false);
-	UART_InitReceiveRingBuffer(512);
+	UART_InitReceiveRingBuffer(1024);   // increased from 512 to prevent buffer overflow / desync on ESP-IDF
 
 	//cmddetail:{"name":"linkDreoOutputToChannel","args":"[dpId][varType][channelID]",
 	//cmddetail:"descr":"Map a Dreo dpId to an OBK channel. VarTypes: bool, val, enum, str, raw. Syntax is same as linkTuyaMCUOutputToChannel.",
