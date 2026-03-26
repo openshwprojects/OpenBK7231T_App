@@ -75,5 +75,9 @@ void Test_HTTP_Client() {
 	HTTPClient_Test_SetSkipAsyncThread(0);
 }
 
+#else
+
+void Test_HTTP_Client() {
+}
 
 #endif
