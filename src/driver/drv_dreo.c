@@ -241,9 +241,9 @@ static int Dreo_TryGetPacket(byte *out, int maxSize) {
 		g_dreoBytesInvalid += c_garbage;
 		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "Dreo: skipped %i garbage bytes: %s", c_garbage, skipHex);
 		
-		// TEMPORARY DIAGNOSTIC DUMP (for this test run only)
+		// TEMPORARY DIAGNOSTIC DUMP (safe version – static buffer, zero stack usage)
 		// Full ring buffer whenever ANY garbage appears – even 1 byte should never happen in a healthy stream
-		char bufHex[768];
+		static char bufHex[768];   // static = lives in .bss, not on stack → no overflow
 		int pos = 0;
 		pos += snprintf(bufHex, sizeof(bufHex), "Dreo: FULL RING BUFFER DUMP after garbage skip (first %i bytes): ", cs);
 		for (int j = 0; j < cs && pos < (int)sizeof(bufHex)-4; j++) {
@@ -270,9 +270,8 @@ static int Dreo_TryGetPacket(byte *out, int maxSize) {
 	if (payloadLen > 160) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "Dreo: suspiciously large payload %i bytes, likely false header - skipping 1 byte", payloadLen);
 		
-		// TEMPORARY DIAGNOSTIC DUMP (for this test run only)
-		// Shows exactly what bytes are currently sitting in the ring buffer when we hit a desync
-		char bufHex[768];
+		// TEMPORARY DIAGNOSTIC DUMP (safe version – static buffer)
+		static char bufHex[768];   // static = lives in .bss, not on stack → no overflow
 		int pos = 0;
 		pos += snprintf(bufHex, sizeof(bufHex), "Dreo: FULL RING BUFFER DUMP at desync (first %i bytes): ", cs);
 		for (int j = 0; j < cs && pos < (int)sizeof(bufHex)-4; j++) {
