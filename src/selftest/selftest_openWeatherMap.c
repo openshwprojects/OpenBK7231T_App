@@ -37,12 +37,25 @@ const char *reply_no_weather =
 "HTTP/1.1 200 OK\r\n\r\n"
 "{\"coord\":{\"lon\":10,\"lat\":50},\"main\":{\"temp\":20,\"pressure\":900,\"humidity\":60}}";
 
+const char *owm_rain_reply =
+"HTTP/1.1 200 OK\r\n\r\n"
+"{"
+"  \"coord\": {\"lon\": 11.0, \"lat\": 51.0},"
+"  \"weather\": [{\"id\":500,\"main\":\"Rain\",\"description\":\"light rain\",\"icon\":\"10d\"}],"
+"  \"main\": {\"temp\": 18.0, \"pressure\": 901, \"humidity\": 70},"
+"  \"timezone\": 3600,"
+"  \"sys\": {\"sunrise\":1604960000,\"sunset\":1605000000}"
+"}";
+
+void Test_OpenWeatherMap_StaleWeatherStringsFollowLatestFullReply();
+
 void Test_OpenWeatherMap() {
+	weatherData_t *w;
 
 	// HTTP header + json
 	Weather_SetReply(owm_sample_reply);
 
-	weatherData_t *w = Weather_GetData();
+	w = Weather_GetData();
 	SELFTEST_ASSERT_FLOATCOMPARE(w->humidity, 85);
 	SELFTEST_ASSERT_FLOATCOMPARE(w->pressure, 998);
 	SELFTEST_ASSERT_FLOATCOMPARE(w->temp, 23);
@@ -51,7 +64,50 @@ void Test_OpenWeatherMap() {
 	SELFTEST_ASSERT_FLOATCOMPARE(w->lat, 50);
 	SELFTEST_ASSERT_FLOATCOMPARE(w->lon, 10);
 
+	// Test with a response that has no "weather" array (edge case)
+	Weather_SetReply(reply_no_weather);
+	w = Weather_GetData();
+	// Numeric fields from "main" and "coord" must still parse
+	SELFTEST_ASSERT_FLOATCOMPARE(w->humidity, 60);
+	SELFTEST_ASSERT_FLOATCOMPARE(w->pressure, 900);
+	SELFTEST_ASSERT_FLOATCOMPARE(w->temp, 20);
+	SELFTEST_ASSERT_FLOATCOMPARE(w->lat, 50);
+	SELFTEST_ASSERT_FLOATCOMPARE(w->lon, 10);
+	// Current implementation only updates these strings when weather[0] exists,
+	// so a reply without a weather array keeps the previous parsed values.
+	SELFTEST_ASSERT_STRING(w->main_weather, "Clear");
+	SELFTEST_ASSERT_STRING(w->description, "clear sky");
 
+	Test_OpenWeatherMap_StaleWeatherStringsFollowLatestFullReply();
+}
+
+void Test_OpenWeatherMap_StaleWeatherStringsFollowLatestFullReply() {
+	weatherData_t *w;
+
+	Weather_SetReply(owm_sample_reply);
+	w = Weather_GetData();
+	SELFTEST_ASSERT_STRING(w->main_weather, "Clear");
+	SELFTEST_ASSERT_STRING(w->description, "clear sky");
+
+	Weather_SetReply(owm_rain_reply);
+	w = Weather_GetData();
+	SELFTEST_ASSERT_FLOATCOMPARE(w->humidity, 70);
+	SELFTEST_ASSERT_FLOATCOMPARE(w->pressure, 901);
+	SELFTEST_ASSERT_FLOATCOMPARE(w->temp, 18);
+	SELFTEST_ASSERT_FLOATCOMPARE(w->lat, 51);
+	SELFTEST_ASSERT_FLOATCOMPARE(w->lon, 11);
+	SELFTEST_ASSERT_STRING(w->main_weather, "Rain");
+	SELFTEST_ASSERT_STRING(w->description, "light rain");
+
+	Weather_SetReply(reply_no_weather);
+	w = Weather_GetData();
+	SELFTEST_ASSERT_FLOATCOMPARE(w->humidity, 60);
+	SELFTEST_ASSERT_FLOATCOMPARE(w->pressure, 900);
+	SELFTEST_ASSERT_FLOATCOMPARE(w->temp, 20);
+	SELFTEST_ASSERT_FLOATCOMPARE(w->lat, 50);
+	SELFTEST_ASSERT_FLOATCOMPARE(w->lon, 10);
+	SELFTEST_ASSERT_STRING(w->main_weather, "Rain");
+	SELFTEST_ASSERT_STRING(w->description, "light rain");
 }
 
 
