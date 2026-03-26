@@ -672,13 +672,18 @@ static commandResult_t CMD_Echo(const void* context, const char* cmd, const char
 			
 			// --- check loop  ---
 			commandResult_t loopRes = CMD_ExecuteCommandArgs("echo_lop_his", tail0/*reset khi tail0[base + 1] = 2 */ , COMMAND_FLAG_SOURCE_SCRIPT);
+			/*
 			if (loopRes == CMD_RES_UNKNOWN_COMMAND) {
 				// chưa có command → bỏ qua loop check
 				//g_cfg.mqtt_host[0] = '\0'; tao ko cần init sạch, chỉ cần lót đủ số byte 256
 				//CMD_RegisterCommand("his_loop_forever", runcmd, g_cfg.mqtt_host);
-			}else if (loopRes != CMD_RES_OK) {
-				// loop detected hoặc lỗi → chặn
-				return loopRes;
+			}
+			*/
+			// --- loop check ---
+			if (loopRes != CMD_RES_OK && loopRes != CMD_RES_UNKNOWN_COMMAND) {
+				memset(tail0, 0, len0);
+				memset(tail1, 0, len1);
+				return loopRes; // chặn loop detect như gốc
 			}
 
 			tail0[base] = 0;
