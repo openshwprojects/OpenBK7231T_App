@@ -247,13 +247,6 @@ static int Dreo_TryGetPacket(byte *out, int maxSize) {
 	if (cs < packetLen)
 		return 0;  // incomplete
 
-	// Sanity check: never accept insanely large packets (MCU never sends >300 bytes)
-	if (payloadLen > 300) {
-		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "Dreo: bogus length %i, resyncing", payloadLen);
-		UART_ConsumeBytes(1);
-		return 0;
-	}
-
 	// Verify checksum – exact ESPHome-style formula (sum from byte 2 to end-1, then -1)
 	uint32_t calcSum = 0;
 	for (int i = 2; i < packetLen - 1; i++) {
@@ -277,7 +270,7 @@ static int Dreo_TryGetPacket(byte *out, int maxSize) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "%s", hex);
 
 		g_dreoBytesInvalid++;
-		UART_ConsumeBytes(packetLen);   // consume the whole attempted frame (fixes desync on back-to-back packets)
+		UART_ConsumeBytes(1);   // <<< CRITICAL: only drop 1 byte on failure
 		return 0;
 	}
 
