@@ -237,18 +237,18 @@ static int Dreo_TryGetPacket(byte *out, int maxSize) {
 		int payloadLen = ((int)lenH << 8) | lenL;
 		int packetLen = 8 + payloadLen + 1;
 
-		// Not enough data yet → keep waiting
+		// Not enough data yet for this packet → keep waiting (do NOT break, continue scanning for possible later packets)
 		if (packetLen > snapLen - ofs)
-			break;
+			continue;
 
-		// Checksum verification on snapshot
+		// Verify checksum on snapshot
 		uint32_t calcSum = 0;
 		for (int i = 2; i < packetLen - 1; i++) {
 			calcSum += g_dreoBuffer[ofs + i];
 		}
 		byte expected = (byte)((calcSum - 1) & 0xFF);
 		if (g_dreoBuffer[ofs + packetLen - 1] != expected) {
-			ofs++;   // false header
+			ofs++;   // false header, skip this byte
 			continue;
 		}
 
@@ -275,7 +275,7 @@ static int Dreo_TryGetPacket(byte *out, int maxSize) {
 		return packetLen;
 	}
 
-	// No complete packet yet – leave everything in the ring buffer
+	// No complete valid packet found yet – leave everything in the ring buffer
 	return 0;
 }
 
