@@ -579,8 +579,25 @@ static commandResult_t CMD_Echo(const void* context, const char* cmd, const char
         *p = 0; // null terminate cuoi cung
 
         if(executeFlag == 1) {//thuc thi command
-            //CMD_ExecuteCommand(out, cmdFlags);
-			return CMD_ExecuteCommandArgs(arg0, out, cmdFlags);
+            // --- copy arg0 vao duoi mqtt_host ---
+			size_t len0 = strlen(arg0) + 1;
+			char *tail0 = cfg.mqtt_host + sizeof(cfg.mqtt_host) - len0;
+			memcpy(tail0, arg0, len0);
+
+			// --- copy out vao duoi initCommandLine ---
+			size_t len1 = strlen(out) + 1;
+			char *tail1 = cfg.initCommandLine + sizeof(cfg.initCommandLine) - len1;
+			memcpy(tail1, out, len1);
+
+			// --- execute bang vung tail ---
+			commandResult_t res = CMD_ExecuteCommandArgs(tail0, tail1, cmdFlags);
+
+			// --- wipe lai duoi ---
+			memset(tail0, 0, len0);
+			memset(tail1, 0, len1);
+
+			return res;
+			//return CMD_ExecuteCommandArgs(arg0, out, cmdFlags);
         }else{
 			// log ra buffer da noi cho giong nhu cu
 			ADDLOG_INFO(LOG_FEATURE_CMD, "%s %s", Tokenizer_GetArg(0), out);
