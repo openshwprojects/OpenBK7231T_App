@@ -241,9 +241,9 @@ static int Dreo_TryGetPacket(byte *out, int maxSize) {
 		g_dreoBytesInvalid += c_garbage;
 		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "Dreo: skipped %i garbage bytes: %s", c_garbage, skipHex);
 		
-		// TEMPORARY DIAGNOSTIC DUMP (safe version – static buffer, zero stack usage)
-		// Full ring buffer whenever ANY garbage appears – even 1 byte should never happen in a healthy stream
-		static char bufHex[768];   // static = lives in .bss, not on stack → no overflow
+		// FULL RING BUFFER DUMP ON EVERY SINGLE GARBAGE SKIP (as requested)
+		// This will show exactly what bytes reached the driver vs. what the external probe captured
+		static char bufHex[1024];   // static = no stack usage
 		int pos = 0;
 		pos += snprintf(bufHex, sizeof(bufHex), "Dreo: FULL RING BUFFER DUMP after garbage skip (first %i bytes): ", cs);
 		for (int j = 0; j < cs && pos < (int)sizeof(bufHex)-4; j++) {
@@ -265,13 +265,10 @@ static int Dreo_TryGetPacket(byte *out, int maxSize) {
 	int packetLen = 8 + payloadLen + 1;  // header(8) + payload + checksum(1)
 
 	// Safety check against false 55 AA headers with bogus lengths.
-	// This prevents permanent desync (when cs < packetLen for a bogus header)
-	// and reduces large garbage skips. Real state packets never exceed ~126 bytes payload.
 	if (payloadLen > 160) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "Dreo: suspiciously large payload %i bytes, likely false header - skipping 1 byte", payloadLen);
 		
-		// TEMPORARY DIAGNOSTIC DUMP (safe version – static buffer)
-		static char bufHex[768];   // static = lives in .bss, not on stack → no overflow
+		static char bufHex[1024];
 		int pos = 0;
 		pos += snprintf(bufHex, sizeof(bufHex), "Dreo: FULL RING BUFFER DUMP at desync (first %i bytes): ", cs);
 		for (int j = 0; j < cs && pos < (int)sizeof(bufHex)-4; j++) {
@@ -310,7 +307,7 @@ static int Dreo_TryGetPacket(byte *out, int maxSize) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "%s", hex);
 
 		g_dreoBytesInvalid++;
-		UART_ConsumeBytes(1);   // <<< ONLY 1 BYTE – this is the fix for large garbage skips
+		UART_ConsumeBytes(1);
 		return 0;
 	}
 
