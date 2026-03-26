@@ -216,6 +216,8 @@ static void Dreo_SendEnum(byte dpId, uint32_t value) {
 // Try to extract the next complete Dreo packet from the UART ring buffer.
 // Returns total packet length if a valid packet was extracted into 'out', or 0 if not ready.
 static int Dreo_TryGetPacket(byte *out, int maxSize) {
+	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "Dreo: ring size=%d, first4=%02X %02X %02X %02X", 
+          UART_GetDataSize(), UART_GetByte(0), UART_GetByte(1), UART_GetByte(2), UART_GetByte(3));
 	int cs;
 	int c_garbage = 0;
 
