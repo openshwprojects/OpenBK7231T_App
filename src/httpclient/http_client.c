@@ -10,12 +10,53 @@
 #include "../obk_config.h"
 #include "../cmnds/cmd_public.h"
 #include "../logging/logging.h"
+#include "http_client.h"
 
 #if ENABLE_SEND_POSTANDGET
 
+#ifdef WINDOWS
+void httpclient_freeMemory(httprequest_t *request);
+static int g_httpClientTestFailPoint = HTTPCLIENT_TEST_FAIL_NONE;
+static int g_httpClientTestSkipAsyncThread = 0;
+static httprequest_t *g_httpClientTestLastRequest = 0;
+
+void HTTPClient_Test_SetFailPoint(int failPoint) {
+	g_httpClientTestFailPoint = failPoint;
+}
+void HTTPClient_Test_SetSkipAsyncThread(int bSkip) {
+	g_httpClientTestSkipAsyncThread = bSkip;
+}
+httprequest_t *HTTPClient_Test_GetLastRequest(void) {
+	return g_httpClientTestLastRequest;
+}
+void HTTPClient_Test_ClearLastRequest(void) {
+	g_httpClientTestLastRequest = 0;
+}
+void HTTPClient_Test_FreeLastRequest(void) {
+	if (g_httpClientTestLastRequest) {
+		httpclient_freeMemory(g_httpClientTestLastRequest);
+		g_httpClientTestLastRequest = 0;
+	}
+}
+static void *HTTPClient_Test_Malloc(int failPoint, size_t size) {
+	if (g_httpClientTestFailPoint == failPoint) {
+		return 0;
+	}
+	return malloc(size);
+}
+static char *HTTPClient_Test_ExpandingStrdup(int failPoint, const char *s) {
+	if (g_httpClientTestFailPoint == failPoint) {
+		return 0;
+	}
+	return CMD_ExpandingStrdup(s);
+}
+#else
+#define HTTPClient_Test_Malloc(failPoint, size) malloc(size)
+#define HTTPClient_Test_ExpandingStrdup(failPoint, s) CMD_ExpandingStrdup(s)
+#endif
+
 #include "utils_timer.h"
 //#include "lite-log.h"
-#include "http_client.h"
 #include "iot_export_errno.h"
 
 #define log_err(a, ...)
@@ -1161,6 +1202,12 @@ exit:
 // our async stuff
 int HTTPClient_Async_SendGeneric(httprequest_t *request){
     OSStatus err = kNoErr;
+#ifdef WINDOWS
+	g_httpClientTestLastRequest = request;
+	if (g_httpClientTestSkipAsyncThread) {
+		return 0;
+	}
+#endif
     err = rtos_create_thread( NULL, BEKEN_APPLICATION_PRIORITY,
 									"httprequest",
 									(beken_thread_function_t)httprequest_thread,
@@ -1220,7 +1267,7 @@ int HTTPClient_Async_SendGet(const char *url_in, const char *tgFile, const char 
 #else
 	// OBK UPDATE: use our own strdup which expands constants
 	// So $CH5 gets changed to channel value integer, etc...
-	url = CMD_ExpandingStrdup(url_in);
+	url = HTTPClient_Test_ExpandingStrdup(HTTPCLIENT_TEST_FAIL_NONE, url_in);
 	//url = strdup(url_in);
 #endif
 	if(url == 0) {
@@ -1233,7 +1280,7 @@ int HTTPClient_Async_SendGet(const char *url_in, const char *tgFile, const char 
 #if DBG_HTTPCLIENT_MEMLEAK
 	request = &testreq;
 #else
-	request = (httprequest_t *) malloc(sizeof(httprequest_t));
+	request = (httprequest_t *) HTTPClient_Test_Malloc(HTTPCLIENT_TEST_FAIL_NONE, sizeof(httprequest_t));
 #endif
 	if(request == 0) {
 		ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT, "HTTPClient_Async_SendGet for %s, failed to alloc request memory\r\n");
@@ -1263,7 +1310,7 @@ int HTTPClient_Async_SendGet(const char *url_in, const char *tgFile, const char 
 	request->timeout = 10000;
 	if (tgFile && *tgFile) {
 		client_data->response_buf_len = 2048;
-		client_data->response_buf = malloc(client_data->response_buf_len);
+		client_data->response_buf = HTTPClient_Test_Malloc(HTTPCLIENT_TEST_FAIL_SENDGET_RESPONSEBUF_ALLOC, client_data->response_buf_len);
 		request->flags |= HTTPREQUEST_FLAG_FREE_RESPONSEBUF;
 		strcpy_safe(request->targetFile, tgFile, sizeof(request->targetFile));
 		request->data_callback = HTTPClient_CB_Data;
@@ -1282,13 +1329,13 @@ int HTTPClient_Async_SendPost(const char *url_in, int http_port, const char *con
 
 	// OBK UPDATE: use our own strdup which expands constants
 	// So $CH5 gets changed to channel value integer, etc...
-	url = CMD_ExpandingStrdup(url_in);
+	url = HTTPClient_Test_ExpandingStrdup(HTTPCLIENT_TEST_FAIL_NONE, url_in);
 	if (url == 0) {
 		ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT, "HTTPClient_Async_SendPost for %s, failed to alloc URL memory\r\n");
 		return 1;
 	}
 
-	request = (httprequest_t *)malloc(sizeof(httprequest_t));
+	request = (httprequest_t *)HTTPClient_Test_Malloc(HTTPCLIENT_TEST_FAIL_SENDPOST_REQUEST_ALLOC, sizeof(httprequest_t));
 	if (url == 0) {
 		ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT, "HTTPClient_Async_SendPost for %s, failed to alloc request memory\r\n");
 		return 1;
@@ -1313,7 +1360,7 @@ int HTTPClient_Async_SendPost(const char *url_in, int http_port, const char *con
 	}
 
 	if (post_content) {
-		client_data->post_buf = CMD_ExpandingStrdup(post_content);  //Sets the user data to be posted.
+		client_data->post_buf = HTTPClient_Test_ExpandingStrdup(HTTPCLIENT_TEST_FAIL_SENDPOST_POSTBUF_DUP, post_content);  //Sets the user data to be posted.
 		client_data->post_buf_len = strlen(client_data->post_buf);  //Sets the post data length.
 		// NOTE: remember to free it!
 		request->flags |= HTTPREQUEST_FLAG_FREE_POST_BUF;
