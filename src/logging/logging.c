@@ -382,7 +382,7 @@ void addLogAdv(int level, int feature, const char* fmt, ...)
 	tmp[len++] = '\n';
 	tmp[len] = '\0';
 #if WINDOWS
-	printf(tmp);
+	printf("%s", tmp);
 #endif
 	// This is used by HTTP console
 	if (g_log_alsoPrintToHTTP) {
