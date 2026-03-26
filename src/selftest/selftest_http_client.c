@@ -1,4 +1,4 @@
-#ifdef WINDOWS
+#if defined(_WIN32)
 
 #include "selftest_local.h"
 #include "../httpclient/http_client.h"
