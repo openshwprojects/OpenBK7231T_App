@@ -609,6 +609,11 @@
 // allow moving average energy calculation +180 bytes
 // #define ENABLE_BL_MOVINGAVG					1
 #endif
-
+#undef ENABLE_DRIVER_DHT
+#undef ENABLE_DRIVER_DS1820
+#undef ENABLE_DRIVER_AHT2X
+#undef ENABLE_DRIVER_CHT83XX
+#undef ENABLE_DRIVER_KP18058
+#undef ENABLE_DRIVER_ADCSMOOTHER
 // closing OBK_CONFIG_H
 #endif
