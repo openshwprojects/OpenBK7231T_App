@@ -4,7 +4,7 @@
 //
 // Protocol format:
 //   [55 AA] [ver] [seq] [cmd] [00] [lenH] [lenL] [payload] [checksum]
-//   Checksum: (seq + sum(payload bytes only) - 1) & 0xFF
+//   Checksum: (seq + sum(payload bytes only)) & 0xFF
 //
 // DP payload format (same as standard Tuya):
 //   [dpId] [dpType:0x01] [type] [lenH] [lenL] [value...]
@@ -121,11 +121,11 @@ static dreoMapping_t *Dreo_AutoStore(int dpId, int dpType) {
 }
 
 // -----------------------------------------------------------------------
-// Dreo UART Packet Send  (FIXED CHECKSUM + seq logging)
+// Dreo UART Packet Send
 // -----------------------------------------------------------------------
 
 // Send a raw Dreo packet:  55 AA [ver=0x00] [seq] [cmd] [0x00] [lenH] [lenL] [payload] [checksum]
-// Checksum = (seq + sum(payload bytes only) - 1) & 0xFF
+// Checksum: (seq + sum(payload bytes only)) & 0xFF
 static void Dreo_SendRaw(byte cmd, const byte *payload, int payloadLen) {
 	int i;
 	uint32_t sum = 0;
@@ -133,30 +133,30 @@ static void Dreo_SendRaw(byte cmd, const byte *payload, int payloadLen) {
 	UART_SendByte(0x55);
 	UART_SendByte(0xAA);
 	byte ver = 0x00;
-	UART_SendByte(ver);                    // always 0x00
+	UART_SendByte(ver);           // version
 
 	byte seq = g_dreoSeq++;
-	UART_SendByte(seq);                    // sequence (used in checksum)
+	UART_SendByte(seq);            // sequence
 
-	UART_SendByte(cmd);                    // command
+	UART_SendByte(cmd);            // command
 	byte reserved = 0x00;
-	UART_SendByte(reserved);
+	UART_SendByte(reserved);       // reserved zero
 	byte lenH = (payloadLen >> 8) & 0xFF;
 	byte lenL = payloadLen & 0xFF;
-	UART_SendByte(lenH);
-	UART_SendByte(lenL);
+	UART_SendByte(lenH);           // length high
+	UART_SendByte(lenL);           // length low
 
-	// checksum = (seq + sum(payload only) - 1)
+	// checksum = (seq + sum(payload only)) & 0xFF
 	sum = seq;
 	for (i = 0; i < payloadLen; i++) {
 		UART_SendByte(payload[i]);
 		sum += payload[i];
 	}
 
-	byte checksum = (byte)((sum - 1) & 0xFF);
+	byte checksum = (byte)(sum & 0xFF);
 	UART_SendByte(checksum);
 
-	g_dreoBytesSent += 8 + payloadLen + 1;
+	g_dreoBytesSent += 8 + payloadLen + 1;  // header(8) + payload + checksum(1)
 
 	if (cmd == DREO_CMD_HEARTBEAT) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,
@@ -206,7 +206,7 @@ static void Dreo_SendEnum(byte dpId, uint32_t value) {
 }
 
 // -----------------------------------------------------------------------
-// Dreo UART Packet Receive  (FIXED CHECKSUM + detailed logging)
+// Dreo UART Packet Receive
 // -----------------------------------------------------------------------
 
 // Dreo packet format: 55 AA [ver] [seq] [cmd] [00] [lenH] [lenL] [payload...] [checksum]
@@ -257,24 +257,22 @@ static int Dreo_TryGetPacket(byte *out, int maxSize) {
 			"Dreo: found 55 AA at ofs=%d → seq=0x%02X cmd=0x%02X ver=0x%02X payload=%d bytes",
 			ofs, seq, cmd, ver, payloadLen);
 
-		if (packetLen > g_dreoPartialLen - ofs) {
-			addLogAdv(LOG_DEBUG, LOG_FEATURE_GENERAL, "Dreo: incomplete packet, waiting...");
+		if (packetLen > g_dreoPartialLen - ofs)
 			break;   // incomplete packet - wait for more data next frame
-		}
 
-		// checksum check - FIXED: (seq + sum(payload only) - 1)
+		// checksum check - (seq + sum(payload bytes only)) & 0xFF
 		uint32_t calcSum = seq;
 		for (int i = 0; i < payloadLen; i++) {
 			calcSum += g_dreoPartial[ofs + 8 + i];
 		}
-		byte expected = (byte)((calcSum - 1) & 0xFF);
+		byte expected = (byte)(calcSum & 0xFF);
 		byte actual   = g_dreoPartial[ofs + packetLen - 1];
 
 		if (actual != expected) {
 			addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,
 				"Dreo: CHECKSUM FAIL seq=0x%02X cmd=0x%02X expected=0x%02X got=0x%02X (desync?)",
 				seq, cmd, expected, actual);
-			ofs++;   // try to resync by skipping one byte
+			ofs++;
 			continue;
 		}
 
@@ -296,6 +294,9 @@ static int Dreo_TryGetPacket(byte *out, int maxSize) {
 		g_dreoPartialLen -= (ofs + packetLen);
 
 		g_dreoBytesReceived += packetLen;
+
+		addLogAdv(LOG_DEBUG, LOG_FEATURE_GENERAL,
+			"Dreo: received cmd=0x%02X payload=%i bytes (valid packet)", cmd, payloadLen);
 
 		return packetLen;
 	}
@@ -494,7 +495,7 @@ void Dreo_Init(void) {
 	g_dreoInitTimer = 0;
 
 	UART_InitUART(115200, 0, false);
-	UART_InitReceiveRingBuffer(2048);   // increased to prevent any buffer overflow / desync
+	UART_InitReceiveRingBuffer(2048);   // increased from 512 to prevent buffer overflow / desync on ESP-IDF
 
 	//cmddetail:{"name":"linkDreoOutputToChannel","args":"[dpId][varType][channelID]",
 	//cmddetail:"descr":"Map a Dreo dpId to an OBK channel. VarTypes: bool, val, enum, str, raw. Syntax is same as linkTuyaMCUOutputToChannel.",
@@ -523,15 +524,18 @@ void Dreo_Shutdown(void) {
 }
 
 void Dreo_RunEverySecond(void) {
-	// Heartbeat + forced status query every 10 seconds
+	// Heartbeat every 10 seconds
 	g_dreoHeartbeatTimer++;
 	if (g_dreoHeartbeatTimer >= 10) {
 		Dreo_SendRaw(DREO_CMD_HEARTBEAT, NULL, 0);
-		Dreo_SendRaw(DREO_CMD_QUERY_STATE, NULL, 0);   // forces fresh status report
+		Dreo_SendRaw(DREO_CMD_QUERY_STATE, NULL, 0);   // force fresh status report
 		g_dreoHeartbeatTimer = 0;
 	}
 
 	// Init sequence (mimics dreo.h setup)
+	// State 0: send heartbeat (cmd 0x00) — already done above on first call
+	// State 1: after ~1s, send MCU conf with init data
+	// State 2: after ~2s, send query state (cmd 0x02)
 	if (g_dreoInitState < 3) {
 		g_dreoInitTimer++;
 		switch (g_dreoInitState) {
