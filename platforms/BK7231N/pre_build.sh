@@ -39,3 +39,16 @@ IFS=$OFS
 #
 # patch -p 1 -d sdk/OpenBK7231N < platforms/BK7231N/my_change.diff
 
+
+
+
+# ---------------------------
+# Disable all sensors automatically
+CONFIG_FILE="src/obk_config.h"
+
+# Nếu chưa có OBK_DISABLE_SENSORS thì thêm
+if ! grep -q "OBK_DISABLE_SENSORS" "$CONFIG_FILE"; then
+    sed -i '/#endif[[:space:]]*$/i \
+\n// Disable sensors automatically\n#define OBK_DISABLE_SENSORS\n#ifdef OBK_DISABLE_SENSORS\n#undef ENABLE_DRIVER_DHT\n#undef ENABLE_DRIVER_DS1820\n#undef ENABLE_DRIVER_DS1820_FULL\n#undef ENABLE_DRIVER_AHT2X\n#undef ENABLE_DRIVER_CHT83XX\n#undef ENABLE_DRIVER_KP18058\n#undef ENABLE_DRIVER_ADCSMOOTHER\n#undef ENABLE_DRIVER_BMP280\n#endif\n' "$CONFIG_FILE"
+fi
+
