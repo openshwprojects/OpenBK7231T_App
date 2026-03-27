@@ -34,13 +34,12 @@ void UART_AppendByteToReceiveRingBuffer(int rc);
 static void uart_event_task(void* pvParameters)
 {
     uart_event_t event;
-    uint8_t* dtmp = (uint8_t*)malloc(1024);   // temporary read buffer
+    uint8_t* dtmp = (uint8_t*)malloc(1024);
 
     for (;;) {
         if (xQueueReceive(uart_queue, (void*)&event, portMAX_DELAY)) {
             switch (event.type) {
             case UART_DATA:
-                // Read all available bytes in this burst
                 while (event.size > 0) {
                     int len = uart_read_bytes(uartnum, dtmp,
                                               (event.size > 1024) ? 1024 : event.size,
@@ -64,10 +63,10 @@ static void uart_event_task(void* pvParameters)
                 break;
 
             case UART_BREAK:
-                // Dreo heaters often trigger this between back-to-back packets.
-                // It is usually harmless – we no longer flush the buffer.
+                // Dreo heaters frequently produce very short idle/low periods between packets.
+                // This is normal and harmless – we just log it quietly.
                 addLogAdv(LOG_DEBUG, LOG_FEATURE_GENERAL,
-                          "UART BREAK condition detected (normal with bursty Dreo traffic)");
+                          "UART BREAK condition (normal with Dreo heater)");
                 break;
 
             case UART_PARITY_ERR:
@@ -148,14 +147,13 @@ int HAL_UART_Init(int baud, int parity, bool hwflowc, int txOverride, int rxOver
 #endif
     };
 
-    // Larger RX buffer for Dreo 126-byte status packets + bursts
     ESP_ERROR_CHECK(uart_driver_install(uartnum, 8192, 0, 30, &uart_queue, 0));
     ESP_ERROR_CHECK(uart_param_config(uartnum, &uart_config));
 
-    // Very important for Dreo: reduce false BREAK detections between packets
-    ESP_ERROR_CHECK(uart_set_rx_timeout(uartnum, 10));   // 10 symbol periods
+    // === CRITICAL FIXES FOR DREO HEATER ===
+    ESP_ERROR_CHECK(uart_set_rx_timeout(uartnum, 40));   // much longer idle timeout (was 10)
 
-    // Pin mapping (respect overrides from higher-level drivers)
+    // Pin mapping
     int tx_pin = (uartnum == UART_NUM_0) ? UART_PIN_NO_CHANGE : TX1_PIN;
     int rx_pin = (uartnum == UART_NUM_0) ? UART_PIN_NO_CHANGE : RX1_PIN;
 
@@ -165,12 +163,11 @@ int HAL_UART_Init(int baud, int parity, bool hwflowc, int txOverride, int rxOver
     ESP_ERROR_CHECK(uart_set_pin(uartnum, tx_pin, rx_pin,
                                  UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE));
 
-    // Higher priority task
     xTaskCreate(uart_event_task, "uart_event_task",
                 2048, NULL, 18, &g_uartEventTaskHandle);
 
     addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,
-              "HAL_UART_Init: UART%d initialized @ %d baud (event queue + rx timeout)", uartnum, baud);
+              "HAL_UART_Init: UART%d @ %d baud (rx_timeout=40, BREAK=DEBUG)", uartnum, baud);
 
     return 1;
 }
