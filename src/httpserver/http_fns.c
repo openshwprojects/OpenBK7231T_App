@@ -3124,7 +3124,7 @@ const char* g_obk_flagNames[] = {
 	"error",
 }; 
 */
-const char* g_obk_flagNames_short[] = {
+const char* g_obk_flagNames[] = {
     "1.MQ",
     "2.MQ",
     "3.MQ",
