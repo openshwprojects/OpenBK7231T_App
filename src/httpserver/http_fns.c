@@ -3062,7 +3062,7 @@ int http_fn_cfg_pins(http_request_t* request) {
 }
 
 #if ENABLE_HTTP_FLAGS
-/*
+
 const char* g_obk_flagNames[] = {
 	"[MQTT] Broadcast led params together (send dimmer and color when dimmer or color changes, topic name: YourDevName/led_basecolor_rgb/get, YourDevName/led_dimmer/get)",
 	"[MQTT] Broadcast led final color (topic name: YourDevName/led_finalcolor_rgb/get)",
@@ -3123,66 +3123,6 @@ const char* g_obk_flagNames[] = {
 	"error",
 	"error",
 }; 
-*/
-const char* g_obk_flagNames[] = {
-    "1.MQ",
-    "2.MQ",
-    "3.MQ",
-    "4.LD",
-    "5.LD",
-    "6.CMD",
-    "7.BTN",
-    "8.MQ",
-    "9.LD",
-    "10.SM",
-    "11.MQ",
-    "12.PWM",
-    "13.LD",
-    "14.HTTP",
-    "15.IR",
-    "16.IR",
-    "17.MQ",
-    "18.LD",
-    "19.LD",
-    "20.MQ",
-    "21.LD",
-    "22.MQ",
-    "23.IR",
-    "24.LD",
-    "25.LD",
-    "26.PWR",
-    "27.UART",
-    "28.HASS",
-    "29.LD",
-    "30.NETIF",
-    "31.MQ",
-    "32.UART",
-    "33.LD",
-    "34.MQ",
-    "35.MQ",
-    "36.HASS",
-    "37.DRV",
-    "38.WiFi",
-    "39.Power",
-    "40.MQ",
-    "41.MQ",
-    "42.BTN",
-    "43.DoorSensor",
-    "44.TuyaMCU",
-    "45.HTTP",
-    "46.MQ",
-    "47.TuyaMCU",
-    "48.TuyaMCU",
-    "49.PWR",
-    "50.HTTP",
-    "51.MQ",
-    "52.WiFi",
-    "53.Err",
-    "54.Err",
-    "55.Err",
-    "56.Err",
-};
-
 
 void uint64_to_str(uint64_t num, char* str) {
 	char temp[21];  // uint64_t 20 numbers + \0
