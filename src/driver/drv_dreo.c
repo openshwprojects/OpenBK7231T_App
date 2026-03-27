@@ -62,7 +62,32 @@ static int g_dreoInitTimer = 0;
 static int g_dreoBytesSent = 0;
 static int g_dreoBytesReceived = 0;
 static int g_dreoBytesInvalid = 0;
-static int g_dreoConsecutiveBad = 0;   // new: force resync after repeated checksum fails
+static int g_dreoConsecutiveBad = 0;
+
+// -----------------------------------------------------------------------
+// Ring-buffer receive (true circular buffer for reliable reassembly)
+// -----------------------------------------------------------------------
+
+#define DREO_RX_BUF_SIZE 1024
+static byte g_dreoRxBuf[DREO_RX_BUF_SIZE];
+static int g_dreoRxHead = 0;   // write pointer (UART data goes here)
+static int g_dreoRxTail = 0;   // read pointer  (parser consumes from here)
+
+// Number of bytes currently in the ring buffer
+static int Dreo_RxAvailable(void) {
+	return (g_dreoRxHead - g_dreoRxTail + DREO_RX_BUF_SIZE) % DREO_RX_BUF_SIZE;
+}
+
+// Read one byte from ring (does NOT advance tail)
+static byte Dreo_RxPeek(int offset) {
+	int idx = (g_dreoRxTail + offset) % DREO_RX_BUF_SIZE;
+	return g_dreoRxBuf[idx];
+}
+
+// Advance tail by N bytes after successful packet processing
+static void Dreo_RxConsume(int n) {
+	g_dreoRxTail = (g_dreoRxTail + n) % DREO_RX_BUF_SIZE;
+}
 
 // -----------------------------------------------------------------------
 // Mapping Management
@@ -207,16 +232,12 @@ static void Dreo_SendEnum(byte dpId, uint32_t value) {
 }
 
 // -----------------------------------------------------------------------
-// Dreo UART Packet Receive
+// Dreo UART Packet Receive (ring-buffer version)
 // -----------------------------------------------------------------------
 
 // Dreo packet format: 55 AA [ver] [seq] [cmd] [00] [lenH] [lenL] [payload...] [checksum]
 // Minimum packet: 8 header + 1 checksum = 9 bytes
 #define DREO_MIN_PACKET_SIZE 9
-
-// Single persistent private buffer - we copy everything here and parse it
-static byte g_dreoPartial[1024];
-static int  g_dreoPartialLen = 0;
 
 // Helper: dump raw bytes when we see a potential header (very useful for desync debugging)
 static void Dreo_DumpBytes(const byte *buf, int len, const char *msg) {
@@ -230,60 +251,68 @@ static void Dreo_DumpBytes(const byte *buf, int len, const char *msg) {
 }
 
 static int Dreo_TryGetPacket(byte *out, int maxSize) {
-	int cs = UART_GetDataSize();
+	int avail = Dreo_RxAvailable();
 
-	// Append any new data from the UART ring buffer to our private buffer and consume it immediately
+	// Copy new UART data into our ring buffer
+	int cs = UART_GetDataSize();
 	if (cs > 0) {
-		if (g_dreoPartialLen + cs > (int)sizeof(g_dreoPartial)) {
-			// keep only the last 400 bytes (more than enough for any Dreo packet)
-			int keep = 400;
-			if (g_dreoPartialLen > keep) {
-				memmove(g_dreoPartial, g_dreoPartial + g_dreoPartialLen - keep, keep);
-				g_dreoPartialLen = keep;
-			}
+		if (cs > DREO_RX_BUF_SIZE - avail) {
+			// buffer full - discard oldest data
+			int keep = DREO_RX_BUF_SIZE - 400;
+			if (keep < 0) keep = 0;
+			g_dreoRxTail = (g_dreoRxTail + (DREO_RX_BUF_SIZE - keep)) % DREO_RX_BUF_SIZE;
 		}
 
 		for (int i = 0; i < cs; i++) {
-			g_dreoPartial[g_dreoPartialLen + i] = UART_GetByte(i);
+			g_dreoRxBuf[g_dreoRxHead] = UART_GetByte(i);
+			g_dreoRxHead = (g_dreoRxHead + 1) % DREO_RX_BUF_SIZE;
 		}
-		g_dreoPartialLen += cs;
-
-		// Immediately consume everything we just copied from the UART ring buffer
 		UART_ConsumeBytes(cs);
 	}
 
-	// Now look for complete packets in our private buffer
-	for (int ofs = 0; ofs <= g_dreoPartialLen - DREO_MIN_PACKET_SIZE; ofs++) {
-		if (g_dreoPartial[ofs] != 0x55 || g_dreoPartial[ofs + 1] != 0xAA)
+	avail = Dreo_RxAvailable();
+	if (avail < DREO_MIN_PACKET_SIZE)
+		return 0;
+
+	// Search for 55 AA header
+	for (int ofs = 0; ofs <= avail - DREO_MIN_PACKET_SIZE; ofs++) {
+		if (Dreo_RxPeek(ofs) != 0x55 || Dreo_RxPeek(ofs + 1) != 0xAA)
 			continue;
 
-		byte ver = g_dreoPartial[ofs + 2];
-		byte seq = g_dreoPartial[ofs + 3];
-		byte cmd = g_dreoPartial[ofs + 4];
-		byte lenH = g_dreoPartial[ofs + 6];
-		byte lenL = g_dreoPartial[ofs + 7];
+		byte ver = Dreo_RxPeek(ofs + 2);
+		byte seq = Dreo_RxPeek(ofs + 3);
+		byte cmd = Dreo_RxPeek(ofs + 4);
+		byte lenH = Dreo_RxPeek(ofs + 6);
+		byte lenL = Dreo_RxPeek(ofs + 7);
 		int payloadLen = ((int)lenH << 8) | lenL;
 		int packetLen = 8 + payloadLen + 1;
 
-		// Always dump the raw bytes when we see a 55 AA header (this will show exactly why checksum fails)
-		if (ofs + packetLen <= g_dreoPartialLen) {
-			Dreo_DumpBytes(g_dreoPartial + ofs, packetLen, "found potential packet");
-		} else {
-			Dreo_DumpBytes(g_dreoPartial + ofs, g_dreoPartialLen - ofs, "found partial header");
+		if (packetLen > avail) {
+			// partial packet - wait for next frame
+			addLogAdv(LOG_DEBUG, LOG_FEATURE_GENERAL, "Dreo: incomplete packet at ofs=%d (need %d bytes, have %d)", ofs, packetLen, avail);
+			break;
 		}
 
-		if (packetLen > g_dreoPartialLen - ofs) {
-			addLogAdv(LOG_DEBUG, LOG_FEATURE_GENERAL, "Dreo: incomplete packet at ofs=%d (need %d bytes, have %d)", ofs, packetLen, g_dreoPartialLen - ofs);
-			break;   // incomplete packet - wait for more data next frame
+		// Copy packet to linear temporary buffer so checksum & processing is easy
+		byte tmp[192];
+		if (packetLen > maxSize) {
+			addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "Dreo: packet too large (%i > %i)", packetLen, maxSize);
+			Dreo_RxConsume(packetLen); // discard
+			return 0;
 		}
+		for (int i = 0; i < packetLen; i++) {
+			tmp[i] = Dreo_RxPeek(ofs + i);
+		}
+
+		Dreo_DumpBytes(tmp, packetLen, "found potential packet");
 
 		// checksum check
 		uint32_t calcSum = 0;
 		for (int i = 2; i < packetLen - 1; i++) {
-			calcSum += g_dreoPartial[ofs + i];
+			calcSum += tmp[i];
 		}
 		byte expected = (byte)((calcSum - 1) & 0xFF);
-		byte actual = g_dreoPartial[ofs + packetLen - 1];
+		byte actual = tmp[packetLen - 1];
 
 		if (actual != expected) {
 			g_dreoBytesInvalid++;
@@ -294,36 +323,18 @@ static int Dreo_TryGetPacket(byte *out, int maxSize) {
 				ofs, seq, cmd, expected, actual, (byte)calcSum);
 
 			if (g_dreoConsecutiveBad > 5) {
-				addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "Dreo: too many consecutive bad packets - forcing resync (discarding 20 bytes)");
-				if (g_dreoPartialLen > 20) {
-					memmove(g_dreoPartial, g_dreoPartial + 20, g_dreoPartialLen - 20);
-					g_dreoPartialLen -= 20;
-				} else {
-					g_dreoPartialLen = 0;
-				}
+				addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "Dreo: too many consecutive bad packets - forcing resync (discarding 30 bytes)");
+				Dreo_RxConsume(30);
 				g_dreoConsecutiveBad = 0;
 			}
 
-			ofs++;
-			continue;
+			continue; // try next possible header
 		}
-
-		// reset bad counter on success
-		g_dreoConsecutiveBad = 0;
 
 		// VALID PACKET FOUND
-		if (packetLen > maxSize) {
-			addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "Dreo: packet too large (%i > %i)", packetLen, maxSize);
-			memmove(g_dreoPartial, g_dreoPartial + ofs + packetLen, g_dreoPartialLen - (ofs + packetLen));
-			g_dreoPartialLen -= (ofs + packetLen);
-			return 0;
-		}
-
-		memcpy(out, g_dreoPartial + ofs, packetLen);
-
-		// remove the packet from our private buffer
-		memmove(g_dreoPartial, g_dreoPartial + ofs + packetLen, g_dreoPartialLen - (ofs + packetLen));
-		g_dreoPartialLen -= (ofs + packetLen);
+		g_dreoConsecutiveBad = 0;
+		memcpy(out, tmp, packetLen);
+		Dreo_RxConsume(ofs + packetLen); // remove everything up to and including this packet
 
 		g_dreoBytesReceived += packetLen;
 
@@ -333,7 +344,6 @@ static int Dreo_TryGetPacket(byte *out, int maxSize) {
 		return packetLen;
 	}
 
-	// no complete packet ready yet
 	return 0;
 }
 
@@ -413,6 +423,10 @@ static void Dreo_ProcessPacket(const byte *data, int len) {
 
 	case DREO_CMD_MCU_CONF:
 		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "Dreo: MCU conf response (seq=0x%02X)", seq);
+		break;
+
+	case DREO_CMD_WIFI_STATE:   // 0x03 - response to our init WiFi state command
+		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "Dreo: WiFi state response (seq=0x%02X)", seq);
 		break;
 
 	case 0x0E:   // unknown command seen in logs (MCU reply, 3-byte payload)
@@ -521,7 +535,8 @@ void Dreo_Init(void) {
 	g_dreoInitState = 0;
 	g_dreoInitTimer = 0;
 	g_dreoConsecutiveBad = 0;
-	g_dreoPartialLen = 0;
+	g_dreoRxHead = 0;
+	g_dreoRxTail = 0;
 
 	UART_InitUART(115200, 0, false);
 	UART_InitReceiveRingBuffer(1024);   // increased from 512 to prevent buffer overflow / desync on ESP-IDF
@@ -553,11 +568,12 @@ void Dreo_Shutdown(void) {
 }
 
 void Dreo_RunEverySecond(void) {
-	// Heartbeat every 10 seconds
-	g_dreoHeartbeatTimer++;
-	if (g_dreoHeartbeatTimer >= 10) {
+	// Heartbeat every 10 seconds (countdown prevents double-sending seen in previous logs)
+	static int g_heartbeatCountdown = 10;
+	g_heartbeatCountdown--;
+	if (g_heartbeatCountdown <= 0) {
 		Dreo_SendRaw(DREO_CMD_HEARTBEAT, NULL, 0);
-		g_dreoHeartbeatTimer = 0;
+		g_heartbeatCountdown = 10;
 	}
 
 	// Init sequence (mimics dreo.h setup)
