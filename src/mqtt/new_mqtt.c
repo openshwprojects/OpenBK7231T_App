@@ -3253,7 +3253,7 @@ void MQTT_BuildAndPublishBatch_ByIndex(int *indices, int count, uint8_t* leh, in
 	uint8_t g_oneAllDelimiter = 0x1F;
 
     //uint8_t payload[ONEALL_PAYLOAD_MAX];
-	char *payload = g_cfg->initCommandLine + SEG_B_START;
+	char *payload = g_cfg.initCommandLine + SEG_B_START;
 	char *value = payload + VALUE_BUF_OFFSET;
 
     int len = 0;
