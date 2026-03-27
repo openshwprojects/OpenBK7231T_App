@@ -3212,6 +3212,34 @@ void MQTT_BuildAndPublishBatch_ByIndex(int *indices, int count, uint8_t* leh, in
 
 #else
 
+#define APPEND_CHAR(buf,len,max,c) \
+    do { if ((len) < (max)) (buf)[(len)++] = (c); } while(0)
+
+#define APPEND_STR(buf,len,max,s) \
+    do { const char *_p = (s); while (*_p && (len) < (max)) (buf)[(len)++] = *_p++; } while(0)
+
+#define APPEND_INT(buf,len,max,v)                     \
+    do {                                             \
+        int _v = (v);                                \
+        char _tmp[12];                               \
+        int _i = 0;                                  \
+        if (_v == 0) {                               \
+            APPEND_CHAR(buf,len,max,'0');            \
+        } else {                                     \
+            if (_v < 0) {                            \
+                APPEND_CHAR(buf,len,max,'-');        \
+                _v = -_v;                            \
+            }                                        \
+            while (_v && _i < (int)sizeof(_tmp)) {   \
+                _tmp[_i++] = '0' + (_v % 10);        \
+                _v /= 10;                            \
+            }                                        \
+            while (_i--) {                           \
+                APPEND_CHAR(buf,len,max,_tmp[_i]);   \
+            }                                        \
+        }                                            \
+    } while(0)
+
 #define SEG_A_END   500
 #define SEG_B_SIZE  512
 #define SEG_B_START (SEG_A_END)
@@ -3225,7 +3253,7 @@ void MQTT_BuildAndPublishBatch_ByIndex(int *indices, int count, uint8_t* leh, in
 	uint8_t g_oneAllDelimiter = 0x1F;
 
     //uint8_t payload[ONEALL_PAYLOAD_MAX];
-	char *payload = g_cfg.initCommandLine + SEG_B_START;
+	char *payload = g_cfg->initCommandLine + SEG_B_START;
 	char *value = payload + VALUE_BUF_OFFSET;
 
     int len = 0;
@@ -3267,20 +3295,21 @@ void MQTT_BuildAndPublishBatch_ByIndex(int *indices, int count, uint8_t* leh, in
         if (!MQTT_GetItemValue(idx, value, sizeof(value)))
             continue;
 
+
 		if (len >= SEG_B_PAYLOAD_MAX - 1)
 			break;
 
-		int remain = SEG_B_PAYLOAD_MAX  - len;
+		int oldLen = len;
 
-        int written = snprintf((char*)payload + len,
-                               remain, //ONEALL_PAYLOAD_MAX - len,
-                               "%d=%s%c",
-                               idx, value, g_oneAllDelimiter);
+		APPEND_INT(payload, len, SEG_B_PAYLOAD_MAX, idx);
+		APPEND_CHAR(payload, len, SEG_B_PAYLOAD_MAX, '=');
+		APPEND_STR(payload, len, SEG_B_PAYLOAD_MAX, value);
+		APPEND_CHAR(payload, len, SEG_B_PAYLOAD_MAX, g_oneAllDelimiter);
 
-        if (written <= 0 || written >= remain)//if (written <= 0 || written >= (int)(ONEALL_PAYLOAD_MAX - len))
-            break;
+		// check sau khi ghi (detect bị truncate)
+		if (len >= SEG_B_PAYLOAD_MAX || len == oldLen)
+			break;
 
-        len += written;
     }
 
     // =====================================================
@@ -3302,17 +3331,23 @@ void MQTT_BuildAndPublishBatch_ByIndex(int *indices, int count, uint8_t* leh, in
 			if (len >= SEG_B_PAYLOAD_MAX - 1)
 				break;
 
-			int remain = SEG_B_PAYLOAD_MAX  - len;
+			int oldLen = len;
 
+			/*
             int written = snprintf((char*)payload + len,
                                    remain,//ONEALL_PAYLOAD_MAX - len,
                                    "%d~%s%c",
                                    ch, value, g_oneAllDelimiter);
+								   */
+			APPEND_INT(payload, len, SEG_B_PAYLOAD_MAX, idx);
+			APPEND_CHAR(payload, len, SEG_B_PAYLOAD_MAX, '=');
+			APPEND_STR(payload, len, SEG_B_PAYLOAD_MAX, value);
+			APPEND_CHAR(payload, len, SEG_B_PAYLOAD_MAX, g_oneAllDelimiter);
 
-            if (written <= 0 || written >= remain)//if (written <= 0 || written >= (int)(ONEALL_PAYLOAD_MAX - len))
-                break;
+			// check sau khi ghi (detect bị truncate)
+			if (len >= SEG_B_PAYLOAD_MAX || len == oldLen)
+				break;
 
-            len += written;
         }
     }
 
@@ -3332,7 +3367,6 @@ void MQTT_BuildAndPublishBatch_ByIndex(int *indices, int count, uint8_t* leh, in
     memset(payload, 0, SEG_B_SIZE);
 
 }
-
 
 #endif
 
