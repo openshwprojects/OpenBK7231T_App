@@ -11,6 +11,38 @@
 DIRNAME=$(dirname $0);
 echo "PREBUILD script! Executed from $DIRNAME!"
 
+echo "Applying FINAL override (guaranteed)..."
+
+CONFIG_FILE="src/obk_config.h"
+OVERRIDE_FILE="src/_auto_override_config.h"
+
+# tạo file override (luôn clean)
+cat > $OVERRIDE_FILE << 'EOF'
+#pragma once
+
+// ===== FINAL FORCE OVERRIDE =====
+
+#undef ENABLE_OBK_BERRY
+#undef ENABLE_LITTLEFS
+#undef ENABLE_OBK_SCRIPTING
+
+EOF
+
+# remove include cũ nếu có (tránh duplicate)
+sed -i '/_auto_override_config.h/d' "$CONFIG_FILE"
+
+# 👉 QUAN TRỌNG NHẤT: include ở CUỐI FILE
+echo '#include "_auto_override_config.h"' >> "$CONFIG_FILE"
+
+echo "Override injected at END of obk_config.h ✔"
+
+
+
+
+
+
+# ===== phần override gốc giữ nguyên =====
+
 # allow whitespace in file or path, so take only newline as seperator
 OFS=$IFS
 IFS='
