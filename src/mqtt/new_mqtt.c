@@ -3291,7 +3291,7 @@ void MQTT_BuildAndPublishBatch_ByIndex(int *indices, int count, uint8_t* leh, in
     for (int i = 0; i < count; i++) {
         int idx = indices[i];
 
-        if (idx >= 0) continue; // bo channel o phase nay
+        if (idx > 0) continue; // bo channel o phase nay
 
         if (!MQTT_GetItemValue(idx, value, sizeof(value)))
             continue;
