@@ -260,7 +260,7 @@ static int Dreo_TryGetPacket(byte *out, int maxSize) {
 		int payloadLen = ((int)lenH << 8) | lenL;
 		int packetLen = 8 + payloadLen + 1;
 
-		// Not enough data yet for this packet → continue scanning (there might be a complete packet later)
+		// Not enough data yet for this packet → continue scanning
 		if (packetLen > total - ofs)
 			continue;
 
@@ -274,27 +274,30 @@ static int Dreo_TryGetPacket(byte *out, int maxSize) {
 			// VALID PACKET FOUND
 			if (packetLen > maxSize) {
 				addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "Dreo: packet too large (%i > %i)", packetLen, maxSize);
-				UART_ConsumeBytes(g_dreoPartialLen + ofs + packetLen);
+				// still consume correctly so we don't get stuck
+				int consume = (ofs + packetLen > g_dreoPartialLen) ? (ofs + packetLen - g_dreoPartialLen) : 0;
+				UART_ConsumeBytes(consume);
 				g_dreoPartialLen = 0;
 				return 0;
 			}
 
 			memcpy(out, g_dreoWorkBuf + ofs, packetLen);
 
-			// Consume exactly the bytes we used from the ring buffer
-			UART_ConsumeBytes(g_dreoPartialLen + ofs + packetLen);
+			// === FIXED CONSUMPTION ===
+			int packetEnd = ofs + packetLen;
+			int bytesToConsumeFromUART = (packetEnd > g_dreoPartialLen) ? (packetEnd - g_dreoPartialLen) : 0;
+			UART_ConsumeBytes(bytesToConsumeFromUART);
+
 			g_dreoBytesReceived += packetLen;
 
-			// If we had leading garbage before this packet, count it
 			if (ofs > 0) {
-				g_dreoBytesInvalid += ofs;
+				g_dreoBytesInvalid += ofs;   // keep original behaviour for stats
 			}
 
-			// IMPORTANT: any data AFTER this packet stays in the partial buffer
-			// so the while(1) loop in Dreo_RunFrame can process the next packet immediately
-			int remaining = total - (ofs + packetLen);
+			// Any data AFTER this packet stays in the partial buffer
+			int remaining = total - packetEnd;
 			if (remaining > 0) {
-				memcpy(g_dreoPartial, g_dreoWorkBuf + ofs + packetLen, remaining);
+				memcpy(g_dreoPartial, g_dreoWorkBuf + packetEnd, remaining);
 				g_dreoPartialLen = remaining;
 			} else {
 				g_dreoPartialLen = 0;
@@ -308,10 +311,9 @@ static int Dreo_TryGetPacket(byte *out, int maxSize) {
 		// Bad checksum on a 55 AA → treat as false header, skip only this byte and continue scanning
 	}
 
-	// No complete valid packet found in the current combined buffer.
-	// Keep everything (partial + new bytes) for the next frame.
+	// No complete valid packet found – keep everything for next frame
 	if (total > (int)sizeof(g_dreoPartial)) {
-		// Safety: keep only the last 400 bytes (plenty for any Dreo packet)
+		// Safety: keep only the last 400 bytes
 		int keep = 400;
 		memmove(g_dreoPartial, g_dreoWorkBuf + total - keep, keep);
 		g_dreoPartialLen = keep;
@@ -320,7 +322,7 @@ static int Dreo_TryGetPacket(byte *out, int maxSize) {
 		g_dreoPartialLen = total;
 	}
 
-	// Do NOT consume anything from the ring buffer yet – we are still waiting for a complete packet
+	// Do NOT consume anything from the ring buffer yet
 	return 0;
 }
 
