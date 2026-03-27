@@ -3061,7 +3061,7 @@ int http_fn_cfg_pins(http_request_t* request) {
 	return 0;
 }
 
-#if ENABLE_HTTP_FLAGS
+#if ENABLE_HTTP_FLAGS && 0
 
 const char* g_obk_flagNames[] = {
 	"[MQTT] Broadcast led params together (send dimmer and color when dimmer or color changes, topic name: YourDevName/led_basecolor_rgb/get, YourDevName/led_dimmer/get)",
@@ -3123,6 +3123,7 @@ const char* g_obk_flagNames[] = {
 	"error",
 	"error",
 }; 
+
 
 void uint64_to_str(uint64_t num, char* str) {
 	char temp[21];  // uint64_t 20 numbers + \0
