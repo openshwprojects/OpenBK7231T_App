@@ -609,8 +609,6 @@
 // allow moving average energy calculation +180 bytes
 // #define ENABLE_BL_MOVINGAVG					1
 #endif
-  
-#include "hieu_giamsize_config.h"
-  
+
 // closing OBK_CONFIG_H
 #endif
