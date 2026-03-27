@@ -1266,8 +1266,7 @@ void Main_Init_AfterDelay_Unsafe(bool bStartAutoRunScripts) {
 #else
 		CMD_ExecuteCommand(CFG_GetShortStartupCommand(), COMMAND_FLAG_SOURCE_SCRIPT);
 #endif
-		//CMD_ExecuteCommand("startScript autoexec.bat", COMMAND_FLAG_SOURCE_SCRIPT);
-		
+		CMD_ExecuteCommand("startScript autoexec.bat", COMMAND_FLAG_SOURCE_SCRIPT);
 #if ENABLE_OBK_BERRY
 		CMD_ExecuteCommand("berry import autoexec", COMMAND_FLAG_SOURCE_SCRIPT);
 #endif
@@ -1333,7 +1332,7 @@ void Main_Init_BeforeDelay_Unsafe(bool bAutoRunScripts) {
 	}
 
 	if (bAutoRunScripts) {
-		//CMD_ExecuteCommand("exec early.bat", COMMAND_FLAG_SOURCE_SCRIPT);
+		CMD_ExecuteCommand("exec early.bat", COMMAND_FLAG_SOURCE_SCRIPT);
 #ifndef OBK_DISABLE_ALL_DRIVERS
 		if (!CFG_HasFlag(OBK_FLAG_DRV_DISABLE_AUTOSTART)) {
 			// autostart drivers
