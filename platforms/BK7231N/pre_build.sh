@@ -41,14 +41,19 @@ IFS=$OFS
 
 
 
+CONFIG_FILE="$DIRNAME/src/obk_config.h"
 
-# ---------------------------
-# Disable all sensors automatically
-CONFIG_FILE="src/obk_config.h"
-
-# Nếu chưa có OBK_DISABLE_SENSORS thì thêm
-if ! grep -q "OBK_DISABLE_SENSORS" "$CONFIG_FILE"; then
-    sed -i '/#endif[[:space:]]*$/i \
-\n// Disable sensors automatically\n#define OBK_DISABLE_SENSORS\n#ifdef OBK_DISABLE_SENSORS\n#undef ENABLE_DRIVER_DHT\n#undef ENABLE_DRIVER_DS1820\n#undef ENABLE_DRIVER_DS1820_FULL\n#undef ENABLE_DRIVER_AHT2X\n#undef ENABLE_DRIVER_CHT83XX\n#undef ENABLE_DRIVER_KP18058\n#undef ENABLE_DRIVER_ADCSMOOTHER\n#undef ENABLE_DRIVER_BMP280\n#endif\n' "$CONFIG_FILE"
+if [ ! -f "$CONFIG_FILE" ]; then
+    echo "File $CONFIG_FILE không tồn tại!"
+    exit 1
 fi
+
+# Xóa block OBK_DISABLE_SENSORS cũ nếu có
+sed -i '/#define OBK_DISABLE_SENSORS/,/#endif/d' "$CONFIG_FILE"
+
+# Thêm block mới trước #endif cuối
+sed -i '/#endif[[:space:]]*$/i \
+\n// Disable all sensors, keep I2C\n#define OBK_DISABLE_SENSORS\n#ifdef OBK_DISABLE_SENSORS\n#undef ENABLE_DRIVER_DHT\n#undef ENABLE_DRIVER_DS1820\n#undef ENABLE_DRIVER_DS1820_FULL\n#undef ENABLE_DRIVER_AHT2X\n#undef ENABLE_DRIVER_CHT83XX\n#undef ENABLE_DRIVER_KP18058\n#undef ENABLE_DRIVER_ADCSMOOTHER\n#undef ENABLE_DRIVER_BMP280\n#undef ENABLE_DRIVER_BMPI2C\n#undef ENABLE_DRIVER_SHT3X\n#endif\n' "$CONFIG_FILE"
+
+echo "All sensors disabled, I2C remains enabled for BK7231N build."
 
