@@ -610,7 +610,8 @@
 // #define ENABLE_BL_MOVINGAVG					1
 #endif
 
-#define OBK_DISABLE_SENSORS
+
+#define OBK_DISABLE_SENSORS // tao muon bỏ mà nó không cho???
 #ifdef OBK_DISABLE_SENSORS
     #undef ENABLE_DRIVER_DHT
     #undef ENABLE_DRIVER_DS1820
