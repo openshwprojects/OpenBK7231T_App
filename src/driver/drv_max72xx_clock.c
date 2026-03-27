@@ -15,8 +15,8 @@
 
 #define SECSinSTATIC	5		// seconds keeping display in one mode before animating to next value
 
-// in drv_max722xx_single.c so we know the width defined there
-DRV_MAX72XX_GetWidth(void);
+// implemented in drv_max722xx_single.c so we know the width defined there
+unsigned short DRV_MAX72XX_GetWidth(void);
 
 static unsigned short DispWidth;
 
