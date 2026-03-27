@@ -610,5 +610,16 @@
 // #define ENABLE_BL_MOVINGAVG					1
 #endif
 
+#define OBK_DISABLE_SENSORS
+#ifdef OBK_DISABLE_SENSORS
+    #undef ENABLE_DRIVER_DHT
+    #undef ENABLE_DRIVER_DS1820
+    #undef ENABLE_DRIVER_AHT2X
+    #undef ENABLE_DRIVER_CHT83XX
+    #undef ENABLE_DRIVER_KP18058
+    #undef ENABLE_DRIVER_ADCSMOOTHER
+    //#undef ENABLE_I2C
+#endif
+
 // closing OBK_CONFIG_H
 #endif
