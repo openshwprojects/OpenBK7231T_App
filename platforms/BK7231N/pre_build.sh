@@ -22,8 +22,8 @@ cat > $OVERRIDE_FILE << 'EOF'
 
 // ===== FINAL FORCE OVERRIDE =====
 #undef ENABLE_OBK_BERRY
-#undef ENABLE_LITTLEFS
-#undef ENABLE_OBK_SCRIPTING
+//#undef ENABLE_LITTLEFS ⚠️ nên giữ
+//#undef ENABLE_OBK_SCRIPTING ⚠️ nên giữ
 #undef ENABLE_NTP 	
 
 #undef ENABLE_DRIVER_DHT
