@@ -1,3 +1,4 @@
+<DOCUMENT filename="drv_dreo.c">
 // Dreo Heater UART Protocol Driver for OpenBeken
 // Based on ESPHome dreo_heater.h reference implementation
 // Uses modified Tuya UART protocol with custom checksum
@@ -237,9 +238,9 @@ static int Dreo_TryGetPacket(byte *out, int maxSize) {
 		int payloadLen = ((int)lenH << 8) | lenL;
 		int packetLen = 8 + payloadLen + 1;
 
-		// Not enough data yet for this packet → STOP scanning and wait for more bytes
+		// Not enough data yet for this packet → continue scanning (there might be a complete packet later in the same snapshot)
 		if (packetLen > snapLen - ofs)
-			break;
+			continue;
 
 		// Verify checksum on snapshot
 		uint32_t calcSum = 0;
@@ -623,3 +624,4 @@ void Dreo_OnChannelChanged(int ch, int value) {
 void Dreo_OnHassDiscovery(const char *topic) {
 	// Placeholder for future HA discovery support
 }
+</DOCUMENT>
