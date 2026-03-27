@@ -42,10 +42,8 @@ static void uart_event_task(void* pvParameters)
             case UART_DATA:
                 while (event.size > 0) {
                     int len = uart_read_bytes(uartnum, dtmp,
-                                              (event.size > 1024) ? 1024 : event.size,
-                                              0);
+                                              (event.size > 1024) ? 1024 : event.size, 0);
                     if (len <= 0) break;
-
                     for (int i = 0; i < len; i++) {
                         UART_AppendByteToReceiveRingBuffer(dtmp[i]);
                     }
@@ -63,22 +61,18 @@ static void uart_event_task(void* pvParameters)
                 break;
 
             case UART_BREAK:
-                // Dreo heaters frequently produce very short idle/low periods between packets.
-                // This is normal and harmless – we just log it quietly.
                 addLogAdv(LOG_DEBUG, LOG_FEATURE_GENERAL,
-                          "UART BREAK condition (normal with Dreo heater)");
+                          "UART BREAK (normal Dreo short idle gap)");
                 break;
 
             case UART_PARITY_ERR:
             case UART_FRAME_ERR:
-                addLogAdv(LOG_WARN, LOG_FEATURE_CMD,
-                          "UART error event %d", event.type);
+                addLogAdv(LOG_WARN, LOG_FEATURE_CMD, "UART error %d", event.type);
                 uart_flush_input(uartnum);
                 break;
 
             default:
-                addLogAdv(LOG_DEBUG, LOG_FEATURE_GENERAL,
-                          "UART event type: %d", event.type);
+                addLogAdv(LOG_DEBUG, LOG_FEATURE_GENERAL, "UART event %d", event.type);
                 break;
             }
         }
@@ -150,24 +144,20 @@ int HAL_UART_Init(int baud, int parity, bool hwflowc, int txOverride, int rxOver
     ESP_ERROR_CHECK(uart_driver_install(uartnum, 8192, 0, 30, &uart_queue, 0));
     ESP_ERROR_CHECK(uart_param_config(uartnum, &uart_config));
 
-    // === CRITICAL FIXES FOR DREO HEATER ===
-    ESP_ERROR_CHECK(uart_set_rx_timeout(uartnum, 40));   // much longer idle timeout (was 10)
+    ESP_ERROR_CHECK(uart_set_rx_timeout(uartnum, 120));
 
-    // Pin mapping
     int tx_pin = (uartnum == UART_NUM_0) ? UART_PIN_NO_CHANGE : TX1_PIN;
     int rx_pin = (uartnum == UART_NUM_0) ? UART_PIN_NO_CHANGE : RX1_PIN;
-
     if (txOverride != -1) tx_pin = txOverride;
     if (rxOverride != -1) rx_pin = rxOverride;
 
     ESP_ERROR_CHECK(uart_set_pin(uartnum, tx_pin, rx_pin,
                                  UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE));
 
-    xTaskCreate(uart_event_task, "uart_event_task",
-                2048, NULL, 18, &g_uartEventTaskHandle);
+    xTaskCreate(uart_event_task, "uart_event_task", 2048, NULL, 18, &g_uartEventTaskHandle);
 
     addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,
-              "HAL_UART_Init: UART%d @ %d baud (rx_timeout=40, BREAK=DEBUG)", uartnum, baud);
+              "HAL_UART_Init: UART%d @ %d baud (event queue + rx_timeout=120)", uartnum, baud);
 
     return 1;
 }
