@@ -3339,7 +3339,7 @@ void MQTT_BuildAndPublishBatch_ByIndex(int *indices, int count, uint8_t* leh, in
                                    "%d~%s%c",
                                    ch, value, g_oneAllDelimiter);
 								   */
-			APPEND_INT(payload, len, SEG_B_PAYLOAD_MAX, idx);
+			APPEND_INT(payload, len, SEG_B_PAYLOAD_MAX, ch);
 			APPEND_CHAR(payload, len, SEG_B_PAYLOAD_MAX, '=');
 			APPEND_STR(payload, len, SEG_B_PAYLOAD_MAX, value);
 			APPEND_CHAR(payload, len, SEG_B_PAYLOAD_MAX, g_oneAllDelimiter);
