@@ -68,7 +68,9 @@ void build_set_cmd(get_cmd_resp_t * get_cmd_resp) {
 
 	m_set_cmd.data.turbo = get_cmd_resp->data.turbo;
 	m_set_cmd.data.mute = get_cmd_resp->data.mute;
-	m_set_cmd.data.temp = 15 - get_cmd_resp->data.temp;
+	// Inverted encoding for 8–30 °C range
+	// data.temp range: 0..22
+	m_set_cmd.data.temp = 23 - get_cmd_resp->data.temp;
 
 	switch (get_cmd_resp->data.fan) {
 	case 0x00:
@@ -243,7 +245,12 @@ void OBK_SetTargetTemperature(float temp) {
 	get_cmd_resp_t get_cmd_resp = { 0 };
 	memcpy(get_cmd_resp.raw, m_get_cmd_resp.raw, sizeof(get_cmd_resp.raw));
 
-	get_cmd_resp.data.temp = (uint8_t)(temp) - 16;
+	// Allow 8–30 °C
+	if (temp < 8) temp = 8;
+	if (temp > 30) temp = 30;
+
+	// Map 8°C → 0
+	get_cmd_resp.data.temp = (uint8_t)(temp) - 8;
 
 	build_set_cmd(&get_cmd_resp);
 	ready_to_send_set_cmd_flag = true;
@@ -827,7 +834,7 @@ void TCL_DoDiscovery(const char *topic) {
 	HassDeviceInfo* dev_info = NULL;
 
 
-	dev_info = hass_createHVAC(15,30,0.5f, fanOptions, sizeof(fanOptions)/sizeof(fanOptions[0]),
+	dev_info = hass_createHVAC(15, 30, 0.5f, fanOptions, sizeof(fanOptions)/sizeof(fanOptions[0]),
 		vertical_swing_options,sizeof(vertical_swing_options) / sizeof(vertical_swing_options[0]),
 		horizontal_swing_options, sizeof(horizontal_swing_options) / sizeof(horizontal_swing_options[0])
 		);
