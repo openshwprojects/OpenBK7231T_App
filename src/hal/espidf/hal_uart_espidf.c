@@ -31,8 +31,8 @@ static uart_port_t uartnum = UART_NUM_0;
 static QueueHandle_t uart_queue = NULL;
 static TaskHandle_t g_uartEventTaskHandle = NULL;
 
-// Forward declaration of the ring-buffer callback (defined in drv_uart.c)
-void UART_AppendByteToReceiveRingBuffer(byte b);
+// Forward declaration – MUST match drv_uart.h exactly
+void UART_AppendByteToReceiveRingBuffer(int rc);
 
 static void uart_event_task(void* pvParameters)
 {
