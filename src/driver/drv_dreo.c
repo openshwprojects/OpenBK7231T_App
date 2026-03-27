@@ -4,7 +4,7 @@
 //
 // Protocol format:
 //   [55 AA] [ver] [seq] [cmd] [00] [lenH] [lenL] [payload] [checksum]
-//   Checksum: (sum(bytes[2..end-1]) - 1) & 0xFF
+//   Checksum: (seq + sum(payload bytes only) - 1) & 0xFF
 //
 // DP payload format (same as standard Tuya):
 //   [dpId] [dpType:0x01] [type] [lenH] [lenL] [value...]
@@ -121,11 +121,11 @@ static dreoMapping_t *Dreo_AutoStore(int dpId, int dpType) {
 }
 
 // -----------------------------------------------------------------------
-// Dreo UART Packet Send
+// Dreo UART Packet Send  (FIXED CHECKSUM + seq logging)
 // -----------------------------------------------------------------------
 
 // Send a raw Dreo packet:  55 AA [ver=0x00] [seq] [cmd] [0x00] [lenH] [lenL] [payload] [checksum]
-// Checksum = (sum(bytes from ver to last payload byte) - 1) & 0xFF
+// Checksum = (seq + sum(payload bytes only) - 1) & 0xFF
 static void Dreo_SendRaw(byte cmd, const byte *payload, int payloadLen) {
 	int i;
 	uint32_t sum = 0;
@@ -133,27 +133,21 @@ static void Dreo_SendRaw(byte cmd, const byte *payload, int payloadLen) {
 	UART_SendByte(0x55);
 	UART_SendByte(0xAA);
 	byte ver = 0x00;
-	UART_SendByte(ver);           // version
-	sum += ver;
+	UART_SendByte(ver);                    // always 0x00
 
 	byte seq = g_dreoSeq++;
-	UART_SendByte(seq);            // sequence
-	sum += seq;
+	UART_SendByte(seq);                    // sequence (used in checksum)
 
-	UART_SendByte(cmd);            // command
-	sum += cmd;
-
+	UART_SendByte(cmd);                    // command
 	byte reserved = 0x00;
-	UART_SendByte(reserved);       // reserved zero
-	sum += reserved;
-
+	UART_SendByte(reserved);
 	byte lenH = (payloadLen >> 8) & 0xFF;
 	byte lenL = payloadLen & 0xFF;
-	UART_SendByte(lenH);           // length high
-	UART_SendByte(lenL);           // length low
-	sum += lenH;
-	sum += lenL;
+	UART_SendByte(lenH);
+	UART_SendByte(lenL);
 
+	// checksum = (seq + sum(payload only) - 1)
+	sum = seq;
 	for (i = 0; i < payloadLen; i++) {
 		UART_SendByte(payload[i]);
 		sum += payload[i];
@@ -162,9 +156,15 @@ static void Dreo_SendRaw(byte cmd, const byte *payload, int payloadLen) {
 	byte checksum = (byte)((sum - 1) & 0xFF);
 	UART_SendByte(checksum);
 
-	g_dreoBytesSent += 8 + payloadLen + 1;  // header(8) + payload + checksum(1)
+	g_dreoBytesSent += 8 + payloadLen + 1;
 
-	addLogAdv(LOG_DEBUG, LOG_FEATURE_GENERAL, "Dreo: sent cmd 0x%02X, %i payload bytes", cmd, payloadLen);
+	if (cmd == DREO_CMD_HEARTBEAT) {
+		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,
+			"Dreo: sent HEARTBEAT seq=0x%02X", seq);
+	} else {
+		addLogAdv(LOG_DEBUG, LOG_FEATURE_GENERAL,
+			"Dreo: sent cmd 0x%02X, %i payload bytes, seq=0x%02X", cmd, payloadLen, seq);
+	}
 }
 
 // Send a DP value to the Dreo MCU
@@ -206,7 +206,7 @@ static void Dreo_SendEnum(byte dpId, uint32_t value) {
 }
 
 // -----------------------------------------------------------------------
-// Dreo UART Packet Receive
+// Dreo UART Packet Receive  (FIXED CHECKSUM + detailed logging)
 // -----------------------------------------------------------------------
 
 // Dreo packet format: 55 AA [ver] [seq] [cmd] [00] [lenH] [lenL] [payload...] [checksum]
@@ -245,26 +245,43 @@ static int Dreo_TryGetPacket(byte *out, int maxSize) {
 		if (g_dreoPartial[ofs] != 0x55 || g_dreoPartial[ofs + 1] != 0xAA)
 			continue;
 
+		byte ver  = g_dreoPartial[ofs + 2];
+		byte seq  = g_dreoPartial[ofs + 3];
+		byte cmd  = g_dreoPartial[ofs + 4];
 		byte lenH = g_dreoPartial[ofs + 6];
 		byte lenL = g_dreoPartial[ofs + 7];
 		int payloadLen = ((int)lenH << 8) | lenL;
 		int packetLen = 8 + payloadLen + 1;
 
-		if (packetLen > g_dreoPartialLen - ofs)
-			break;   // incomplete packet - wait for more data next frame
+		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,
+			"Dreo: found 55 AA at ofs=%d → seq=0x%02X cmd=0x%02X ver=0x%02X payload=%d bytes",
+			ofs, seq, cmd, ver, payloadLen);
 
-		// checksum check
-		uint32_t calcSum = 0;
-		for (int i = 2; i < packetLen - 1; i++) {
-			calcSum += g_dreoPartial[ofs + i];
+		if (packetLen > g_dreoPartialLen - ofs) {
+			addLogAdv(LOG_DEBUG, LOG_FEATURE_GENERAL, "Dreo: incomplete packet, waiting...");
+			break;   // incomplete packet - wait for more data next frame
+		}
+
+		// checksum check - FIXED: (seq + sum(payload only) - 1)
+		uint32_t calcSum = seq;
+		for (int i = 0; i < payloadLen; i++) {
+			calcSum += g_dreoPartial[ofs + 8 + i];
 		}
 		byte expected = (byte)((calcSum - 1) & 0xFF);
-		if (g_dreoPartial[ofs + packetLen - 1] != expected) {
-			ofs++;
+		byte actual   = g_dreoPartial[ofs + packetLen - 1];
+
+		if (actual != expected) {
+			addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,
+				"Dreo: CHECKSUM FAIL seq=0x%02X cmd=0x%02X expected=0x%02X got=0x%02X (desync?)",
+				seq, cmd, expected, actual);
+			ofs++;   // try to resync by skipping one byte
 			continue;
 		}
 
 		// VALID PACKET FOUND
+		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,
+			"Dreo: VALID packet seq=0x%02X cmd=0x%02X payload=%d bytes", seq, cmd, payloadLen);
+
 		if (packetLen > maxSize) {
 			addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "Dreo: packet too large (%i > %i)", packetLen, maxSize);
 			memmove(g_dreoPartial, g_dreoPartial + ofs + packetLen, g_dreoPartialLen - (ofs + packetLen));
@@ -279,9 +296,6 @@ static int Dreo_TryGetPacket(byte *out, int maxSize) {
 		g_dreoPartialLen -= (ofs + packetLen);
 
 		g_dreoBytesReceived += packetLen;
-
-		addLogAdv(LOG_DEBUG, LOG_FEATURE_GENERAL,
-			"Dreo: received cmd=0x%02X payload=%i bytes (valid packet)", out[4], payloadLen);
 
 		return packetLen;
 	}
@@ -349,14 +363,20 @@ static void Dreo_ProcessDPStatus(const byte *data, int startOfs, int dataLen) {
 // Process a complete received Dreo packet
 static void Dreo_ProcessPacket(const byte *data, int len) {
 	byte cmd = data[4];
+	byte seq = data[3];
 	int payloadLen = (data[6] << 8) | data[7];
 
-	addLogAdv(LOG_DEBUG, LOG_FEATURE_GENERAL,
-		"Dreo: received cmd=0x%02X payload=%i bytes", cmd, payloadLen);
+	if (cmd == DREO_CMD_HEARTBEAT) {
+		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,
+			"Dreo: received HEARTBEAT ACK seq=0x%02X", seq);
+	} else {
+		addLogAdv(LOG_DEBUG, LOG_FEATURE_GENERAL,
+			"Dreo: received cmd=0x%02X seq=0x%02X payload=%i bytes", cmd, seq, payloadLen);
+	}
 
 	switch (cmd) {
 	case DREO_CMD_HEARTBEAT:
-		addLogAdv(LOG_DEBUG, LOG_FEATURE_GENERAL, "Dreo: heartbeat ACK");
+		// already logged above
 		break;
 
 	case DREO_CMD_QUERY_PRODUCT:
@@ -381,7 +401,7 @@ static void Dreo_ProcessPacket(const byte *data, int len) {
 
 	default:
 		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,
-			"Dreo: unknown cmd 0x%02X", cmd);
+			"Dreo: unknown cmd 0x%02X seq=0x%02X", cmd, seq);
 		break;
 	}
 }
@@ -474,7 +494,7 @@ void Dreo_Init(void) {
 	g_dreoInitTimer = 0;
 
 	UART_InitUART(115200, 0, false);
-	UART_InitReceiveRingBuffer(1024);   // increased from 512 to prevent buffer overflow / desync on ESP-IDF
+	UART_InitReceiveRingBuffer(2048);   // increased to prevent any buffer overflow / desync
 
 	//cmddetail:{"name":"linkDreoOutputToChannel","args":"[dpId][varType][channelID]",
 	//cmddetail:"descr":"Map a Dreo dpId to an OBK channel. VarTypes: bool, val, enum, str, raw. Syntax is same as linkTuyaMCUOutputToChannel.",
@@ -488,7 +508,7 @@ void Dreo_Init(void) {
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("dreo_sendState", Dreo_SendStateCmd, NULL);
 
-	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "Dreo: driver initialized (115200 baud)");
+	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "Dreo: driver initialized (115200 baud, buffer=2048)");
 }
 
 void Dreo_Shutdown(void) {
@@ -503,17 +523,15 @@ void Dreo_Shutdown(void) {
 }
 
 void Dreo_RunEverySecond(void) {
-	// Heartbeat every 10 seconds
+	// Heartbeat + forced status query every 10 seconds
 	g_dreoHeartbeatTimer++;
 	if (g_dreoHeartbeatTimer >= 10) {
 		Dreo_SendRaw(DREO_CMD_HEARTBEAT, NULL, 0);
+		Dreo_SendRaw(DREO_CMD_QUERY_STATE, NULL, 0);   // forces fresh status report
 		g_dreoHeartbeatTimer = 0;
 	}
 
 	// Init sequence (mimics dreo.h setup)
-	// State 0: send heartbeat (cmd 0x00) — already done above on first call
-	// State 1: after ~1s, send MCU conf with init data
-	// State 2: after ~2s, send query state (cmd 0x02)
 	if (g_dreoInitState < 3) {
 		g_dreoInitTimer++;
 		switch (g_dreoInitState) {
