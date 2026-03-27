@@ -1755,7 +1755,8 @@ commandResult_t MQTT_PublishAll(const void* context, const char* cmd, const char
 // This console command will trigger a publish of all used variables (channels and extra stuff)
 commandResult_t MQTT_PublishAll(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	int _idx;
-	Tokenizer_TokenizeString(args, 0);
+	//Tokenizer_TokenizeString(args, 0);
+	Tokenizer_TokenizeString(args,TOKENIZER_ALLOW_QUOTES | TOKENIZER_ALLOW_ESCAPING_QUOTATIONS | TOKENIZER_EXPAND_EARLY);
 	
 	if (Tokenizer_GetArgsCount() == 2 ) { // cai dau tien bo, vi broker ko cho phep goi thieu tham so ...
 		_idx= Tokenizer_GetArgInteger(1);
@@ -3031,11 +3032,16 @@ bool MQTT_IsReady() {
 
 
 
+
 bool MQTT_GetItemValue(int idx, char *out, int outLen) {
     if (!out || outLen <= 0) return false;
     out[0] = '\0'; // ensure null terminate
 
     switch(idx) {
+
+		case 0: // debug: size of initCommandLine
+			snprintf(out, outLen, "%zu", sizeof(g_cfg->initCommandLine));
+			return true;
 
         case PUBLISHITEM_SELF_HOSTNAME:
             snprintf(out, outLen, "%s", CFG_GetShortDeviceName());
@@ -3107,6 +3113,8 @@ int MQTT_ParseFullNameToChannels(int *out, int maxCount) {
     return count;
 }
 
+
+#if PLATFORM_W600 || PLATFORM_W800
 #define ONEALL_PAYLOAD_MAX 512
 void MQTT_BuildAndPublishBatch_ByIndex(int *indices, int count, uint8_t* leh, int leh_len) {
 	
@@ -3127,6 +3135,7 @@ void MQTT_BuildAndPublishBatch_ByIndex(int *indices, int count, uint8_t* leh, in
     // ===== PHASE 1: SYSTEM ITEMS (idx < 0) =====
     // =====================================================
 	int defaultIndices[] = {
+		0, //test initCommandLine size
 		-14,  //Build origin PUBLISHITEM_SELF_BUILD           -14  //Build        chuyen sang lay MQTT_GROUP
 		-13,//#define PUBLISHITEM_SELF_MAC                    -13  //Device mac
 		-9,//#define PUBLISHITEM_SELF_DATETIME               -9  //Current unix datetime
@@ -3200,6 +3209,132 @@ void MQTT_BuildAndPublishBatch_ByIndex(int *indices, int count, uint8_t* leh, in
 
     MQTT_DoItemPublishString("oneall", (const char*)payload);
 }
+
+#else
+
+#define SEG_A_END   500
+#define SEG_B_SIZE  512
+#define SEG_B_START (SEG_A_END)
+#define SEG_C_START (SEG_A_END + SEG_B_SIZE)
+#define VALUE_BUF_SIZE 64
+#define VALUE_BUF_OFFSET (SEG_B_SIZE - VALUE_BUF_SIZE)
+#define SEG_B_PAYLOAD_MAX   (SEG_B_SIZE - VALUE_BUF_SIZE)
+//#define ONEALL_PAYLOAD_MAX 512
+void MQTT_BuildAndPublishBatch_ByIndex(int *indices, int count, uint8_t* leh, int leh_len) {
+	
+	uint8_t g_oneAllDelimiter = 0x1F;
+
+    //uint8_t payload[ONEALL_PAYLOAD_MAX];
+	char *payload = g_cfg->initCommandLine + SEG_B_START;
+	char *value = payload + VALUE_BUF_OFFSET;
+
+    int len = 0;
+
+    // ===== prefix =====
+    //if (leh && leh_len > 0) {
+    //    if (leh_len < ONEALL_PAYLOAD_MAX) {
+	    if (leh && leh_len > 0 && leh_len < SEG_B_SIZE) {
+            memcpy(payload, leh, leh_len);
+            len += leh_len;
+        }
+    //}
+
+    // =====================================================
+    // ===== PHASE 1: SYSTEM ITEMS (idx < 0) =====
+    // =====================================================
+	int defaultIndices[] = {
+		0, //test initCommandLine size
+		-14,  //Build origin PUBLISHITEM_SELF_BUILD           -14  //Build        chuyen sang lay MQTT_GROUP
+		-13,//#define PUBLISHITEM_SELF_MAC                    -13  //Device mac
+		-9,//#define PUBLISHITEM_SELF_DATETIME               -9  //Current unix datetime
+		-4,//#define PUBLISHITEM_SELF_IP                     -4  //ip address
+		-7,//#define PUBLISHITEM_SELF_RSSI                   -7  //Link strength
+		-6,//#define PUBLISHITEM_SELF_UPTIME                 -6  //Uptime
+		-5,//#define PUBLISHITEM_SELF_FREEHEAP               -5  //Free heap
+	};
+	if (!indices || count == 0) {
+		indices = defaultIndices;
+		count = 7; // truc tiep cho gon
+	}
+
+
+	//char value[64];
+    for (int i = 0; i < count; i++) {
+        int idx = indices[i];
+
+        if (idx >= 0) continue; // bo channel o phase nay
+
+        if (!MQTT_GetItemValue(idx, value, sizeof(value)))
+            continue;
+
+		if (len >= SEG_B_PAYLOAD_MAX - 1)
+			break;
+
+		int remain = SEG_B_PAYLOAD_MAX  - len;
+
+        int written = snprintf((char*)payload + len,
+                               remain, //ONEALL_PAYLOAD_MAX - len,
+                               "%d=%s%c",
+                               idx, value, g_oneAllDelimiter);
+
+        if (written <= 0 || written >= remain)//if (written <= 0 || written >= (int)(ONEALL_PAYLOAD_MAX - len))
+            break;
+
+        len += written;
+    }
+
+    // =====================================================
+    // ===== PHASE 2: CHANNELS (append cuoi) =====
+    // =====================================================
+
+    int channels[CHANNEL_MAX];
+    int chCount = MQTT_ParseFullNameToChannels(channels, CHANNEL_MAX);// ===== parse channel list =====
+
+    if (chCount > 0) {
+        for (int i = 0; i < chCount; i++) {
+            int ch = channels[i];
+
+            int v = CHANNEL_Get(ch);
+
+            //char value[32];
+            snprintf(value, sizeof(value), "%d", v);
+
+			if (len >= SEG_B_PAYLOAD_MAX - 1)
+				break;
+
+			int remain = SEG_B_PAYLOAD_MAX  - len;
+
+            int written = snprintf((char*)payload + len,
+                                   remain,//ONEALL_PAYLOAD_MAX - len,
+                                   "%d~%s%c",
+                                   ch, value, g_oneAllDelimiter);
+
+            if (written <= 0 || written >= remain)//if (written <= 0 || written >= (int)(ONEALL_PAYLOAD_MAX - len))
+                break;
+
+            len += written;
+        }
+    }
+
+    if (len <= 0) return;
+
+    // remove delimiter cuoi
+    if (payload[len - 1] == g_oneAllDelimiter) {
+        payload[len - 1] = '\0';
+        len--;
+    } else {
+        payload[len] = '\0';
+    }
+
+    MQTT_DoItemPublishString("oneall", (const char*)payload);
+
+	// optional: clear buffer sau khi dùng
+    memset(payload, 0, SEG_B_SIZE);
+
+}
+
+
+#endif
 
 
 
