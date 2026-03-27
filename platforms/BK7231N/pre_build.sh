@@ -11,6 +11,52 @@
 DIRNAME=$(dirname $0);
 echo "PREBUILD script! Executed from $DIRNAME!"
 
+
+
+
+
+echo "Applying FINAL override (guaranteed)..."
+
+CONFIG_FILE="src/obk_config.h"
+OVERRIDE_FILE="src/_auto_override_config.h"
+
+# tạo file override (luôn clean)
+cat > $OVERRIDE_FILE << 'EOF'
+#pragma once
+
+// ===== FINAL FORCE OVERRIDE =====
+
+#undef ENABLE_OBK_SCRIPTING
+#undef ENABLE_LITTLEFS
+#undef ENABLE_TASMOTA_JSON
+#undef ENABLE_TASMOTADEVICEGROUPS
+#undef ENABLE_DRIVER_SSDP
+#undef ENABLE_DRIVER_WEMO
+#undef ENABLE_DRIVER_HUE
+#undef ENABLE_DRIVER_DDP
+#undef ENABLE_SEND_POSTANDGET
+#undef ENABLE_CALENDAR_EVENTS
+#undef ENABLE_ADVANCED_CHANNELTYPES_DISCOVERY
+#undef ENABLE_DRIVER_HTTPBUTTONS
+#undef ENABLE_TIME_SUNRISE_SUNSET
+
+EOF
+
+# remove include cũ nếu có (tránh duplicate)
+sed -i '/_auto_override_config.h/d' "$CONFIG_FILE"
+
+# 👉 QUAN TRỌNG NHẤT: include ở CUỐI FILE
+echo '#include "_auto_override_config.h"' >> "$CONFIG_FILE"
+
+echo "Override injected at END of obk_config.h ✔"
+
+
+
+
+
+
+# ===== phần override gốc giữ nguyên =====
+
 # allow whitespace in file or path, so take only newline as seperator
 OFS=$IFS
 IFS='
