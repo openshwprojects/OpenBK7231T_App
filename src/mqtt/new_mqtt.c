@@ -3212,6 +3212,7 @@ void MQTT_BuildAndPublishBatch_ByIndex(int *indices, int count, uint8_t* leh, in
 
 #else
 
+
 #define APPEND_CHAR(buf,len,max,c) \
     do { if ((len) < (max)) (buf)[(len)++] = (c); } while(0)
 
@@ -3325,13 +3326,19 @@ void MQTT_BuildAndPublishBatch_ByIndex(int *indices, int count, uint8_t* leh, in
 
             int v = CHANNEL_Get(ch);
 
-            //char value[32];
-            snprintf(value, sizeof(value), "%d", v);
 
+			// ===== reuse oldLen cho value =====
+			int oldLen = 0;
+			APPEND_INT(value, oldLen, VALUE_BUF_SIZE, v);
+			value[oldLen] = '\0';
+
+			// ===== guard =====
 			if (len >= SEG_B_PAYLOAD_MAX - 1)
 				break;
 
-			int oldLen = len;
+			// ===== reuse oldLen cho payload =====
+			oldLen = len;
+
 
 			/*
             int written = snprintf((char*)payload + len,
@@ -3367,6 +3374,7 @@ void MQTT_BuildAndPublishBatch_ByIndex(int *indices, int count, uint8_t* leh, in
     memset(payload, 0, SEG_B_SIZE);
 
 }
+
 
 #endif
 
