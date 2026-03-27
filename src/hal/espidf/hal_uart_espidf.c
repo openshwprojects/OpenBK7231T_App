@@ -144,7 +144,8 @@ int HAL_UART_Init(int baud, int parity, bool hwflowc, int txOverride, int rxOver
     ESP_ERROR_CHECK(uart_driver_install(uartnum, 8192, 0, 30, &uart_queue, 0));
     ESP_ERROR_CHECK(uart_param_config(uartnum, &uart_config));
 
-    ESP_ERROR_CHECK(uart_set_rx_timeout(uartnum, 120));
+    // Safe value that works on all ESP32 variants (max is usually 126)
+    ESP_ERROR_CHECK(uart_set_rx_timeout(uartnum, 30));
 
     int tx_pin = (uartnum == UART_NUM_0) ? UART_PIN_NO_CHANGE : TX1_PIN;
     int rx_pin = (uartnum == UART_NUM_0) ? UART_PIN_NO_CHANGE : RX1_PIN;
@@ -157,7 +158,7 @@ int HAL_UART_Init(int baud, int parity, bool hwflowc, int txOverride, int rxOver
     xTaskCreate(uart_event_task, "uart_event_task", 2048, NULL, 18, &g_uartEventTaskHandle);
 
     addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,
-              "HAL_UART_Init: UART%d @ %d baud (event queue + rx_timeout=120)", uartnum, baud);
+              "HAL_UART_Init: UART%d @ %d baud (event queue + rx_timeout=30)", uartnum, baud);
 
     return 1;
 }
