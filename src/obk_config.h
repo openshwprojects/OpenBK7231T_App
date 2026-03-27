@@ -718,5 +718,16 @@
 #undef ENABLE_DRIVER_IR
 #endif
 
+
+// if any of the drivers was defined, use xhtxx instead
+#if ENABLE_DRIVER_AHT2X || ENABLE_DRIVER_CHT83XX || ENABLE_DRIVER_SHT3X
+
+#define ENABLE_DRIVER_XHTXX				1
+// disable all other drivers included in xhtxx
+#undef ENABLE_DRIVER_AHT2X
+#undef ENABLE_DRIVER_CHT83XX
+#undef ENABLE_DRIVER_SHT3X
+
+#endif 
 // closing OBK_CONFIG_H
 #endif

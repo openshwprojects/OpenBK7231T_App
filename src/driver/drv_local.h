@@ -317,3 +317,8 @@ void TinyIR_NEC_RunFrame();
 void DRV_ESPHome_API_Init();
 void DRV_ESPHome_API_Deinit();
 void DRV_ESPHome_API_OnEverySecond();
+
+// show pins w/o own IORole as "used" in config page
+// implemented in http_fns.c
+int setPinUsedString(int index, const char *str);
+
