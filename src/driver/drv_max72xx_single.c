@@ -378,6 +378,12 @@ void MAX72XX_printRawAnimated(const char *o, const char *p, int l, int delay) {
 	}
 //	MAX72XX_rotate90CW(g_max);
 }
+
+// get width, else we need to "guess" e.g. in clock driver
+unsigned short DRV_MAX72XX_GetWidth(void) {
+    if (g_max == 0) return 0;
+    return g_max->maxDevices * 8;
+}
 // backlog startDriver MAX72XX; MAX72XX_Setup 0 1 26
 static commandResult_t DRV_MAX72XX_Setup(const void *context, const char *cmd, const char *args, int flags) {
 	int din;
@@ -386,15 +392,14 @@ static commandResult_t DRV_MAX72XX_Setup(const void *context, const char *cmd, c
 	int devices;
 
 	Tokenizer_TokenizeString(args, 0);
-	
-	clk = Tokenizer_GetArgInteger(0);
-	cs = Tokenizer_GetArgInteger(1);
-	din = Tokenizer_GetArgInteger(2);
-	devices = Tokenizer_GetArgInteger(3);
-
-	if (devices == 0) {
-		devices = 4;
+	if(Tokenizer_CheckArgsCountAndPrintWarning(cmd, 3)) return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	clk = Tokenizer_GetPin(0,-1);
+	cs = Tokenizer_GetPin(1,-1);
+	din = Tokenizer_GetPin(2,-1);
+	if ( cs < 0 ||  clk < 0 || din < 0) {
+		return CMD_RES_BAD_ARGUMENT;
 	}
+	devices = Tokenizer_GetArgIntegerDefault(3,4);
 
 	g_max = MAX72XX_alloc();
 

@@ -14,8 +14,11 @@
 #include "../libraries/obktime/obktime.h"	// for time functions
 
 #define SECSinSTATIC	5		// seconds keeping display in one mode before animating to next value
-#define AnimStartIndex	40		// start of second text content. 40: width is 32 (for 4 elements), so start with 8 "empty" colomns a space
 
+// in drv_max722xx_single.c so we know the width defined there
+DRV_MAX72XX_GetWidth(void);
+
+static unsigned short DispWidth;
 
 char *my_strcat(char *p, const char *s) {
 	strcat(p, s);
@@ -315,7 +318,8 @@ FontCharacter font[] = {
 
 
 void transposeString(char *input, int shift) {
-    for (int i = 0; i < strlen(input); i++) {
+    int inputlen=strlen(input);
+    for (int i = 0; i < inputlen; i++) {
         input[i] += shift;  // Shift each character by the specified amount
     }
 }
@@ -352,7 +356,7 @@ void print2arr(char *text, char *arr, FontCharacter *f){
 void Clock_SendStr2Disp(char *p) {
 //	ADDLOG_INFO(LOG_FEATURE_RAW, "MAX72xx_clock - Clock_SendStr2Disp, \"printing\" text \"%s\"",p);
 	print2arr(p, completedisp, font);
-	MAX72XX_printRaw(completedisp, 32);		// Todo: static width of 4 x 8x8 displays 
+	MAX72XX_printRaw(completedisp, DispWidth);
 }
 
 
@@ -455,60 +459,52 @@ void Clock_SendTemperature() {
 }
 */
 
+// get the next string to display; ignore non present strings (no hum / no temp)
+static char *nextDiplayString(uint8_t *actdisp){
+	char *s;				// to contain string to "print" to display
+	(*actdisp)++;
+	if (*actdisp >= CLOCK_NUMofELEMS) *actdisp = 0;
+	for (int i = 0; i < CLOCK_NUMofELEMS; ++i) {
+		s = Clock_get(*actdisp);
+		if (s != NULL) return s;
+		(*actdisp)++;
+		if (*actdisp >= CLOCK_NUMofELEMS) *actdisp = 0;
+	}
+	return NULL;
+}
+
 static unsigned int cycle = 0;
-
-
 void Run_NoAnimation() {
-	static uint8_t actdisp = 0;			// actual "static" display in animation case
+	static uint8_t actdisp = 0;		// actual "static" display in animation case
 	char *s;				// to contain string to "print" to display
 //	ADDLOG_INFO(LOG_FEATURE_RAW, "MAX72xx_clock - Run_NoAnimation actdisp=%i / g_animated=%i / g_animationcycles=%i / g_keepdisplay=%i",actdisp, g_animated, g_animationcycles, g_keepdisplay);
 	if (g_animated == true && g_animationcycles>0){	// no "static" display if animation is active
 		return;
 	}
 	if (g_animated == false) {
-		cycle+=4;
-		if (cycle < 10) {
-			s=Clock_get(CLOCK_DATE);
-//			ADDLOG_INFO(LOG_FEATURE_RAW, "MAX72xx_clock - Run_NoAnimation DATE, \"printing\" text \"%s\"",s);
-			Clock_SendStr2Disp(s);
+		if (cycle++ > SECSinSTATIC) {
+			cycle = 0;
+			s = nextDiplayString(&actdisp);
+		} else {
+			s=Clock_get(actdisp);
 		}
-		else if(cycle < 20) {
-			s=Clock_get(CLOCK_TIME);
-//			ADDLOG_INFO(LOG_FEATURE_RAW, "MAX72xx_clock - Run_NoAnimation TIME, \"printing\" text \"%s\"",s);
-			Clock_SendStr2Disp(s);
-		}
-
-		else if (cycle < 30) {
-			s=Clock_get(CLOCK_HUMIDITY);
-			if (s) Clock_SendStr2Disp(s);
-		}
-		else {
-			s=Clock_get(CLOCK_TEMPERATURE);
-			if (s) Clock_SendStr2Disp(s);
-		}
+		if (s) Clock_SendStr2Disp(s);
+		
 	} else {			// every second if "animation" is active (we can be sure, "g_animationcycles == 0")
 		if (g_keepdisplay-- > 0){
 			Clock_SendStr2Disp(Clock_get(actdisp));
 		}
 		if (g_keepdisplay == 0) {			// we just ended "static" display, now move to next (and "animate")
 //			ADDLOG_INFO(LOG_FEATURE_RAW, "MAX72xx_clock - Run_NoAnimation, start for animating text ..");
-			memset(completedisp, 0, sizeof(completedisp));	// set to 0
+			memset(completedisp, 0, sizeof(completedisp));		// set to 0
 			print2arr(Clock_get(actdisp), completedisp, font);	// first set actual display ...
-			actdisp++;
-			actdisp = actdisp % CLOCK_NUMofELEMS;
-			s=Clock_get(actdisp);
-			while (! s){				// maybe there's no temp or hum, in this case use next
-				actdisp++;
-				actdisp = actdisp % CLOCK_NUMofELEMS;
-				s=Clock_get(actdisp);				
-			}
-			print2arr(s, completedisp + AnimStartIndex, font);			// add next content after the actual, so we can scroll ...  // Todo: static width of 4 x 8x8 displays 
-			g_animationcycles = AnimStartIndex ;				// Todo: static width of 4 x 8x8 displays 
+			s = nextDiplayString(&actdisp);				// get next (used) string to display (leave out non exixting ones (missing temp/humid)
+			print2arr(s, completedisp + DispWidth + 8, font);	// add next content after the actual, so we can scroll ...  // Todo: static width of 4 x 8x8 displays 
+			g_animationcycles = DispWidth + 8 ;			// width + one "empty" 8 column one 
 			
 		}
 	}
 	CMD_ExecuteCommandArgs("MAX72XX_refresh", "", 0);
-	cycle %= 40;
 }
 
 
@@ -518,7 +514,7 @@ void Run_Animated() {
 	}
 	char *p = completedisp;
 	if ((cycle++ % 5) == 0){
-		MAX72XX_printRaw(p + (AnimStartIndex - g_animationcycles +1 ) , 32);		// Todo: static width of 4 x 8x8 displays 
+		MAX72XX_printRaw(p + (DispWidth + 8 - g_animationcycles +1 ) , DispWidth);
 		g_animationcycles--;
 //		ADDLOG_INFO(LOG_FEATURE_RAW, "MAX72xx_clock - Run_Animated  -- g_animationcycles=%i",g_animationcycles);
 		CMD_ExecuteCommandArgs("MAX72XX_refresh", "", 0);
@@ -623,6 +619,7 @@ static commandResult_t DRV_MAX72XX_Clock_Animate(const void *context, const char
 void DRV_MAX72XX_Clock_Init() {
 
 	CMD_RegisterCommand("MAX72XXClock_Animate", DRV_MAX72XX_Clock_Animate, NULL);
+	DispWidth = DRV_MAX72XX_GetWidth();
 }
 
 

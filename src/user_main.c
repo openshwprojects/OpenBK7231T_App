@@ -912,7 +912,7 @@ void Main_OnEverySecond()
 		}
 	}
 	g_secondsElapsed++;
-// adjust clock to "internam timer" every minute (if platform supports this)
+// adjust clock to "internal timer" every minute (if platform supports this)
 #if !(WINDOWS || PLATFORM_TXW81X || PLATFORM_RDA5981)
 	if (g_secondsElapsed%60 == 0){
 #if defined(PLATFORM_ESPIDF)
