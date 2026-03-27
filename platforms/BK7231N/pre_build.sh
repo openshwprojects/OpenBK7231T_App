@@ -14,20 +14,25 @@ echo "PREBUILD script! Executed from $DIRNAME!"
 
 
 
+DIRNAME=$(dirname $0)
+echo "PREBUILD script! Executed from $DIRNAME!"
 
+echo "Applying FINAL override (guaranteed)..."
 
-# =========================
-# 🔥 ĐẶT CODE Ở ĐÂY
-# =========================
-
-# (code override của mình)
-echo "Applying safe flash optimization..."
-
+CONFIG_FILE="src/obk_config.h"
 OVERRIDE_FILE="src/_auto_override_config.h"
 
+# tạo file override (luôn clean)
 cat > $OVERRIDE_FILE << 'EOF'
 #pragma once
 
+// ===== FINAL FORCE OVERRIDE =====
+
+// core heavy
+//#undef ENABLE_OBK_BERRY
+//#undef ENABLE_OBK_SCRIPTING
+
+// sensors
 #undef ENABLE_DRIVER_DHT
 #undef ENABLE_DRIVER_DS1820
 #undef ENABLE_DRIVER_DS1820_FULL
@@ -36,13 +41,28 @@ cat > $OVERRIDE_FILE << 'EOF'
 #undef ENABLE_DRIVER_KP18058
 #undef ENABLE_DRIVER_ADCSMOOTHER
 #undef ENABLE_DRIVER_BMP280
+
+// bus
+//#undef ENABLE_I2C
+
+// network extras
+//#undef ENABLE_DRIVER_SSDP
+//#undef ENABLE_DRIVER_WEMO
+//#undef ENABLE_DRIVER_HUE
+
+// misc
+//#undef ENABLE_TASMOTA_JSON
+//#undef ENABLE_HA_DISCOVERY
+
 EOF
 
-# inject nếu chưa có
-grep -q "_auto_override_config.h" src/obk_config.h || \
-sed -i '1i #include "_auto_override_config.h"' src/obk_config.h
+# remove include cũ nếu có (tránh duplicate)
+sed -i '/_auto_override_config.h/d' "$CONFIG_FILE"
 
+# 👉 QUAN TRỌNG NHẤT: include ở CUỐI FILE
+echo '#include "_auto_override_config.h"' >> "$CONFIG_FILE"
 
+echo "Override injected at END of obk_config.h ✔"
 
 
 
