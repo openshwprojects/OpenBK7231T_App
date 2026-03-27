@@ -29,8 +29,8 @@ cat > $OVERRIDE_FILE << 'EOF'
 // ===== FINAL FORCE OVERRIDE =====
 
 // core heavy
-//#undef ENABLE_OBK_BERRY
-//#undef ENABLE_OBK_SCRIPTING
+#undef ENABLE_OBK_BERRY
+#undef ENABLE_OBK_SCRIPTING
 
 // sensors
 #undef ENABLE_DRIVER_DHT
