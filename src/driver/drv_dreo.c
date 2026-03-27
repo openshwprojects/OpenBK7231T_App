@@ -94,6 +94,19 @@ static void Dreo_RxConsume(int n) {
 }
 
 // -----------------------------------------------------------------------
+// Debug helper: dump a range of bytes from the ring buffer (used when discarding garbage)
+// -----------------------------------------------------------------------
+static void Dreo_DumpRingBytes(int startOfs, int count, const char *msg) {
+	char tmp[256];
+	int pos = 0;
+	pos += snprintf(tmp + pos, sizeof(tmp) - pos, "Dreo: %s (%d bytes): ", msg, count);
+	for (int i = 0; i < count && pos < (int)sizeof(tmp) - 6; i++) {
+		pos += snprintf(tmp + pos, sizeof(tmp) - pos, "%02X ", Dreo_RxPeek(startOfs + i));
+	}
+	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "%s", tmp);
+}
+
+// -----------------------------------------------------------------------
 // Mapping Management
 // -----------------------------------------------------------------------
 
@@ -285,6 +298,7 @@ static int Dreo_TryGetPacket(byte *out, int maxSize) {
 
 		// Scenario 3: garbage bytes at the beginning - discard them now so a real header becomes aligned
 		if (ofs > 0) {
+			Dreo_DumpRingBytes(0, ofs, "discarded leading garbage bytes before valid header");
 			addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "Dreo: discarding %d leading garbage bytes before header", ofs);
 			Dreo_RxConsume(ofs);
 			return 0;   // re-evaluate the buffer in the next TryGetPacket call (RunFrame while-loop will continue)
@@ -366,6 +380,7 @@ static int Dreo_TryGetPacket(byte *out, int maxSize) {
 	// No 55 AA header found at all (pure garbage scenario)
 	// Prevent the ring buffer from filling up forever with garbage
 	if (avail >= DREO_MIN_PACKET_SIZE * 2) {
+		Dreo_DumpRingBytes(0, 1, "discarded single garbage byte (no header found)");
 		addLogAdv(LOG_DEBUG, LOG_FEATURE_GENERAL, "Dreo: no header found - discarding 1 garbage byte for resync");
 		Dreo_RxConsume(1);
 	}
