@@ -62,6 +62,7 @@ static int g_dreoInitTimer = 0;
 static int g_dreoBytesSent = 0;
 static int g_dreoBytesReceived = 0;
 static int g_dreoBytesInvalid = 0;
+static int g_dreoConsecutiveBad = 0;   // new: force resync after repeated checksum fails
 
 // -----------------------------------------------------------------------
 // Mapping Management
@@ -217,6 +218,17 @@ static void Dreo_SendEnum(byte dpId, uint32_t value) {
 static byte g_dreoPartial[1024];
 static int  g_dreoPartialLen = 0;
 
+// Helper: dump raw bytes when we see a potential header (very useful for desync debugging)
+static void Dreo_DumpBytes(const byte *buf, int len, const char *msg) {
+	char tmp[256];
+	int pos = 0;
+	pos += snprintf(tmp + pos, sizeof(tmp) - pos, "Dreo: %s: ", msg);
+	for (int i = 0; i < len && pos < (int)sizeof(tmp) - 4; i++) {
+		pos += snprintf(tmp + pos, sizeof(tmp) - pos, "%02X ", buf[i]);
+	}
+	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "%s", tmp);
+}
+
 static int Dreo_TryGetPacket(byte *out, int maxSize) {
 	int cs = UART_GetDataSize();
 
@@ -253,9 +265,12 @@ static int Dreo_TryGetPacket(byte *out, int maxSize) {
 		int payloadLen = ((int)lenH << 8) | lenL;
 		int packetLen = 8 + payloadLen + 1;
 
-		addLogAdv(LOG_DEBUG, LOG_FEATURE_GENERAL, 
-			"Dreo: potential header ofs=%d ver=0x%02X seq=0x%02X cmd=0x%02X len=%d", 
-			ofs, ver, seq, cmd, payloadLen);
+		// Always dump the raw bytes when we see a 55 AA header (this will show exactly why checksum fails)
+		if (ofs + packetLen <= g_dreoPartialLen) {
+			Dreo_DumpBytes(g_dreoPartial + ofs, packetLen, "found potential packet");
+		} else {
+			Dreo_DumpBytes(g_dreoPartial + ofs, g_dreoPartialLen - ofs, "found partial header");
+		}
 
 		if (packetLen > g_dreoPartialLen - ofs) {
 			addLogAdv(LOG_DEBUG, LOG_FEATURE_GENERAL, "Dreo: incomplete packet at ofs=%d (need %d bytes, have %d)", ofs, packetLen, g_dreoPartialLen - ofs);
@@ -271,13 +286,30 @@ static int Dreo_TryGetPacket(byte *out, int maxSize) {
 		byte actual = g_dreoPartial[ofs + packetLen - 1];
 
 		if (actual != expected) {
-			addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,
-				"Dreo: checksum FAIL ofs=%d seq=0x%02X cmd=0x%02X expected=0x%02X got=0x%02X", 
-				ofs, seq, cmd, expected, actual);
 			g_dreoBytesInvalid++;
+			g_dreoConsecutiveBad++;
+
+			addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,
+				"Dreo: checksum FAIL ofs=%d seq=0x%02X cmd=0x%02X expected=0x%02X got=0x%02X (sum=0x%02X)",
+				ofs, seq, cmd, expected, actual, (byte)calcSum);
+
+			if (g_dreoConsecutiveBad > 5) {
+				addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "Dreo: too many consecutive bad packets - forcing resync (discarding 20 bytes)");
+				if (g_dreoPartialLen > 20) {
+					memmove(g_dreoPartial, g_dreoPartial + 20, g_dreoPartialLen - 20);
+					g_dreoPartialLen -= 20;
+				} else {
+					g_dreoPartialLen = 0;
+				}
+				g_dreoConsecutiveBad = 0;
+			}
+
 			ofs++;
 			continue;
 		}
+
+		// reset bad counter on success
+		g_dreoConsecutiveBad = 0;
 
 		// VALID PACKET FOUND
 		if (packetLen > maxSize) {
@@ -488,6 +520,8 @@ void Dreo_Init(void) {
 	g_dreoHeartbeatTimer = 0;
 	g_dreoInitState = 0;
 	g_dreoInitTimer = 0;
+	g_dreoConsecutiveBad = 0;
+	g_dreoPartialLen = 0;
 
 	UART_InitUART(115200, 0, false);
 	UART_InitReceiveRingBuffer(1024);   // increased from 512 to prevent buffer overflow / desync on ESP-IDF
