@@ -10,6 +10,56 @@
 #
 DIRNAME=$(dirname $0);
 echo "PREBUILD script! Executed from $DIRNAME!"
+
+
+
+
+
+
+# =========================
+# 🔥 ĐẶT CODE Ở ĐÂY
+# =========================
+
+# (code override của mình)
+echo "Applying safe flash optimization..."
+
+OVERRIDE_FILE="src/_auto_override_config.h"
+
+cat > $OVERRIDE_FILE << 'EOF'
+#pragma once
+
+#undef ENABLE_OBK_BERRY
+#undef ENABLE_OBK_SCRIPTING
+
+#undef ENABLE_DRIVER_DHT
+#undef ENABLE_DRIVER_DS1820
+#undef ENABLE_DRIVER_AHT2X
+#undef ENABLE_I2C
+
+#undef ENABLE_DRIVER_IR
+#undef ENABLE_DRIVER_SSDP
+#undef ENABLE_DRIVER_WEMO
+#undef ENABLE_DRIVER_HUE
+
+#undef ENABLE_TASMOTA_JSON
+#undef ENABLE_HA_DISCOVERY
+EOF
+
+# inject nếu chưa có
+grep -q "_auto_override_config.h" src/obk_config.h || \
+sed -i '1i #include "_auto_override_config.h"' src/obk_config.h
+
+
+
+
+
+
+# =========================
+# phần override copy có sẵn
+# =========================
+
+
+
 # allow whitespace in file or path, so take only newline as seperator
 OFS=$IFS
 IFS='
@@ -38,14 +88,3 @@ IFS=$OFS
 # and then in pre_build.sh you apply this patch with:
 #
 # patch -p 1 -d sdk/OpenBK7231N < platforms/BK7231N/my_change.diff
-
-
-# Disable sensors automatically for BK7231N
-CONFIG_FILE="src/obk_config.h"
-
-# Nếu chưa có OBK_DISABLE_SENSORS thì thêm
-if ! grep -q "OBK_DISABLE_SENSORS" "$CONFIG_FILE"; then
-    sed -i '/#endif[[:space:]]*$/i \
-\n// Disable sensors and OBK_BERRY automatically\n#define OBK_DISABLE_SENSORS\n#ifdef OBK_DISABLE_SENSORS\n#undef ENABLE_DRIVER_DHT\n#undef ENABLE_DRIVER_DS1820\n#undef ENABLE_DRIVER_DS1820_FULL\n#undef ENABLE_DRIVER_AHT2X\n#undef ENABLE_DRIVER_CHT83XX\n#undef ENABLE_DRIVER_KP18058\n#undef ENABLE_DRIVER_ADCSMOOTHER\n#undef ENABLE_DRIVER_BMP280\n#undef ENABLE_I2C\n#undef ENABLE_OBK_BERRY\n#endif\n' "$CONFIG_FILE"
-fi
-
