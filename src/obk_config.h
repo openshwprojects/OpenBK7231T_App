@@ -60,6 +60,7 @@
 #define ENABLE_DRIVER_TUYAMCU					1
 #define ENABLE_DRIVER_DS1820					1
 #define ENABLE_DRIVER_DHT						1
+#undef ENABLE_DRIVER_DHT
 #define ENABLE_DRIVER_AHT2X						1
 #define ENABLE_DRIVER_SSDP						1
 #define ENABLE_OBK_BERRY						1
@@ -77,6 +78,7 @@
 //#define ENABLE_TIME_DST						1
 #define ENABLE_DRIVER_BL0937					1
 #define ENABLE_DRIVER_DHT						1
+#undef ENABLE_DRIVER_DHT
 #define ENABLE_TASMOTA_JSON						1
 #define ENABLE_DRIVER_DS1820					1
 #define ENABLE_OBK_SCRIPTING					1
