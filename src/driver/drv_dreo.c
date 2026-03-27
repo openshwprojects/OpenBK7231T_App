@@ -4,7 +4,7 @@
 //
 // Protocol format:
 //   [55 AA] [ver] [seq] [cmd] [00] [lenH] [lenL] [payload] [checksum]
-//   Checksum: (seq + sum(payload bytes only)) & 0xFF
+//   Checksum: (seq + sum(payload bytes only) - 1) & 0xFF
 //
 // DP payload format (same as standard Tuya):
 //   [dpId] [dpType:0x01] [type] [lenH] [lenL] [value...]
@@ -125,7 +125,7 @@ static dreoMapping_t *Dreo_AutoStore(int dpId, int dpType) {
 // -----------------------------------------------------------------------
 
 // Send a raw Dreo packet:  55 AA [ver=0x00] [seq] [cmd] [0x00] [lenH] [lenL] [payload] [checksum]
-// Checksum: (seq + sum(payload bytes only)) & 0xFF
+// Checksum: (seq + sum(payload bytes only) - 1) & 0xFF
 static void Dreo_SendRaw(byte cmd, const byte *payload, int payloadLen) {
 	int i;
 	uint32_t sum = 0;
@@ -146,14 +146,14 @@ static void Dreo_SendRaw(byte cmd, const byte *payload, int payloadLen) {
 	UART_SendByte(lenH);           // length high
 	UART_SendByte(lenL);           // length low
 
-	// checksum = (seq + sum(payload only)) & 0xFF
+	// checksum = (seq + sum(payload only) - 1) & 0xFF
 	sum = seq;
 	for (i = 0; i < payloadLen; i++) {
 		UART_SendByte(payload[i]);
 		sum += payload[i];
 	}
 
-	byte checksum = (byte)(sum & 0xFF);
+	byte checksum = (byte)((sum - 1) & 0xFF);
 	UART_SendByte(checksum);
 
 	g_dreoBytesSent += 8 + payloadLen + 1;  // header(8) + payload + checksum(1)
@@ -260,12 +260,12 @@ static int Dreo_TryGetPacket(byte *out, int maxSize) {
 		if (packetLen > g_dreoPartialLen - ofs)
 			break;   // incomplete packet - wait for more data next frame
 
-		// checksum check - (seq + sum(payload bytes only)) & 0xFF
+		// checksum check - (seq + sum(payload bytes only) - 1) & 0xFF
 		uint32_t calcSum = seq;
 		for (int i = 0; i < payloadLen; i++) {
 			calcSum += g_dreoPartial[ofs + 8 + i];
 		}
-		byte expected = (byte)(calcSum & 0xFF);
+		byte expected = (byte)((calcSum - 1) & 0xFF);
 		byte actual   = g_dreoPartial[ofs + packetLen - 1];
 
 		if (actual != expected) {
@@ -495,7 +495,7 @@ void Dreo_Init(void) {
 	g_dreoInitTimer = 0;
 
 	UART_InitUART(115200, 0, false);
-	UART_InitReceiveRingBuffer(2048);   // increased from 512 to prevent buffer overflow / desync on ESP-IDF
+	UART_InitReceiveRingBuffer(1024);   // original size (1k) - 2k was causing simulator build issues
 
 	//cmddetail:{"name":"linkDreoOutputToChannel","args":"[dpId][varType][channelID]",
 	//cmddetail:"descr":"Map a Dreo dpId to an OBK channel. VarTypes: bool, val, enum, str, raw. Syntax is same as linkTuyaMCUOutputToChannel.",
@@ -509,7 +509,7 @@ void Dreo_Init(void) {
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("dreo_sendState", Dreo_SendStateCmd, NULL);
 
-	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "Dreo: driver initialized (115200 baud, buffer=2048)");
+	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "Dreo: driver initialized (115200 baud)");
 }
 
 void Dreo_Shutdown(void) {
