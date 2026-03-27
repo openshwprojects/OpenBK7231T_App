@@ -213,16 +213,15 @@ static void Dreo_SendEnum(byte dpId, uint32_t value) {
 // Minimum packet: 8 header + 1 checksum = 9 bytes
 #define DREO_MIN_PACKET_SIZE 9
 
-// Persistent partial buffer - this is our single working buffer
+// Single persistent private buffer - we copy everything here and parse it
 static byte g_dreoPartial[1024];
 static int  g_dreoPartialLen = 0;
 
 static int Dreo_TryGetPacket(byte *out, int maxSize) {
 	int cs = UART_GetDataSize();
 
-	// If we have new data, append it to our private buffer and immediately consume it from the UART ring buffer
+	// Append any new data from the UART ring buffer to our private buffer and consume it immediately
 	if (cs > 0) {
-		// Safety: don't overflow our private buffer
 		if (g_dreoPartialLen + cs > (int)sizeof(g_dreoPartial)) {
 			// keep only the last 400 bytes (more than enough for any Dreo packet)
 			int keep = 400;
@@ -232,7 +231,6 @@ static int Dreo_TryGetPacket(byte *out, int maxSize) {
 			}
 		}
 
-		// Append the new bytes
 		for (int i = 0; i < cs; i++) {
 			g_dreoPartial[g_dreoPartialLen + i] = UART_GetByte(i);
 		}
@@ -242,7 +240,7 @@ static int Dreo_TryGetPacket(byte *out, int maxSize) {
 		UART_ConsumeBytes(cs);
 	}
 
-	// Now parse our private buffer
+	// Now look for complete packets in our private buffer
 	for (int ofs = 0; ofs <= g_dreoPartialLen - DREO_MIN_PACKET_SIZE; ofs++) {
 		if (g_dreoPartial[ofs] != 0x55 || g_dreoPartial[ofs + 1] != 0xAA)
 			continue;
@@ -253,9 +251,9 @@ static int Dreo_TryGetPacket(byte *out, int maxSize) {
 		int packetLen = 8 + payloadLen + 1;
 
 		if (packetLen > g_dreoPartialLen - ofs)
-			break;   // incomplete - wait for more data
+			break;   // incomplete packet - wait for more data next frame
 
-		// Checksum verification
+		// checksum check
 		uint32_t calcSum = 0;
 		for (int i = 2; i < packetLen - 1; i++) {
 			calcSum += g_dreoPartial[ofs + i];
@@ -269,7 +267,6 @@ static int Dreo_TryGetPacket(byte *out, int maxSize) {
 		// VALID PACKET FOUND
 		if (packetLen > maxSize) {
 			addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "Dreo: packet too large (%i > %i)", packetLen, maxSize);
-			// remove it from our buffer
 			memmove(g_dreoPartial, g_dreoPartial + ofs + packetLen, g_dreoPartialLen - (ofs + packetLen));
 			g_dreoPartialLen -= (ofs + packetLen);
 			return 0;
@@ -277,7 +274,7 @@ static int Dreo_TryGetPacket(byte *out, int maxSize) {
 
 		memcpy(out, g_dreoPartial + ofs, packetLen);
 
-		// Remove the processed packet from our private buffer
+		// remove the packet from our private buffer
 		memmove(g_dreoPartial, g_dreoPartial + ofs + packetLen, g_dreoPartialLen - (ofs + packetLen));
 		g_dreoPartialLen -= (ofs + packetLen);
 
@@ -289,7 +286,7 @@ static int Dreo_TryGetPacket(byte *out, int maxSize) {
 		return packetLen;
 	}
 
-	// No complete packet found yet - keep the data in our private buffer
+	// no complete packet ready yet
 	return 0;
 }
 
