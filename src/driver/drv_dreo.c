@@ -44,6 +44,10 @@
 #define DREO_CMD_STATE         0x07
 #define DREO_CMD_QUERY_STATE   0x08
 
+// Maximum reasonable payload size (Dreo packets are very small; prevents parser lockup on false 55 AA headers
+// that claim huge payloadLen and cause the "incomplete packet -> break" to skip real packets forever)
+#define DREO_MAX_PAYLOAD 180
+
 // Mapping structure: links a Dreo dpID to an OBK channel
 typedef struct dreoMapping_s {
 	byte dpId;
@@ -253,7 +257,7 @@ static void Dreo_DumpBytes(const byte *buf, int len, const char *msg) {
 static int Dreo_TryGetPacket(byte *out, int maxSize) {
 	int avail = Dreo_RxAvailable();
 
-	// Copy new UART data into our ring buffer
+	// Copy new UART data into our ring buffer (done once per call - ring buffer stays stable)
 	int cs = UART_GetDataSize();
 	if (cs > 0) {
 		if (cs > DREO_RX_BUF_SIZE - avail) {
@@ -279,62 +283,77 @@ static int Dreo_TryGetPacket(byte *out, int maxSize) {
 		if (Dreo_RxPeek(ofs) != 0x55 || Dreo_RxPeek(ofs + 1) != 0xAA)
 			continue;
 
-		byte ver = Dreo_RxPeek(ofs + 2);
-		byte seq = Dreo_RxPeek(ofs + 3);
-		byte cmd = Dreo_RxPeek(ofs + 4);
-		byte lenH = Dreo_RxPeek(ofs + 6);
-		byte lenL = Dreo_RxPeek(ofs + 7);
+		// Scenario 3: garbage bytes at the beginning - discard them now so a real header becomes aligned
+		if (ofs > 0) {
+			addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "Dreo: discarding %d leading garbage bytes before header", ofs);
+			Dreo_RxConsume(ofs);
+			return 0;   // re-evaluate the buffer in the next TryGetPacket call (RunFrame while-loop will continue)
+		}
+
+		// Header is now aligned at position 0 (ofs == 0)
+		byte ver = Dreo_RxPeek(2);
+		byte seq = Dreo_RxPeek(3);
+		byte cmd = Dreo_RxPeek(4);
+		byte lenH = Dreo_RxPeek(6);
+		byte lenL = Dreo_RxPeek(7);
 		int payloadLen = ((int)lenH << 8) | lenL;
 		int packetLen = 8 + payloadLen + 1;
 
-		if (packetLen > avail) {
-			// partial packet - wait for next frame
-			addLogAdv(LOG_DEBUG, LOG_FEATURE_GENERAL, "Dreo: incomplete packet at ofs=%d (need %d bytes, have %d)", ofs, packetLen, avail);
-			break;
+		// Reject obviously bogus headers
+		if (payloadLen > DREO_MAX_PAYLOAD) {
+			addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "Dreo: bogus large header (payloadLen=%d > %d) at ofs=0 - skipping bad sync", payloadLen, DREO_MAX_PAYLOAD);
+			Dreo_RxConsume(1); // discard the bad 55 AA
+			continue;
 		}
 
-		// Copy packet to linear temporary buffer so checksum & processing is easy
-		byte tmp[192];
-		if (packetLen > maxSize) {
-			addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "Dreo: packet too large (%i > %i)", packetLen, maxSize);
-			Dreo_RxConsume(packetLen); // discard
+		if (packetLen > avail) {
+			// Scenario 2: valid header but packet still incomplete - leave the ring buffer untouched and wait for next frame
+			addLogAdv(LOG_DEBUG, LOG_FEATURE_GENERAL, "Dreo: incomplete packet at ofs=0 (need %d bytes, have %d)", packetLen, avail);
 			return 0;
 		}
-		for (int i = 0; i < packetLen; i++) {
-			tmp[i] = Dreo_RxPeek(ofs + i);
-		}
 
-		Dreo_DumpBytes(tmp, packetLen, "found potential packet");
-
-		// checksum check
+		// Scenario 1: complete valid-looking packet at the front - verify checksum using only Peek (no extra copy yet)
 		uint32_t calcSum = 0;
 		for (int i = 2; i < packetLen - 1; i++) {
-			calcSum += tmp[i];
+			calcSum += Dreo_RxPeek(i);
 		}
 		byte expected = (byte)((calcSum - 1) & 0xFF);
-		byte actual = tmp[packetLen - 1];
+		byte actual = Dreo_RxPeek(packetLen - 1);
 
 		if (actual != expected) {
 			g_dreoBytesInvalid++;
 			g_dreoConsecutiveBad++;
 
 			addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,
-				"Dreo: checksum FAIL ofs=%d seq=0x%02X cmd=0x%02X expected=0x%02X got=0x%02X (sum=0x%02X)",
-				ofs, seq, cmd, expected, actual, (byte)calcSum);
+				"Dreo: checksum FAIL ofs=0 seq=0x%02X cmd=0x%02X expected=0x%02X got=0x%02X (sum=0x%02X)",
+				seq, cmd, expected, actual, (byte)calcSum);
 
 			if (g_dreoConsecutiveBad > 5) {
 				addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "Dreo: too many consecutive bad packets - forcing resync (discarding 30 bytes)");
 				Dreo_RxConsume(30);
 				g_dreoConsecutiveBad = 0;
+			} else {
+				Dreo_RxConsume(1); // discard just the leading 55 for faster resync
 			}
-
-			continue; // try next possible header
+			continue;
 		}
 
-		// VALID PACKET FOUND
+		// VALID PACKET FOUND (scenario 1)
 		g_dreoConsecutiveBad = 0;
-		memcpy(out, tmp, packetLen);
-		Dreo_RxConsume(ofs + packetLen); // remove everything up to and including this packet
+
+		// Copy only the confirmed valid packet to linear buffer for processing
+		if (packetLen > maxSize) {
+			addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "Dreo: packet too large (%i > %i)", packetLen, maxSize);
+			Dreo_RxConsume(packetLen);
+			return 0;
+		}
+		for (int i = 0; i < packetLen; i++) {
+			out[i] = Dreo_RxPeek(i);
+		}
+
+		Dreo_DumpBytes(out, packetLen, "found potential packet");
+
+		Dreo_RxConsume(packetLen);
 
 		g_dreoBytesReceived += packetLen;
 
@@ -342,6 +361,13 @@ static int Dreo_TryGetPacket(byte *out, int maxSize) {
 			"Dreo: VALID packet seq=0x%02X cmd=0x%02X payload=%i bytes", seq, cmd, payloadLen);
 
 		return packetLen;
+	}
+
+	// No 55 AA header found at all (pure garbage scenario)
+	// Prevent the ring buffer from filling up forever with garbage
+	if (avail >= DREO_MIN_PACKET_SIZE * 2) {
+		addLogAdv(LOG_DEBUG, LOG_FEATURE_GENERAL, "Dreo: no header found - discarding 1 garbage byte for resync");
+		Dreo_RxConsume(1);
 	}
 
 	return 0;
