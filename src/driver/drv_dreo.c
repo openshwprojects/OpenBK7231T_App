@@ -213,61 +213,75 @@ static void Dreo_SendEnum(byte dpId, uint32_t value) {
 // Minimum packet: 8 header + 1 checksum = 9 bytes
 #define DREO_MIN_PACKET_SIZE 9
 
-// Single private buffer for safe snapshot (eliminates race with uart_event_task)
-static byte g_dreoBuffer[1024];
+// Persistent partial buffer - this is our single working buffer
+static byte g_dreoPartial[1024];
+static int  g_dreoPartialLen = 0;
 
 static int Dreo_TryGetPacket(byte *out, int maxSize) {
 	int cs = UART_GetDataSize();
-	if (cs < DREO_MIN_PACKET_SIZE)
-		return 0;
 
-	// Take a single consistent snapshot of the ring buffer
-	int snapLen = (cs > (int)sizeof(g_dreoBuffer)) ? (int)sizeof(g_dreoBuffer) : cs;
-	for (int i = 0; i < snapLen; i++) {
-		g_dreoBuffer[i] = UART_GetByte(i);
+	// If we have new data, append it to our private buffer and immediately consume it from the UART ring buffer
+	if (cs > 0) {
+		// Safety: don't overflow our private buffer
+		if (g_dreoPartialLen + cs > (int)sizeof(g_dreoPartial)) {
+			// keep only the last 400 bytes (more than enough for any Dreo packet)
+			int keep = 400;
+			if (g_dreoPartialLen > keep) {
+				memmove(g_dreoPartial, g_dreoPartial + g_dreoPartialLen - keep, keep);
+				g_dreoPartialLen = keep;
+			}
+		}
+
+		// Append the new bytes
+		for (int i = 0; i < cs; i++) {
+			g_dreoPartial[g_dreoPartialLen + i] = UART_GetByte(i);
+		}
+		g_dreoPartialLen += cs;
+
+		// Immediately consume everything we just copied from the UART ring buffer
+		UART_ConsumeBytes(cs);
 	}
 
-	// Scan the snapshot for the first complete valid packet
-	for (int ofs = 0; ofs <= snapLen - DREO_MIN_PACKET_SIZE; ofs++) {
-		if (g_dreoBuffer[ofs] != 0x55 || g_dreoBuffer[ofs + 1] != 0xAA)
+	// Now parse our private buffer
+	for (int ofs = 0; ofs <= g_dreoPartialLen - DREO_MIN_PACKET_SIZE; ofs++) {
+		if (g_dreoPartial[ofs] != 0x55 || g_dreoPartial[ofs + 1] != 0xAA)
 			continue;
 
-		byte lenH = g_dreoBuffer[ofs + 6];
-		byte lenL = g_dreoBuffer[ofs + 7];
+		byte lenH = g_dreoPartial[ofs + 6];
+		byte lenL = g_dreoPartial[ofs + 7];
 		int payloadLen = ((int)lenH << 8) | lenL;
 		int packetLen = 8 + payloadLen + 1;
 
-		// Not enough data yet for this packet → continue scanning (there might be a complete packet later in the same snapshot)
-		if (packetLen > snapLen - ofs)
-			continue;
+		if (packetLen > g_dreoPartialLen - ofs)
+			break;   // incomplete - wait for more data
 
-		// Verify checksum on snapshot
+		// Checksum verification
 		uint32_t calcSum = 0;
 		for (int i = 2; i < packetLen - 1; i++) {
-			calcSum += g_dreoBuffer[ofs + i];
+			calcSum += g_dreoPartial[ofs + i];
 		}
 		byte expected = (byte)((calcSum - 1) & 0xFF);
-		if (g_dreoBuffer[ofs + packetLen - 1] != expected) {
-			ofs++;   // false header, skip this byte
+		if (g_dreoPartial[ofs + packetLen - 1] != expected) {
+			ofs++;
 			continue;
 		}
 
 		// VALID PACKET FOUND
 		if (packetLen > maxSize) {
 			addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "Dreo: packet too large (%i > %i)", packetLen, maxSize);
-			UART_ConsumeBytes(ofs + packetLen);
+			// remove it from our buffer
+			memmove(g_dreoPartial, g_dreoPartial + ofs + packetLen, g_dreoPartialLen - (ofs + packetLen));
+			g_dreoPartialLen -= (ofs + packetLen);
 			return 0;
 		}
 
-		memcpy(out, g_dreoBuffer + ofs, packetLen);
+		memcpy(out, g_dreoPartial + ofs, packetLen);
 
-		// Consume from the real ring buffer (atomic)
-		UART_ConsumeBytes(ofs + packetLen);
+		// Remove the processed packet from our private buffer
+		memmove(g_dreoPartial, g_dreoPartial + ofs + packetLen, g_dreoPartialLen - (ofs + packetLen));
+		g_dreoPartialLen -= (ofs + packetLen);
+
 		g_dreoBytesReceived += packetLen;
-
-		if (ofs > 0) {
-			g_dreoBytesInvalid += ofs;
-		}
 
 		addLogAdv(LOG_DEBUG, LOG_FEATURE_GENERAL,
 			"Dreo: received cmd=0x%02X payload=%i bytes (valid packet)", out[4], payloadLen);
@@ -275,7 +289,7 @@ static int Dreo_TryGetPacket(byte *out, int maxSize) {
 		return packetLen;
 	}
 
-	// No complete valid packet found yet – leave everything in the ring buffer
+	// No complete packet found yet - keep the data in our private buffer
 	return 0;
 }
 
