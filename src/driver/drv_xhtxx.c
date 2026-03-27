@@ -143,9 +143,24 @@ static void XHTXX_StoreAndLog(xhtxx_dev_t *dev, int16_t t10, int16_t h10)
                 t10/10, tf, h10/10, h10%10);
 }
 
-static xhtxx_dev_t *XHTXX_GetSensor(const char *cmd, int argIdx, bool present)
+static xhtxx_dev_t *XHTXX_GetSensor(const char *cmd, int argIdx, bool present, uint8_t def_family)
 {
-    if(!present) return &g_sensors[0];
+    int usesensor=-1;
+    if(!present){
+    	if (def_family == 0) {
+    	    usesensor = 0;
+    	}
+    	else for (int i=0; i< (int)g_numSensors; i++) {	// return first sensor of this family
+    		if (g_sensors[i].familyIdx == def_family) {
+    		    usesensor = i;
+    		    break;
+    		}
+    	}
+    	if (usesensor>-1){
+    	    ADDLOG_INFO(LOG_FEATURE_SENSOR, "%s: No sensor provided. Using %s[%i]", cmd, g_families[g_sensors[usesensor].familyIdx].name, usesensor+1);
+    	    return &g_sensors[usesensor];
+    	}
+    }
     int n = Tokenizer_GetArgInteger(argIdx);
     if(n < 1 || n > (int)g_numSensors) {
         ADDLOG_ERROR(LOG_FEATURE_SENSOR, "%s: sensor %i out of range (1..%i)", cmd, n, g_numSensors);
@@ -659,7 +674,7 @@ commandResult_t XHTXX_CMD_Calibrate(const void *context, const char *cmd,
     Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_DONT_EXPAND);
     if(Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) return CMD_RES_NOT_ENOUGH_ARGUMENTS;
     int argc = Tokenizer_GetArgsCount();
-    xhtxx_dev_t *dev = XHTXX_GetSensor(cmd, 2, argc >= 3);
+    xhtxx_dev_t *dev = XHTXX_GetSensor(cmd, 2, argc >= 3, 0);
     if(!dev) return CMD_RES_BAD_ARGUMENT;
     dev->calTemp = (int16_t)(Tokenizer_GetArgFloat(0) * 10.0f);
     dev->calHum  = (int8_t) (Tokenizer_GetArgFloat(1) * 10.0f);
@@ -678,7 +693,7 @@ commandResult_t XHTXX_CMD_Cycle(const void *context, const char *cmd,
     CMD_UNUSED;
     Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_DONT_EXPAND);
     if(Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) return CMD_RES_NOT_ENOUGH_ARGUMENTS;
-    xhtxx_dev_t *dev = XHTXX_GetSensor(cmd, 1, Tokenizer_GetArgsCount() >= 2);
+    xhtxx_dev_t *dev = XHTXX_GetSensor(cmd, 1, Tokenizer_GetArgsCount() >= 2, 0);
     if(!dev) return CMD_RES_BAD_ARGUMENT;
     int s = Tokenizer_GetArgInteger(0);
     if(s < 1) { ADDLOG_INFO(LOG_FEATURE_CMD, "XHTXX: min 1s."); return CMD_RES_BAD_ARGUMENT; }
@@ -696,7 +711,7 @@ commandResult_t XHTXX_CMD_Force(const void *context, const char *cmd,
 {
     CMD_UNUSED;
     Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_DONT_EXPAND);
-    xhtxx_dev_t *dev = XHTXX_GetSensor(cmd, 0, Tokenizer_GetArgsCount() >= 1);
+    xhtxx_dev_t *dev = XHTXX_GetSensor(cmd, 0, Tokenizer_GetArgsCount() >= 1, 0);
     if(!dev || !dev->isWorking) return CMD_RES_BAD_ARGUMENT;
     dev->secondsUntilNext = dev->secondsBetween;
     g_families[dev->familyIdx].measure_fn(dev);
@@ -712,7 +727,7 @@ commandResult_t XHTXX_CMD_Reinit(const void *context, const char *cmd,
 {
     CMD_UNUSED;
     Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_DONT_EXPAND);
-    xhtxx_dev_t *dev = XHTXX_GetSensor(cmd, 0, Tokenizer_GetArgsCount() >= 1);
+    xhtxx_dev_t *dev = XHTXX_GetSensor(cmd, 0, Tokenizer_GetArgsCount() >= 1, 0);
     if(!dev) return CMD_RES_BAD_ARGUMENT;
 #ifdef XHTXX_ENABLE_SERIAL_LOG
     dev->serial = 0;
@@ -781,8 +796,8 @@ commandResult_t XHTXX_CMD_LaunchPer(const void *context, const char *cmd,
     int argc = Tokenizer_GetArgsCount();
     uint8_t msb = 0x23, lsb = 0x22;
     xhtxx_dev_t *dev;
-    if(argc >= 2) { msb=(uint8_t)Tokenizer_GetArgInteger(0); lsb=(uint8_t)Tokenizer_GetArgInteger(1); dev=XHTXX_GetSensor(cmd,2,argc>=3); }
-    else          { dev = XHTXX_GetSensor(cmd, 0, argc >= 1); }
+    if(argc >= 2) { msb=(uint8_t)Tokenizer_GetArgInteger(0); lsb=(uint8_t)Tokenizer_GetArgInteger(1); dev=XHTXX_GetSensor(cmd,2,argc>=3, XHTXX_FAMILY_SHT3X); }
+    else          { dev = XHTXX_GetSensor(cmd, 0, 0, XHTXX_FAMILY_SHT3X); }
     if(!dev) return CMD_RES_BAD_ARGUMENT;
     REQUIRE_SHT3X(dev, CMD_RES_ERROR);
     XHTXX_SHT3x_StopPeriodic(dev);  rtos_delay_milliseconds(25);
@@ -794,7 +809,7 @@ commandResult_t XHTXX_CMD_FetchPer(const void *context, const char *cmd,
 {
     CMD_UNUSED;
     Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_DONT_EXPAND);
-    xhtxx_dev_t *dev = XHTXX_GetSensor(cmd, 0, Tokenizer_GetArgsCount() >= 1);
+    xhtxx_dev_t *dev = XHTXX_GetSensor(cmd, 0, Tokenizer_GetArgsCount() >= 1, XHTXX_FAMILY_SHT3X);
     if(!dev) return CMD_RES_BAD_ARGUMENT;
     REQUIRE_SHT3X(dev, CMD_RES_ERROR);
     if(!dev->periodicActive) { ADDLOG_INFO(LOG_FEATURE_SENSOR, "XHTXX: periodic not running."); return CMD_RES_ERROR; }
@@ -806,7 +821,7 @@ commandResult_t XHTXX_CMD_StopPer(const void *context, const char *cmd,
 {
     CMD_UNUSED;
     Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_DONT_EXPAND);
-    xhtxx_dev_t *dev = XHTXX_GetSensor(cmd, 0, Tokenizer_GetArgsCount() >= 1);
+    xhtxx_dev_t *dev = XHTXX_GetSensor(cmd, 0, Tokenizer_GetArgsCount() >= 1, XHTXX_FAMILY_SHT3X);
     if(!dev) return CMD_RES_BAD_ARGUMENT;
     REQUIRE_SHT3X(dev, CMD_RES_ERROR);
     XHTXX_SHT3x_StopPeriodic(dev);
@@ -819,7 +834,7 @@ commandResult_t XHTXX_CMD_Heater(const void *context, const char *cmd,
     Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_DONT_EXPAND);
     if(Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) return CMD_RES_NOT_ENOUGH_ARGUMENTS;
     int on = Tokenizer_GetArgInteger(0);
-    xhtxx_dev_t *dev = XHTXX_GetSensor(cmd, 1, Tokenizer_GetArgsCount() >= 2);
+    xhtxx_dev_t *dev = XHTXX_GetSensor(cmd, 1, Tokenizer_GetArgsCount() >= 2, XHTXX_FAMILY_SHT3X);
     if(!dev) return CMD_RES_BAD_ARGUMENT;
     REQUIRE_SHT3X(dev, CMD_RES_ERROR);
     I2C_Write(dev, 0x30, on ? 0x6D : 0x66, 0, 2);
@@ -831,7 +846,7 @@ commandResult_t XHTXX_CMD_GetStatus(const void *context, const char *cmd,
 {
     CMD_UNUSED;
     Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_DONT_EXPAND);
-    xhtxx_dev_t *dev = XHTXX_GetSensor(cmd, 0, Tokenizer_GetArgsCount() >= 1);
+    xhtxx_dev_t *dev = XHTXX_GetSensor(cmd, 0, Tokenizer_GetArgsCount() >= 1, XHTXX_FAMILY_SHT3X);
     if(!dev) return CMD_RES_BAD_ARGUMENT;
     REQUIRE_SHT3X(dev, CMD_RES_ERROR);
     uint8_t buf[3];
@@ -845,49 +860,12 @@ commandResult_t XHTXX_CMD_ClearStatus(const void *context, const char *cmd,
 {
     CMD_UNUSED;
     Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_DONT_EXPAND);
-    xhtxx_dev_t *dev = XHTXX_GetSensor(cmd, 0, Tokenizer_GetArgsCount() >= 1);
+    xhtxx_dev_t *dev = XHTXX_GetSensor(cmd, 0, Tokenizer_GetArgsCount() >= 1, XHTXX_FAMILY_SHT3X);
     if(!dev) return CMD_RES_BAD_ARGUMENT;
     REQUIRE_SHT3X(dev, CMD_RES_ERROR);
     I2C_Write(dev, 0x30, 0x41, 0, 2);
     return CMD_RES_OK;
 }
-/*
-// float - int version below
-commandResult_t XHTXX_CMD_ReadAlert(const void *context, const char *cmd,
-                                     const char *args, int cmdFlags)
-{
-    CMD_UNUSED;
-    Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_DONT_EXPAND);
-    xhtxx_dev_t *dev = XHTXX_GetSensor(cmd, 0, Tokenizer_GetArgsCount() >= 1);
-    if(!dev) return CMD_RES_BAD_ARGUMENT;
-    REQUIRE_SHT3X(dev, CMD_RES_ERROR);
-    float tLS, tLC, tHC, tHS, hLS, hLC, hHC, hHS;
-    XHTXX_SHT3x_ReadAlertReg(dev, 0x1F, &hHS, &tHS);
-    XHTXX_SHT3x_ReadAlertReg(dev, 0x14, &hHC, &tHC);
-    XHTXX_SHT3x_ReadAlertReg(dev, 0x09, &hLC, &tLC);
-    XHTXX_SHT3x_ReadAlertReg(dev, 0x02, &hLS, &tLS);
-    ADDLOG_INFO(LOG_FEATURE_SENSOR, "Alert T (LS/LC/HC/HS): %.1f/%.1f/%.1f/%.1f", tLS, tLC, tHC, tHS);
-    ADDLOG_INFO(LOG_FEATURE_SENSOR, "Alert H (LS/LC/HC/HS): %.1f/%.1f/%.1f/%.1f", hLS, hLC, hHC, hHS);
-    return CMD_RES_OK;
-}
-commandResult_t XHTXX_CMD_SetAlert(const void *context, const char *cmd,
-                                    const char *args, int cmdFlags)
-{
-    CMD_UNUSED;
-    Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_DONT_EXPAND);
-    if(Tokenizer_CheckArgsCountAndPrintWarning(cmd, 4)) return CMD_RES_NOT_ENOUGH_ARGUMENTS;
-    xhtxx_dev_t *dev = XHTXX_GetSensor(cmd, 4, Tokenizer_GetArgsCount() >= 5);
-    if(!dev) return CMD_RES_BAD_ARGUMENT;
-    REQUIRE_SHT3X(dev, CMD_RES_ERROR);
-    float tHS=Tokenizer_GetArgFloat(0), tLS=Tokenizer_GetArgFloat(1);
-    float hHS=Tokenizer_GetArgFloat(2), hLS=Tokenizer_GetArgFloat(3);
-    XHTXX_SHT3x_WriteAlertReg(dev, 0x1D, hHS,        tHS);
-    XHTXX_SHT3x_WriteAlertReg(dev, 0x16, hHS - 0.5f, tHS - 0.5f);
-    XHTXX_SHT3x_WriteAlertReg(dev, 0x0B, hLS + 0.5f, tLS + 0.5f);
-    XHTXX_SHT3x_WriteAlertReg(dev, 0x00, hLS,        tLS);
-    return CMD_RES_OK;
-}
-*/
 // try avoiding "abs"
 static inline int16_t abs16(int16_t x) { return x < 0 ? -x : x; }
 commandResult_t XHTXX_CMD_ReadAlert(const void *context, const char *cmd,
@@ -895,7 +873,7 @@ commandResult_t XHTXX_CMD_ReadAlert(const void *context, const char *cmd,
 {
     CMD_UNUSED;
     Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_DONT_EXPAND);
-    xhtxx_dev_t *dev = XHTXX_GetSensor(cmd, 0, Tokenizer_GetArgsCount() >= 1);
+    xhtxx_dev_t *dev = XHTXX_GetSensor(cmd, 0, Tokenizer_GetArgsCount() >= 1, XHTXX_FAMILY_SHT3X);
     if(!dev) return CMD_RES_BAD_ARGUMENT;
     REQUIRE_SHT3X(dev, CMD_RES_ERROR);
 
@@ -921,17 +899,10 @@ commandResult_t XHTXX_CMD_SetAlert(const void *context, const char *cmd,
     CMD_UNUSED;
     Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_DONT_EXPAND);
     if(Tokenizer_CheckArgsCountAndPrintWarning(cmd, 4)) return CMD_RES_NOT_ENOUGH_ARGUMENTS;
-    xhtxx_dev_t *dev = XHTXX_GetSensor(cmd, 4, Tokenizer_GetArgsCount() >= 5);
+    xhtxx_dev_t *dev = XHTXX_GetSensor(cmd, 4, Tokenizer_GetArgsCount() >= 5, XHTXX_FAMILY_SHT3X);
     if(!dev) return CMD_RES_BAD_ARGUMENT;
     REQUIRE_SHT3X(dev, CMD_RES_ERROR);
 
-/*
-    // Convert input to fixed-point immediately
-    int16_t tHS = (int16_t)(Tokenizer_GetArgFloat(0) * 10.0f);
-    int16_t tLS = (int16_t)(Tokenizer_GetArgFloat(1) * 10.0f);
-    int16_t hHS = (int16_t)(Tokenizer_GetArgFloat(2) * 10.0f);
-    int16_t hLS = (int16_t)(Tokenizer_GetArgFloat(3) * 10.0f);
-*/
     int16_t tHS = (int16_t)(Tokenizer_GetArgInteger(0)*10);
     int16_t tLS = (int16_t)(Tokenizer_GetArgInteger(1)*10);
     int16_t hHS = (int16_t)(Tokenizer_GetArgInteger(2)*10);
@@ -1023,14 +994,47 @@ void XHTXX_Init(void)
         CMD_RegisterCommand("XHTXX_AddSensor",   XHTXX_CMD_AddSensor,   NULL);
         CMD_RegisterCommand("XHTXX_ListSensors", XHTXX_CMD_ListSensors, NULL);
 #ifdef XHTXX_ENABLE_SHT3_EXTENDED_FEATURES
-        CMD_RegisterCommand("XHTXX_LaunchPer",   XHTXX_CMD_LaunchPer,   NULL);
-        CMD_RegisterCommand("XHTXX_FetchPer",    XHTXX_CMD_FetchPer,    NULL);
-        CMD_RegisterCommand("XHTXX_StopPer",     XHTXX_CMD_StopPer,     NULL);
-        CMD_RegisterCommand("XHTXX_Heater",      XHTXX_CMD_Heater,      NULL);
-        CMD_RegisterCommand("XHTXX_GetStatus",   XHTXX_CMD_GetStatus,   NULL);
-        CMD_RegisterCommand("XHTXX_ClearStatus", XHTXX_CMD_ClearStatus, NULL);
-        CMD_RegisterCommand("XHTXX_ReadAlert",   XHTXX_CMD_ReadAlert,   NULL);
-        CMD_RegisterCommand("XHTXX_SetAlert",    XHTXX_CMD_SetAlert,    NULL);
+// use command names equal to old SHT3x driver
+	//cmddetail:{"name":"SHT_LaunchPer","args":"[msb][lsb] [sensor-index - first SHT3x if ommitted]",
+	//cmddetail:"descr":"Launch/Change periodical capture for SHT3x sensor",
+	//cmddetail:"fn":"XHTXX_CMD_LaunchPer","file":"driver/drv_xhtxx.c","requires":"ENABLE_DRIVER_XHTXX && XHTXX_ENABLE_SHT3_EXTENDED_FEATURES",
+	//cmddetail:"examples":"SHT_LaunchPer 0x23 0x22"}
+        CMD_RegisterCommand("SHT_LaunchPer",      XHTXX_CMD_LaunchPer,   NULL);
+	//cmddetail:{"name":"SHT_MeasurePer","args":"[sensor-index - first SHT3x if ommitted]",
+	//cmddetail:"descr":"Retrieve Periodical measurement for SHT3x sensor",
+	//cmddetail:"fn":"XHTXX_CMD_FetchPer","file":"driver/drv_xhtxx.c","requires":"ENABLE_DRIVER_XHTXX && XHTXX_ENABLE_SHT3_EXTENDED_FEATURES",
+	//cmddetail:"examples":"SHT_Measure"}
+        CMD_RegisterCommand("SHT_MeasurePer",     XHTXX_CMD_FetchPer,    NULL);
+	//cmddetail:{"name":"SHT_StopPer","args":"[sensor-index - first SHT3x if ommitted]",
+	//cmddetail:"descr":"Stop periodical capture for SHT3x sensor",
+	//cmddetail:"fn":"XHTXX_CMD_StopPer","file":"driver/drv_xhtxx.c","requires":"ENABLE_DRIVER_XHTXX && XHTXX_ENABLE_SHT3_EXTENDED_FEATURES",
+	//cmddetail:"examples":""}
+        CMD_RegisterCommand("SHT_StopPer",       XHTXX_CMD_StopPer,     NULL);
+	//cmddetail:{"name":"SHT_Heater","args":"[1or0] [sensor-index - first SHT3x if ommitted]",
+	//cmddetail:"descr":"Activate or Deactivate Heater (0 / 1) for SHT3x sensor",
+	//cmddetail:"fn":"XHTXX_CMD_Heater","file":"driver/drv_xhtxx.c","requires":"ENABLE_DRIVER_XHTXX && XHTXX_ENABLE_SHT3_EXTENDED_FEATURES",
+	//cmddetail:"examples":"SHT_Heater 1"}
+        CMD_RegisterCommand("SHT_Heater",        XHTXX_CMD_Heater,      NULL);
+	//cmddetail:{"name":"SHT_GetStatus","args":"[sensor-index - first SHT3x if ommitted]",
+	//cmddetail:"descr":"Get SHT3x sensor status",
+	//cmddetail:"fn":"XHTXX_CMD_GetStatus","file":"driver/drv_xhtxx.c","requires":"ENABLE_DRIVER_XHTXX && XHTXX_ENABLE_SHT3_EXTENDED_FEATURES",
+	//cmddetail:"examples":"SHT_GetStatusCmd"}
+        CMD_RegisterCommand("SHT_GetStatus",      XHTXX_CMD_GetStatus,   NULL);
+	//cmddetail:{"name":"SHT_ClearStatus","args":"[sensor-index - first SHT3x if ommitted]",
+	//cmddetail:"descr":"Clear SHT3x sensor status",
+	//cmddetail:"fn":"XHTXX_CMD_ClearStatus","file":"driver/drv_xhtxx.c","requires":"ENABLE_DRIVER_XHTXX && XHTXX_ENABLE_SHT3_EXTENDED_FEATURES",
+	//cmddetail:"examples":"SHT_ClearStatusCmd"}
+        CMD_RegisterCommand("SHT_ClearStatus",    XHTXX_CMD_ClearStatus, NULL);
+	//cmddetail:{"name":"SHT_ReadAlert","args":"[sensor-index - first SHT3x if ommitted]",
+	//cmddetail:"descr":"Get SHT3x sensors alert configuration",
+	//cmddetail:"fn":"XHTXX_CMD_ReadAlert","file":"driver/drv_xhtxx.c","requires":"ENABLE_DRIVER_XHTXX && XHTXX_ENABLE_SHT3_EXTENDED_FEATURES",
+	//cmddetail:"examples":"SHT_ReadAlertCmd"}
+        CMD_RegisterCommand("SHT_ReadAlert",      XHTXX_CMD_ReadAlert,   NULL);
+	//cmddetail:{"name":"SHT_SetAlert","args":"[temp_high, temp_low, hum_high, hum_low] [sensor-index - first SHT3x if ommitted]",
+	//cmddetail:"descr":"Set SHT3x sensors alert configuration",
+	//cmddetail:"fn":"XHTXX_CMD_SetAlert","file":"driver/drv_xhtxx.c","requires":"ENABLE_DRIVER_XHTXX && XHTXX_ENABLE_SHT3_EXTENDED_FEATURES",
+	//cmddetail:"examples":"SHT_SetAlertCmd"}
+        CMD_RegisterCommand("SHT_SetAlert",       XHTXX_CMD_SetAlert,    NULL);
 #endif
     }
     g_numSensors++;
