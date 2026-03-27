@@ -3040,7 +3040,7 @@ bool MQTT_GetItemValue(int idx, char *out, int outLen) {
     switch(idx) {
 
 		case 0: // debug: size of initCommandLine
-			snprintf(out, outLen, "%zu", sizeof(g_cfg->initCommandLine));
+			snprintf(out, outLen, "%zu", sizeof(g_cfg.initCommandLine));
 			return true;
 
         case PUBLISHITEM_SELF_HOSTNAME:
