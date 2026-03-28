@@ -3149,7 +3149,7 @@ int MQTT_ParseFullNameToChannels(int *out, int maxCount) {
 	//✔ tắt nhiều bit
 	ModifyBits(&x, mask_bulk, 0);
 
-
+	/*
 	// =========================
 	// Cách 3: có sẵn bitmap
 	// =========================
@@ -3157,6 +3157,7 @@ int MQTT_ParseFullNameToChannels(int *out, int maxCount) {
 	int value_user = userValue;
 
 	ModifyBits(&x, mask_user, value_user);
+	*/
 
 
 	// =========================
