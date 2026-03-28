@@ -38,6 +38,8 @@ cat > $OVERRIDE_FILE << 'EOF'
 #undef ENABLE_DRIVER_HUE
 #undef ENABLE_DRIVER_DDP
 
+int * CHANNEL_GetPtr(int ch); //xai trong file src/new_pins.c
+
 static inline void ModifyBits(int *v, int mask, int value) {
     if (!v) return;
     *v = (*v & ~mask) | (value & mask);
@@ -53,29 +55,35 @@ static inline void ModifyBits(int *v, int mask, int value) {
         }                                               \
     } while(0)
 
-
+	
 EOF
+
+
+
 
 # remove include cũ nếu có (tránh duplicate)
-sed -i '/_auto_override_config.h/d' "$CONFIG_FILE"
+# sed -i '/_auto_override_config.h/d' "$CONFIG_FILE"
 
 # 👉 QUAN TRỌNG NHẤT: include ở CUỐI FILE
-echo '#include "_auto_override_config.h"' >> "$CONFIG_FILE"
+# echo '#include "_auto_override_config.h"' >> "$CONFIG_FILE"
 
-echo "Override injected at END of obk_config.h ✔"
+# echo "Override injected at END of obk_config.h ✔"
+
+# cat << 'EOF' > tmp_snippet.h
+
+# int * CHANNEL_GetPtr(int ch);
+
+# EOF
+
+# NEW_PIN_FILE="src/new_pins.h"
+# grep -q "ModifyBits" "$NEW_PIN_FILE" || \
+# awk '1; END{system("cat tmp_snippet.h")}' "$NEW_PIN_FILE" > tmp && mv tmp "$NEW_PIN_FILE"
+
+# echo "Override injected at END of new_pins.h ✔"
 
 
-cat << 'EOF' > tmp_snippet.h
 
-int * CHANNEL_GetPtr(int ch);
 
-EOF
-
-NEW_PIN_FILE="src/new_pins.h"
-grep -q "ModifyBits" "$NEW_PIN_FILE" || \
-awk '1; END{system("cat tmp_snippet.h")}' "$NEW_PIN_FILE" > tmp && mv tmp "$NEW_PIN_FILE"
-
-echo "Override injected at END of new_pins.h ✔"
 
 
 # ===== phần override gốc giữ nguyên =====
