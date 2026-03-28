@@ -38,6 +38,19 @@ cat > $OVERRIDE_FILE << 'EOF'
 #undef ENABLE_DRIVER_HUE
 #undef ENABLE_DRIVER_DDP
 
+
+extern uint32_t g_channelValues[CHANNEL_MAX];
+static inline void ModifyBits(uint32_t *v, uint32_t mask, uint32_t value) {
+    if (!v) return;
+    *v = (*v & ~mask) | (value & mask);
+}
+#define MODIFY_BIT(v, bit, on) \
+    do { \
+        unsigned _b = (unsigned)(bit); \
+        if (_b < 32) \
+            ModifyBits((v), (1u << _b), ((uint32_t)(!!(on)) << _b)); \
+    } while(0)
+
 EOF
 
 # remove include cũ nếu có (tránh duplicate)
