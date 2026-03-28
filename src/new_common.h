@@ -1097,5 +1097,22 @@ void convert_IP_to_string(char *o, unsigned char *ip);
 int str_to_ip(const char *s, byte *ip);
 int STR_ReplaceWhiteSpacesWithUnderscore(char *p);
 
+int * CHANNEL_GetPtr(int ch); //xai trong file src/new_pins.c
+
+static inline void ModifyBits(int *v, int mask, int value) {
+    if (!v) return;
+    *v = (*v & ~mask) | (value & mask);
+}
+
+/* Macro tương thích số âm: nếu bit <0 hoặc >=32 thì bỏ qua */
+#define MODIFY_BIT(v, bit, on)                           \
+    do {                                                \
+        int _b = (bit);                                 \
+        if (_b >= 0 && _b < 32) {                       \
+            int _m = (1 << _b);                         \
+            ModifyBits((v), _m, ((on) ? _m : 0));      \
+        }                                               \
+    } while(0)
+
 #endif /* __NEW_COMMON_H__ */
 
