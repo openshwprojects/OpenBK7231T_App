@@ -64,7 +64,8 @@ static inline void ModifyBits(uint32_t *v, uint32_t mask, uint32_t value) {
 EOF
 
 NEW_PIN_FILE="src/new_pins.h"
-grep -q "ModifyBits" "$NEW_PIN_FILE" ||tac "$NEW_PIN_FILE" | sed '0,/#endif/{ /#endif/e cat tmp_snippet.h }' | tac > tmp && mv tmp "$NEW_PIN_FILE"
+grep -q "ModifyBits" "$NEW_PIN_FILE" || \
+awk '1; END{system("cat tmp_snippet.h")}' "$NEW_PIN_FILE" > tmp && mv tmp "$NEW_PIN_FILE"
 
 echo "Override injected at END of new_pins.h ✔"
 
