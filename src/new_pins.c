@@ -1560,7 +1560,7 @@ void CHANNEL_ClearAllChannels() {
 	}
 }
 
-int * CHANNEL_GetPtr(int ch) {
+int * CHAMMEL_GetPtr(int ch) {
 	if (ch < 0 || ch >= CHANNEL_MAX) {
 		addLogAdv(LOG_ERROR, LOG_FEATURE_GENERAL, "CHANNEL_Get: Channel index %i is out of range <0,%i)\n\r", ch, CHANNEL_MAX);
 		return 0;
