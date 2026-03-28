@@ -61,13 +61,15 @@ EOF
 
 
 
-# remove include cũ nếu có (tránh duplicate)
-# sed -i '/_auto_override_config.h/d' "$CONFIG_FILE"
+remove include cũ nếu có (tránh duplicate)
+sed -i '/_auto_override_config.h/d' "$CONFIG_FILE"
 
 # 👉 QUAN TRỌNG NHẤT: include ở CUỐI FILE
-# echo '#include "_auto_override_config.h"' >> "$CONFIG_FILE"
+echo '#include "_auto_override_config.h"' >> "$CONFIG_FILE"
 
-# echo "Override injected at END of obk_config.h ✔"
+echo "Override injected at END of obk_config.h ✔"
+
+
 
 # cat << 'EOF' > tmp_snippet.h
 
