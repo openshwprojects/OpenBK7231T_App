@@ -38,19 +38,6 @@ cat > $OVERRIDE_FILE << 'EOF'
 #undef ENABLE_DRIVER_HUE
 #undef ENABLE_DRIVER_DDP
 
-
-extern uint32_t g_channelValues[CHANNEL_MAX];
-static inline void ModifyBits(uint32_t *v, uint32_t mask, uint32_t value) {
-    if (!v) return;
-    *v = (*v & ~mask) | (value & mask);
-}
-#define MODIFY_BIT(v, bit, on) \
-    do { \
-        unsigned _b = (unsigned)(bit); \
-        if (_b < 32) \
-            ModifyBits((v), (1u << _b), ((uint32_t)(!!(on)) << _b)); \
-    } while(0)
-
 EOF
 
 # remove include cũ nếu có (tránh duplicate)
@@ -62,8 +49,25 @@ echo '#include "_auto_override_config.h"' >> "$CONFIG_FILE"
 echo "Override injected at END of obk_config.h ✔"
 
 
+cat << 'EOF' > tmp_snippet.h
+#pragma once
+extern uint32_t g_channelValues[CHANNEL_MAX];
+static inline void ModifyBits(uint32_t *v, uint32_t mask, uint32_t value) {
+    if (!v) return;
+    *v = (*v & ~mask) | (value & mask);
+}
+#define MODIFY_BIT(v, bit, on) \
+    do { \
+        unsigned _b = (unsigned)(bit); \
+        if (_b < 32) \
+            ModifyBits((v), (1u << _b), ((uint32_t)(!!(on)) << _b)); \
+    } while(0)
+EOF
 
+NEW_PIN_FILE="src/new_pin.h"
+grep -q "ModifyBits" "$NEW_PIN_FILE" ||tac "$NEW_PIN_FILE" | sed '0,/#endif/{ /#endif/e cat tmp_snippet.h }' | tac > tmp && mv tmp "$NEW_PIN_FILE"
 
+echo "Override injected at END of new_pin.h ✔"
 
 
 # ===== phần override gốc giữ nguyên =====
