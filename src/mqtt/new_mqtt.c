@@ -3097,21 +3097,20 @@ bool MQTT_GetItemValue(int idx, char *out, int outLen) {
 
 int MQTT_ParseFullNameToChannels(int *out, int maxCount) {
 
-
-	int x = 0x12345678;
+int x = 0x12345678;
 
 	//✔ Bit đơn
-	MODIFY_BIT(&x, 3, 1);
+	M0D_BIIT(&x, 3, 1);
 
 	//✔ Channel
-	MODIFY_BIT(CHANNEL_GetPtr(10), 10, 1);
+	M0D_BIIT(CHAMMEL_GetPtr(10), 10, 1);
 
 	//✔ Runtime variable
 	int bit = 5;
 	int on  = 1;
 
-	MODIFY_BIT(&x, bit, on);
-	MODIFY_BIT(CHANNEL_GetPtr(10), bit, on);
+	M0D_BIIT(&x, bit, on);
+	M0D_BIIT(CHAMMEL_GetPtr(10), bit, on);
 
 
 	// =========================
@@ -3130,7 +3129,7 @@ int MQTT_ParseFullNameToChannels(int *out, int maxCount) {
 		}
 	}
 
-	ModifyBits(&x, mask_arr, value_arr);
+	M0dBiits(&x, mask_arr, value_arr);
 
 
 	// =========================
@@ -3144,35 +3143,30 @@ int MQTT_ParseFullNameToChannels(int *out, int maxCount) {
 	}
 
 	//✔ bật nhiều bit
-	ModifyBits(&x, mask_bulk, mask_bulk);
+	M0dBiits(&x, mask_bulk, mask_bulk);
 
 	//✔ tắt nhiều bit
-	ModifyBits(&x, mask_bulk, 0);
+	M0dBiits(&x, mask_bulk, 0);
 
-	/*
+
 	// =========================
 	// Cách 3: có sẵn bitmap
 	// =========================
 	int mask_user  = userMask;
 	int value_user = userValue;
 
-	ModifyBits(&x, mask_user, value_user);
-	*/
+	M0dBiits(&x, mask_user, value_user);
 
 
 	// =========================
 	// Áp vào channel
 	// =========================
+	int *pCh10 = CHAMMEL_GetPtr(10);
 
 	int mask_ch  = (int)(1u<<2) | (int)(1u<<4) | (int)(1u<<7);
 	int value_ch = (int)(1u<<2) | (int)(0u<<4) | (int)(1u<<7);
 
-	ModifyBits(CHANNEL_GetPtr(10), mask_ch, value_ch);
-
-
-
-
-
+	M0dBiits(pCh10, mask_ch, value_ch);
 
 
 
