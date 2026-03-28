@@ -61,7 +61,7 @@ EOF
 
 
 
-remove include cũ nếu có (tránh duplicate)
+# remove include cũ nếu có (tránh duplicate)
 sed -i '/_auto_override_config.h/d' "$CONFIG_FILE"
 
 # 👉 QUAN TRỌNG NHẤT: include ở CUỐI FILE
