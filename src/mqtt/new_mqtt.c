@@ -3078,7 +3078,7 @@ bool MQTT_GetItemValue(int idx, char *out, int outLen) {
             return true;
 
         case PUBLISHITEM_SELF_FREEHEAP:
-            snprintf(out, outLen, "%d", xPortGetFreeHeapSize());
+            snprintf(out, outLen, "%zu", xPortGetFreeHeapSize());
             return true;
 
         case PUBLISHITEM_SELF_IP:
@@ -3148,7 +3148,7 @@ int x = 0x12345678;
 	//✔ tắt nhiều bit
 	M0dBiits(&x, mask_bulk, 0);
 
-
+	/*
 	// =========================
 	// Cách 3: có sẵn bitmap
 	// =========================
@@ -3156,6 +3156,7 @@ int x = 0x12345678;
 	int value_user = userValue;
 
 	M0dBiits(&x, mask_user, value_user);
+	*/
 
 
 	// =========================
@@ -3190,7 +3191,16 @@ int x = 0x12345678;
 
     return count;
 }
-
+static const int defaultIndices[] = {
+	0, //test initCommandLine size
+	-14,  //Build origin PUBLISHITEM_SELF_BUILD           -14  //Build        chuyen sang lay MQTT_GROUP
+	-13,//#define PUBLISHITEM_SELF_MAC                    -13  //Device mac
+	-9,//#define PUBLISHITEM_SELF_DATETIME               -9  //Current unix datetime
+	-4,//#define PUBLISHITEM_SELF_IP                     -4  //ip address
+	-7,//#define PUBLISHITEM_SELF_RSSI                   -7  //Link strength
+	-6,//#define PUBLISHITEM_SELF_UPTIME                 -6  //Uptime
+	-5,//#define PUBLISHITEM_SELF_FREEHEAP               -5  //Free heap
+};
 
 #if PLATFORM_W600 || PLATFORM_W800
 #define ONEALL_PAYLOAD_MAX 512
@@ -3212,16 +3222,6 @@ void MQTT_BuildAndPublishBatch_ByIndex(int *indices, int count, uint8_t* leh, in
     // =====================================================
     // ===== PHASE 1: SYSTEM ITEMS (idx < 0) =====
     // =====================================================
-	int defaultIndices[] = {
-		0, //test initCommandLine size
-		-14,  //Build origin PUBLISHITEM_SELF_BUILD           -14  //Build        chuyen sang lay MQTT_GROUP
-		-13,//#define PUBLISHITEM_SELF_MAC                    -13  //Device mac
-		-9,//#define PUBLISHITEM_SELF_DATETIME               -9  //Current unix datetime
-		-4,//#define PUBLISHITEM_SELF_IP                     -4  //ip address
-		-7,//#define PUBLISHITEM_SELF_RSSI                   -7  //Link strength
-		-6,//#define PUBLISHITEM_SELF_UPTIME                 -6  //Uptime
-		-5,//#define PUBLISHITEM_SELF_FREEHEAP               -5  //Free heap
-	};
 	if (!indices || count == 0) {
 		indices = defaultIndices;
 		count = 7; // truc tiep cho gon
@@ -3349,16 +3349,6 @@ void MQTT_BuildAndPublishBatch_ByIndex(int *indices, int count, uint8_t* leh, in
     // =====================================================
     // ===== PHASE 1: SYSTEM ITEMS (idx < 0) =====
     // =====================================================
-	int defaultIndices[] = {
-		0, //test initCommandLine size
-		-14,  //Build origin PUBLISHITEM_SELF_BUILD           -14  //Build        chuyen sang lay MQTT_GROUP
-		-13,//#define PUBLISHITEM_SELF_MAC                    -13  //Device mac
-		-9,//#define PUBLISHITEM_SELF_DATETIME               -9  //Current unix datetime
-		-4,//#define PUBLISHITEM_SELF_IP                     -4  //ip address
-		-7,//#define PUBLISHITEM_SELF_RSSI                   -7  //Link strength
-		-6,//#define PUBLISHITEM_SELF_UPTIME                 -6  //Uptime
-		-5,//#define PUBLISHITEM_SELF_FREEHEAP               -5  //Free heap
-	};
 	if (!indices || count == 0) {
 		indices = defaultIndices;
 		count = 7; // truc tiep cho gon
