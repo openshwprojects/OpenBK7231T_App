@@ -50,16 +50,20 @@ echo "Override injected at END of obk_config.h ✔"
 
 
 cat << 'EOF' > tmp_snippet.h
-extern int g_channelValues[CHANNEL_MAX];
-static inline void ModifyBits(uint32_t *v, uint32_t mask, uint32_t value) {
+
+int * CHANNEL_GetPtr(int ch);
+static inline void ModifyBits(int *v, unsigned mask, unsigned value) {
     if (!v) return;
-    *v = (*v & ~mask) | (value & mask);
+    *v = (*v & ~(int)mask) | (int)(value & mask);
 }
+
 #define MODIFY_BIT(v, bit, on) \
     do { \
         unsigned _b = (unsigned)(bit); \
-        if (_b < 32) \
-            ModifyBits((v), (1u << _b), ((uint32_t)(!!(on)) << _b)); \
+        if (_b < 32) { \
+            unsigned _m = (1u << _b); \
+            ModifyBits((v), _m, ((unsigned)(!!(on)) << _b)); \
+        } \
     } while(0)
 EOF
 
