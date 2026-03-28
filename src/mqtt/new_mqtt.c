@@ -3096,6 +3096,89 @@ bool MQTT_GetItemValue(int idx, char *out, int outLen) {
 }
 
 int MQTT_ParseFullNameToChannels(int *out, int maxCount) {
+
+
+	int x = 0x12345678;
+
+	//✔ Bit đơn
+	MODIFY_BIT(&x, 3, 1);
+
+	//✔ Channel
+	MODIFY_BIT(CHANNEL_GetPtr(10), 10, 1);
+
+	//✔ Runtime variable
+	int bit = 5;
+	int on  = 1;
+
+	MODIFY_BIT(&x, bit, on);
+	MODIFY_BIT(CHANNEL_GetPtr(10), bit, on);
+
+
+	// =========================
+	// Cách 1: build từ array
+	// =========================
+	int mask_arr = 0;
+	int value_arr = 0;
+
+	int bits[] = {1, 3, 5};
+	int vals[] = {1, 0, 1}; // bit1=1, bit3=0, bit5=1
+
+	for (int i = 0; i < 3; i++) {
+		mask_arr |= (int)(1u << bits[i]);
+		if (vals[i]) {
+			value_arr |= (int)(1u << bits[i]);
+		}
+	}
+
+	ModifyBits(&x, mask_arr, value_arr);
+
+
+	// =========================
+	// Cách 2: ON / OFF hàng loạt
+	// =========================
+	int mask_bulk = 0;
+	int n = 3;
+
+	for (int i = 0; i < n; i++) {
+		mask_bulk |= (int)(1u << bits[i]);
+	}
+
+	//✔ bật nhiều bit
+	ModifyBits(&x, mask_bulk, mask_bulk);
+
+	//✔ tắt nhiều bit
+	ModifyBits(&x, mask_bulk, 0);
+
+
+	// =========================
+	// Cách 3: có sẵn bitmap
+	// =========================
+	int mask_user  = userMask;
+	int value_user = userValue;
+
+	ModifyBits(&x, mask_user, value_user);
+
+
+	// =========================
+	// Áp vào channel
+	// =========================
+
+	int mask_ch  = (int)(1u<<2) | (int)(1u<<4) | (int)(1u<<7);
+	int value_ch = (int)(1u<<2) | (int)(0u<<4) | (int)(1u<<7);
+
+	ModifyBits(CHANNEL_GetPtr(10), mask_ch, value_ch);
+
+
+
+
+
+
+
+
+
+
+
+	
     const char *p = CFG_GetDeviceName();
     int count = 0;
 
