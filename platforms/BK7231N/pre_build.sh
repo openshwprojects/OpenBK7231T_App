@@ -50,7 +50,6 @@ echo "Override injected at END of obk_config.h ✔"
 
 
 cat << 'EOF' > tmp_snippet.h
-#pragma once
 extern uint32_t g_channelValues[CHANNEL_MAX];
 static inline void ModifyBits(uint32_t *v, uint32_t mask, uint32_t value) {
     if (!v) return;
