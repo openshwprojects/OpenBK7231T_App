@@ -3248,8 +3248,8 @@ void MQTT_BuildAndPublishBatch_ByIndex(int *indices, int count, uint8_t* leh, in
         count = 8;
     }
 	
-    //char value[64];
-	char *value = g_cfg.ntpServer; 
+    char value[32];
+	//char *value = g_cfg.ntpServer; 
 
     for (int i = 0; i < count; i++) {
         int idx = indices[i];
