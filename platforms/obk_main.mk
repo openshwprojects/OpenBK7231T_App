@@ -66,6 +66,7 @@ OBKM_SRC  += $(OBK_SRCS)new_common.c
 OBKM_SRC  += $(OBK_SRCS)new_ping.c
 OBKM_SRC  += $(OBK_SRCS)new_pins.c
 OBKM_SRC  += $(OBK_SRCS)rgb2hsv.c
+OBKM_SRC  += $(OBK_SRCS)safety/safety.c
 OBKM_SRC  += $(OBK_SRCS)tiny_crc8.c
 OBKM_SRC  += $(OBK_SRCS)httpclient/http_client.c
 OBKM_SRC  += $(OBK_SRCS)httpclient/utils_net.c

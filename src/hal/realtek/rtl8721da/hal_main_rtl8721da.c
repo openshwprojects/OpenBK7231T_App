@@ -19,7 +19,6 @@ __attribute__((weak)) flash_t flash;
 
 #if PLATFORM_RTL8720E
 
-extern float g_wifi_temperature;
 void temp_func(void* pvParameters)
 {
 	RCC_PeriphClockCmd(APBPeriph_ATIM, APBPeriph_ATIM_CLOCK, ENABLE);
