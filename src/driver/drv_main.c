@@ -1528,10 +1528,10 @@ static driver_t g_drivers[] = {
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"TODO",
 	//drvdetail:"requires":""}
-	{ "PulseClock",                              // Driver Name
-	PulseClock_init,	                      // Init
-	PulseClock_onEverySec,                                    // onEverySecond
-	NULL,                                    // appendInformationToHTTPIndexPage
+	{ "PulseClock",                          // Driver Name
+	PulseClock_init,	                     // Init
+	PulseClock_onEverySec,                   // onEverySecond
+	PulseClock_AppendInformationToHTTPIndexPage, // appendInformationToHTTPIndexPage
 	NULL, 						             // runQuickTick
 	NULL,				                     // stopFunction
 	NULL,						             // onChannelChanged
