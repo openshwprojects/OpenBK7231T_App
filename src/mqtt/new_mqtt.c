@@ -3322,126 +3322,114 @@ void MQTT_BuildAndPublishBatch_ByIndex(int *indices, int count, uint8_t* leh, in
 #define SEG_A_END   500
 #define SEG_B_SIZE  512
 #define SEG_B_START (SEG_A_END)
-#define SEG_C_START (SEG_A_END + SEG_B_SIZE)
-#define VALUE_BUF_SIZE 64
-#define VALUE_BUF_OFFSET (SEG_B_SIZE - VALUE_BUF_SIZE)
-#define SEG_B_PAYLOAD_MAX   (SEG_B_SIZE - VALUE_BUF_SIZE)
-//#define ONEALL_PAYLOAD_MAX 512
-void MQTT_BuildAndPublishBatch_ByIndex(int *indices, int count, uint8_t* leh, int leh_len) {
-	
-	uint8_t g_oneAllDelimiter = 0x1F;
 
-    //uint8_t payload[ONEALL_PAYLOAD_MAX];
-	char *payload = g_cfg.initCommandLine + SEG_B_START;
-	char *value = payload + VALUE_BUF_OFFSET;
+#define VALUE_BUF_SIZE 64
+#define VALUE_START         (SEG_B_SIZE - VALUE_BUF_SIZE)
+#define SEG_B_PAYLOAD_MAX   VALUE_START   // 🔥 payload KHÔNG được đụng vùng value
+
+void MQTT_BuildAndPublishBatch_ByIndex(int *indices, int count, uint8_t* leh, int leh_len) {
+
+    uint8_t g_oneAllDelimiter = 0x1F;
+
+    char *payload = g_cfg.initCommandLine + SEG_B_START;
+    char *value   = payload + VALUE_START;
 
     int len = 0;
 
     // ===== prefix =====
-    //if (leh && leh_len > 0) {
-    //    if (leh_len < ONEALL_PAYLOAD_MAX) {
-	    if (leh && leh_len > 0 && leh_len < SEG_B_SIZE) {
-            memcpy(payload, leh, leh_len);
-            len += leh_len;
-        }
-    //}
+    if (leh && leh_len > 0 && leh_len < SEG_B_PAYLOAD_MAX) {
+        memcpy(payload, leh, leh_len);
+        len += leh_len;
+    }
+
+    // ===== default indices =====
+    if (!indices || count == 0) {
+        indices = defaultIndices;
+        count = 8;
+    }
 
     // =====================================================
     // ===== PHASE 1: SYSTEM ITEMS (idx < 0) =====
     // =====================================================
-	if (!indices || count == 0) {
-		indices = defaultIndices;
-		count = 7; // truc tiep cho gon
-	}
-
-
-	//char value[64];
     for (int i = 0; i < count; i++) {
         int idx = indices[i];
 
-        if (idx > 0) continue; // bo channel o phase nay
+        if (idx >= 0) continue;
 
-        if (!MQTT_GetItemValue(idx, value, sizeof(value)))
+        if (!MQTT_GetItemValue(idx, value, VALUE_BUF_SIZE))
             continue;
 
+        int vlen = strlen(value);
 
-		if (len >= SEG_B_PAYLOAD_MAX - 1)
-			break;
+        // 🔥 CRITICAL GUARD (tránh đè vùng value)
+        if (len + vlen + 2 >= SEG_B_PAYLOAD_MAX)
+            break;
 
-		int oldLen = len;
+        int oldLen = len;
 
-		APPEND_INT(payload, len, SEG_B_PAYLOAD_MAX, idx);
-		APPEND_CHAR(payload, len, SEG_B_PAYLOAD_MAX, '=');
-		APPEND_STR(payload, len, SEG_B_PAYLOAD_MAX, value);
-		APPEND_CHAR(payload, len, SEG_B_PAYLOAD_MAX, g_oneAllDelimiter);
+        APPEND_INT(payload, len, SEG_B_PAYLOAD_MAX, idx);
+        APPEND_CHAR(payload, len, SEG_B_PAYLOAD_MAX, '=');
+        APPEND_STR(payload, len, SEG_B_PAYLOAD_MAX, value);
+        APPEND_CHAR(payload, len, SEG_B_PAYLOAD_MAX, g_oneAllDelimiter);
 
-		// check sau khi ghi (detect bị truncate)
-		if (len >= SEG_B_PAYLOAD_MAX || len == oldLen)
-			break;
-
+        if (len == oldLen)
+            break;
     }
 
     // =====================================================
-    // ===== PHASE 2: CHANNELS (append cuoi) =====
+    // ===== PHASE 2: CHANNELS =====
     // =====================================================
-
     int channels[CHANNEL_MAX];
-    int chCount = MQTT_ParseFullNameToChannels(channels, CHANNEL_MAX);// ===== parse channel list =====
+    int chCount = MQTT_ParseFullNameToChannels(channels, CHANNEL_MAX);
 
     if (chCount > 0) {
         for (int i = 0; i < chCount; i++) {
             int ch = channels[i];
+            int v  = CHANNEL_Get(ch);
 
-            int v = CHANNEL_Get(ch);
+            // build value ngay trong vùng value
+            int vlen = 0;
+            APPEND_INT(value, vlen, VALUE_BUF_SIZE, v);
+            value[vlen] = '\0';
 
+            // 🔥 CRITICAL GUARD
+            if (len + vlen + 2 >= SEG_B_PAYLOAD_MAX)
+                break;
 
-			// ===== reuse oldLen cho value =====
-			int oldLen = 0;
-			APPEND_INT(value, oldLen, VALUE_BUF_SIZE, v);
-			value[oldLen] = '\0';
+            int oldLen = len;
 
-			// ===== guard =====
-			if (len >= SEG_B_PAYLOAD_MAX - 1)
-				break;
+            APPEND_INT(payload, len, SEG_B_PAYLOAD_MAX, ch);
+            APPEND_CHAR(payload, len, SEG_B_PAYLOAD_MAX, '~');
+            APPEND_STR(payload, len, SEG_B_PAYLOAD_MAX, value);
+            APPEND_CHAR(payload, len, SEG_B_PAYLOAD_MAX, g_oneAllDelimiter);
 
-			// ===== reuse oldLen cho payload =====
-			oldLen = len;
-
-
-			/*
-            int written = snprintf((char*)payload + len,
-                                   remain,//ONEALL_PAYLOAD_MAX - len,
-                                   "%d~%s%c",
-                                   ch, value, g_oneAllDelimiter);
-								   */
-			APPEND_INT(payload, len, SEG_B_PAYLOAD_MAX, ch);
-			APPEND_CHAR(payload, len, SEG_B_PAYLOAD_MAX, '=');
-			APPEND_STR(payload, len, SEG_B_PAYLOAD_MAX, value);
-			APPEND_CHAR(payload, len, SEG_B_PAYLOAD_MAX, g_oneAllDelimiter);
-
-			// check sau khi ghi (detect bị truncate)
-			if (len >= SEG_B_PAYLOAD_MAX || len == oldLen)
-				break;
-
+            if (len == oldLen)
+                break;
         }
     }
 
     if (len <= 0) return;
 
-    // remove delimiter cuoi
+    // remove delimiter cuối
     if (payload[len - 1] == g_oneAllDelimiter) {
         payload[len - 1] = '\0';
         len--;
     } else {
-        payload[len] = '\0';
+        if (len < SEG_B_PAYLOAD_MAX)
+            payload[len] = '\0';
+        else
+            payload[SEG_B_PAYLOAD_MAX - 1] = '\0';
     }
 
     MQTT_DoItemPublishString("oneall", (const char*)payload);
 
-	// optional: clear buffer sau khi dùng
+    // optional clear (tuỳ mày)
     memset(payload, 0, SEG_B_SIZE);
 
+
 }
+
+
 
 
 #endif
