@@ -19,10 +19,12 @@
 #include "../logging/logging.h"
 #include "../new_common.h"
 
-static const float MAX_TEMP = 95.0; 		    	  		  // any temperature higher than this will enable thermal throttling (60.0-130.0C)
-static const int LED_THROTTLE_STEP_SMALL = 1;    			  // percentage throttle small step for the LED dimmer (1-100%)
-static const int LED_THROTTLE_STEP_BIG = 5;      			  // percentage throttle big step for the LED dimmer (1-100%)
-static const int LED_THROTTLE_PERIOD = 15;        			  // seconds between each throttling step (1-1000s)
+#define LED_THROTTLE_PERIOD 15        	      // seconds between each throttling step (1-1000s)
+
+											  // idea: these can probably be made configurable by user in the future:
+static const float MAX_TEMP = 95.0; 		  // any temperature higher than this will enable thermal throttling (60.0-130.0C)
+static const int LED_THROTTLE_STEP_SMALL = 1; // percentage throttle small step for the LED dimmer (1-100%)
+static const int LED_THROTTLE_STEP_BIG = 5;   // percentage throttle big step for the LED dimmer (1-100%)
 
 static int ledThrottleCountdownSeconds = LED_THROTTLE_PERIOD; // countdown to next led throttle step
 
