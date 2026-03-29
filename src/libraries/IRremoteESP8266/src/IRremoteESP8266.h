@@ -1512,6 +1512,8 @@ extern "C" {
 #endif  // DEBUG
 #if PLATFORM_REALTEK
 #define strcasecmp strcmp
+#elif PLATFORM_BL_NEW
+#include <strings.h>
 #endif
 
 #ifdef UNIT_TEST

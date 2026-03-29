@@ -12,6 +12,8 @@
 #include "drv_ntp.h"
 #include "drv_deviceclock.h"
 
+#if ENABLE_DRIVER_SHUTTERS
+
 #define DEFAULT_TIME 10.0f
 
 typedef enum shutterState_t {
@@ -421,3 +423,4 @@ void DRV_Shutters_Init() {
 	CMD_RegisterCommand("ShutterCalibrate", CMD_Shutter_Calibrate, NULL);
 }
 
+#endif

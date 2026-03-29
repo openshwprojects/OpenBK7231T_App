@@ -176,6 +176,17 @@ static commandResult_t CMD_PowerSave(const void* context, const char* cmd, const
 	else {
 		wifi_mgmr_sta_ps_exit();
 	}
+#elif PLATFORM_BL_NEW
+	void bl_pm_enter_ps(void);
+	void bl_pm_exit_ps(void);
+	if(bOn)
+	{
+		bl_pm_enter_ps();
+	}
+	else
+	{
+		bl_pm_exit_ps();
+	}
 #elif defined(PLATFORM_LN882H) || PLATFORM_LN8825
 	// this will be applied after WiFi connect
 	if (Main_IsConnectedToWiFi() == 0){

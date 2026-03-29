@@ -94,8 +94,11 @@ static void tcp_client_thread(tcp_thread_t* arg)
 		char *newbuf = (char*)realloc(request.received, request.receivedLenmax + 2);
 		if(newbuf == NULL)
 		{
+			ADDLOG_ERROR(LOG_FEATURE_HTTP, "TCP Client realloc failed");
 			// no memory
-			goto exit;
+			//goto exit;
+			request.receivedLenmax -= INCOMING_BUFFER_SIZE;
+			continue;
 		}
 		request.received = buf = newbuf;
 	}
