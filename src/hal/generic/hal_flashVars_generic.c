@@ -70,3 +70,17 @@ void __attribute__((weak)) HAL_FlashVars_SaveTotalConsumption(float total_consum
 {
 
 }
+
+int __attribute__((weak)) HAL_GetAristonEnergyStatus(ARISTON_ENERGY_DATA* data)
+{
+	if (data) {
+		memset(data, 0, sizeof(*data));
+	}
+	return 0;
+}
+
+int __attribute__((weak)) HAL_SetAristonEnergyStatus(const ARISTON_ENERGY_DATA* data)
+{
+	(void)data;
+	return 0;
+}

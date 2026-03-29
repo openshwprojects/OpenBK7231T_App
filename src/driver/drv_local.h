@@ -259,6 +259,13 @@ void TCL_UART_RunEverySecond(void);
 void TCL_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState);
 void TCL_DoDiscovery(const char *topic);
 
+void Ariston_Init(void);
+void Ariston_OnEverySecond(void);
+void Ariston_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState);
+void Ariston_RunFrame(void);
+void Ariston_OnHassDiscovery(const char *topic);
+bool Ariston_SetIdentityFromStrings(const char *macStr, const char *snStr);
+
 void DRV_DDPSend_Init();
 void DRV_DDPSend_Shutdown();
 void DRV_DDPSend_RunFrame();

@@ -76,6 +76,7 @@ OBKM_SRC  += $(OBK_SRCS)littlefs/our_lfs.c
 
 OBKM_SRC  += $(OBK_SRCS)driver/drv_main.c
 
+OBKM_SRC  += $(OBK_SRCS)driver/drv_ariston.c
 OBKM_SRC  += $(OBK_SRCS)driver/drv_adcButton.c
 OBKM_SRC  += $(OBK_SRCS)driver/drv_adcSmoother.c
 OBKM_SRC  += $(OBK_SRCS)driver/drv_aht2x.c
