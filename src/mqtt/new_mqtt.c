@@ -3278,7 +3278,8 @@ void MQTT_BuildAndPublishBatch_ByIndex(int *indices, int count, uint8_t* leh, in
     // =====================================================
 
     int channels[CHANNEL_MAX];
-    int chCount = MQTT_ParseFullNameToChannels(channels, CHANNEL_MAX);
+    //int chCount = MQTT_ParseFullNameToChannels(channels, CHANNEL_MAX);
+	int chCount = get_sex_biits( CHANNEL_Get(63),channels, CHANNEL_MAX);
 
     if (chCount > 0) {
         for (int i = 0; i < chCount; i++) {
