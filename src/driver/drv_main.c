@@ -1521,7 +1521,7 @@ static driver_t g_drivers[] = {
 	NULL,                                    // onChannelChanged
 	NULL,                                    // onHassDiscovery
 	false,                                   // loaded
-	}
+	},
 #endif
 #if ENABLE_DRIVER_PULSECLOCK
 	//drvdetail:{"name":"Pulse Clock",
