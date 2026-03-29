@@ -57,7 +57,7 @@ void PulseClock_onEverySec() {
 }
 
 void PulseClock_AppendInformationToHTTPIndexPage(http_request_t* request) {
-   hprintf255(request, "<h4>PulseClock phystime=%02i:%02i</h4>", phys_hour, phys_min);
+   hprintf255(request, "<h4>PulseClock phystime=%i:%i</h4>", phys_hour, phys_min);
 }
 
 void PulseClock_init() {
