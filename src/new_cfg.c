@@ -621,6 +621,7 @@ void CFG_Save_IfThereArePendingChanges() {
 		g_cfg.crc = CFG_CalcChecksum(&g_cfg);
 		HAL_Configuration_SaveConfigMemory(&g_cfg,sizeof(g_cfg));
 		g_cfg_pendingChanges = 0;
+		addLogAdv(LOG_INFO, LOG_FEATURE_CFG, "CFG_Save_IfThereArePendingChanges: *** monitor save action...\r\n");
 	}
 }
 void CFG_DeviceGroups_SetName(const char *s) {
