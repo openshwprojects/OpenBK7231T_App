@@ -9,12 +9,28 @@
 #include "drv_public.h"
 #include "drv_local.h"
 #include "drv_deviceclock.h"
-//#include <time.h>
 #include "../libraries/obktime/obktime.h"	// for time functions
 
 
 void PulseClock_onEverySec() {
     addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "Pulse Clock EverySec.\n");
+
+    TimeComponents tc;
+    time_t ntpTime;
+    char str[64];
+
+
+    ntpTime=(time_t)TIME_GetCurrentTime();
+    tc=calculateComponents((uint32_t)ntpTime);
+
+    str[0]=0;
+    str = add_padded(str, tc.hour);
+    str = my_strcat(str, ":");
+    str = add_padded(str, tc.minute);
+    str = my_strcat(str, "\n");
+
+    addLogAdv(LOG_INFO, LOG_FEATURE_DRV, str);
+                
 }
 
 void PulseClock_init() {
