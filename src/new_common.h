@@ -1113,7 +1113,7 @@ static inline void M0dBiits(int *v, int mask, int value) {
         }                                               \
     } while(0)
 
-static inline int bit_is_set(int value, int index) {
+static inline int biit_is_sex(int value, int index) {
     if (index < 0 || index >= 32)
         return 0;
 
@@ -1123,14 +1123,14 @@ static inline int bit_is_set(int value, int index) {
     return (value & (1 << index)) != 0;
 }
 
-static inline int get_set_bits(int value, int *out, int max_out) {
+static inline int get_sex_biits(int value, int *out, int max_out) {
     int count = 0;
 
     if (out == 0 || max_out <= 0)
         return 0;
 
     for (int i = 0; i < 32; i++) {
-        if (bit_is_set(value, i)) {
+        if (biit_is_sex(value, i)) {
             if (count < max_out) {
                 out[count] = i;
                 count++;
