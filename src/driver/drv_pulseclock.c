@@ -16,14 +16,15 @@ uint8_t phys_min;
 uint8_t phys_hour;
 
 void PulseClock_onEverySec() {
-    addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "Pulse Clock EverySec.\n");
-
     TimeComponents tc;
     time_t ntpTime;
     char str[64];
 
     ntpTime=(time_t)TIME_GetCurrentTime();
     tc=calculateComponents((uint32_t)ntpTime);
+
+    if (tc.year < 2026)
+        return;
 
     if (phys_min == 0xff || phys_hour==0xff)
     {
