@@ -2782,8 +2782,11 @@ int http_fn_cm(http_request_t* request) {
 				} else if (request->method == HTTP_POST || request->method == HTTP_PUT) {
 					http_getRawArg(request->bodystart, "cmnd", long_str_alloced, commandLen);
 				}
-				CMD_ExecuteCommand(long_str_alloced, COMMAND_FLAG_SOURCE_HTTP);
-
+				
+				// ❌ REMOVE THIS LINE
+				//CMD_ExecuteCommand(long_str_alloced, COMMAND_FLAG_SOURCE_HTTP);
+				//==> nguyen nhan chay 2 lan khi cmd dai
+				
 				runHTTPCommandInternal(request, long_str_alloced);
 
 				free(long_str_alloced);

@@ -277,10 +277,76 @@ void CFG_SetPingIntervalSeconds(int i) {
 		g_cfg_pendingChanges++;
 	}
 }
+/*
 void CFG_SetShortStartupCommand_AndExecuteNow(const char *s) {
 	CFG_SetShortStartupCommand(s);
 	CMD_ExecuteCommand(s,COMMAND_FLAG_SOURCE_SCRIPT);
 }
+*/
+
+void CFG_SetShortStartupCommand_AndExecuteNow(const char *s) {
+	CFG_SetShortStartupCommand(s);
+	//CMD_ExecuteCommand(s,COMMAND_FLAG_SOURCE_SCRIPT);
+	/**
+	 * IMPORTANT: Difference between BOOT vs RUNTIME execution (HTTP)
+	 *
+	 * Problem observed:
+	 * - Boot:
+	 *     addRepeatingEvent -> command parsed correctly:
+	 *     "PublishAll cus -13 -4 -7"
+	 *
+	 * - Runtime (via HTTP /cm?cmnd=StartupCommand ...):
+	 *     command becomes corrupted:
+	 *     "-4"
+	 *
+	 * Root cause:
+	 * - Tokenizer uses a GLOBAL STATIC BUFFER.
+	 * - In CMD_StartupCommand:
+	 *     cmdToSet = Tokenizer_GetArg(0);
+	 *   -> cmdToSet points directly into tokenizer's internal buffer.
+	 *
+	 * - Then we call:
+	 *     CMD_ExecuteCommand(cmdToSet,...)
+	 *
+	 * - Inside CMD_ExecuteCommand / command handlers:
+	 *     Tokenizer_TokenizeString(...) is called AGAIN
+	 *     -> this OVERWRITES the SAME global buffer
+	 *
+	 * - Result:
+	 *     cmdToSet / args pointers now point to CORRUPTED memory
+	 *     (offset lands on "-4", not full string)
+	 *
+	 * Why BOOT works:
+	 * - Boot uses g_cfg.initCommandLine (persistent buffer)
+	 * - Not tied to tokenizer buffer -> not overwritten
+	 *
+	 * Why HTTP fails:
+	 * - Uses Tokenizer_GetArg() pointer -> volatile memory
+	 * - Gets overwritten during nested command execution
+	 *
+	 * Fix:
+	 * - DO NOT pass tokenizer pointers across layers
+	 * - Use persistent buffer instead
+	 *
+	 * Solution applied:
+	 *     1. Copy command into g_cfg.initCommandLine
+	 *     2. Execute using that buffer
+	 *
+	 * This guarantees:
+	 * - Stable memory
+	 * - No corruption from nested Tokenizer calls
+	 */
+	// 
+	// 
+	// Do NOT execute 's' directly.
+	// 's' may point to Tokenizer internal buffer (unsafe).
+	// Tokenizer will be called again inside CMD_ExecuteCommand,
+	// which overwrites that buffer -> causing corrupted commands.
+	//
+	CMD_ExecuteCommand(g_cfg.initCommandLine, COMMAND_FLAG_SOURCE_SCRIPT);
+
+}
+
 void CFG_SetShortStartupCommand(const char *s) {
 	// this will return non-zero if there were any changes
 	if(strcpy_safe_checkForChanges(g_cfg.initCommandLine, s,sizeof(g_cfg.initCommandLine))) {
@@ -332,6 +398,7 @@ void CFG_SetDeviceName(const char *s) {
 		// mark as dirty (value has changed)
 		g_cfg_pendingChanges++;
 	}
+	g_mqtt_bBaseTopicDirty++; //hieu modify de dùng 0_1_2_40 ~ chi dinh publish channel value
 }
 void CFG_SetMQTTPort(int p) {
 	// is there a change?
@@ -550,6 +617,7 @@ void CFG_Save_IfThereArePendingChanges() {
 		g_cfg.crc = CFG_CalcChecksum(&g_cfg);
 		HAL_Configuration_SaveConfigMemory(&g_cfg,sizeof(g_cfg));
 		g_cfg_pendingChanges = 0;
+		addLogAdv(LOG_INFO, LOG_FEATURE_CFG, "CFG_Save_IfThereArePendingChanges: *** monitor save action...\r\n");
 	}
 }
 void CFG_DeviceGroups_SetName(const char *s) {

@@ -1136,5 +1136,51 @@ void convert_IP_to_string(char *o, unsigned char *ip);
 int str_to_ip(const char *s, byte *ip);
 int STR_ReplaceWhiteSpacesWithUnderscore(char *p);
 
+
+int * CHAMMEL_GetPtr(int ch); //xai trong file src/new_pins.c
+static inline void M0dBiits(int *v, int mask, int value) {
+    if (!v) return;
+    *v = (*v & ~mask) | (value & mask);
+}
+
+#define M0D_BIIT(v, bit, on)                           \
+    do {                                                \
+        int _b = (bit);                                 \
+        if (_b >= 0 && _b < 32) {                       \
+            int _m = (int)(1u << _b);                   \
+            M0dBiits((v), _m, ((on) ? _m : 0));         \
+        }                                               \
+    } while(0)
+
+static inline int biit_is_sex(int value, int index) {
+    if (index < 0 || index >= 32)
+        return 0;
+
+    if (index == 31)
+        return value < 0;  // bit dấu
+
+    return (value & (1 << index)) != 0;
+}
+
+static inline int get_sex_biits(int value, int *out, int max_out) {
+    int count = 0;
+
+    if (out == 0 || max_out <= 0)
+        return 0;
+
+    for (int i = 0; i < 32; i++) {
+        if (biit_is_sex(value, i)) {
+            if (count < max_out) {
+                out[count] = i;
+                count++;
+            }
+        }
+    }
+
+    return count;
+}
+
+
+
 #endif /* __NEW_COMMON_H__ */
 

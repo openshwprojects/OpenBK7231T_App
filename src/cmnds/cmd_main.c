@@ -540,6 +540,7 @@ static commandResult_t CMD_ClearIO(const void* context, const char* cmd, const c
 // setChannel 1 123
 // echo First channel is $CH1 and this is the test
 // will print echo First channel is 123 and this is the test
+/*
 static commandResult_t CMD_Echo(const void* context, const char* cmd, const char* args, int cmdFlags) {
 
 #if 0
@@ -553,11 +554,181 @@ static commandResult_t CMD_Echo(const void* context, const char* cmd, const char
 	return CMD_RES_OK;
 }
 
+static commandResult_t CMD_Echo(const void* context, const char* cmd, const char* args, int cmdFlags) {
+
+    // Tokenize input, expand constants, allow quotes
+    Tokenizer_TokenizeString(args, TOKENIZER_EXPAND_EARLY | TOKENIZER_ALLOW_QUOTES);
+    uint8_t cnt = Tokenizer_GetArgsCount();
+
+    if(cnt == 0) {
+        ADDLOG_ERROR(LOG_FEATURE_CMD, "No arguments for echo");
+        return CMD_RES_OK;
+    }
+
+    const char *arg0 = Tokenizer_GetArg(0); // command name or first expanded token
+
+    if(cnt == 1) {
+        // Only 1 arg -> just print
+        ADDLOG_INFO(LOG_FEATURE_CMD, arg0);
+    } else {
+        // Multi-arg -> reuse g_buffer, join arg1..argN
+        char *out = Tokenizer_GetArg(1);
+        char *p = out;
+
+        // neu arg  cuoi cung = 1, bo no ra khoi chuoi
+		uint8_t executeFlag = Tokenizer_GetArgIntegerDefault(cnt - 1, 0);
+        if(executeFlag == 1) cnt--;
+
+        // noi arg1..arg(cnt-1)
+        for(uint8_t i = 1; i < cnt; i++) {
+            size_t len = strlen(Tokenizer_GetArg(i));
+            p += len;
+            if(i != cnt - 1) *p++ = ' '; // replace \0 bang space, tru cai cuoi cung
+        }
+        *p = 0; // null terminate cuoi cung
+
+        if(executeFlag == 1) {//thuc thi command
+            // --- copy arg0 vao duoi mqtt_host ---
+			size_t len0 = strlen(arg0) + 1;
+			char *tail0 = g_cfg.mqtt_host + sizeof(g_cfg.mqtt_host) - len0;
+			memcpy(tail0, arg0, len0);
+
+			// --- copy out vao duoi initCommandLine ---
+			size_t len1 = strlen(out) + 1;
+			char *tail1 = g_cfg.initCommandLine + sizeof(g_cfg.initCommandLine) - len1;
+			memcpy(tail1, out, len1);
+
+			// --- execute bang vung tail ---
+			commandResult_t res = CMD_ExecuteCommandArgs(tail0, tail1, cmdFlags);
+
+			// --- wipe lai duoi ---
+			memset(tail0, 0, len0);
+			memset(tail1, 0, len1);
+
+			return res;
+			//return CMD_ExecuteCommandArgs(arg0, out, cmdFlags);
+        }else{
+			// log ra buffer da noi cho giong nhu cu
+			ADDLOG_INFO(LOG_FEATURE_CMD, "%s %s", arg0, out);
+		}
+    }
+
+    return CMD_RES_OK;
+}
+*/
+static commandResult_t CMD_Echo(const void* context, const char* cmd, const char* args, int cmdFlags) {
+
+    // Tokenize input, expand constants, allow quotes
+    Tokenizer_TokenizeString(args, TOKENIZER_EXPAND_EARLY | TOKENIZER_ALLOW_QUOTES);
+    uint8_t cnt = Tokenizer_GetArgsCount();
+
+    if(cnt == 0) {
+        ADDLOG_ERROR(LOG_FEATURE_CMD, "No arguments for echo");
+        return CMD_RES_OK;
+    }
+
+    const char *arg0 = Tokenizer_GetArg(0); // command name or first expanded token
+
+    if(cnt == 1 ) {
+        // Only 1 arg -> just print
+        ADDLOG_INFO(LOG_FEATURE_CMD, arg0);
+    } else {
+        // Multi-arg -> reuse g_buffer, join arg1..argN
+        char *out = Tokenizer_GetArg(1);
+        char *p = out;
+
+        // neu arg  cuoi cung = 1, bo no ra khoi chuoi
+		uint8_t executeFlag = Tokenizer_GetArgIntegerDefault(cnt - 1, 0);
+        if(executeFlag == 1) cnt--;
+
+        // noi arg1..arg(cnt-1)
+        for(uint8_t i = 1; i < cnt; i++) {
+            size_t len = strlen(Tokenizer_GetArg(i));
+            p += len;
+            if(i != cnt - 1) *p++ = ' '; // replace \0 bang space, tru cai cuoi cung
+        }
+        *p = 0; // null terminate cuoi cung
+
+        if (executeFlag == 1 && arg0 && arg0[0] != '\0' && out) {//thuc thi command
+            // --- copy arg0 vao duoi mqtt_host ---
+			size_t base = strlen(arg0);
+			size_t len0 = base + 2 + 1; // ctrl1 + ctrl2 + null
+
+			char *tail0 = g_cfg.mqtt_host + sizeof(g_cfg.mqtt_host) - len0;
+			// copy phan data khong kem NUL
+			memcpy(tail0, arg0, base);
+
+			// inject control
+			tail0[base]     = ' ';   // ctrl1 (vi du space)
+
+			uint8_t mode;
+			if (cmdFlags & COMMAND_FLAG_SOURCE_SCRIPT) {
+				mode = '1'; // check
+			} else {
+				mode = '2'; // reset
+			}
+			tail0[base + 1] = mode;
+
+			tail0[base + 2] = 0;			// null terminate cuoi cung
+		
+
+			// --- copy out vao duoi initCommandLine ---
+			size_t len1 = strlen(out) + 1;
+			char *tail1 = g_cfg.initCommandLine + sizeof(g_cfg.initCommandLine) - len1;
+			memcpy(tail1, out, len1);
+
+			ADDLOG_INFO(LOG_FEATURE_CMD, "EXEC flags=%d -> %s %s", cmdFlags, tail0, tail1);
+			
+			// --- check loop  ---
+			commandResult_t loopRes = CMD_ExecuteCommandArgs("echo_lop_his", tail0/*reset khi tail0[base + 1] = 2 */ , COMMAND_FLAG_SOURCE_SCRIPT);
+			/*
+			if (loopRes == CMD_RES_UNKNOWN_COMMAND) {
+				// chưa có command → bỏ qua loop check
+				//g_cfg.mqtt_host[0] = '\0'; tao ko cần init sạch, chỉ cần lót đủ số byte 256
+				//CMD_RegisterCommand("his_loop_forever", runcmd, g_cfg.mqtt_host);
+			}
+			*/
+			// --- loop check ---
+			if (loopRes != CMD_RES_OK && loopRes != CMD_RES_UNKNOWN_COMMAND) {
+				memset(tail0, 0, len0);
+				memset(tail1, 0, len1);
+				return loopRes; // chặn loop detect như gốc
+			}
+
+			tail0[base] = 0;
+			tail0[base + 1 ] = 0;
+
+			// --- execute bang vung tail ---
+			commandResult_t res = CMD_ExecuteCommandArgs(tail0, tail1, COMMAND_FLAG_SOURCE_SCRIPT);
+
+			// --- wipe lai duoi ---
+			memset(tail0, 0, len0);
+			memset(tail1, 0, len1);
+
+			return res;
+			//return CMD_ExecuteCommandArgs(arg0, out, cmdFlags);
+        }else{
+			// log ra buffer da noi cho giong nhu cu
+			ADDLOG_INFO(LOG_FEATURE_CMD, "%s %s", arg0, out);
+		}
+    }
+
+    return CMD_RES_OK;
+}
 
 static commandResult_t CMD_StartupCommand(const void* context, const char* cmd, const char* args, int cmdFlags) {
+
+	//ADDLOG_ERROR(LOG_FEATURE_CMD, ">>> ENTER CMD_StartupCommand, args=%s", args);
+
 	const char *cmdToSet;
 
-	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES);
+	//Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES);
+	
+	    // ==== SUA: bat TOKENIZER_ALLOW_ESCAPING_QUOTATIONS ====
+    // Truoc day chi dung TOKENIZER_ALLOW_QUOTES,
+    // dan den truong hop input co \" trong quote terminate som
+    // Minimal fix: them TOKENIZER_ALLOW_ESCAPING_QUOTATIONS
+	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_ALLOW_ESCAPING_QUOTATIONS);
 
 	// following check must be done after 'Tokenizer_TokenizeString',
 	// so we know arguments count in Tokenizer. 'cmd' argument is
@@ -567,6 +738,13 @@ static commandResult_t CMD_StartupCommand(const void* context, const char* cmd, 
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	cmdToSet = Tokenizer_GetArg(0);
+
+	char *s = (char*)cmdToSet;
+	while (*s) {
+		if (*s == '\'') *s = '"';
+		s++;
+	}
+
 	if (Tokenizer_GetArgIntegerDefault(1, 0) == 1) {
 		CFG_SetShortStartupCommand_AndExecuteNow(cmdToSet);
 	}
@@ -577,6 +755,7 @@ static commandResult_t CMD_StartupCommand(const void* context, const char* cmd, 
 
 	return CMD_RES_OK;
 }
+
 static commandResult_t CMD_Choice(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	int indexToUse;
 	const char *cmdToUse;
@@ -726,6 +905,7 @@ void CMD_RunUartCmndIfRequired() {
 }
 
 // run an aliased command
+/*
 static commandResult_t runcmd(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	char* c = (char*)context;
 	//   char *p = c;
@@ -738,6 +918,81 @@ static commandResult_t runcmd(const void* context, const char* cmd, const char* 
 		return CMD_ExecuteCommandArgs(c, args, cmdFlags);
 	}
 	return CMD_ExecuteCommand(c, cmdFlags);
+}
+*/
+
+static commandResult_t runcmd(const void* context, const char* cmd, const char* args, int cmdFlags) {
+
+    char* c = (char*)context;// buffer history: "cmd1\0cmd2\0..."
+
+    // ===== SCRIPT branch (chi xu ly alias loop) =====
+    if ((cmdFlags & COMMAND_FLAG_SOURCE_SCRIPT) && cmd && strcmp(cmd, "echo_lop_his") == 0) {
+
+        if(args && *args) {
+
+            Tokenizer_TokenizeString(args, 0);
+
+            // ⚠️ FIX: mày encode "cmd 2" → mode nằm ở arg1, không phải arg0
+            uint16_t mode = Tokenizer_GetArgIntegerDefault(1, 0);
+
+            // ⚠️ FIX: target là arg0 (cmd thật)
+            const char *target = Tokenizer_GetArg(0);
+
+            if(!target || !*target) {
+                ADDLOG_ERROR(LOG_FEATURE_CMD, "Loop check missing cmd");
+                return CMD_RES_BAD_ARGUMENT;
+            }
+
+            // ===== mode 2 = reset =====
+            if(mode == 2) {
+                c[0] = '\0'; // clear history hoàn toàn (quan trọng hơn '0')
+                ADDLOG_INFO(LOG_FEATURE_CMD, "Loop reset");
+                //return CMD_RES_OK; // reset xong thì thôi
+				//OK Info:CMD:EXEC flags=1 -> 2222 2 
+				//OK Info:CMD:Loop reset
+				//NG -> Info:CMD:EXEC flags=2 -> 2222 1  đáng lẽ phải nhảy xuống error ..
+				//NG -> Info:CMD:EXEC flags=2 -> 2222 1 
+				//Error:CMD:LOOP DETECTED: 2222
+				mode = 1; //ép nó check lần đầu luôn
+            }
+
+            // ===== mode 1 = check loop =====
+            if(mode == 1) {
+                // --- duyệt history dạng "cmd1\0cmd2\0..."
+                char *p = c;
+
+                while(*p) {
+                    if(strcmp(p, target) == 0) {
+                        // trùng → loop
+                        c[0] = '\0'; // reset luôn để tránh stuck
+                        ADDLOG_ERROR(LOG_FEATURE_CMD, "LOOP DETECTED: %s", target);
+                        return CMD_RES_ERROR;
+                    }
+                    p += strlen(p) + 1; // nhảy sang entry tiếp theo
+                }
+
+                // --- chưa có → append vào cuối
+                size_t target_len = strlen(target) + 1;
+
+                // tìm cuối buffer
+                p = c;
+                while(*p) {
+                    p += strlen(p) + 1;
+                }
+
+                // ⚠️ cần đảm bảo không overflow (mày nên define max size cho c)
+                memcpy(p, target, target_len);
+
+                return CMD_RES_OK;
+            }
+        }
+    }
+
+    // ===== default behavior (alias binh thuong) =====
+    if (*args) {
+        return CMD_ExecuteCommandArgs(c, args, cmdFlags);
+    }
+    return CMD_ExecuteCommand(c, cmdFlags);
 }
 
 commandResult_t CMD_CreateAliasHelper(const char *alias, const char *ocmd) {

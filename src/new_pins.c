@@ -1641,6 +1641,14 @@ void CHANNEL_ClearAllChannels() {
 	}
 }
 
+int * CHAMMEL_GetPtr(int ch) {
+	if (ch < 0 || ch >= CHANNEL_MAX) {
+		addLogAdv(LOG_ERROR, LOG_FEATURE_GENERAL, "CHANNEL_Get: Channel index %i is out of range <0,%i)\n\r", ch, CHANNEL_MAX);
+		return 0;
+	}
+	return &g_channelValues[ch];
+}
+
 void CHANNEL_Set_FloatPWM(int ch, float fVal, int iFlags) {
 	int i;
 	float prevValue = g_channelValuesFloats[ch];

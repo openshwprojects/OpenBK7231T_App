@@ -8,25 +8,88 @@
 # As an example you will find a script below which will copy all content of the "override"
 # directory to the corresponding location in the SDK
 #
-#DIRNAME=$(dirname $0);
-#echo "PREBUILD script! Executed from $DIRNAME!"
+DIRNAME=$(dirname $0);
+echo "PREBUILD script! Executed from $DIRNAME!"
+
+echo "Applying FINAL override (guaranteed)..."
+
+CONFIG_FILE="src/obk_config.h"
+OVERRIDE_FILE="src/_auto_override_config.h"
+
+# tạo file override (luôn clean)
+cat > $OVERRIDE_FILE << 'EOF'
+#pragma once
+
+// ===== FINAL FORCE OVERRIDE =====
+#undef ENABLE_OBK_BERRY
+//#undef ENABLE_LITTLEFS ⚠️ nên giữ
+//#undef ENABLE_OBK_SCRIPTING ⚠️ nên giữ
+#undef ENABLE_NTP 	
+
+#undef ENABLE_DRIVER_DHT
+#undef ENABLE_DRIVER_AHT2X
+#undef ENABLE_DRIVER_DS1820
+#undef ENABLE_DRIVER_CHT83XX
+#undef ENABLE_DRIVER_KP18058
+#undef ENABLE_DRIVER_ADCSMOOTHER
+
+#undef ENABLE_DRIVER_SSDP
+#undef ENABLE_DRIVER_WEMO
+#undef ENABLE_DRIVER_HUE
+#undef ENABLE_DRIVER_DDP
+
+
+EOF
+
+
+
+
+# remove include cũ nếu có (tránh duplicate)
+sed -i '/_auto_override_config.h/d' "$CONFIG_FILE"
+
+# 👉 QUAN TRỌNG NHẤT: include ở CUỐI FILE
+echo '#include "_auto_override_config.h"' >> "$CONFIG_FILE"
+
+echo "Override injected at END of obk_config.h ✔"
+
+
+
+# cat << 'EOF' > tmp_snippet.h
+
+# int * CHANNEL_GetPtr(int ch);
+
+# EOF
+
+# NEW_PIN_FILE="src/new_pins.h"
+# grep -q "ModifyBits" "$NEW_PIN_FILE" || \
+# awk '1; END{system("cat tmp_snippet.h")}' "$NEW_PIN_FILE" > tmp && mv tmp "$NEW_PIN_FILE"
+
+# echo "Override injected at END of new_pins.h ✔"
+
+
+
+
+
+
+# ===== phần override gốc giữ nguyên =====
+
 # allow whitespace in file or path, so take only newline as seperator
-#OFS=$IFS
-#IFS='
-#'
-#for X in $(find platforms/BK7231N/override/ -type f);do
+OFS=$IFS
+IFS='
+'
+for X in $(find platforms/BK7231N/override/ -type f);do
 #	# script is executed from main app directory, so take found file and path as source
-#	S=${X};
+	S=${X};
 #	# destination is path stripped from path to override
 #	# so inside "override" we have the full path to the file
 #	# starting with "sdk/OpenBK7231N/..."
-#	D=${X#platforms/BK7231N/override/};
+	D=${X#platforms/BK7231N/override/};
 #	# if file is present, we replace it, otherwise file is added ...
-#	[ -e $D ] && echo "PREBUILD: replacing file\n\t$D\n\twith file\n\t$S" || echo "PREBUILD: adding file\n\t$S\n\tas\n\t$D"
-#	cp $S $D;
-#done
+	[ -e $D ] && echo "PREBUILD: replacing file\n\t$D\n\twith file\n\t$S" || echo "PREBUILD: adding file\n\t$S\n\tas\n\t$D"
+	cp $S $D;
+done
 ## restore IFS to whatever it was before ...
-#IFS=$OFS
+IFS=$OFS
 
 # you can also use all other commands to change files, like
 # sed -i "s/#define FOO bar/#define FOO baz/" sdk/OpenBK7231N/platforms/bk7231n/bk7231n_os/beken378/file_to_change.c
@@ -38,4 +101,3 @@
 # and then in pre_build.sh you apply this patch with:
 #
 # patch -p 1 -d sdk/OpenBK7231N < platforms/BK7231N/my_change.diff
-
