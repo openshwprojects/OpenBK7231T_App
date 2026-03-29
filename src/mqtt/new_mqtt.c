@@ -3224,7 +3224,7 @@ void MQTT_BuildAndPublishBatch_ByIndex(int *indices, int count, uint8_t* leh, in
     // =====================================================
 	if (!indices || count == 0) {
 		indices = defaultIndices;
-		count = 7; // truc tiep cho gon
+		count = 8; // truc tiep cho gon
 	}
 	
     char value[64];
@@ -3290,95 +3290,69 @@ void MQTT_BuildAndPublishBatch_ByIndex(int *indices, int count, uint8_t* leh, in
 
 #else
 
-
-#define APPEND_CHAR(buf,len,max,c) \
-    do { if ((len) < (max)) (buf)[(len)++] = (c); } while(0)
-
-#define APPEND_STR(buf,len,max,s) \
-    do { const char *_p = (s); while (*_p && (len) < (max)) (buf)[(len)++] = *_p++; } while(0)
-
-#define APPEND_INT(buf,len,max,v)                     \
-    do {                                             \
-        int _v = (v);                                \
-        char _tmp[12];                               \
-        int _i = 0;                                  \
-        if (_v == 0) {                               \
-            APPEND_CHAR(buf,len,max,'0');            \
-        } else {                                     \
-            if (_v < 0) {                            \
-                APPEND_CHAR(buf,len,max,'-');        \
-                _v = -_v;                            \
-            }                                        \
-            while (_v && _i < (int)sizeof(_tmp)) {   \
-                _tmp[_i++] = '0' + (_v % 10);        \
-                _v /= 10;                            \
-            }                                        \
-            while (_i--) {                           \
-                APPEND_CHAR(buf,len,max,_tmp[_i]);   \
-            }                                        \
-        }                                            \
-    } while(0)
+#define ONEALL_PAYLOAD_MAX 512
 
 #define SEG_A_END   500
-#define SEG_B_SIZE  512
 #define SEG_B_START (SEG_A_END)
 
-#define VALUE_BUF_SIZE 64
-#define VALUE_START         (SEG_B_SIZE - VALUE_BUF_SIZE)
-#define SEG_B_PAYLOAD_MAX   VALUE_START   // 🔥 payload KHÔNG được đụng vùng value
-
 void MQTT_BuildAndPublishBatch_ByIndex(int *indices, int count, uint8_t* leh, int leh_len) {
-
+	
     uint8_t g_oneAllDelimiter = 0x1F;
 
-    char *payload = g_cfg.initCommandLine + SEG_B_START;
-    char *value   = payload + VALUE_START;
-
+    // 🔥 dùng buffer có sẵn
+    uint8_t *payload = (uint8_t*)(g_cfg.initCommandLine + SEG_B_START);
     int len = 0;
 
-    // ===== prefix =====
-    if (leh && leh_len > 0 && leh_len < SEG_B_PAYLOAD_MAX) {
-        memcpy(payload, leh, leh_len);
-        len += leh_len;
-    }
+    // 🔥 clear trước khi build (tránh rác)
+    memset(payload, 0, ONEALL_PAYLOAD_MAX);
 
-    // ===== default indices =====
-    if (!indices || count == 0) {
-        indices = defaultIndices;
-        count = 8;
+    // ===== prefix =====
+    if (leh && leh_len > 0) {
+        if (leh_len < ONEALL_PAYLOAD_MAX) {
+            memcpy(payload, leh, leh_len);
+            len += leh_len;
+        }
     }
 
     // =====================================================
     // ===== PHASE 1: SYSTEM ITEMS (idx < 0) =====
     // =====================================================
+
+    if (!indices || count == 0) {
+        indices = defaultIndices;
+        count = 8;
+    }
+	
+    char value[64];
+
     for (int i = 0; i < count; i++) {
         int idx = indices[i];
 
         if (idx >= 0) continue;
 
-        if (!MQTT_GetItemValue(idx, value, VALUE_BUF_SIZE))
+        if (!MQTT_GetItemValue(idx, value, sizeof(value)))
             continue;
 
-        int vlen = strlen(value);
+        int remain = ONEALL_PAYLOAD_MAX - len;
 
-        // 🔥 CRITICAL GUARD (tránh đè vùng value)
-        if (len + vlen + 2 >= SEG_B_PAYLOAD_MAX)
+        if (remain <= 1)
             break;
 
-        int oldLen = len;
+        int written = snprintf((char*)payload + len,
+                               remain,
+                               "%d=%s%c",
+                               idx, value, g_oneAllDelimiter);
 
-        APPEND_INT(payload, len, SEG_B_PAYLOAD_MAX, idx);
-        APPEND_CHAR(payload, len, SEG_B_PAYLOAD_MAX, '=');
-        APPEND_STR(payload, len, SEG_B_PAYLOAD_MAX, value);
-        APPEND_CHAR(payload, len, SEG_B_PAYLOAD_MAX, g_oneAllDelimiter);
-
-        if (len == oldLen)
+        if (written <= 0 || written >= remain)
             break;
+
+        len += written;
     }
 
     // =====================================================
     // ===== PHASE 2: CHANNELS =====
     // =====================================================
+
     int channels[CHANNEL_MAX];
     int chCount = MQTT_ParseFullNameToChannels(channels, CHANNEL_MAX);
 
@@ -3387,48 +3361,41 @@ void MQTT_BuildAndPublishBatch_ByIndex(int *indices, int count, uint8_t* leh, in
             int ch = channels[i];
             int v  = CHANNEL_Get(ch);
 
-            // build value ngay trong vùng value
-            int vlen = 0;
-            APPEND_INT(value, vlen, VALUE_BUF_SIZE, v);
-            value[vlen] = '\0';
+            char value[32];
+            snprintf(value, sizeof(value), "%d", v);
 
-            // 🔥 CRITICAL GUARD
-            if (len + vlen + 2 >= SEG_B_PAYLOAD_MAX)
+            int remain = ONEALL_PAYLOAD_MAX - len;
+
+            if (remain <= 1)
                 break;
 
-            int oldLen = len;
+            int written = snprintf((char*)payload + len,
+                                   remain,
+                                   "%d~%s%c",
+                                   ch, value, g_oneAllDelimiter);
 
-            APPEND_INT(payload, len, SEG_B_PAYLOAD_MAX, ch);
-            APPEND_CHAR(payload, len, SEG_B_PAYLOAD_MAX, '~');
-            APPEND_STR(payload, len, SEG_B_PAYLOAD_MAX, value);
-            APPEND_CHAR(payload, len, SEG_B_PAYLOAD_MAX, g_oneAllDelimiter);
-
-            if (len == oldLen)
+            if (written <= 0 || written >= remain)
                 break;
+
+            len += written;
         }
     }
 
     if (len <= 0) return;
 
-    // remove delimiter cuối
+    // ===== remove delimiter cuối =====
     if (payload[len - 1] == g_oneAllDelimiter) {
         payload[len - 1] = '\0';
         len--;
     } else {
-        if (len < SEG_B_PAYLOAD_MAX)
+        if (len < ONEALL_PAYLOAD_MAX)
             payload[len] = '\0';
         else
-            payload[SEG_B_PAYLOAD_MAX - 1] = '\0';
+            payload[ONEALL_PAYLOAD_MAX - 1] = '\0';
     }
 
     MQTT_DoItemPublishString("oneall", (const char*)payload);
-
-    // optional clear (tuỳ mày)
-    memset(payload, 0, SEG_B_SIZE);
-
-
 }
-
 
 
 
