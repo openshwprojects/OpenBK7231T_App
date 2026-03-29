@@ -56,7 +56,10 @@ void PulseClock_onEverySec() {
     }
 }
 
-void PulseClock_AppendInformationToHTTPIndexPage(http_request_t* request) {
+void PulseClock_AppendInformationToHTTPIndexPage(http_request_t* request, int bPreState) {
+	if (bPreState)
+		return;
+
     addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "PulseClock: indexpage");
     hprintf255(request, "<h4>PulseClock phystime=%i:%i</h4>", phys_hour, phys_min);
 }
