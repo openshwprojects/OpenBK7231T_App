@@ -11,18 +11,6 @@
 #include "drv_deviceclock.h"
 #include "../libraries/obktime/obktime.h"	// for time functions
 
-char *my_strcat(char *p, const char *s) {
-	strcat(p, s);
-	return p + strlen(s);
-}
-char *add_padded(char *o, int i) {
-	if (i < 10) {
-		*o = '0';
-		o++;
-	}
-	sprintf(o, "%i", i);
-	return o + strlen(o);
-}
 
 void PulseClock_onEverySec() {
     addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "Pulse Clock EverySec.\n");
