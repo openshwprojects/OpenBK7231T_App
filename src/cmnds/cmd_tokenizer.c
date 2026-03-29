@@ -144,8 +144,9 @@ const char *Tokenizer_GetArgExpanding(int i) {
 const char *Tokenizer_GetArg(int i) {
 	const char *s;
 
-	if (i >= g_numArgs)
+	if (i < 0 || g_numArgs <= i) {
 		return 0;
+	}
 
 	if (g_argsExpanded[i][0] != 0) {
 		return g_argsExpanded[i];
@@ -200,6 +201,15 @@ const char *Tokenizer_GetArgFrom(int i) {
 }
 int Tokenizer_GetArgIntegerRange(int i, int rangeMin, int rangeMax) {
 	int ret = Tokenizer_GetArgInteger(i);
+
+//
+// to be discussed: What to return in case of an invalid index? min or max or ???
+//
+	if (i < 0 || g_numArgs <= i) {
+		ADDLOG_ERROR(LOG_FEATURE_CMD, "Invalid argument index %i! Using minumum value %i!",i,rangeMin);
+		return rangeMin;
+	}
+
 	if(ret < rangeMin) {
 		ret = rangeMin;
 		ADDLOG_ERROR(LOG_FEATURE_CMD, "Argument %i (val=%i) was out of range [%i,%i], clamped",i,ret,rangeMax,rangeMin);
@@ -227,7 +237,7 @@ int Tokenizer_GetPin(int i, int def) {
 int Tokenizer_GetArgIntegerDefault(int i, int def) {
 	int r;
 
-	if (g_numArgs <= i) {
+	if (i < 0 || g_numArgs <= i) {
 		return def;
 	}
 	r = Tokenizer_GetArgInteger(i);
@@ -237,7 +247,7 @@ int Tokenizer_GetArgIntegerDefault(int i, int def) {
 float Tokenizer_GetArgFloatDefault(int i, float def) {
 	float r;
 
-	if (g_numArgs <= i) {
+	if (i < 0 || g_numArgs <= i) {
 		return def;
 	}
 	r = Tokenizer_GetArgFloat(i);
@@ -247,6 +257,9 @@ float Tokenizer_GetArgFloatDefault(int i, float def) {
 int Tokenizer_GetArgInteger(int i) {
 	const char *s;
 	int ret;
+	if (i < 0 || g_numArgs <= i) {
+		return 0;
+	}
 
 	s = g_args[i];
 	if (s == 0)
@@ -278,6 +291,9 @@ int Tokenizer_GetArgInteger(int i) {
 	return atoi(s);
 }
 float Tokenizer_GetArgFloat(int i) {
+	if (i < 0 || g_numArgs <= i) {
+		return 0.0f;
+	}
 #if !ENABLE_EXPAND_CONSTANT
 	int channelIndex;
 #endif
