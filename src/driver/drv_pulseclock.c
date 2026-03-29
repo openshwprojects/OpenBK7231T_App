@@ -36,10 +36,7 @@ void PulseClock_onEverySec() {
     tc=calculateComponents((uint32_t)ntpTime);
 
     str[0]=0;
-    str = add_padded(str, tc.hour);
-    str = my_strcat(str, ":");
-    str = add_padded(str, tc.minute);
-    str = my_strcat(str, "\n");
+    sprintf(str, "%i %i\n", tc.hour, tc.minute);
 
     addLogAdv(LOG_INFO, LOG_FEATURE_DRV, str);
                 
