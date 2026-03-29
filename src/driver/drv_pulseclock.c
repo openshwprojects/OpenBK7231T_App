@@ -12,6 +12,9 @@
 #include "../libraries/obktime/obktime.h"	// for time functions
 
 
+uint8_t phys_min;
+uint8_t phys_hour;
+
 void PulseClock_onEverySec() {
     addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "Pulse Clock EverySec.\n");
 
@@ -19,18 +22,36 @@ void PulseClock_onEverySec() {
     time_t ntpTime;
     char str[64];
 
-
     ntpTime=(time_t)TIME_GetCurrentTime();
     tc=calculateComponents((uint32_t)ntpTime);
 
-    str[0]=0;
-    sprintf(str, "%i %i\n", tc.hour, tc.minute);
 
-    addLogAdv(LOG_INFO, LOG_FEATURE_DRV, str);
-                
+    if (tc.minute != phys_min || tc.hour != phys_hour)
+    {
+        str[0]=0;
+        sprintf(str, "New time: %i %i\n", tc.hour, tc.minute);
+
+        addLogAdv(LOG_INFO, LOG_FEATURE_DRV, str);
+    }
+
+    if (tc.minute != phys_min || tc.hour != phys_hour)
+    {
+        addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "Advance minute");
+        phys_min ++;
+        if phys_min > 59
+        {
+            phys_min=0;
+            phys_hour++;
+            if phys_hour > 23
+            {
+                phys_hour=0;
+            }
+        }
+    }
 }
 
 void PulseClock_init() {
+    phys_min=phys_hour=0;
     addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "Pulse Clock Init.\n");
 }
 
