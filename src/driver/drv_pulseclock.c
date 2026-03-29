@@ -38,11 +38,11 @@ void PulseClock_onEverySec() {
     {
         addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "Advance minute");
         phys_min ++;
-        if phys_min > 59
+        if (phys_min > 59)
         {
             phys_min=0;
             phys_hour++;
-            if phys_hour > 23
+            if (phys_hour > 23)
             {
                 phys_hour=0;
             }
