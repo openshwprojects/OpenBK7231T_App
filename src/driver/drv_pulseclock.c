@@ -14,6 +14,7 @@
 
 uint8_t phys_min;
 uint8_t phys_hour;
+uint8_t phys_sec;
 
 void PulseClock_onEverySec() {
     TimeComponents tc;
@@ -61,7 +62,7 @@ void PulseClock_AppendInformationToHTTPIndexPage(http_request_t* request, int bP
 		return;
 
     addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "PulseClock: indexpage");
-    hprintf255(request, "<h4>PulseClock phystime=%i:%i</h4>", phys_hour, phys_min);
+    hprintf255(request, "<h5>PulseClock: phystime=%02i:%02i:%02i</h5>", phys_hour, phys_min, phys_sec);
 }
 
 void PulseClock_init() {
