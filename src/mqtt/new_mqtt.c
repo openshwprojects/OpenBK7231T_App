@@ -1771,7 +1771,7 @@ commandResult_t MQTT_PublishAll(const void* context, const char* cmd, const char
 
 
 commandResult_t MQTT_PublishAll(const void* context, const char* cmd, const char* args, int cmdFlags) {
-    Tokenizer_TokenizeString(args, 0);
+    Tokenizer_TokenizeString(args,  TOKENIZER_ALLOW_QUOTES | TOKENIZER_ALLOW_ESCAPING_QUOTATIONS | TOKENIZER_EXPAND_EARLY );
     int argc = Tokenizer_GetArgsCount();
 
     if (argc >= 2) {
@@ -3212,6 +3212,7 @@ static const int defaultIndices[] = {
 #define SEG_A_END   500
 #define SEG_B_START (SEG_A_END)
 
+
 void MQTT_BuildAndPublishBatch_ByIndex(int *indices, int count, uint8_t* leh, int leh_len) {
 	
     uint8_t g_oneAllDelimiter = 0x1F;
@@ -3247,7 +3248,8 @@ void MQTT_BuildAndPublishBatch_ByIndex(int *indices, int count, uint8_t* leh, in
         count = 8;
     }
 	
-    char value[64];
+    //char value[64];
+	char *value = g_cfg.ntpServer; 
 
     for (int i = 0; i < count; i++) {
         int idx = indices[i];
@@ -3286,7 +3288,7 @@ void MQTT_BuildAndPublishBatch_ByIndex(int *indices, int count, uint8_t* leh, in
             int ch = channels[i];
             int v  = CHANNEL_Get(ch);
 
-            char value[32];
+            //char value[32];
             snprintf(value, sizeof(value), "%d", v);
 
             int remain = ONEALL_PAYLOAD_MAX - len;
@@ -3321,9 +3323,6 @@ void MQTT_BuildAndPublishBatch_ByIndex(int *indices, int count, uint8_t* leh, in
 
     MQTT_DoItemPublishString("oneall", (const char*)payload);
 }
-
-
-
 
 
 
