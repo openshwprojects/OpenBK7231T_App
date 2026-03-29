@@ -2391,7 +2391,7 @@ void TuyaMCU_PrintPacket(byte *data, int len) {
 #endif
 }
 void TuyaMCU_RunReceive() {
-	byte data[192];
+	byte data[256];
 	int len;
 	while (1)
 	{
