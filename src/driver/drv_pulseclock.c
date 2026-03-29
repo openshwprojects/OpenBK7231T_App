@@ -35,14 +35,14 @@ void PulseClock_onEverySec() {
     if (tc.minute != phys_min || tc.hour != phys_hour)
     {
         str[0]=0;
-        sprintf(str, "New time: %i:%i, Phys time: %i:%i\n", tc.hour, tc.minute, phys_hour, phys_min);
+        sprintf(str, "PulseClock: New time: %i:%i, Phys time: %i:%i\n", tc.hour, tc.minute, phys_hour, phys_min);
 
         addLogAdv(LOG_INFO, LOG_FEATURE_DRV, str);
     }
 
     if (tc.minute != phys_min || tc.hour != phys_hour)
     {
-        addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "Advance minute");
+        addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "PulseClock: Advance minute");
         phys_min ++;
         if (phys_min > 59)
         {
@@ -57,11 +57,12 @@ void PulseClock_onEverySec() {
 }
 
 void PulseClock_AppendInformationToHTTPIndexPage(http_request_t* request) {
-   hprintf255(request, "<h4>PulseClock phystime=%i:%i</h4>", phys_hour, phys_min);
+    addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "PulseClock: indexpage");
+    hprintf255(request, "<h4>PulseClock phystime=%i:%i</h4>", phys_hour, phys_min);
 }
 
 void PulseClock_init() {
     phys_min=phys_hour=0xff;
-    addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "Pulse Clock Init.\n");
+    addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "PulseClock: init\n");
 }
 
