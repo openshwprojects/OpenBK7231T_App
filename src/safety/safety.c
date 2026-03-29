@@ -18,6 +18,7 @@
 #include "../cmnds/cmd_public.h"
 #include "../logging/logging.h"
 #include "../new_common.h"
+#if ENABLE_SAFETY
 
 #define LED_THROTTLE_PERIOD 15        	      // seconds between each throttling step (1-1000s)
 
@@ -28,7 +29,6 @@ static const int LED_THROTTLE_STEP_BIG = 5;   // percentage throttle big step fo
 
 static int ledThrottleCountdownSeconds = LED_THROTTLE_PERIOD; // countdown to next led throttle step
 
-#if ENABLE_SAFETY
 void SAFETY_OnEverySecond()
 {
 	#if ENABLE_LED_BASIC
