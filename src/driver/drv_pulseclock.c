@@ -25,7 +25,7 @@ void PulseClock_onEverySec() {
     ntpTime=(time_t)TIME_GetCurrentTime();
     tc=calculateComponents((uint32_t)ntpTime);
 
-    if (phys_min == 0xff || phys_hour=0xff)
+    if (phys_min == 0xff || phys_hour==0xff)
     {
         phys_min=tc.minute;
         phys_hour=tc.hour;
