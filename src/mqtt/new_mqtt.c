@@ -3091,10 +3091,14 @@ bool MQTT_GetItemValue(int idx, char *out, int outLen) {
 
         default:
             //
+			if (idx >=0){
+				snprintf(out, outLen, "%d",  CHANNEL_Get(idx));
+				return true;
+			}
             return false;
     }
 }
-
+/*
 int MQTT_ParseFullNameToChannels(int *out, int maxCount) {
 
 int x = 0x12345678;
@@ -3191,6 +3195,7 @@ int x = 0x12345678;
 
     return count;
 }
+*/
 static const int defaultIndices[] = {
 	0, //test initCommandLine size
 	-14,  //Build origin PUBLISHITEM_SELF_BUILD           -14  //Build        chuyen sang lay MQTT_GROUP
@@ -3212,7 +3217,7 @@ static const int defaultIndices[] = {
 #define SEG_A_END   500
 #define SEG_B_START (SEG_A_END)
 
-
+/*
 void MQTT_BuildAndPublishBatch_ByIndex(int *indices, int count, uint8_t* leh, int leh_len) {
 	
     uint8_t g_oneAllDelimiter = 0x1F;
@@ -3300,6 +3305,157 @@ void MQTT_BuildAndPublishBatch_ByIndex(int *indices, int count, uint8_t* leh, in
                                    remain,
                                    "%d~%s%c",
                                    ch, value, g_oneAllDelimiter);
+
+            if (written <= 0 || written >= remain)
+                break;
+
+            len += written;
+        }
+    }
+
+    if (len <= 0) return;
+
+    // ===== remove delimiter cuối =====
+    if (payload[len - 1] == g_oneAllDelimiter) {
+        payload[len - 1] = '\0';
+        len--;
+    } else {
+        if (len < ONEALL_PAYLOAD_MAX)
+            payload[len] = '\0';
+        else
+            payload[ONEALL_PAYLOAD_MAX - 1] = '\0';
+    }
+
+    MQTT_DoItemPublishString("oneall", (const char*)payload);
+}
+*/
+
+void MQTT_BuildAndPublishBatch_ByIndex(int *indices, int count, uint8_t* leh, int leh_len) {
+	
+    uint8_t g_oneAllDelimiter = 0x1F;
+
+	#if USE_STACK_PAYLOAD
+
+	uint8_t payload[ONEALL_PAYLOAD_MAX];
+
+	#else
+	    // 🔥 dùng buffer có sẵn
+	    uint8_t *payload = (uint8_t*)(g_cfg.initCommandLine + SEG_B_START);
+	#endif
+
+    int len = 0;
+
+    // 🔥 clear trước khi build (tránh rác)
+    memset(payload, 0, ONEALL_PAYLOAD_MAX);
+
+    // ===== prefix =====
+    if (leh && leh_len > 0) {
+        if (leh_len < ONEALL_PAYLOAD_MAX) {
+            memcpy(payload, leh, leh_len);
+            len += leh_len;
+        }
+    }
+
+
+	int channels[CHANNEL_MAX + 32 ];
+    int chCount = 0;
+	int __indices[32];
+
+    // =====================================================
+    // ===== PHASE 1: SYSTEM ITEMS (idx < 0) =====
+    // =====================================================
+
+	if (!indices ){
+		if (count == INT_MAX ){
+			count=0;//reset 
+			int argc = Tokenizer_GetArgsCount();
+			for (int i = 1; i < argc; i++) {
+				const char *arg = Tokenizer_GetArg(i);
+				if (!arg) continue;
+
+				// thử decode trước
+				chCount = decodeBits64_prod(arg, channels, CHANNEL_MAX);
+
+				if (chCount >= 0) {
+					continue;
+				}
+
+				__indices[count++] = Tokenizer_GetArgInteger(i);
+				if (count >= 32) break;
+			}
+			indices=__indices;//gán lại
+		}else{
+			indices = defaultIndices;
+			count =  sizeof(defaultIndices)/sizeof(defaultIndices[0]); // truc tiep cho gon
+			//
+			//chCount = get_sex_biits( CHANNEL_Get(63),channels, CHANNEL_MAX);
+			// low: CH63 → 0..31
+			chCount = get_sex_biits_offset(CHANNEL_Get(63), channels, CHANNEL_MAX, 0);
+			// high: CH62 → 32..63
+			chCount += get_sex_biits_offset(CHANNEL_Get(62), channels + chCount, CHANNEL_MAX - chCount, 32);
+		}
+	}
+
+	
+	//*** giúp tao merge defaultIndices vào 
+	//*** tính lại count
+	if (chCount < 0) chCount = 0;
+	memcpy(channels + chCount, indices, count * sizeof(int));
+	chCount += count;
+	//
+	//
+    char value[48];
+	//char *value = g_cfg.ntpServer; 
+	/*
+    for (int i = 0; i < count; i++) {
+        int idx = indices[i];
+
+        if (idx > 0) continue;
+
+        if (!MQTT_GetItemValue(idx, value, sizeof(value)))
+            continue;
+
+        int remain = ONEALL_PAYLOAD_MAX - len;
+
+        if (remain <= 1)
+            break;
+
+        int written = snprintf((char*)payload + len,
+                               remain,
+                               "%d=%s%c",
+                               idx, value, g_oneAllDelimiter);
+
+        if (written <= 0 || written >= remain)
+            break;
+
+        len += written;
+    }
+	*/
+    // =====================================================
+    // ===== PHASE 2: CHANNELS =====
+    // =====================================================
+
+
+    if (chCount > 0) {
+        for (int i = 0; i < chCount; i++) {
+            int ch = channels[i];
+
+            //int v  = CHANNEL_Get(ch);
+            //char value[32];
+            //snprintf(value, sizeof(value), "%d", v);
+
+            int remain = ONEALL_PAYLOAD_MAX - len;
+
+            if (remain <= 1)
+                break;
+
+			if (!MQTT_GetItemValue(ch, value, sizeof(value)))
+				continue;
+
+            int written = snprintf((char*)payload + len,
+                                   remain,
+                                   "%d%s%s%c",
+                                   ch, ch>=0 ? "~" : "=" , value, g_oneAllDelimiter);
 
             if (written <= 0 || written >= remain)
                 break;
