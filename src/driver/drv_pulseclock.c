@@ -54,7 +54,10 @@ void PulseClock_onEverySec() {
     if (phys_daysec != ntp_daysec)
     {
         str[0]=0;
-        sprintf(str, "PulseClock: NTP time: %i, Phys time: %i\n", ntp_daysec, phys_daysec);
+        sprintf(str, "PulseClock: ntp_time=%i:%i:%i, phys_time=%i:%i:%i\n", 
+                DaysecToHour(ntp_daysec), DaysecToMinute(ntp_daysec), DaysecToSecond(ntp_daysec), 
+                DaysecToHour(phys_daysec), DaysecToMinute(phys_daysec), DaysecToSecond(phys_daysec) 
+               );
 
         addLogAdv(LOG_INFO, LOG_FEATURE_DRV, str);
     }
@@ -71,7 +74,7 @@ void PulseClock_AppendInformationToHTTPIndexPage(http_request_t* request, int bP
 	if (bPreState)
 		return;
 
-    hprintf255(request, "<h5>PulseClock: phystime=%i</h5>", phys_daysec);
+    hprintf255(request, "<h5>PulseClock: phystime=%i:%i:%i</h5>", DaysecToHour(phys_daysec), DaysecToMinute(phys_daysec), DaysecToSecond(phys_daysec));
 }
 
 
@@ -87,8 +90,9 @@ static commandResult_t Cmd_SetPhysTime(const void* context, const char* cmd, con
             Tokenizer_GetArgInteger(1),
             Tokenizer_GetArgInteger(2)
             );
+    phys_daysec -= phys_daysec % phys_resolution;
 
-    addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "PulseClock: PhysTime updated to %i\n",phys_daysec);
+    addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "PulseClock: PhysTime updated to %i",phys_daysec);
     return CMD_RES_OK;
 }
 
@@ -96,7 +100,7 @@ static commandResult_t Cmd_SetPhysTime(const void* context, const char* cmd, con
 void PulseClock_init() {
 	phys_resolution = Tokenizer_GetArgIntegerDefault(1, 60);
     phys_daysec=0xffffffff;
-    addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "PulseClock: init, resolution=%i\n", phys_resolution);
+    addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "PulseClock: init, resolution=%i", phys_resolution);
 	CMD_RegisterCommand("PulseClock_SetPhysTime", Cmd_SetPhysTime, NULL);
 }
 
