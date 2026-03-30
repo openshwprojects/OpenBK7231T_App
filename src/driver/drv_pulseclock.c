@@ -78,8 +78,14 @@ void PulseClock_onEverySec() {
     }
     else
     {
-        CHANNEL_Set(1, 0, 0);
-        CHANNEL_Set(2, 0, 0);
+        if (CHANNEL_Get(1))
+        {
+            CHANNEL_Set(1, 0, 0);
+        }
+        if (CHANNEL_Get(2))
+        {
+            CHANNEL_Set(2, 0, 0);
+        }
     }
 }
 
