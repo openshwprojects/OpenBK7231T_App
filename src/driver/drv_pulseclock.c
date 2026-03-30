@@ -59,11 +59,15 @@ void PulseClock_onEverySec() {
 
         if ((phys_daysec / phys_resolution) % 2)
         {
-            addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "PulseClock: Advance odd tick");
+            addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "PulseClock: Advance even tick begin");
+            rtos_delay_milliseconds(500);
+            addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "PulseClock: Advance even tick end");
         }
         else
         {
-            addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "PulseClock: Advance even tick");
+            addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "PulseClock: Advance odd tick begin");
+            rtos_delay_milliseconds(500);
+            addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "PulseClock: Advance odd tick end");
         }
         phys_daysec += phys_resolution;
         phys_daysec %= 86400;
