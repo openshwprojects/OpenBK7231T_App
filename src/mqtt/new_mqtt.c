@@ -3195,15 +3195,15 @@ int x = 0x12345678;
 	//✔ tắt nhiều bit
 	M0dBiits(&x, mask_bulk, 0);
 
-	/*
+	
 	// =========================
 	// Cách 3: có sẵn bitmap
 	// =========================
-	int mask_user  = userMask;
-	int value_user = userValue;
+	//int mask_user  = userMask;
+	//int value_user = userValue;
 
-	M0dBiits(&x, mask_user, value_user);
-	*/
+	//M0dBiits(&x, mask_user, value_user);
+	
 
 
 	// =========================
@@ -3239,6 +3239,8 @@ int x = 0x12345678;
     return count;
 }
 */
+
+
 static const int defaultIndices[] = {
 	0, //test initCommandLine size
 	-14,  //Build origin PUBLISHITEM_SELF_BUILD           -14  //Build        chuyen sang lay MQTT_GROUP
