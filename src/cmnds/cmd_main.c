@@ -21,7 +21,7 @@ int cmd_uartInitIndex = 0;
 #if ENABLE_LITTLEFS
 #include "../littlefs/our_lfs.h"
 #endif
-#ifdef PLATFORM_BL602
+#if PLATFORM_BL602 && !PLATFORM_BL_NEW
 #include <wifi_mgmr_ext.h>
 #include "bl_flash.h"
 #include "bl602_hbn.h"
@@ -391,7 +391,7 @@ static commandResult_t CMD_DeepSleep(const void* context, const char* cmd, const
 #elif PLATFORM_XRADIO
 	HAL_Wakeup_SetTimer_mS(timeMS * DS_MS_TO_S);
 	pm_enter_mode(DEEP_SLEEP);
-#elif PLATFORM_BL602
+#elif PLATFORM_BL602 && !PLATFORM_BL_NEW
 	HBN_APP_CFG_Type cfg = {
 		.useXtal32k = 0,
 		.sleepTime = timeMS,

@@ -391,7 +391,7 @@ typedef void * beken_thread_arg_t;
 typedef int (*beken_thread_function_t)(void *p);
 #define BEKEN_APPLICATION_PRIORITY 1
 
-#elif PLATFORM_BL602
+#elif PLATFORM_BL602 && !PLATFORM_BL_NEW
 
 #include <FreeRTOS.h>
 #include <task.h>
@@ -963,7 +963,7 @@ OSStatus rtos_suspend_thread(beken_thread_t thread);
 #define GLOBAL_INT_DISABLE()		;
 #define GLOBAL_INT_RESTORE()		;
 
-#elif PLATFORM_BL616
+#elif PLATFORM_BL616 || PLATFORM_BL602
 
 #include "FreeRTOS.h"
 #include "task.h"
@@ -971,9 +971,11 @@ OSStatus rtos_suspend_thread(beken_thread_t thread);
 #include "queue.h"
 #include "event_groups.h"
 #include "mm.h"
+#if PLATFORM_BL616
 #include "utils/includes.h"
 
 #include "utils/common.h"
+#endif
 
 #include "lwip/err.h"
 #include "lwip/sockets.h"
@@ -1027,7 +1029,7 @@ OSStatus rtos_suspend_thread(beken_thread_t* thread);
 //#define GLOBAL_INT_DISABLE()		;
 //#define GLOBAL_INT_RESTORE()		;
 
-#define OBK_OTA_EXTENSION ".img"
+#define OBK_OTA_EXTENSION ".bin.xz.ota"
 
 #else
 

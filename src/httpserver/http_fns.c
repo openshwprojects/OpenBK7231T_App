@@ -28,7 +28,7 @@
 
 #ifdef WINDOWS
 // nothing
-#elif PLATFORM_BL602
+#elif PLATFORM_BL602 && !PLATFORM_BL_NEW
 #include <bl_sys.h>
 #include <bl_adc.h>     //  For BL602 ADC HAL
 #include <bl602_adc.h>  //  For BL602 ADC Standard Driver
@@ -984,7 +984,7 @@ typedef enum {
 			s = "Sleep Timer";
 		hprintf255(request, "<h5>Reboot reason: %i - %s</h5>", g_rebootReason, s);
 	}
-#elif PLATFORM_BL602
+#elif PLATFORM_BL602 && !PLATFORM_BL_NEW
 	char reason[26];
 	bl_sys_rstinfo_getsting(reason);
 	hprintf255(request, "<h5>Reboot reason: %s</h5>", reason);
@@ -1472,7 +1472,7 @@ int http_fn_cfg_wifi(http_request_t* request) {
 #ifdef WINDOWS
 
 		poststr(request, "Not available on Windows<br>");
-#elif PLATFORM_BL602
+#elif PLATFORM_BL602 && !PLATFORM_BL_NEW
                wifi_mgmr_ap_item_t *ap_info;
                uint32_t i, ap_num;
 
@@ -1919,6 +1919,12 @@ HassDeviceInfo *hass_createEnumChannelInfo(int i) {
 	os_free(options);
 	return dev_info;
 }
+
+#if PLATFORM_BL_NEW
+extern void* _os_malloc(size_t size);
+extern void _os_free(void* ptr);
+#endif
+
 void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 	int i;
 	int relayCount;
@@ -1965,7 +1971,7 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 	ledDriverChipRunning = 0;
 #endif
 
-#if PLATFORM_TXW81X
+#if PLATFORM_TXW81X || PLATFORM_BL_NEW
 	hooks.malloc_fn = _os_malloc;
 	hooks.free_fn = _os_free;
 #else

@@ -5,11 +5,17 @@
 #include "../../logging/logging.h"
 #include "stdbool.h"
 #include "stdint.h"
+#include "wifi_mgmr_ext.h"
+#include "async_event.h"
+#if PLATFORM_BL616
 #include "fhost.h"
 #include "fhost_api.h"
 #include "wifi_mgmr.h"
-#include "wifi_mgmr_ext.h"
-#include "async_event.h"
+#else
+static wifi_conf_t conf = {
+	.country_code = "CN",
+};
+#endif
 
 static char g_ipStr[16] = "unknown";
 static char g_gwStr[16] = "unknown";
@@ -27,7 +33,17 @@ const char* HAL_GetMyIPString()
 	uint32_t mask;
 	uint32_t dns1;
 
-	wifi_sta_ip4_addr_get(&ip, &gw, &mask, &dns1);
+	if(g_bAccessPointMode == 1)
+	{
+		struct netif* netif = fhost_to_net_if(1);
+		ip = netif_ip4_addr(netif)->addr;
+		mask = netif_ip4_netmask(netif)->addr;
+		gw = netif_ip4_gw(netif)->addr;
+	}
+	else
+	{
+		wifi_sta_ip4_addr_get(&ip, &gw, &mask, &dns1);
+	}
 
 	strcpy(g_ipStr, inet_ntoa(ip));
 	strcpy(g_gwStr, inet_ntoa(gw));
@@ -75,7 +91,11 @@ const char* HAL_GetMACStr(char* macstr)
 int HAL_GetWifiStrength()
 {
 	int rssi = -1;
+#if PLATFORM_BL602
+	wifi_mgmr_rssi_get(&rssi);
+#else
 	wifi_mgmr_sta_rssi_get(&rssi);
+#endif
 	return rssi;
 }
 
@@ -102,11 +122,15 @@ void wifi_event_handler(async_input_event_t ev, void* priv)
 
 	switch(code)
 	{
-		case CODE_WIFI_ON_INIT_DONE: wifi_mgmr_task_start(); break;
+		case CODE_WIFI_ON_INIT_DONE:
+#if PLATFORM_BL616
+			wifi_mgmr_task_start();
+#endif
+			break;
 		case CODE_WIFI_ON_MGMR_DONE: wifi_init_done = 1; break;
 		case CODE_WIFI_ON_SCAN_DONE: break;
 		case CODE_WIFI_ON_CONNECTING:
-			xTaskCreate(wifi_cb_task, "wifi_cg", 128, (void*)WIFI_STA_CONNECTING, 10, NULL);
+			xTaskCreate(wifi_cb_task, "wifi_cg", 256, (void*)WIFI_STA_CONNECTING, 10, NULL);
 			break;
 		case CODE_WIFI_ON_CONNECTED: break;
 		case CODE_WIFI_ON_GOT_IP:
@@ -119,7 +143,7 @@ void wifi_event_handler(async_input_event_t ev, void* priv)
 		case CODE_WIFI_ON_GOT_IP_TIMEOUT:
 #endif
 		case CODE_WIFI_ON_DISCONNECT:
-			xTaskCreate(wifi_cb_task, "wifi_ct", 128, (void*)WIFI_STA_DISCONNECTED, 10, NULL);
+			xTaskCreate(wifi_cb_task, "wifi_ct", 256, (void*)WIFI_STA_DISCONNECTED, 10, NULL);
 			break;
 		case CODE_WIFI_ON_AP_STARTED:
 			printf("CODE_WIFI_ON_AP_STARTED\r\n"); break;
@@ -142,7 +166,11 @@ void wifi_start_firmware(void)
 	async_register_event_filter(EV_WIFI, wifi_event_handler, NULL);
 	wifi_task_create();
 	fhost_init();
+#if PLATFORM_BL616
 	wifi_mgmr_init();
+#else
+	wifi_mgmr_init(&conf);
+#endif
 	while(!wifi_init_done)
 	{
 		vTaskDelay(1);
@@ -178,7 +206,7 @@ void HAL_ConnectToWiFi(const char* oob_ssid, const char* connect_key, obkStaticI
 		netif_set_hostname(netif, CFG_GetDeviceName());
 	}
 #if PLATFORM_BL602
-	wifi_interface = wifi_mgmr_sta_enable();
+	wifi_interface_t wifi_interface = wifi_mgmr_sta_enable();
 	wifi_mgmr_sta_connect_mid(wifi_interface, (char*)oob_ssid, (char*)connect_key, NULL, NULL, 0, 0, ip->localIPAddr[0] == 0 ? 1 : 0, WIFI_CONNECT_PMF_CAPABLE);
 #else
 	wifi_sta_connect((char*)oob_ssid, (char*)connect_key, NULL, NULL, 1, 0, 0, ip->localIPAddr[0] == 0 ? 1 : 0);
@@ -187,7 +215,11 @@ void HAL_ConnectToWiFi(const char* oob_ssid, const char* connect_key, obkStaticI
 
 void HAL_DisconnectFromWifi()
 {
+#if PLATFORM_BL602
+	wifi_mgmr_sta_disconnect();
+#else
 	wifi_sta_disconnect();
+#endif
 }
 
 int HAL_SetupWiFiOpenAccessPoint(const char* ssid)

@@ -6,7 +6,8 @@ sdk_set_main_file(main.c)
 
 sdk_add_compile_definitions(
 	-DPLATFORM_BL_NEW=1
-	-DPLATFORM_BL616=1
+	-DPLATFORM_BL602=1
+	-DDHCPD_SERVER_IP="192.168.4.1"
 	-DLFS_THREADSAFE
 )
 sdk_add_compile_options(

@@ -860,7 +860,7 @@ void SPIDMA_Init(struct spi_message* msg)
 		case 12:
 		case 16:
 		case 20:
-			GLB_Swap_SPI_0_MOSI_With_MISO(DISABLE);
+			GLB_Swap_SPI_0_MOSI_With_MISO(0);
 			break;
 		case 1:
 		case 5:
@@ -868,7 +868,7 @@ void SPIDMA_Init(struct spi_message* msg)
 		case 13:
 		case 17:
 		case 21:
-			GLB_Swap_SPI_0_MOSI_With_MISO(ENABLE);
+			GLB_Swap_SPI_0_MOSI_With_MISO(1);
 			break;
 		default: return;
 	}

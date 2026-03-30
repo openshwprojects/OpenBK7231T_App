@@ -1,4 +1,4 @@
-#ifdef PLATFORM_BL602
+#if PLATFORM_BL602 || PLATFORM_BL616
 
 #include "../hal_flashConfig.h"
 #include "../../logging/logging.h"

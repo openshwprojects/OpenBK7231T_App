@@ -52,7 +52,7 @@
 
 void bg_register_irda_check_func(FUNCPTR func);
 extern void WFI(void);
-#elif PLATFORM_BL602
+#elif PLATFORM_BL602 && !PLATFORM_BL_NEW
 #include <bl_sys.h>
 #include <hosal_adc.h>
 #include <bl_wdt.h>
@@ -191,7 +191,7 @@ pid_t _getpid()
 
 #endif
 
-#if PLATFORM_BL602
+#if PLATFORM_BL602 && !PLATFORM_BL_NEW
 /// Read the Internal Temperature Sensor as Float. Returns 0 if successful.
 /// Based on bl_tsen_adc_get in https://github.com/lupyuen/bl_iot_sdk/blob/master/components/hal_drv/bl602_hal/bl_adc.c#L224-L282
 static int get_tsen_adc(
@@ -764,7 +764,7 @@ void Main_OnEverySecond()
 #else
 		g_wifi_temperature = (-0.457f * temperature) + 188.474f;
 #endif
-#elif PLATFORM_BL602
+#elif PLATFORM_BL602 && !PLATFORM_BL_NEW
 		get_tsen_adc(&g_wifi_temperature, 0);
 #elif PLATFORM_LN882H
 		// this is set externally, I am just leaving comment here
@@ -814,7 +814,7 @@ void Main_OnEverySecond()
 #ifndef OBK_DISABLE_ALL_DRIVERS
 	DRV_OnEverySecond();
 #if defined(PLATFORM_BEKEN) || defined(WINDOWS) || defined(PLATFORM_BL602) || defined(PLATFORM_ESPIDF) \
- || defined (PLATFORM_RTL87X0C) || PLATFORM_ESP8266
+ || defined (PLATFORM_RTL87X0C) || PLATFORM_ESP8266 && !PLATFORM_BL_NEW
 	UART_RunEverySecond();
 #endif
 #endif

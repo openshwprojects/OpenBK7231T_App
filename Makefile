@@ -400,6 +400,15 @@ prebuild_OpenBL616: berry
 	else echo "prebuild for OpenBL616 not found ... "; \
 	fi
 
+prebuild_OpenBL602_ALT: berry
+	git submodule update --init --recursive --depth=1 sdk/bouffalo_sdk
+	if [ ! -e platforms/BL616/gcc ]; then cd platforms/BL616 && git clone https://github.com/bouffalolab/toolchain_gcc_t-head_linux.git gcc --depth=1; fi 
+	@if [ -e platforms/BL602_ALT/pre_build.sh ]; then \
+		echo "prebuild found for OpenBL602_ALT"; \
+		sh platforms/BL602_ALT/pre_build.sh; \
+	else echo "prebuild for OpenBL602_ALT not found ... "; \
+	fi
+
 prebuild_OpenRDA5981: berry
 ifdef GITHUB_ACTIONS
 	# just so that there would be no cache error
@@ -761,6 +770,13 @@ OpenBL616: prebuild_OpenBL616
 	mkdir -p output/$(APP_VERSION)
 	cp ./platforms/BL616/build/build_out/OpenBeken_bl616.bin output/$(APP_VERSION)/OpenBL616_${APP_VERSION}.bin
 	cp ./platforms/BL616/build/build_out/OpenBeken_bl616.xz.ota output/$(APP_VERSION)/OpenBL616_${APP_VERSION}_OTA.bin.xz.ota
+
+.PHONY: OpenBL602_ALT
+OpenBL602_ALT: prebuild_OpenBL602_ALT
+	cd ./platforms/BL602_ALT && PATH="$(PATH):$(PWD)/platforms/BL616/gcc/bin" $(MAKE) CHIP=bl602 BOARD=bl602dk APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT)
+	mkdir -p output/$(APP_VERSION)
+	dd conv=notrunc bs=1K skip=4 if=platforms/BL602_ALT/build/build_out/OpenBeken_bl602.bin of=output/$(APP_VERSION)/OpenBL602_ALT_${APP_VERSION}.bin
+	cp ./platforms/BL602_ALT/build/build_out/OpenBeken_bl602.xz.ota output/$(APP_VERSION)/OpenBL602_ALT_${APP_VERSION}_OTA.bin.xz.ota
 
 # Add custom Makefile if required
 -include custom.mk

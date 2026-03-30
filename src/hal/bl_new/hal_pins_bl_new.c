@@ -6,9 +6,9 @@
 #include "../hal_pins.h"
 
 #include "bflb_gpio.h"
+#include "bflb_clock.h"
 #if PLATFORM_BL616
 #include "bl616_glb_gpio.h"
-#include "bflb_clock.h"
 #include "bflb_pwm_v2.h"
 #define CHECK_PAD(x) if(GLB_GPIO_Pad_LeadOut_Sts((uint8_t)x) == RESET) return
 #define PWM_NAME "pwm_v2_0"
@@ -16,6 +16,8 @@ static uint32_t pwmfreq = 0;
 #else
 #include "bflb_pwm_v1.h"
 #define PWM_NAME "pwm_v1"
+#define CHECK_PAD(x)
+static uint32_t pwm_periods[5];
 #endif
 
 static struct bflb_device_s* gpio;
@@ -96,7 +98,9 @@ void HAL_PIN_PWM_Stop(int index)
 	{
 		return;
 	}
+#if PLATFORM_BL616
 	bflb_pwm_v2_channel_positive_stop(dpwm, pwm);
+#endif
 }
 
 void HAL_PIN_PWM_Start(int index, int freq)
@@ -112,6 +116,7 @@ void HAL_PIN_PWM_Start(int index, int freq)
 	{
 		return;
 	}
+	bflb_gpio_init(gpio, (uint8_t)index, GPIO_FUNC_PWM0 | GPIO_ALTERNATE | GPIO_PULLUP | GPIO_SMT_EN | GPIO_DRV_1);
 #if PLATFORM_BL616 || defined(BL702L)
 	if(freq != pwmfreq)
 	{
@@ -130,12 +135,19 @@ void HAL_PIN_PWM_Start(int index, int freq)
 		bflb_pwm_v2_init(dpwm, &cfg);
 		bflb_pwm_v2_start(dpwm);
 	}
-	bflb_gpio_init(gpio, (uint8_t)index, GPIO_FUNC_PWM0 | GPIO_ALTERNATE | GPIO_PULLUP | GPIO_SMT_EN | GPIO_DRV_1);
 	struct bflb_pwm_v2_channel_config_s ch_cfg = {
 		.positive_polarity = PWM_POLARITY_ACTIVE_HIGH,
 	};
 
 	bflb_pwm_v2_channel_init(dpwm, pwm, &ch_cfg);
+#elif PLATFORM_BL602
+	struct bflb_pwm_v1_channel_config_s cfg = {
+		.clk_source = BFLB_SYSTEM_XCLK,
+		.clk_div = 32,
+		.period = freq,
+	};
+	pwm_periods[pwm] = freq;
+	bflb_pwm_v1_channel_init(dpwm, pwm, &cfg);
 #endif
 }
 
@@ -157,8 +169,14 @@ void HAL_PIN_PWM_Update(int index, float value)
 		value = 100;
 
 #if PLATFORM_BL616
-	bflb_pwm_v2_channel_set_threshold(dpwm, pwm, 0, value * 10);
+	uint32_t threshold = (uint32_t)((value / 100.0f) * pwmfreq);
+	bflb_pwm_v2_channel_set_threshold(dpwm, pwm, 0, threshold);
 	bflb_pwm_v2_channel_positive_start(dpwm, pwm);
+#elif PLATFORM_BL602
+	uint32_t period = pwm_periods[pwm];
+	uint32_t threshold = (uint32_t)((value / 100.0f) * period);
+	bflb_pwm_v1_channel_set_threshold(dpwm, pwm, 0, value * 10);
+	bflb_pwm_v1_start(dpwm, pwm);
 #endif
 }
 

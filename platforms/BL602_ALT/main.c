@@ -1,25 +1,19 @@
 #include "board.h"
 #include "FreeRTOS.h"
 #include "task.h"
-#include "bl_fw_api.h"
-#include "fhost_api.h"
 #include "wifi_mgmr_ext.h"
-#include "wifi_mgmr.h"
 #include "bflb_adc.h"
 #include "bflb_efuse.h"
 #include "bflb_mtd.h"
 #include "rfparam_adapter.h"
 #include "mm.h"
+#include <lwip/tcpip.h>
 
 extern void Main_Init();
 extern void Main_OnEverySecond();
 struct bflb_device_s* adc;
 float g_wifi_temperature = 0.0f;
 void* __dso_handle = NULL;
-
-void stats_display(void) {}
-
-#include <lwip/tcpip.h>
 void* _os_malloc(size_t size)
 {
 	return kmalloc(size, MM_FLAG_ALIGN_32BYTE);

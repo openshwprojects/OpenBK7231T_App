@@ -19,7 +19,7 @@
 #include "typedef.h"
 #include "flash_pub.h"
 
-#elif PLATFORM_BL602
+#elif PLATFORM_BL602 && !PLATFORM_BL_NEW
 
 #include <bl_flash.h>
 #include <bl_mtd.h>
