@@ -1158,5 +1158,124 @@ static inline int get_sex_biits_offset(int value, int *out, int max_out, int off
 
 
 
+
+// ============================================================
+// ENCODE
+// ============================================================
+// Pack (a,b) -> uint64_t + optional hex string (16 chars + null)
+//
+// outHex:
+//   - có thể NULL (nếu không cần string)
+//   - nếu != NULL thì outLen phải >= 17
+//
+// return:
+//   - uint64_t packed value
+// ============================================================
+uint64_t encodeBits64_prod(int32_t a, int32_t b, char *outHex, size_t outLen)
+{
+    // pack: a = high 32-bit, b = low 32-bit
+    uint64_t x =
+        ((uint64_t)(uint32_t)a << 32) |
+        (uint32_t)b;
+
+    // encode hex nếu buffer hợp lệ
+    if (outHex != NULL) {
+        if (outLen < 17) {
+            // không đủ buffer → fail silent nhưng không ghi bậy
+            // (giữ behavior non-breaking)
+            return x;
+        }
+
+        static const char HEX[] = "0123456789ABCDEF";
+
+        // encode từ MSB → LSB (big-endian string)
+        for (int i = 0; i < 16; i++) {
+            int shift = (15 - i) * 4;
+            outHex[i] = HEX[(x >> shift) & 0xF];
+        }
+
+        outHex[16] = '\0';
+    }
+
+    return x;
+}
+
+// ============================================================
+// DECODE (ALL-IN-ONE, NO HELPER)
+// ============================================================
+// return:
+//   >=0 : số bit = 1
+//   -1  : null input
+//   -2  : sai length (phải = 16)
+//   -3  : ký tự hex không hợp lệ
+//   -4  : output buffer không đủ (bị truncate)
+// ============================================================
+static inline int decodeBits64_prod(const char *hex, int *out, int maxOut)
+{
+    if (!hex || !out || maxOut <= 0)
+        return -1;
+
+    // ---- safe length check (max 17 byte scan) ----
+    size_t len = 0;
+    for (; len < 17; len++) {
+        if (hex[len] == '\0')
+            break;
+    }
+    if (len != 16)
+        return -2;
+    // ---------------------------------------------
+
+    uint64_t x = 0;
+
+    // ---- parse hex ----
+    for (int i = 0; i < 16; i++) {
+        char c = hex[i];
+        x <<= 4;
+
+        if (c >= '0' && c <= '9')
+            x |= (uint64_t)(c - '0');
+        else if (c >= 'A' && c <= 'F')
+            x |= (uint64_t)(c - 'A' + 10);
+        else if (c >= 'a' && c <= 'f')
+            x |= (uint64_t)(c - 'a' + 10);
+        else
+            return -3;
+    }
+
+    int count = 0;
+    int overflow = 0;
+
+    // ---- extract bits ----
+    while (x) {
+        int idx;
+
+        #if defined(__GNUC__) || defined(__clang__)
+            idx = __builtin_ctzll(x);
+        #else
+            // inline fallback ctz
+            uint64_t tmp = x;
+            idx = 0;
+            while ((tmp & 1ULL) == 0) {
+                tmp >>= 1;
+                idx++;
+            }
+        #endif
+
+        if (count < maxOut) {
+            out[count++] = idx;
+        } else {
+            overflow = 1;
+        }
+
+        x &= (x - 1); // clear lowest set bit
+    }
+
+    if (overflow)
+        return -4;
+
+    return count;
+}
+
+
 #endif /* __NEW_COMMON_H__ */
 
