@@ -12,9 +12,10 @@
 #include "../libraries/obktime/obktime.h"	// for time functions
 
 
-uint8_t phys_min;
-uint8_t phys_hour;
-uint8_t phys_sec;
+static uint8_t phys_min;
+static uint8_t phys_hour;
+static uint8_t phys_sec;
+static uint8_t phys_resolution;
 
 void PulseClock_onEverySec() {
     TimeComponents tc;
@@ -83,8 +84,9 @@ static commandResult_t Cmd_SetPhysTime(const void* context, const char* cmd, con
 
 
 void PulseClock_init() {
+	phys_resolution = Tokenizer_GetArgIntegerDefault(1, 60);
     phys_min=phys_hour=0xff;
-    addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "PulseClock: init\n");
+    addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "PulseClock: init, resolution=%i\n", phys_resolution);
 	CMD_RegisterCommand("PulseClock_SetPhysTime", Cmd_SetPhysTime, NULL);
 }
 
