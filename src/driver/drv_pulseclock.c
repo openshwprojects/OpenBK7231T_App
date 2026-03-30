@@ -16,7 +16,7 @@ static uint32_t phys_daysec;
 static uint32_t phys_resolution;
 
 uint32_t HMSToDaysec(uint8_t hour, uint8_t minute, uint8_t second) {
-    return (hour * 60 * 60) + (minute * 60) + (second);
+    return (hour * 3600) + (minute * 60) + (second);
 }
 
 uint8_t DaysecToHour(uint32_t daysec) {
@@ -24,7 +24,7 @@ uint8_t DaysecToHour(uint32_t daysec) {
 }
 
 uint8_t DaysecToMinute(uint32_t daysec) {
-    return (daysec % 3660) / 60;
+    return (daysec % 3600) / 60;
 }
 
 uint8_t DaysecToSecond(uint32_t daysec) {
@@ -64,7 +64,14 @@ void PulseClock_onEverySec() {
 
     if (phys_daysec != ntp_daysec)
     {
-        addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "PulseClock: Advance");
+        if ((phys_daysec / phys_resolution) % 2)
+        {
+            addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "PulseClock: Advance odd tick");
+        }
+        else
+        {
+            addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "PulseClock: Advance even tick");
+        }
         phys_daysec += phys_resolution;
         phys_daysec %= 86400;
     }
