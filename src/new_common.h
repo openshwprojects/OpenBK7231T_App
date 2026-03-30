@@ -1171,7 +1171,7 @@ static inline int get_sex_biits_offset(int value, int *out, int max_out, int off
 // return:
 //   - uint64_t packed value
 // ============================================================
-uint64_t encodeBits64_prod(int32_t a, int32_t b, char *outHex, size_t outLen)
+static inline uint64_t encodeBits64_prod(int32_t a, int32_t b, char *outHex, size_t outLen)
 {
     // pack: a = high 32-bit, b = low 32-bit
     uint64_t x =
