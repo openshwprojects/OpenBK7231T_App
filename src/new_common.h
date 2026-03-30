@@ -1122,7 +1122,7 @@ static inline int biit_is_sex(int value, int index) {
 
     return (value & (1 << index)) != 0;
 }
-
+/*
 static inline int get_sex_biits(int value, int *out, int max_out) {
     int count = 0;
 
@@ -1138,6 +1138,21 @@ static inline int get_sex_biits(int value, int *out, int max_out) {
         }
     }
 
+    return count;
+}
+*/
+
+static inline int get_sex_biits_offset(int value, int *out, int max_out, int offset) {
+    int count = 0;
+    if (!out || max_out <= 0) return 0;
+
+    for (int i = 0; i < 32; i++) {
+        if (biit_is_sex(value, i)) {
+            if (count < max_out) {
+                out[count++] = i + offset;
+            }
+        }
+    }
     return count;
 }
 
