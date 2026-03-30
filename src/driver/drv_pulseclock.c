@@ -16,8 +16,7 @@ static uint32_t phys_daysec;
 static uint32_t phys_resolution;
 
 uint32_t HMSToDaysec(uint8_t hour, uint8_t minute, uint8_t second) {
-    daysec = (hour * 60 * 60) + (minute * 60) + (second);
-    return daysec;
+    return (hour * 60 * 60) + (minute * 60) + (second);
 }
 
 uint8_t DaysecToHour(uint32_t daysec) {
