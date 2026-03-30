@@ -63,7 +63,7 @@ void PulseClock_onEverySec() {
     {
         addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "PulseClock: Advance");
         phys_daysec += phys_resolution;
-        phys_daysec %= phys_resolution;
+        phys_daysec %= 86400;
     }
 }
 
