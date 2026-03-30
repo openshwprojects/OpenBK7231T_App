@@ -24,6 +24,7 @@ void PulseClock_onEverySec() {
     ntpTime=(time_t)TIME_GetCurrentTime();
     tc=calculateComponents((uint32_t)ntpTime);
 
+    // is device time set ?
     if (tc.year < 2026)
         return;
 
@@ -36,7 +37,7 @@ void PulseClock_onEverySec() {
     if (tc.minute != phys_min || tc.hour != phys_hour)
     {
         str[0]=0;
-        sprintf(str, "PulseClock: New time: %i:%i, Phys time: %i:%i\n", tc.hour, tc.minute, phys_hour, phys_min);
+        sprintf(str, "PulseClock: New time: %i:%i:%i, Phys time: %i:%i:%i\n", tc.hour, tc.minute, tc.second, phys_hour, phys_min, phys_sec);
 
         addLogAdv(LOG_INFO, LOG_FEATURE_DRV, str);
     }
@@ -61,12 +62,29 @@ void PulseClock_AppendInformationToHTTPIndexPage(http_request_t* request, int bP
 	if (bPreState)
 		return;
 
-    addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "PulseClock: indexpage");
     hprintf255(request, "<h5>PulseClock: phystime=%02i:%02i:%02i</h5>", phys_hour, phys_min, phys_sec);
 }
+
+
+static commandResult_t Cmd_SetPhysTime(const void* context, const char* cmd, const char* args, int cmdFlags) {
+    int arg;
+    char str[64];
+	Tokenizer_TokenizeString(args, 0);
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 3)) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+	phys_hour = Tokenizer_GetArgInteger(0);
+	phys_min = Tokenizer_GetArgInteger(1);
+	phys_sec = Tokenizer_GetArgInteger(2);
+
+    addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "PulseClock: PhysTime updated\n");
+    return CMD_RES_OK;
+}
+
 
 void PulseClock_init() {
     phys_min=phys_hour=0xff;
     addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "PulseClock: init\n");
+	CMD_RegisterCommand("PulseClock_SetPhysTime", Cmd_SetPhysTime, NULL);
 }
 
