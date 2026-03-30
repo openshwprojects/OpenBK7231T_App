@@ -1957,7 +1957,7 @@ commandResult_t MQTT_PublishAll(const void* context, const char* cmd, const char
 
         // parse indices từ token 1 trở đi
 		if (argc>2 || strncmp(arg0,"all",3)!=0){
-			count = INT_MAX;//*** max int đi
+			count = 2147483647;//INT_MAX;//*** max int đi
 		}
 
         uint8_t leh[64] = {0x01, 0x01, 0x02, 0x05, 0x01};
@@ -3411,7 +3411,7 @@ void MQTT_BuildAndPublishBatch_ByIndex(int *indices, int count, uint8_t* leh, in
     // =====================================================
 
 	if (!indices ){
-		if (count == INT_MAX ){
+		if (count == 2147483647  ){ //INT_MAX
 			count=0;//reset 
 			int argc = Tokenizer_GetArgsCount();
 			for (int i = 1; i < argc; i++) {
