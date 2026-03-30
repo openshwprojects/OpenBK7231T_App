@@ -12,50 +12,59 @@
 #include "../libraries/obktime/obktime.h"	// for time functions
 
 
-static uint8_t phys_min;
-static uint8_t phys_hour;
-static uint8_t phys_sec;
-static uint8_t phys_resolution;
+static uint32_t phys_daysec;
+static uint32_t phys_resolution;
+
+uint32_t HMSToDaysec(uint8_t hour, uint8_t minute, uint8_t second) {
+    daysec = (hour * 60 * 60) + (minute * 60) + (second);
+    return daysec;
+}
+
+uint8_t DaysecToHour(uint32_t daysec) {
+    return daysec / 3600;
+}
+
+uint8_t DaysecToMinute(uint32_t daysec) {
+    return (daysec % 3660) / 60;
+}
+
+uint8_t DaysecToSecond(uint32_t daysec) {
+    return (daysec % 60);
+}
 
 void PulseClock_onEverySec() {
     TimeComponents tc;
     time_t ntpTime;
     char str[64];
+    uint32_t ntp_daysec;
 
     ntpTime=(time_t)TIME_GetCurrentTime();
     tc=calculateComponents((uint32_t)ntpTime);
+    ntp_daysec=HMSToDaysec(tc.hour, tc.minute, tc.second);
+    ntp_daysec -= ntp_daysec % phys_resolution;
 
     // is device time set ?
     if (tc.year < 2026)
         return;
 
-    if (phys_min == 0xff || phys_hour==0xff)
+    if (phys_daysec == 0xffffffff)
     {
-        phys_min=tc.minute;
-        phys_hour=tc.hour;
+        phys_daysec=ntp_daysec;
     }
 
-    if (tc.minute != phys_min || tc.hour != phys_hour)
+    if (phys_daysec != ntp_daysec)
     {
         str[0]=0;
-        sprintf(str, "PulseClock: New time: %i:%i:%i, Phys time: %i:%i:%i\n", tc.hour, tc.minute, tc.second, phys_hour, phys_min, phys_sec);
+        sprintf(str, "PulseClock: NTP time: %i, Phys time: %i\n", ntp_daysec, phys_daysec);
 
         addLogAdv(LOG_INFO, LOG_FEATURE_DRV, str);
     }
 
-    if (tc.minute != phys_min || tc.hour != phys_hour)
+    if (phys_daysec != ntp_daysec)
     {
-        addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "PulseClock: Advance minute");
-        phys_min ++;
-        if (phys_min > 59)
-        {
-            phys_min=0;
-            phys_hour++;
-            if (phys_hour > 23)
-            {
-                phys_hour=0;
-            }
-        }
+        addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "PulseClock: Advance");
+        phys_daysec += phys_resolution;
+        phys_daysec %= phys_resolution;
     }
 }
 
@@ -63,29 +72,31 @@ void PulseClock_AppendInformationToHTTPIndexPage(http_request_t* request, int bP
 	if (bPreState)
 		return;
 
-    hprintf255(request, "<h5>PulseClock: phystime=%02i:%02i:%02i</h5>", phys_hour, phys_min, phys_sec);
+    hprintf255(request, "<h5>PulseClock: phystime=%i</h5>", phys_daysec);
 }
 
 
 static commandResult_t Cmd_SetPhysTime(const void* context, const char* cmd, const char* args, int cmdFlags) {
     int arg;
-    char str[64];
 	Tokenizer_TokenizeString(args, 0);
 	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 3)) {
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
-	phys_hour = Tokenizer_GetArgInteger(0);
-	phys_min = Tokenizer_GetArgInteger(1);
-	phys_sec = Tokenizer_GetArgInteger(2);
+    
+    phys_daysec=HMSToDaysec(
+            Tokenizer_GetArgInteger(0),
+            Tokenizer_GetArgInteger(1),
+            Tokenizer_GetArgInteger(2)
+            );
 
-    addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "PulseClock: PhysTime updated\n");
+    addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "PulseClock: PhysTime updated to %i\n",phys_daysec);
     return CMD_RES_OK;
 }
 
 
 void PulseClock_init() {
 	phys_resolution = Tokenizer_GetArgIntegerDefault(1, 60);
-    phys_min=phys_hour=0xff;
+    phys_daysec=0xffffffff;
     addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "PulseClock: init, resolution=%i\n", phys_resolution);
 	CMD_RegisterCommand("PulseClock_SetPhysTime", Cmd_SetPhysTime, NULL);
 }
