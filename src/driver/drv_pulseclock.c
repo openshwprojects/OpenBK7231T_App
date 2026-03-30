@@ -34,7 +34,6 @@ uint8_t DaysecToSecond(uint32_t daysec) {
 void PulseClock_onEverySec() {
     TimeComponents tc;
     time_t ntpTime;
-    char str[64];
     uint32_t ntp_daysec;
 
     ntpTime=(time_t)TIME_GetCurrentTime();
@@ -53,17 +52,11 @@ void PulseClock_onEverySec() {
 
     if (phys_daysec != ntp_daysec)
     {
-        str[0]=0;
-        sprintf(str, "PulseClock: ntp_time=%i:%i:%i, phys_time=%i:%i:%i\n", 
+        addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "PulseClock: ntp_time=%02i:%02i:%02i, phys_time=%02i:%02i:%02i\n", 
                 DaysecToHour(ntp_daysec), DaysecToMinute(ntp_daysec), DaysecToSecond(ntp_daysec), 
                 DaysecToHour(phys_daysec), DaysecToMinute(phys_daysec), DaysecToSecond(phys_daysec) 
                );
 
-        addLogAdv(LOG_INFO, LOG_FEATURE_DRV, str);
-    }
-
-    if (phys_daysec != ntp_daysec)
-    {
         if ((phys_daysec / phys_resolution) % 2)
         {
             addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "PulseClock: Advance odd tick");
@@ -81,7 +74,7 @@ void PulseClock_AppendInformationToHTTPIndexPage(http_request_t* request, int bP
 	if (bPreState)
 		return;
 
-    hprintf255(request, "<h5>PulseClock: phystime=%i:%i:%i</h5>", DaysecToHour(phys_daysec), DaysecToMinute(phys_daysec), DaysecToSecond(phys_daysec));
+    hprintf255(request, "<h5>PulseClock: phystime=%02i:%02i:%02i</h5>", DaysecToHour(phys_daysec), DaysecToMinute(phys_daysec), DaysecToSecond(phys_daysec));
 }
 
 
@@ -99,7 +92,7 @@ static commandResult_t Cmd_SetPhysTime(const void* context, const char* cmd, con
             );
     phys_daysec -= phys_daysec % phys_resolution;
 
-    addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "PulseClock: PhysTime updated to %i",phys_daysec);
+    addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "PulseClock: PhysTime updated to %02i:%02i:%02i",DaysecToHour(phys_daysec), DaysecToMinute(phys_daysec), DaysecToSecond(phys_daysec));
     return CMD_RES_OK;
 }
 
