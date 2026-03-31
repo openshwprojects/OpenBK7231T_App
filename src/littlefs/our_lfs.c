@@ -185,7 +185,7 @@ static commandResult_t CMD_LFS_Size(const void *context, const char *cmd, const 
     // double check again that we're within bounds - don't want
     // boot overwrite or anything nasty....
     if ((newstart < LFS_BLOCKS_START_MIN) || (newstart >= LFS_BLOCKS_END)){
-        ADDLOG_ERROR(LOG_FEATURE_CMD, "LFSSize OUT OF BOUNDS start 0x%X ", newstart);
+        ADDLOG_ERROR(LOG_FEATURE_CMD, "LFSSize OUT OF BOUNDS start 0x%X", newstart);
         return CMD_RES_ERROR;
     }
     if ((newstart + newsize > LFS_BLOCKS_END) ||

@@ -711,9 +711,9 @@ void apply_smart_light() {
 
 void led_gamma_list (void) { // list RGB gamma settings
 	led_gamma_enable_channel_messages = 1;
-	addLogAdv (LOG_INFO, LOG_FEATURE_CFG, "RGB  cal %f %f %f",
+	addLogAdv (LOG_INFO, LOG_FEATURE_CFG, "RGB cal %f %f %f",
 		g_cfg.led_corr.rgb_cal[0], g_cfg.led_corr.rgb_cal[1], g_cfg.led_corr.rgb_cal[2]);
-	addLogAdv (LOG_INFO, LOG_FEATURE_CFG, "LED  gamma %.2f  brtMinRGB %.2f%%  brtMinCW %.2f%%",
+	addLogAdv (LOG_INFO, LOG_FEATURE_CFG, "LED gamma %.2f brtMinRGB %.2f%% brtMinCW %.2f%%",
 		g_cfg.led_corr.led_gamma, g_cfg.led_corr.rgb_bright_min, g_cfg.led_corr.cw_bright_min);
 }
 

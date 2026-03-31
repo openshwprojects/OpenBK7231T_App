@@ -34,7 +34,7 @@ commandResult_t SHT3X_Calibrate(const void* context, const char* cmd, const char
 	g_caltemp = Tokenizer_GetArgFloat(0);
 	g_calhum = Tokenizer_GetArgFloat(1);
 
-	ADDLOG_INFO(LOG_FEATURE_SENSOR, "Calibrate SHT: Calibration done temp %f and humidity %f ", g_caltemp, g_calhum);
+	ADDLOG_INFO(LOG_FEATURE_SENSOR, "Calibrate SHT: Calibration done temp %f and humidity %f", g_caltemp, g_calhum);
 
 	return CMD_RES_OK;
 }
@@ -207,7 +207,7 @@ commandResult_t SHT3X_Measure(const void* context, const char* cmd, const char* 
 }
 // StopDriver SHT3X
 void SHT3X_StopDriver() {
-	addLogAdv(LOG_INFO, LOG_FEATURE_SENSOR, "SHT3X : Stopping Driver and reset sensor");
+	addLogAdv(LOG_INFO, LOG_FEATURE_SENSOR, "SHT3X: Stopping Driver and reset sensor");
 	SHT3X_StopPer();
 	// Reset the sensor
 	Soft_I2C_Start(&g_softI2C, SHT3X_I2C_ADDR);
@@ -217,7 +217,7 @@ void SHT3X_StopDriver() {
 }
 
 commandResult_t SHT3X_StopPerCmd(const void* context, const char* cmd, const char* args, int cmdFlags) {
-	addLogAdv(LOG_INFO, LOG_FEATURE_SENSOR, "SHT3X : Stopping periodical capture");
+	addLogAdv(LOG_INFO, LOG_FEATURE_SENSOR, "SHT3X: Stopping periodical capture");
 	SHT3X_StopPer();
 	return CMD_RES_OK;
 }
@@ -232,7 +232,7 @@ void SHT3X_GetStatus()
 	Soft_I2C_Start(&g_softI2C, SHT3X_I2C_ADDR | 1);
 	Soft_I2C_ReadBytes(&g_softI2C, status, 2);
 	Soft_I2C_Stop(&g_softI2C);
-	addLogAdv(LOG_INFO, LOG_FEATURE_SENSOR, "SHT : Status : %02X %02X", status[0], status[1]);
+	addLogAdv(LOG_INFO, LOG_FEATURE_SENSOR, "SHT : Status: %02X %02X", status[0], status[1]);
 }
 commandResult_t SHT3X_GetStatusCmd(const void* context, const char* cmd, const char* args, int cmdFlags)
 {
@@ -245,7 +245,7 @@ void SHT3X_ClearStatus()
 	Soft_I2C_WriteByte(&g_softI2C, 0x30);			//Clear status
 	Soft_I2C_WriteByte(&g_softI2C, 0x41);          //clear status
 	Soft_I2C_Stop(&g_softI2C);
-	addLogAdv(LOG_INFO, LOG_FEATURE_SENSOR, "SHT : Clear status");
+	addLogAdv(LOG_INFO, LOG_FEATURE_SENSOR, "SHT: Clear status");
 }
 commandResult_t SHT3X_ClearStatusCmd(const void* context, const char* cmd, const char* args, int cmdFlags)
 {
@@ -317,7 +317,7 @@ void SHT3X_WriteAlertLimitData(float humidity, float temperature)
 	{
 		rawHumidity = humidity / 100.0f * 65535.0f;
 		rawTemperature = (temperature + 45.0f) / 175.0f * 65535.0f;
-		ADDLOG_DEBUG(LOG_FEATURE_SENSOR, "SHT Set alert: Raw Value temp/hum %02X %02X ", rawTemperature, rawHumidity);
+		ADDLOG_DEBUG(LOG_FEATURE_SENSOR, "SHT Set alert: Raw Value temp/hum %02X %02X", rawTemperature, rawHumidity);
 		finaldata = (rawHumidity & 0xFE00) | ((rawTemperature >> 7) & 0x001FF);
 		data[0] = finaldata >> 8;
 		data[1] = finaldata & 0xFF;
@@ -358,8 +358,8 @@ void SHT3X_GetAlertLimits()
 	Soft_I2C_Stop(&g_softI2C);
 	SHT3X_ReadAlertLimitData(&humidityLowSet, &temperatureLowSet);
 
-	addLogAdv(LOG_INFO, LOG_FEATURE_SENSOR, "SHT : Read Alert conf _ Temp : %f / %f / %f / %f ", temperatureLowSet, temperatureLowClear, temperatureHighClear, temperatureHighSet);
-	addLogAdv(LOG_INFO, LOG_FEATURE_SENSOR, "SHT : Read Alert conf _ Hum : %f / %f / %f / %f ", humidityLowSet, humidityLowClear, humidityHighClear, humidityHighSet);
+	addLogAdv(LOG_INFO, LOG_FEATURE_SENSOR, "SHT: Read Alert conf _ Temp: %f / %f / %f / %f", temperatureLowSet, temperatureLowClear, temperatureHighClear, temperatureHighSet);
+	addLogAdv(LOG_INFO, LOG_FEATURE_SENSOR, "SHT: Read Alert conf _ Hum: %f / %f / %f / %f", humidityLowSet, humidityLowClear, humidityHighClear, humidityHighSet);
 }
 commandResult_t SHT3X_ReadAlertCmd(const void* context, const char* cmd, const char* args, int cmdFlags)
 {
@@ -410,7 +410,7 @@ commandResult_t SHT3X_SetAlertCmd(const void* context, const char* cmd, const ch
 	SHT3X_WriteAlertLimitData(humidityLowSet, temperatureLowSet);
 	Soft_I2C_Stop(&g_softI2C);
 
-	ADDLOG_INFO(LOG_FEATURE_SENSOR, "SHT: set alert for temp %f / %f and humidity %f / %f ", temperatureLowSet, temperatureHighSet, humidityLowSet, humidityHighSet);
+	ADDLOG_INFO(LOG_FEATURE_SENSOR, "SHT: set alert for temp %f / %f and humidity %f / %f", temperatureLowSet, temperatureHighSet, humidityLowSet, humidityHighSet);
 
 	return CMD_RES_OK;
 }

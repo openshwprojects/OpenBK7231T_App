@@ -790,11 +790,11 @@ int HTTP_ProcessPacket(http_request_t *request)
 
 	if (request->method == HTTP_GET)
 	{
-		// ADDLOG_INFO(LOG_FEATURE_HTTP, "HTTP request\n");
+		// ADDLOG_INFO(LOG_FEATURE_HTTP, "HTTP request");
 	}
 	else
 	{
-		// ADDLOG_INFO(LOG_FEATURE_HTTP, "Other request\n");
+		// ADDLOG_INFO(LOG_FEATURE_HTTP, "Other request");
 	}
 
 	// if OPTIONS, return now - for CORS
@@ -816,14 +816,14 @@ int HTTP_ProcessPacket(http_request_t *request)
 		}
 		else
 		{
-			ADDLOGF_ERROR("invalid request\n");
+			ADDLOGF_ERROR("invalid request");
 			return 0;
 		}
 	}
 	else
 	{
 		// if p is 0, then strchr below would crash
-		ADDLOGF_ERROR("invalid request\n");
+		ADDLOGF_ERROR("invalid request");
 		return 0;
 	}
 
@@ -842,7 +842,7 @@ int HTTP_ProcessPacket(http_request_t *request)
 		}
 		else
 		{
-			ADDLOGF_ERROR("invalid request\n");
+			ADDLOGF_ERROR("invalid request");
 			return 0;
 		}
 	}
@@ -934,7 +934,7 @@ int HTTP_ProcessPacket(http_request_t *request)
 
 	if (http_basic_auth_run(request) == HTTP_BASIC_AUTH_FAIL)
 	{
-		ADDLOG_ERROR(LOG_FEATURE_HTTP, "HTTP packet with auth fail\n");
+		ADDLOG_ERROR(LOG_FEATURE_HTTP, "HTTP packet with auth fail");
 		return 0;
 	}
 

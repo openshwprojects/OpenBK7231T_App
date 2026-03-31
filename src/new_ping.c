@@ -106,7 +106,7 @@ static void ping_send(struct raw_pcb *raw, const ip_addr_t *addr)
     ping_prepare_echo(iecho, (u16_t)ping_size);
 
 	if(bReceivedLastOneSend == 0) {
-		//addLogAdv(LOG_INFO,LOG_FEATURE_MAIN,"Ping lost: (total lost %i, recv %i)\r\n",ping_lost,ping_received);
+		//addLogAdv(LOG_INFO,LOG_FEATURE_MAIN,"Ping lost: (total lost %i, recv %i)",ping_lost,ping_received);
 		ping_lost++;
 
 	}
@@ -164,9 +164,9 @@ static u8_t ping_recv(void *arg, struct raw_pcb *pcb, struct pbuf *p, const ip_a
 	  ping_received++;
 	bReceivedLastOneSend = 1;
 
-	//addLogAdv(LOG_INFO,LOG_FEATURE_MAIN,"Ping recv: %ims (total lost %i, recv %i)\r\n", ms,ping_lost,ping_received);
+	//addLogAdv(LOG_INFO,LOG_FEATURE_MAIN,"Ping recv: %ims (total lost %i, recv %i)", ms,ping_lost,ping_received);
 
-	//  addLogAdv(LOG_INFO,LOG_FEATURE_MAIN,"Ping recv: %ims\r\n", ms);
+	//  addLogAdv(LOG_INFO,LOG_FEATURE_MAIN,"Ping recv: %ims", ms);
 	Main_OnPingCheckerReply(ms);
       PING_RESULT(1);
       pbuf_free(p);

@@ -46,7 +46,7 @@ uintptr_t HAL_TCP_Establish(const char *host, uint16_t port)
             rc = 0;
             continue;
         }
-		ADDLOG_INFO(LOG_FEATURE_HTTP_CLIENT, "HAL_TCP_Establish: created socket %i\n\r",(int)fd);
+		ADDLOG_INFO(LOG_FEATURE_HTTP_CLIENT, "HAL_TCP_Establish: created socket %i",(int)fd);
 
         if (connect(fd, cur->ai_addr, cur->ai_addrlen) == 0) {
             rc = fd;
@@ -248,7 +248,7 @@ int32_t HAL_TCP_Read(uintptr_t fd, char *buf, uint32_t len, uint32_t timeout_ms)
                 break;
             } else {
                 if (EINTR == errno) {
-                ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT,"EINTR be caught-------\r\n");
+                ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT,"EINTR be caught-------");
                 //continue;
                 }
                 ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT,"select-recv fail");

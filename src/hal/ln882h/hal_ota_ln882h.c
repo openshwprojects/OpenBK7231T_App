@@ -53,12 +53,12 @@ static int ota_download_precheck(uint32_t app_offset, image_hdr_t * ota_hdr)
 
 	image_hdr_t *app_hdr = NULL;
 	if (NULL == (app_hdr = OS_Malloc(sizeof(image_hdr_t)))) {
-		ADDLOG_DEBUG(LOG_FEATURE_OTA, "[%s:%d] malloc failed.\r\n", __func__, __LINE__);
+		ADDLOG_DEBUG(LOG_FEATURE_OTA, "[%s:%d] malloc failed.", __func__, __LINE__);
 		return LN_FALSE;
 	}
 
 	if (OTA_ERR_NONE != image_header_fast_read(app_offset, app_hdr)) {
-		ADDLOG_DEBUG(LOG_FEATURE_OTA, "failed to read app header.\r\n");
+		ADDLOG_DEBUG(LOG_FEATURE_OTA, "failed to read app header.");
 		goto ret_err;
 	}
 
@@ -68,14 +68,14 @@ static int ota_download_precheck(uint32_t app_offset, image_hdr_t * ota_hdr)
 		// check version
 		if (((ota_hdr->ver.ver_major << 8) + ota_hdr->ver.ver_minor) == \
 			((app_hdr->ver.ver_major << 8) + app_hdr->ver.ver_minor)) {
-			ADDLOG_DEBUG(LOG_FEATURE_OTA, "[%s:%d] same version, do not upgrade!\r\n",
+			ADDLOG_DEBUG(LOG_FEATURE_OTA, "[%s:%d] same version, do not upgrade!",
 				__func__, __LINE__);
 		}
 
 		// check file size
 		if (((ota_hdr->img_size_orig + sizeof(image_hdr_t)) > APP_SPACE_SIZE) || \
 			((ota_hdr->img_size_orig_xz + sizeof(image_hdr_t)) > OTA_SPACE_SIZE)) {
-			ADDLOG_DEBUG(LOG_FEATURE_OTA, "[%s:%d] size check failed.\r\n", __func__, __LINE__);
+			ADDLOG_DEBUG(LOG_FEATURE_OTA, "[%s:%d] size check failed.", __func__, __LINE__);
 			goto ret_err;
 		}
 	}
@@ -141,12 +141,12 @@ static int ota_persistent_write(const char *buf, const int32_t buf_len)
 
 		if (temp4k_offset >= SECTOR_SIZE_4KB) {
 			// write to flash
-			ADDLOG_DEBUG(LOG_FEATURE_OTA, "write at flash: 0x%08x (temp4k_offset=%i)\r\n", flash_ota_start_addr + flash_ota_offset, temp4k_offset);
+			ADDLOG_DEBUG(LOG_FEATURE_OTA, "write at flash: 0x%08x (temp4k_offset=%i)", flash_ota_start_addr + flash_ota_offset, temp4k_offset);
 
 			if (flash_ota_offset == 0) {
 				if (LN_TRUE != ota_download_precheck(APP_SPACE_OFFSET, (image_hdr_t *)temp4K_buf))
 				{
-					ADDLOG_DEBUG(LOG_FEATURE_OTA, "ota download precheck failed!\r\n");
+					ADDLOG_DEBUG(LOG_FEATURE_OTA, "ota download precheck failed!");
 					is_precheck_ok = LN_FALSE;
 					return LN_FALSE;
 				}
@@ -180,7 +180,7 @@ static int ota_persistent_finish(void)
 	}
 
 	// write to flash
-	ADDLOG_DEBUG(LOG_FEATURE_OTA, "write at flash: 0x%08x\r\n", flash_ota_start_addr + flash_ota_offset);
+	ADDLOG_DEBUG(LOG_FEATURE_OTA, "write at flash: 0x%08x", flash_ota_start_addr + flash_ota_offset);
 	hal_flash_erase(flash_ota_start_addr + flash_ota_offset, SECTOR_SIZE_4KB);
 	hal_flash_program(flash_ota_start_addr + flash_ota_offset, SECTOR_SIZE_4KB, (uint8_t *)temp4K_buf);
 
@@ -207,23 +207,23 @@ static int ota_verify_download(void)
 {
 	image_hdr_t ota_header;
 
-	ADDLOG_DEBUG(LOG_FEATURE_OTA, "Succeed to verify OTA image content.\r\n");
+	ADDLOG_DEBUG(LOG_FEATURE_OTA, "Succeed to verify OTA image content.");
 	if (OTA_ERR_NONE != image_header_fast_read(OTA_SPACE_OFFSET, &ota_header)) {
-		ADDLOG_DEBUG(LOG_FEATURE_OTA, "failed to read ota header.\r\n");
+		ADDLOG_DEBUG(LOG_FEATURE_OTA, "failed to read ota header.");
 		return LN_FALSE;
 	}
 
 	if (OTA_ERR_NONE != image_header_verify(&ota_header)) {
-		ADDLOG_DEBUG(LOG_FEATURE_OTA, "failed to verify ota header.\r\n");
+		ADDLOG_DEBUG(LOG_FEATURE_OTA, "failed to verify ota header.");
 		return LN_FALSE;
 	}
 
 	if (OTA_ERR_NONE != image_body_verify(OTA_SPACE_OFFSET, &ota_header)) {
-		ADDLOG_DEBUG(LOG_FEATURE_OTA, "failed to verify ota body.\r\n");
+		ADDLOG_DEBUG(LOG_FEATURE_OTA, "failed to verify ota body.");
 		return LN_FALSE;
 	}
 
-	ADDLOG_DEBUG(LOG_FEATURE_OTA, "Succeed to verify OTA image content.\r\n");
+	ADDLOG_DEBUG(LOG_FEATURE_OTA, "Succeed to verify OTA image content.");
 	return LN_TRUE;
 }
 
@@ -236,10 +236,10 @@ int http_rest_post_flash(http_request_t* request, int startaddr, int maxaddr)
 
 	ADDLOG_DEBUG(LOG_FEATURE_OTA, "OTA post len %d", request->contentLength);
 
-	ADDLOG_DEBUG(LOG_FEATURE_OTA, "Ota start!\r\n");
+	ADDLOG_DEBUG(LOG_FEATURE_OTA, "Ota start!");
 	if (LN_TRUE != ota_persistent_start())
 	{
-		ADDLOG_DEBUG(LOG_FEATURE_OTA, "Ota start error, exit...\r\n");
+		ADDLOG_DEBUG(LOG_FEATURE_OTA, "Ota start error, exit...");
 		return 0;
 	}
 
@@ -254,7 +254,7 @@ int http_rest_post_flash(http_request_t* request, int startaddr, int maxaddr)
 
 		if (LN_TRUE != ota_persistent_write(writebuf, writelen))
 		{
-			//	ADDLOG_DEBUG(LOG_FEATURE_OTA, "ota write err.\r\n");
+			//	ADDLOG_DEBUG(LOG_FEATURE_OTA, "ota write err.");
 			return -1;
 		}
 
@@ -276,10 +276,10 @@ int http_rest_post_flash(http_request_t* request, int startaddr, int maxaddr)
 
 	ota_persistent_finish();
 	is_ready_to_verify = LN_TRUE;
-	ADDLOG_DEBUG(LOG_FEATURE_OTA, "cb info: recv %d finished, no more data to deal with.\r\n", towrite);
+	ADDLOG_DEBUG(LOG_FEATURE_OTA, "cb info: recv %d finished, no more data to deal with.", towrite);
 
 
-	ADDLOG_DEBUG(LOG_FEATURE_OTA, "http client job done, exit...\r\n");
+	ADDLOG_DEBUG(LOG_FEATURE_OTA, "http client job done, exit...");
 	if (LN_TRUE == is_precheck_ok)
 	{
 		if ((LN_TRUE == is_ready_to_verify) && (LN_TRUE == ota_verify_download()))
@@ -289,12 +289,12 @@ int http_rest_post_flash(http_request_t* request, int startaddr, int maxaddr)
 		}
 		else
 		{
-			ADDLOG_DEBUG(LOG_FEATURE_OTA, "Veri bad\r\n");
+			ADDLOG_DEBUG(LOG_FEATURE_OTA, "Veri bad");
 		}
 	}
 	else
 	{
-		ADDLOG_DEBUG(LOG_FEATURE_OTA, "Precheck bad\r\n");
+		ADDLOG_DEBUG(LOG_FEATURE_OTA, "Precheck bad");
 	}
 
 	ADDLOG_DEBUG(LOG_FEATURE_OTA, "%d total bytes written", total);

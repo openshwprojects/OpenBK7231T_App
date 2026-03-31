@@ -217,7 +217,7 @@ int http_fn_pmntp(http_request_t* request) {
 	if (http_getArg(request->url, "EPOCH", tmpA, sizeof(tmpA))) {
 		actepoch = (uint32_t)strtoul(tmpA,0,10);
 		TIME_setDeviceTime(actepoch);
-		addLogAdv(LOG_DEBUG, LOG_FEATURE_HTTP,"Set clock to %u! \n",actepoch);	
+		addLogAdv(LOG_DEBUG, LOG_FEATURE_HTTP,"Set clock to %u!",actepoch);	
 	}
 #if ENABLE_TIME_DST
 	if (! IsDST_initialized()) {
@@ -227,7 +227,7 @@ int http_fn_pmntp(http_request_t* request) {
 		// an offset including the one additional hour of DST  
 		// if we don't handle DST, simply accept this as "offset"
 		TIME_setDeviceTimeOffset(atoi(tmpA));
-		addLogAdv(LOG_DEBUG, LOG_FEATURE_HTTP,"Clock - set g_UTCoffset to %i! \n",
+		addLogAdv(LOG_DEBUG, LOG_FEATURE_HTTP,"Clock - set g_UTCoffset to %i!",
 			atoi(tmpA));	
 		}
 #if ENABLE_TIME_DST
@@ -1635,7 +1635,7 @@ int http_fn_cfg_wifi_set(http_request_t* request) {
 	char tmpA[128];
 	int bChanged;
 
-	addLogAdv(LOG_INFO, LOG_FEATURE_HTTP, "HTTP_ProcessPacket: generating cfg_wifi_set \r\n");
+	addLogAdv(LOG_INFO, LOG_FEATURE_HTTP, "HTTP_ProcessPacket: generating cfg_wifi_set ");
 	bChanged = 0;
 
 	http_setup(request, httpMimeTypeHTML);
@@ -1693,7 +1693,7 @@ int http_fn_cfg_wifi_set(http_request_t* request) {
 
 int http_fn_cfg_loglevel_set(http_request_t* request) {
 	char tmpA[128];
-	addLogAdv(LOG_INFO, LOG_FEATURE_HTTP, "HTTP_ProcessPacket: generating cfg_loglevel_set \r\n");
+	addLogAdv(LOG_INFO, LOG_FEATURE_HTTP, "HTTP_ProcessPacket: generating cfg_loglevel_set ");
 
 	http_setup(request, httpMimeTypeHTML);
 	http_html_start(request, "Set log level");
@@ -2050,7 +2050,7 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 	}
 	else if (pwmCount > 0) {
 		if (pwmCount == 4) {
-			addLogAdv(LOG_ERROR, LOG_FEATURE_HTTP, "4 PWM device not yet handled\r\n");
+			addLogAdv(LOG_ERROR, LOG_FEATURE_HTTP, "4 PWM device not yet handled");
 		}
 		else if (pwmCount == 3) {
 			// Enable + RGB control
@@ -2501,7 +2501,7 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 			poststr(request, NULL);
 		}
 		else {
-			addLogAdv(LOG_ERROR, LOG_FEATURE_HTTP, "HA discovery: %s\r\n", msg);
+			addLogAdv(LOG_ERROR, LOG_FEATURE_HTTP, "HA discovery: %s", msg);
 		}
 	}
 }
@@ -2767,10 +2767,10 @@ int http_fn_cm(http_request_t* request) {
 	// exec command
 	if (request->method == HTTP_GET) {
 		commandLen = http_getArg(request->url, "cmnd", tmpA, sizeof(tmpA));
-		//ADDLOG_INFO(LOG_FEATURE_HTTP, "Got here (GET) %s;%s;%d\n", request->url, tmpA, commandLen);
+		//ADDLOG_INFO(LOG_FEATURE_HTTP, "Got here (GET) %s;%s;%d", request->url, tmpA, commandLen);
     } else if (request->method == HTTP_POST || request->method == HTTP_PUT) {
 		commandLen = http_getRawArg(request->bodystart, "cmnd", tmpA, sizeof(tmpA));
-		//ADDLOG_INFO(LOG_FEATURE_HTTP, "Got here (POST) %s;%s;%d\n", request->bodystart, tmpA, commandLen);
+		//ADDLOG_INFO(LOG_FEATURE_HTTP, "Got here (POST) %s;%s;%d", request->bodystart, tmpA, commandLen);
     }
 	if (commandLen) {
 		if (commandLen > (sizeof(tmpA) - 5)) {
@@ -3454,7 +3454,7 @@ int http_fn_ota_exec(http_request_t* request) {
 	http_html_start(request, "OTA request");
 	if (http_getArg(request->url, "host", tmpA, sizeof(tmpA))) {
 		hprintf255(request, "<h3>OTA requested for %s!</h3>", tmpA);
-		addLogAdv(LOG_INFO, LOG_FEATURE_HTTP, "http_fn_ota_exec: will try to do OTA for %s \r\n", tmpA);
+		addLogAdv(LOG_INFO, LOG_FEATURE_HTTP, "http_fn_ota_exec: will try to do OTA for %s", tmpA);
 		OTA_RequestDownloadFromHTTP(tmpA);
 	}
 	poststr(request, htmlFooterReturnToCfgOrMainPage);

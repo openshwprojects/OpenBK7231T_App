@@ -226,7 +226,7 @@ void BL0937_RunEverySecond(void)
 	xPassedTicks = xTaskGetTickCount();
 	ticksElapsed = (xPassedTicks - pulseStamp);
 	pulseStamp = xPassedTicks;
-	//addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"Voltage pulses %i, current %i, power %i\n", res_v, res_c, res_p);
+	//addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"Voltage pulses %i, current %i, power %i", res_v, res_c, res_p);
 
 	PwrCal_Scale(res_v, res_c, res_p, &final_v, &final_c, &final_p);
 

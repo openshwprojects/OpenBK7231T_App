@@ -45,7 +45,7 @@ void MultiPinI2CScanner_RunFrame() {
 	bool bOk = Soft_I2C_Start(&g_scanI2C, (g_adr << 1) + 0);
 	Soft_I2C_Stop(&g_scanI2C);
 	if (bOk) {
-		addLogAdv(LOG_INFO, LOG_FEATURE_I2C, "Pins SDA = %i, SCL =%i, adr 0x%x (dec %i)\n",
+		addLogAdv(LOG_INFO, LOG_FEATURE_I2C, "Pins SDA = %i, SCL =%i, adr 0x%x (dec %i)",
 			g_sda, g_scl, g_adr);
 	}
 	g_adr++;

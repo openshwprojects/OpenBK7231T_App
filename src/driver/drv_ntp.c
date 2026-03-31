@@ -287,7 +287,7 @@ void NTP_CheckForReceive() {
 */
    TIME_setDeviceTime((uint32_t) (secsSince1900 - NTP_OFFSET) );
 //    g_ntpTime=(time_t)TIME_GetCurrentTime();
-    addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"Unix time  : %u - local Time %s",(uint32_t) (secsSince1900 - NTP_OFFSET),TS2STR(TIME_GetCurrentTime(),TIME_FORMAT_LONG));
+    addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"Unix time: %u - local Time %s",(uint32_t) (secsSince1900 - NTP_OFFSET),TS2STR(TIME_GetCurrentTime(),TIME_FORMAT_LONG));
 //    ltm = gmtime(&g_ntpTime);
 //    addLogAdv(LOG_INFO, LOG_FEATURE_NTP, LTSTR, LTM2TIME(ltm));
 
@@ -302,12 +302,12 @@ void NTP_CheckForReceive() {
     //ptm = gmtime (&g_ntpTime);
     ptm = gmtime(&g_ntpTime);
     if(ptm == 0) {
-        addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"gmtime somehow returned 0\n");
+        addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"gmtime somehow returned 0");
     } else {
-        addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"gmtime => tm_year: %i\n",ptm->tm_year);
-        addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"gmtime => tm_mon: %i\n",ptm->tm_mon);
-        addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"gmtime => tm_mday: %i\n",ptm->tm_mday);
-        addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"gmtime => tm_hour: %i\n",ptm->tm_hour  );
+        addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"gmtime => tm_year: %i",ptm->tm_year);
+        addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"gmtime => tm_mon: %i",ptm->tm_mon);
+        addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"gmtime => tm_mday: %i",ptm->tm_mday);
+        addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"gmtime => tm_hour: %i",ptm->tm_hour  );
     }
 #endif
     NTP_Shutdown();

@@ -20,10 +20,10 @@ commandResult_t DRV_I2C_AddDevice_LCM1602(const void *context, const char *cmd, 
 	busType = DRV_I2C_ParseBusType(i2cModuleStr);
 
 	if (DRV_I2C_FindDevice(busType, address)) {
-		addLogAdv(LOG_INFO, LOG_FEATURE_I2C, "DRV_I2C_AddDevice_LCM1602: there is already some device on this bus with such addr\n");
+		addLogAdv(LOG_INFO, LOG_FEATURE_I2C, "DRV_I2C_AddDevice_LCM1602: there is already some device on this bus with such addr");
 		return CMD_RES_BAD_ARGUMENT;
 	}
-	addLogAdv(LOG_INFO, LOG_FEATURE_I2C, "DRV_I2C_AddDevice_LCM1602: module %s, address %i\n", i2cModuleStr, address);
+	addLogAdv(LOG_INFO, LOG_FEATURE_I2C, "DRV_I2C_AddDevice_LCM1602: module %s, address %i", i2cModuleStr, address);
 
 	// DRV_I2C_AddDevice_LCM1602_Internal(busType,address);
 

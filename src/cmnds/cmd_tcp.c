@@ -119,7 +119,7 @@ void CMD_StartTCPCommandLine()
     OSStatus err = kNoErr;
 
 	if(g_bStarted) {
-		ADDLOG_ERROR(LOG_FEATURE_CMD, "CMD server is already running!\r\n");
+		ADDLOG_ERROR(LOG_FEATURE_CMD, "CMD server is already running!");
 		return;
 	}
     err = rtos_create_thread( &g_cmd_thread, 6,
@@ -129,11 +129,11 @@ void CMD_StartTCPCommandLine()
 									(beken_thread_arg_t)0 );
     if(err != kNoErr)
     {
-		ADDLOG_ERROR(LOG_FEATURE_CMD, "create \"CMD_server\" thread failed with %i!\r\n",err);
+		ADDLOG_ERROR(LOG_FEATURE_CMD, "create \"CMD_server\" thread failed with %i!",err);
     }
 	else
 	{
-		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD TCP server started!\r\n");
+		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD TCP server started!");
 		g_bStarted = 1;
 	}
 }

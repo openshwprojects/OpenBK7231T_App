@@ -89,7 +89,7 @@ void DRV_ADCSmootherDoSmooth() {
 	ADCSmoother_AppendSample(raw);
 	int smoothed = ADCSmoother_Sample();
 	int lowHigh = smoothed > g_margin;
-	addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "AS: raw %i, smoothed %i, LowHigh %i\n", raw, smoothed, lowHigh);
+	addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "AS: raw %i, smoothed %i, LowHigh %i", raw, smoothed, lowHigh);
 	
 	if (smoothed != g_smoothed) {
 		g_smoothed = smoothed;

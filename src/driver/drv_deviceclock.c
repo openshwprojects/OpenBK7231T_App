@@ -22,7 +22,7 @@ uint32_t g_epochOnStartup = 0;
 // UTC offset
 int g_UTCoffset = 0;
 void TIME_setDeviceTime(uint32_t time){
-	ADDLOG_DEBUG(LOG_FEATURE_RAW, "TIME_setDeviceTime - time = %lu - g_secondsElapsed =%lu \r\n",time,g_secondsElapsed);
+	ADDLOG_DEBUG(LOG_FEATURE_RAW, "TIME_setDeviceTime - time = %lu - g_secondsElapsed =%lu",time,g_secondsElapsed);
 #if (ENABLE_DRIVER_DS3231)
 	uint32_t temp = g_epochOnStartup;
 #endif
@@ -33,17 +33,17 @@ void TIME_setDeviceTime(uint32_t time){
 #if (ENABLE_DRIVER_DS3231)
 #include "drv_public.h"
 #include "drv_ds3231.h"
-//	ADDLOG_DEBUG(LOG_FEATURE_RAW, "TIME_setDeviceTime 1 - temp = %lu - g_epochOnStartup = %lu \r\n",temp,g_epochOnStartup);
+//	ADDLOG_DEBUG(LOG_FEATURE_RAW, "TIME_setDeviceTime 1 - temp = %lu - g_epochOnStartup = %lu",temp,g_epochOnStartup);
 	temp -= g_epochOnStartup;
-//	ADDLOG_DEBUG(LOG_FEATURE_RAW, "TIME_setDeviceTime 2 - temp = %lu \r\n",temp);
+//	ADDLOG_DEBUG(LOG_FEATURE_RAW, "TIME_setDeviceTime 2 - temp = %lu",temp);
 	if (DRV_IsRunning("DS3231")) DS3231_informClockWasSet( (temp*temp > 25));		// use "force" if new time differs more than 5 seconds (temp*temp is allways positive)
 #endif
 
-//	ADDLOG_INFO(LOG_FEATURE_RAW, "TIME_setDeviceTime - time = %lu - g_secondsElapsed =%lu - g_epochOnStartup=%lu \r\n",time,g_secondsElapsed,g_epochOnStartup);
+//	ADDLOG_INFO(LOG_FEATURE_RAW, "TIME_setDeviceTime - time = %lu - g_secondsElapsed =%lu - g_epochOnStartup=%lu",time,g_secondsElapsed,g_epochOnStartup);
 }
 
 void TIME_setDeviceTimeOffset(int offs){
-//	ADDLOG_INFO(LOG_FEATURE_RAW, "TIME_setDeviceTimeOffset - offs = %i\r\n",offs);
+//	ADDLOG_INFO(LOG_FEATURE_RAW, "TIME_setDeviceTimeOffset - offs = %i",offs);
 	g_UTCoffset = offs;
 }
 
@@ -356,11 +356,11 @@ uint32_t setDST() {
 	// if we were in DST before switch, we need to sub DST_offset (old_DST_active = 1)
 	int fix_DSTMinutes = (dst_config.DSToffset / 60);
 	fix_DSTMinutes *= old_DST_active ? -1 : 1;
-	ADDLOG_INFO(LOG_FEATURE_RAW, "DST switch - calling  fix_DSTforEvents(%d)\r\n", fix_DSTMinutes );
+	ADDLOG_INFO(LOG_FEATURE_RAW, "DST switch - calling fix_DSTforEvents(%d)", fix_DSTMinutes );
 	fix_DSTforEvents(fix_DSTMinutes);
     }
 #endif
-    ADDLOG_INFO(LOG_FEATURE_RAW, "In %s time - next DST switch at %u (%s) \r\n", (dst_config.DSTactive)?"summer":"standard",  (uint32_t)tempt, TS2STR(tempt,TIME_FORMAT_LONG));
+    ADDLOG_INFO(LOG_FEATURE_RAW, "In %s time - next DST switch at %u (%s)", (dst_config.DSTactive)?"summer":"standard",  (uint32_t)tempt, TS2STR(tempt,TIME_FORMAT_LONG));
 
     return dst_config.DSTactive;
 }
@@ -540,7 +540,7 @@ uint32_t temp=0;
 		temp +=  getDST_offset();
 #endif 
 	}	// no "else" needed, will return 0 anyway if we don't return here
-//    	addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"TIME_GetCurrentTime - returning :%lu (g_epochOnStartup=%lu g_secondsElapsed=%lu g_UTCoffset=%i DST=%i)",temp,g_epochOnStartup, g_secondsElapsed, g_UTCoffset,getDST_offset());
+//    	addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"TIME_GetCurrentTime - returning: %lu (g_epochOnStartup=%lu g_secondsElapsed=%lu g_UTCoffset=%i DST=%i)",temp,g_epochOnStartup, g_secondsElapsed, g_UTCoffset,getDST_offset());
 	return temp;					// we will report 1970-01-01 if no time present - avoids "hack" e.g. in json status ...
 
 };

@@ -565,7 +565,7 @@ void HAL_PIN_PWM_Start(int index, int freq)
 		pwm_deinit();
 		ledc_fade_func_install(0);
 #endif
-		ADDLOG_INFO(LOG_FEATURE_PINS, "init ledc ch %i pin %i\n", freecha, pin->pin);
+		ADDLOG_INFO(LOG_FEATURE_PINS, "init ledc ch %i pin %i", freecha, pin->pin);
 	}
 	else
 	{

@@ -157,7 +157,7 @@ void RepeatingEvents_RunUpdate(float deltaTimeSeconds) {
 		cur = cur->next;
 	}
 
-	//addLogAdv(LOG_INFO, LOG_FEATURE_CMD,"RepeatingEvents_OnEverySecond checked %i events, ran %i\n",c_checked,c_ran);
+	//addLogAdv(LOG_INFO, LOG_FEATURE_CMD,"RepeatingEvents_OnEverySecond checked %i events, ran %i",c_checked,c_ran);
 }
 // addRepeatingEventID 1234 5 -1 DGR_SendPower "testgr" 1 1 
 // cancelRepeatingEvent 1234
