@@ -141,7 +141,11 @@ void PulseClock_init() {
     {
         phys_daysec=PHYS_UNKNOWN;
     }
-    addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "PulseClock: init, resolution=%i, pulseoffset=%i, pulsemillis=%i, phystime=%02i:%02i:%02i", phys_resolution, DaysecToHour(phys_daysec), DaysecToMinute(phys_daysec), DaysecToSecond(phys_daysec));
+    addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "PulseClock: init, resolution=%i, pulseoffset=%i, pulsemillis=%i, phystime=%02i:%02i:%02i", 
+            phys_resolution, 
+            phys_pulseoffset,
+            phys_pulsemillis,
+            DaysecToHour(phys_daysec), DaysecToMinute(phys_daysec), DaysecToSecond(phys_daysec));
 	CMD_RegisterCommand("PulseClock_SetPhysTime", Cmd_SetPhysTime, NULL);
 }
 
