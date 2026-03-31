@@ -12,34 +12,47 @@
 #include "../libraries/obktime/obktime.h"	// for time functions
 
 
-static uint32_t phys_daysec;
-static uint32_t phys_resolution;
+static int32_t phys_daysec;
+static int32_t phys_resolution;
+static int32_t phys_pulseoffset;
+static int32_t phys_pulsemillis;
 
-uint32_t HMSToDaysec(uint8_t hour, uint8_t minute, uint8_t second) {
+int32_t HMSToDaysec(uint8_t hour, uint8_t minute, uint8_t second) {
     return (hour * 3600) + (minute * 60) + (second);
 }
 
-uint8_t DaysecToHour(uint32_t daysec) {
+int32_t DaysecNormalise(int32_t daysec) {
+    while (daysec < 0)
+    {
+        daysec += 86400
+    }
+    daysec = daysec % 86400;
+    return daysec;
+}
+
+uint8_t DaysecToHour(int32_t daysec) {
     return daysec / 3600;
 }
 
-uint8_t DaysecToMinute(uint32_t daysec) {
+uint8_t DaysecToMinute(int32_t daysec) {
     return (daysec % 3600) / 60;
 }
 
-uint8_t DaysecToSecond(uint32_t daysec) {
+uint8_t DaysecToSecond(int32_t daysec) {
     return (daysec % 60);
 }
 
 void PulseClock_onEverySec() {
     TimeComponents tc;
     time_t ntpTime;
-    uint32_t ntp_daysec;
+    int32_t ntp_daysec;
 
     ntpTime=(time_t)TIME_GetCurrentTime();
     tc=calculateComponents((uint32_t)ntpTime);
     ntp_daysec=HMSToDaysec(tc.hour, tc.minute, tc.second);
+    ntp_daysec += phys_pulseoffset;
     ntp_daysec -= ntp_daysec % phys_resolution;
+    ntp_daysec=DaysecNormalise(ntp_daysec);
 
     // is device time set ?
     if (tc.year < 2026)
@@ -60,31 +73,31 @@ void PulseClock_onEverySec() {
         if ((phys_daysec / phys_resolution) % 2)
         {
             addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "PulseClock: Advance even tick begin");
-            CHANNEL_Set(1, 1, 0);
-            rtos_delay_milliseconds(500);
+            CHANNEL_Set(1, 1, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
+            rtos_delay_milliseconds(phys_pulsemillis);
             addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "PulseClock: Advance even tick end");
-            CHANNEL_Set(1, 0, 0);
+            CHANNEL_Set(1, 0, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
         }
         else
         {
             addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "PulseClock: Advance odd tick begin");
-            CHANNEL_Set(2, 1, 0);
-            rtos_delay_milliseconds(500);
+            CHANNEL_Set(2, 1, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
+            rtos_delay_milliseconds(phys_pulsemillis);
             addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "PulseClock: Advance odd tick end");
-            CHANNEL_Set(2, 0, 0);
+            CHANNEL_Set(2, 0, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
         }
         phys_daysec += phys_resolution;
-        phys_daysec %= 86400;
+        phys_daysec=DaysecNormalise(phys_daysec);
     }
     else
     {
         if (CHANNEL_Get(1))
         {
-            CHANNEL_Set(1, 0, 0);
+            CHANNEL_Set(1, 0, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
         }
         if (CHANNEL_Get(2))
         {
-            CHANNEL_Set(2, 0, 0);
+            CHANNEL_Set(2, 0, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT
         }
     }
 }
@@ -118,6 +131,8 @@ static commandResult_t Cmd_SetPhysTime(const void* context, const char* cmd, con
 
 void PulseClock_init() {
 	phys_resolution = Tokenizer_GetArgIntegerDefault(1, 60);
+	phys_pulseoffset = Tokenizer_GetArgIntegerDefault(2, 0);
+	phys_pulsemillis = Tokenizer_GetArgIntegerDefault(3, 500);
     phys_daysec=0xffffffff;
     addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "PulseClock: init, resolution=%i", phys_resolution);
 	CMD_RegisterCommand("PulseClock_SetPhysTime", Cmd_SetPhysTime, NULL);
