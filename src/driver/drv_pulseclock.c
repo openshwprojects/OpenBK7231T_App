@@ -45,14 +45,16 @@ uint8_t DaysecToSecond(int32_t daysec) {
 void PulseClock_onEverySec() {
     TimeComponents tc;
     time_t ntpTime;
-    int32_t ntp_daysec;
+    int32_t want_daysec;
 
     ntpTime=(time_t)TIME_GetCurrentTime();
     tc=calculateComponents((uint32_t)ntpTime);
-    ntp_daysec=HMSToDaysec(tc.hour, tc.minute, tc.second);
-    ntp_daysec += phys_pulseoffset;
-    ntp_daysec -= ntp_daysec % phys_resolution;
-    ntp_daysec=DaysecNormalise(ntp_daysec);
+    addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "PulseClock: ntp_time=%02i:%02i:%02i" ,tc.hour, tc.minute, tc.second);
+
+    want_daysec=HMSToDaysec(tc.hour, tc.minute, tc.second);
+    want_daysec += phys_pulseoffset;
+    want_daysec -= want_daysec % phys_resolution;
+    want_daysec=DaysecNormalise(want_daysec);
 
     // is device time set ?
     if (tc.year < 2026)
@@ -60,13 +62,13 @@ void PulseClock_onEverySec() {
 
     if (phys_daysec == 0xffffffff)
     {
-        phys_daysec=ntp_daysec;
+        phys_daysec=want_daysec;
     }
 
-    if (phys_daysec != ntp_daysec)
+    if (phys_daysec != want_daysec)
     {
-        addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "PulseClock: ntp_time=%02i:%02i:%02i, phys_time=%02i:%02i:%02i\n", 
-                DaysecToHour(ntp_daysec), DaysecToMinute(ntp_daysec), DaysecToSecond(ntp_daysec), 
+        addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "PulseClock: want_time=%02i:%02i:%02i, phys_time=%02i:%02i:%02i", 
+                DaysecToHour(want_daysec), DaysecToMinute(want_daysec), DaysecToSecond(want_daysec), 
                 DaysecToHour(phys_daysec), DaysecToMinute(phys_daysec), DaysecToSecond(phys_daysec) 
                );
 
