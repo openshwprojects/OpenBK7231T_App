@@ -3254,15 +3254,15 @@ static const int defaultIndices[] = {
 
 #if defined(PLATFORM_W600) || defined(PLATFORM_W800)
     #define ONEALL_PAYLOAD_MAX 256
+	#define SEG_A_END   256
     #define USE_STACK_PAYLOAD 1
 #else
     #define ONEALL_PAYLOAD_MAX 512
+	#define SEG_A_END   500
     #define USE_STACK_PAYLOAD 0
 #endif
-#define SEG_A_END   500
 #define SEG_B_START (SEG_A_END)
 
-/*
 
 void MQTT_BuildAndPublishBatch_ByIndex(int *indices, int count, uint8_t* leh, int leh_len) {
 	
