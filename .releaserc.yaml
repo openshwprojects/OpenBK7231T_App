@@ -199,8 +199,6 @@ generateNotes:
         | TXW81X         |            | [OpenTXW81X_{{version}}.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenTXW81X_{{version}}.bin)                           |
         | LN8825B        | UART Flash | [OpenLN8825_{{version}}.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenLN8825_{{version}}.bin)                           |
         | LN8825B        | OTA Update | [OpenLN8825_{{version}}_ota.img]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenLN8825_{{version}}_ota.img)                   |
-        | BL616          | UART Flash | [OpenBL616_{{version}}.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenBL616_{{version}}.bin)                             |
-        | BL616          | OTA Update | [OpenBL616_{{version}}_OTA.bin.xz.ota]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenBL616_{{version}}_OTA.bin.xz.ota)       |
         | Win32          |            | [obkSimulator_{{version}}.zip]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/obkSimulator_{{version}}.zip)                       |
 
 

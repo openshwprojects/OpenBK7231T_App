@@ -33,16 +33,13 @@ sdk_add_include_directories(.)
 sdk_add_include_directories(${OBK_SRCS}../libraries/easyflash/inc)
 
 target_sources(app PRIVATE
-#	${OBK_SRCS}hal/bl_new/hal_adc_bl_new.c
 	${OBK_SRCS}hal/bl602/hal_flashConfig_bl602.c
 	${OBK_SRCS}hal/bl602/hal_flashVars_bl602.c
-	${OBK_SRCS}hal/bl_new/hal_generic_bl_new.c
-	${OBK_SRCS}hal/bl_new/hal_hwtimer_bl_new.c
-#	${OBK_SRCS}hal/bl_new/hal_main_bl_new.c
-	${OBK_SRCS}hal/bl_new/hal_pins_bl_new.c
-	${OBK_SRCS}hal/bl_new/hal_wifi_bl_new.c
-#	${OBK_SRCS}hal/bl_new/hal_uart_bl_new.c
-	${OBK_SRCS}hal/bl_new/hal_ota_bl_new.c
+	${OBK_SRCS}hal/bl602/hal_generic_bl602.c
+	${OBK_SRCS}hal/bl602/hal_hwtimer_bl_new.c
+	${OBK_SRCS}hal/bl602/hal_pins_bl_new.c
+	${OBK_SRCS}hal/bl602/hal_wifi_bl_new.c
+	${OBK_SRCS}hal/bl602/hal_ota_bl602.c
 	${OBKM_SRC}
 	${OBKM_SRC_CXX}
 	${BERRY_SRC_C}

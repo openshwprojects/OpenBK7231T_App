@@ -203,10 +203,10 @@ jobs:
           - platform: OpenLN8825
             variant: default
             gcc: apt
-          - platform: OpenBL616
-            variant: default
-          - platform: OpenBL602_ALT
-            variant: default
+          #- platform: OpenBL616
+          #  variant: default
+          #- platform: OpenBL602_ALT
+          #  variant: default
 
           # extras for BK7231T
           - platform: OpenBK7231T
