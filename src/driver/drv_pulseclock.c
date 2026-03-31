@@ -47,7 +47,7 @@ uint8_t DaysecToSecond(int32_t daysec) {
 
 static void PulseClock_SetPin(int role, int val) {
 	for (int i = 0; i < PLATFORM_GPIO_MAX; i++) {
-		if (g_cfg.pins.channels[i] == s->channel
+		if (g_cfg.pins.channels[i] == 1
 			&& g_cfg.pins.roles[i] == role) {
 			HAL_PIN_SetOutputValue(i, val);
 		}
