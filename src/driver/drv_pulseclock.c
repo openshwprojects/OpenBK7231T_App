@@ -97,6 +97,7 @@ void PulseClock_onEverySec() {
         {
             addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "PulseClock: Advance even tick");
             PulseClock_SetPin(IOR_PulseClock_Fwd,1);
+            PulseClock_SetPin(IOR_PulseClock_Dir,1);
             PulseClock_SetPin(IOR_PulseClock_En,1);
             rtos_delay_milliseconds(phys_pulsemillis);
             PulseClock_SetAllOff();
@@ -105,7 +106,6 @@ void PulseClock_onEverySec() {
         {
             addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "PulseClock: Advance odd tick");
             PulseClock_SetPin(IOR_PulseClock_Rev,1);
-            PulseClock_SetPin(IOR_PulseClock_Dir,1);
             PulseClock_SetPin(IOR_PulseClock_En,1);
             rtos_delay_milliseconds(phys_pulsemillis);
             PulseClock_SetAllOff();
