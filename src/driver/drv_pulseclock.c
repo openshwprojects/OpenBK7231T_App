@@ -24,7 +24,7 @@ int32_t HMSToDaysec(uint8_t hour, uint8_t minute, uint8_t second) {
 int32_t DaysecNormalise(int32_t daysec) {
     while (daysec < 0)
     {
-        daysec += 86400
+        daysec += 86400;
     }
     daysec = daysec % 86400;
     return daysec;
