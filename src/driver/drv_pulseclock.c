@@ -97,7 +97,7 @@ void PulseClock_onEverySec() {
         }
         if (CHANNEL_Get(2))
         {
-            CHANNEL_Set(2, 0, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT
+            CHANNEL_Set(2, 0, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
         }
     }
 }
