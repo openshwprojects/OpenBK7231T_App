@@ -96,17 +96,17 @@ void PulseClock_onEverySec() {
         if ((phys_daysec / phys_resolution) % 2)
         {
             addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "PulseClock: Advance even tick");
-            PulseClock_SetPin(IOR_PulseClock_Fwd);
-            PulseClock_SetPin(IOR_PulseClock_En);
+            PulseClock_SetPin(IOR_PulseClock_Fwd,1);
+            PulseClock_SetPin(IOR_PulseClock_En,1);
             rtos_delay_milliseconds(phys_pulsemillis);
             PulseClock_SetAllOff();
         }
         else
         {
             addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "PulseClock: Advance odd tick");
-            PulseClock_SetPin(IOR_PulseClock_Rev);
-            PulseClock_SetPin(IOR_PulseClock_Dir);
-            PulseClock_SetPin(IOR_PulseClock_En);
+            PulseClock_SetPin(IOR_PulseClock_Rev,1);
+            PulseClock_SetPin(IOR_PulseClock_Dir,1);
+            PulseClock_SetPin(IOR_PulseClock_En,1);
             rtos_delay_milliseconds(phys_pulsemillis);
             PulseClock_SetAllOff();
         }
