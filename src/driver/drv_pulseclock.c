@@ -45,10 +45,28 @@ uint8_t DaysecToSecond(int32_t daysec) {
     return (daysec % 60);
 }
 
+static void PulseClock_SetPin(int role, int val) {
+	for (int i = 0; i < PLATFORM_GPIO_MAX; i++) {
+		if (g_cfg.pins.channels[i] == s->channel
+			&& g_cfg.pins.roles[i] == role) {
+			HAL_PIN_SetOutputValue(i, val);
+		}
+	}
+}
+
+static void PulseClock_SetAllOff() {
+    PulseClock_SetPin(IOR_PulseClock_En, 0);
+    PulseClock_SetPin(IOR_PulseClock_Dir, 0);
+    PulseClock_SetPin(IOR_PulseClock_Fwd, 0);
+    PulseClock_SetPin(IOR_PulseClock_Rev, 0);
+}
+
 void PulseClock_onEverySec() {
     TimeComponents tc;
     time_t ntpTime;
     int32_t want_daysec;
+
+    PulseClock_SetAllOff();
 
     ntpTime=(time_t)TIME_GetCurrentTime();
     tc=calculateComponents((uint32_t)ntpTime);
@@ -56,6 +74,7 @@ void PulseClock_onEverySec() {
     want_daysec += phys_pulseoffset;
     want_daysec -= want_daysec % phys_resolution;
     want_daysec=DaysecNormalise(want_daysec);
+
 
     // is device time set ?
     if (tc.year < 2026)
@@ -77,31 +96,23 @@ void PulseClock_onEverySec() {
         if ((phys_daysec / phys_resolution) % 2)
         {
             addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "PulseClock: Advance even tick");
-            CHANNEL_Set(1, 1, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
+            PulseClock_SetPin(IOR_PulseClock_Fwd);
+            PulseClock_SetPin(IOR_PulseClock_En);
             rtos_delay_milliseconds(phys_pulsemillis);
-            CHANNEL_Set(1, 0, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
+            PulseClock_SetAllOff();
         }
         else
         {
             addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "PulseClock: Advance odd tick");
-            CHANNEL_Set(2, 1, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
+            PulseClock_SetPin(IOR_PulseClock_Rev);
+            PulseClock_SetPin(IOR_PulseClock_Dir);
+            PulseClock_SetPin(IOR_PulseClock_En);
             rtos_delay_milliseconds(phys_pulsemillis);
-            CHANNEL_Set(2, 0, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
+            PulseClock_SetAllOff();
         }
         phys_daysec += phys_resolution;
         phys_daysec=DaysecNormalise(phys_daysec);
         HAL_FlashVars_SaveChannel(PHYS_DAYSEC_FV, (int)phys_daysec);
-    }
-    else
-    {
-        if (CHANNEL_Get(1))
-        {
-            CHANNEL_Set(1, 0, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
-        }
-        if (CHANNEL_Get(2))
-        {
-            CHANNEL_Set(2, 0, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
-        }
     }
 }
 
