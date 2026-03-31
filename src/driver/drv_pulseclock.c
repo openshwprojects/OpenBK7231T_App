@@ -49,8 +49,6 @@ void PulseClock_onEverySec() {
 
     ntpTime=(time_t)TIME_GetCurrentTime();
     tc=calculateComponents((uint32_t)ntpTime);
-    addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "PulseClock: ntp_time=%02i:%02i:%02i" ,tc.hour, tc.minute, tc.second);
-
     want_daysec=HMSToDaysec(tc.hour, tc.minute, tc.second);
     want_daysec += phys_pulseoffset;
     want_daysec -= want_daysec % phys_resolution;
@@ -67,7 +65,8 @@ void PulseClock_onEverySec() {
 
     if (phys_daysec != want_daysec)
     {
-        addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "PulseClock: want_time=%02i:%02i:%02i, phys_time=%02i:%02i:%02i", 
+        addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "PulseClock: ntp_time=%02i:%02i:%02i, want_time=%02i:%02i:%02i, phys_time=%02i:%02i:%02i", 
+                tc.hour, tc.minute, tc.second,
                 DaysecToHour(want_daysec), DaysecToMinute(want_daysec), DaysecToSecond(want_daysec), 
                 DaysecToHour(phys_daysec), DaysecToMinute(phys_daysec), DaysecToSecond(phys_daysec) 
                );
