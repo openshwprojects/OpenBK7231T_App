@@ -12,6 +12,7 @@
 #include "drv_deviceclock.h"
 #include "../libraries/obktime/obktime.h"	// for time functions
 
+#define PHYS_UNKNOWN 999999
 
 static int32_t phys_daysec;
 static int32_t phys_resolution;
@@ -59,7 +60,7 @@ void PulseClock_onEverySec() {
     if (tc.year < 2026)
         return;
 
-    if (phys_daysec == 0xffffffff)
+    if (phys_daysec == PHYS_UNKNOWN)
     {
         phys_daysec=want_daysec;
     }
@@ -72,9 +73,6 @@ void PulseClock_onEverySec() {
                 DaysecToHour(phys_daysec), DaysecToMinute(phys_daysec), DaysecToSecond(phys_daysec) 
                );
 
-        phys_daysec += phys_resolution;
-        phys_daysec=DaysecNormalise(phys_daysec);
-        HAL_FlashVars_SaveChannel(1, phys_daysec);
         if ((phys_daysec / phys_resolution) % 2)
         {
             addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "PulseClock: Advance even tick");
@@ -89,6 +87,9 @@ void PulseClock_onEverySec() {
             rtos_delay_milliseconds(phys_pulsemillis);
             CHANNEL_Set(2, 0, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
         }
+        phys_daysec += phys_resolution;
+        phys_daysec=DaysecNormalise(phys_daysec);
+        HAL_FlashVars_SaveChannel(1, phys_daysec);
     }
     else
     {
@@ -134,7 +135,11 @@ void PulseClock_init() {
 	phys_resolution = Tokenizer_GetArgIntegerDefault(1, 60);
 	phys_pulseoffset = Tokenizer_GetArgIntegerDefault(2, 0);
 	phys_pulsemillis = Tokenizer_GetArgIntegerDefault(3, 500);
-    phys_daysec=0xffffffff;
+	phys_daysec=HAL_FlashVars_GetChannelValue(1);
+    if (phys_daysec != DaysecNormalise(phys_daysec))
+    {
+        phys_daysec=PHYS_UNKNOWN;
+    }
     addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "PulseClock: init, resolution=%i", phys_resolution);
 	CMD_RegisterCommand("PulseClock_SetPhysTime", Cmd_SetPhysTime, NULL);
 }
