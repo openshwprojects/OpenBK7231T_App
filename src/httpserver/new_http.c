@@ -616,6 +616,10 @@ const char *htmlPinRoleNames[] = {
 	"ShutterB",
 	"BtnShutterUp",
 	"BtnShutterDown",
+	"PulseClock_En",
+	"PulseClock_Dir",
+	"PulseClock_Fwd",
+	"PulseClock_Rev",
 	"error",
 	"error",
 };
