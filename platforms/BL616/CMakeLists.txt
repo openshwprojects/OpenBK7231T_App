@@ -38,7 +38,7 @@ target_sources(app PRIVATE
 	${OBK_SRCS}hal/bl602/hal_generic_bl602.c
 	${OBK_SRCS}hal/bl602/hal_hwtimer_bl_new.c
 	${OBK_SRCS}hal/bl602/hal_pins_bl_new.c
-	${OBK_SRCS}hal/bl602/hal_wifi_bl_new.c
+	${OBK_SRCS}hal/bl602/hal_wifi_bl602.c
 	${OBK_SRCS}hal/bl602/hal_ota_bl602.c
 	${OBKM_SRC}
 	${OBKM_SRC_CXX}
