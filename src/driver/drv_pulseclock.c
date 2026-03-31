@@ -6,6 +6,7 @@
 #include "../mqtt/new_mqtt.h"
 #include "../logging/logging.h"
 #include "../hal/hal_pins.h"
+#include "../hal/hal_flashVars.h"
 #include "drv_public.h"
 #include "drv_local.h"
 #include "drv_deviceclock.h"
@@ -71,24 +72,23 @@ void PulseClock_onEverySec() {
                 DaysecToHour(phys_daysec), DaysecToMinute(phys_daysec), DaysecToSecond(phys_daysec) 
                );
 
+        phys_daysec += phys_resolution;
+        phys_daysec=DaysecNormalise(phys_daysec);
+        HAL_FlashVars_SaveChannel(1, phys_daysec);
         if ((phys_daysec / phys_resolution) % 2)
         {
-            addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "PulseClock: Advance even tick begin");
+            addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "PulseClock: Advance even tick");
             CHANNEL_Set(1, 1, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
             rtos_delay_milliseconds(phys_pulsemillis);
-            addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "PulseClock: Advance even tick end");
             CHANNEL_Set(1, 0, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
         }
         else
         {
-            addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "PulseClock: Advance odd tick begin");
+            addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "PulseClock: Advance odd tick");
             CHANNEL_Set(2, 1, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
             rtos_delay_milliseconds(phys_pulsemillis);
-            addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "PulseClock: Advance odd tick end");
             CHANNEL_Set(2, 0, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
         }
-        phys_daysec += phys_resolution;
-        phys_daysec=DaysecNormalise(phys_daysec);
     }
     else
     {
