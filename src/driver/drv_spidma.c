@@ -852,67 +852,25 @@ void SPIDMA_Init(struct spi_message* msg)
 	is_init = false;
 	struct bflb_device_s* gpio = bflb_device_get_by_name("gpio");
 #if PLATFORM_BL602
-	switch(spidma_led_pin)
+	if(spidma_led_pin % 4 == 0)
 	{
-		case 0:
-		case 4:
-		case 8:
-		case 12:
-		case 16:
-		case 20:
-			GLB_Swap_SPI_0_MOSI_With_MISO(0);
-			break;
-		case 1:
-		case 5:
-		case 9:
-		case 13:
-		case 17:
-		case 21:
-			GLB_Swap_SPI_0_MOSI_With_MISO(1);
-			break;
-		default: return;
+		GLB_Swap_SPI_0_MOSI_With_MISO(0); // 0, 4, 8, 12, 16, 20
 	}
+	else if(spidma_led_pin % 4 == 1)
+	{
+		GLB_Swap_SPI_0_MOSI_With_MISO(1); // 1, 5, 9, 13, 17, 21
+	}
+	else return;
 #else
-	switch(spidma_led_pin)
+	if(spidma_led_pin % 4 == 3)
 	{
-		case 3:
-		case 7:
-		case 9:
-		case 11:
-		case 13:
-		case 15:
-		case 17:
-		case 19:
-		case 21:
-		case 23:
-		case 25:
-		case 27:
-		case 29:
-		case 31:
-		case 33:
-		case 35:
-			GLB_Swap_MCU_SPI_0_MOSI_With_MISO(0);
-			break;
-		case 2:
-		case 6:
-		case 8:
-		case 10:
-		case 12:
-		case 14:
-		case 16:
-		case 18:
-		case 20:
-		case 22:
-		case 24:
-		case 26:
-		case 28:
-		case 30:
-		case 32:
-		case 34:
-			GLB_Swap_MCU_SPI_0_MOSI_With_MISO(1);
-			break;
-		default: return;
+		GLB_Swap_MCU_SPI_0_MOSI_With_MISO(0); // 3, 7, 11, 15, 19, 23, 27, 31, 35
 	}
+	else if(spidma_led_pin % 4 == 2)
+	{
+		GLB_Swap_MCU_SPI_0_MOSI_With_MISO(1); // 2, 6, 10, 14, 18, 22, 26, 30, 34
+	}
+	else return;
 #endif
 	bflb_gpio_init(gpio, spidma_led_pin, GPIO_FUNC_SPI0 | GPIO_ALTERNATE | GPIO_PULLUP | GPIO_SMT_EN | GPIO_DRV_1);
 
@@ -975,26 +933,15 @@ static bool is_init = false;
 void SPIDMA_Init(struct spi_message* msg)
 {
 	is_init = false;
-	switch(spidma_led_pin)
+	if(spidma_led_pin % 4 == 0)
 	{
-		case 0:
-		case 4:
-		case 8:
-		case 12:
-		case 16:
-		case 20:
-			GLB_Swap_SPI_0_MOSI_With_MISO(DISABLE);
-			break;
-		case 1:
-		case 5:
-		case 9:
-		case 13:
-		case 17:
-		case 21:
-			GLB_Swap_SPI_0_MOSI_With_MISO(ENABLE);
-			break;
-		default: return;
+		GLB_Swap_SPI_0_MOSI_With_MISO(0); // 0, 4, 8, 12, 16, 20
 	}
+	else if(spidma_led_pin % 4 == 1)
+	{
+		GLB_Swap_SPI_0_MOSI_With_MISO(1); // 1, 5, 9, 13, 17, 21
+	}
+	else return;
 	GLB_GPIO_Func_Init(GPIO_FUN_SPI, (GLB_GPIO_Type*)&spidma_led_pin, 1);
 	GLB_Set_SPI_0_ACT_MOD_Sel(GLB_SPI_PAD_ACT_AS_MASTER);
 

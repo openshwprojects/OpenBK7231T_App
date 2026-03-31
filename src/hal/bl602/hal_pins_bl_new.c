@@ -46,17 +46,13 @@ const char* HAL_PIN_GetPinNameAlias(int index)
 
 int HAL_PIN_CanThisPinBePWM(int index)
 {
-#if PLATFORM_BL616
-	if(GLB_GPIO_Pad_LeadOut_Sts((uint8_t)index) == RESET) return 0;
-#endif
+	CHECK_PAD(index);
 	return 1;
 }
 
 int HAL_PIN_ReadDigitalInput(int index)
 {
-#if PLATFORM_BL616
-	if(GLB_GPIO_Pad_LeadOut_Sts((uint8_t)index) == RESET) return 0;
-#endif
+	CHECK_PAD(index);
 	return bflb_gpio_read(gpio, (uint8_t)index);
 }
 
@@ -100,6 +96,8 @@ void HAL_PIN_PWM_Stop(int index)
 	}
 #if PLATFORM_BL616
 	bflb_pwm_v2_channel_positive_stop(dpwm, pwm);
+#elif PLATFORM_BL602
+	bflb_pwm_v1_stop(dpwm, pwm);
 #endif
 }
 
@@ -116,7 +114,6 @@ void HAL_PIN_PWM_Start(int index, int freq)
 	{
 		return;
 	}
-	bflb_gpio_init(gpio, (uint8_t)index, GPIO_FUNC_PWM0 | GPIO_ALTERNATE | GPIO_PULLUP | GPIO_SMT_EN | GPIO_DRV_1);
 #if PLATFORM_BL616 || defined(BL702L)
 	if(freq != pwmfreq)
 	{
@@ -149,6 +146,7 @@ void HAL_PIN_PWM_Start(int index, int freq)
 	pwm_periods[pwm] = freq;
 	bflb_pwm_v1_channel_init(dpwm, pwm, &cfg);
 #endif
+	bflb_gpio_init(gpio, (uint8_t)index, GPIO_FUNC_PWM0 | GPIO_ALTERNATE | GPIO_PULLUP | GPIO_SMT_EN | GPIO_DRV_1);
 }
 
 void HAL_PIN_PWM_Update(int index, float value)
@@ -173,8 +171,7 @@ void HAL_PIN_PWM_Update(int index, float value)
 	bflb_pwm_v2_channel_set_threshold(dpwm, pwm, 0, threshold);
 	bflb_pwm_v2_channel_positive_start(dpwm, pwm);
 #elif PLATFORM_BL602
-	uint32_t period = pwm_periods[pwm];
-	uint32_t threshold = (uint32_t)((value / 100.0f) * period);
+	uint32_t threshold = (uint32_t)((value / 100.0f) * pwm_periods[pwm]);
 	bflb_pwm_v1_channel_set_threshold(dpwm, pwm, 0, value * 10);
 	bflb_pwm_v1_start(dpwm, pwm);
 #endif
