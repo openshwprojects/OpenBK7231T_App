@@ -90,7 +90,6 @@ void PulseClock_onEverySec() {
         }
         phys_daysec += phys_resolution;
         phys_daysec=DaysecNormalise(phys_daysec);
-        addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "PulseClock: save to flash %i", phys_daysec);
         HAL_FlashVars_SaveChannel(PHYS_DAYSEC_FV, (int)phys_daysec);
     }
     else
@@ -138,12 +137,11 @@ void PulseClock_init() {
 	phys_pulseoffset = Tokenizer_GetArgIntegerDefault(2, 0);
 	phys_pulsemillis = Tokenizer_GetArgIntegerDefault(3, 500);
 	phys_daysec=(int32_t) HAL_FlashVars_GetChannelValue(PHYS_DAYSEC_FV);
-    addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "PulseClock: read from flash %i", phys_daysec);
     if (phys_daysec != DaysecNormalise(phys_daysec))
     {
         phys_daysec=PHYS_UNKNOWN;
     }
-    addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "PulseClock: init, resolution=%i", phys_resolution);
+    addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "PulseClock: init, resolution=%i, pulseoffset=%i, pulsemillis=%i, phystime=%02i:%02i:%02i", phys_resolution, DaysecToHour(phys_daysec), DaysecToMinute(phys_daysec), DaysecToSecond(phys_daysec));
 	CMD_RegisterCommand("PulseClock_SetPhysTime", Cmd_SetPhysTime, NULL);
 }
 
