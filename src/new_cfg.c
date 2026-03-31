@@ -409,6 +409,9 @@ void CFG_SetMQTTPort(int p) {
 		g_cfg.mqtt_port = p;
 		// mark as dirty (value has changed)
 		g_cfg_pendingChanges++;
+#if ENABLE_MQTT
+		g_mqtt_bBaseTopicDirty++;//hieu them vao
+#endif
 	}
 }
 void CFG_SetOpenAccessPoint() {
@@ -563,6 +566,9 @@ void CFG_SetMQTTHost(const char *s) {
 	if(strcpy_safe_checkForChanges(g_cfg.mqtt_host, s,sizeof(g_cfg.mqtt_host))) {
 		// mark as dirty (value has changed)
 		g_cfg_pendingChanges++;
+#if ENABLE_MQTT
+		g_mqtt_bBaseTopicDirty++;//hieu them vao
+#endif
 	}
 }
 void CFG_SetMQTTClientId(const char *s) {
@@ -590,6 +596,9 @@ void CFG_SetMQTTUserName(const char *s) {
 	if(strcpy_safe_checkForChanges(g_cfg.mqtt_userName, s,sizeof(g_cfg.mqtt_userName))) {
 		// mark as dirty (value has changed)
 		g_cfg_pendingChanges++;
+#if ENABLE_MQTT
+		g_mqtt_bBaseTopicDirty++;//hieu them vao
+#endif
 	}
 }
 void CFG_SetMQTTPass(const char *s) {
@@ -597,6 +606,9 @@ void CFG_SetMQTTPass(const char *s) {
 	if(strcpy_safe_checkForChanges(g_cfg.mqtt_pass, s,sizeof(g_cfg.mqtt_pass))) {
 		// mark as dirty (value has changed)
 		g_cfg_pendingChanges++;
+#if ENABLE_MQTT
+		g_mqtt_bBaseTopicDirty++;//hieu them vao
+#endif
 	}
 }
 void CFG_ClearPins() {
@@ -878,6 +890,9 @@ void CFG_SetMQTTUseTls(byte value) {
 		g_cfg.mqtt_use_tls = value;
 		// mark as dirty (value has changed)
 		g_cfg_pendingChanges++;
+#if ENABLE_MQTT
+		g_mqtt_bBaseTopicDirty++;//hieu them vao
+#endif
 	}
 }
 void CFG_SetMQTTVerifyTlsCert(byte value) {
@@ -886,6 +901,9 @@ void CFG_SetMQTTVerifyTlsCert(byte value) {
 		g_cfg.mqtt_verify_tls_cert = value;
 		// mark as dirty (value has changed)
 		g_cfg_pendingChanges++;
+#if ENABLE_MQTT
+		g_mqtt_bBaseTopicDirty++;//hieu them vao
+#endif
 	}
 }
 void CFG_SetMQTTCertFile(const char* s) {
@@ -893,6 +911,9 @@ void CFG_SetMQTTCertFile(const char* s) {
 	if (strcpy_safe_checkForChanges(g_cfg.mqtt_cert_file, s, sizeof(g_cfg.mqtt_cert_file))) {
 		// mark as dirty (value has changed)
 		g_cfg_pendingChanges++;
+#if ENABLE_MQTT
+		g_mqtt_bBaseTopicDirty++;//hieu them vao
+#endif
 	}
 }
 byte CFG_GetDisableWebServer() {
