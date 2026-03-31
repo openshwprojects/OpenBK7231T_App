@@ -1784,7 +1784,7 @@ commandResult_t MQTT_PublishAll(const void* context, const char* cmd, const char
         }
 		// ===== CALL BATCH =====
 		uint8_t leh[] = {0x01, 0x01, 0x02, 0x05};
-        MQTT_BuildAndPublishBatch_ByIndex(indices, count, leh, sizeof(leh));
+        (indices, count, leh, sizeof(leh));
 		// neu chua dung prefix thi de NULL
 		//MQTT_BuildAndPublishBatch_ByIndex(indices, count, NULL, 0);
     }
@@ -3300,7 +3300,7 @@ void MQTT_BuildAndPublishBatch_ByIndex(int *indices, int count, uint8_t* leh, in
     // =====================================================
 
 	if (!indices ){
-		if (count == INT_MAX ){
+		if (count == 2147483647  ){ //INT_MAX
 			count=0;//reset 
 			int argc = Tokenizer_GetArgsCount();
 			for (int i = 1; i < argc; i++) {
