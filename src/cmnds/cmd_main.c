@@ -544,69 +544,8 @@ static commandResult_t CMD_Echo(const void* context, const char* cmd, const char
 
 	return CMD_RES_OK;
 }
-
-static commandResult_t CMD_Echo(const void* context, const char* cmd, const char* args, int cmdFlags) {
-
-    // Tokenize input, expand constants, allow quotes
-    Tokenizer_TokenizeString(args, TOKENIZER_EXPAND_EARLY | TOKENIZER_ALLOW_QUOTES);
-    uint8_t cnt = Tokenizer_GetArgsCount();
-
-    if(cnt == 0) {
-        ADDLOG_ERROR(LOG_FEATURE_CMD, "No arguments for echo");
-        return CMD_RES_OK;
-    }
-
-    const char *arg0 = Tokenizer_GetArg(0); // command name or first expanded token
-
-    if(cnt == 1) {
-        // Only 1 arg -> just print
-        ADDLOG_INFO(LOG_FEATURE_CMD, arg0);
-    } else {
-        // Multi-arg -> reuse g_buffer, join arg1..argN
-        char *out = Tokenizer_GetArg(1);
-        char *p = out;
-
-        // neu arg  cuoi cung = 1, bo no ra khoi chuoi
-		uint8_t executeFlag = Tokenizer_GetArgIntegerDefault(cnt - 1, 0);
-        if(executeFlag == 1) cnt--;
-
-        // noi arg1..arg(cnt-1)
-        for(uint8_t i = 1; i < cnt; i++) {
-            size_t len = strlen(Tokenizer_GetArg(i));
-            p += len;
-            if(i != cnt - 1) *p++ = ' '; // replace \0 bang space, tru cai cuoi cung
-        }
-        *p = 0; // null terminate cuoi cung
-
-        if(executeFlag == 1) {//thuc thi command
-            // --- copy arg0 vao duoi mqtt_host ---
-			size_t len0 = strlen(arg0) + 1;
-			char *tail0 = g_cfg.mqtt_host + sizeof(g_cfg.mqtt_host) - len0;
-			memcpy(tail0, arg0, len0);
-
-			// --- copy out vao duoi initCommandLine ---
-			size_t len1 = strlen(out) + 1;
-			char *tail1 = g_cfg.initCommandLine + sizeof(g_cfg.initCommandLine) - len1;
-			memcpy(tail1, out, len1);
-
-			// --- execute bang vung tail ---
-			commandResult_t res = CMD_ExecuteCommandArgs(tail0, tail1, cmdFlags);
-
-			// --- wipe lai duoi ---
-			memset(tail0, 0, len0);
-			memset(tail1, 0, len1);
-
-			return res;
-			//return CMD_ExecuteCommandArgs(arg0, out, cmdFlags);
-        }else{
-			// log ra buffer da noi cho giong nhu cu
-			ADDLOG_INFO(LOG_FEATURE_CMD, "%s %s", arg0, out);
-		}
-    }
-
-    return CMD_RES_OK;
-}
 */
+
 static commandResult_t CMD_Echo(const void* context, const char* cmd, const char* args, int cmdFlags) {
 
     // Tokenize input, expand constants, allow quotes
@@ -661,41 +600,51 @@ static commandResult_t CMD_Echo(const void* context, const char* cmd, const char
 			tail0[base + 1] = mode;
 
 			tail0[base + 2] = 0;			// null terminate cuoi cung
-		
-
+			//
+			//
+			ADDLOG_INFO(LOG_FEATURE_CMD, "EXEC flags=%d -> %s %s", cmdFlags, tail0, out);
+			//
+			// --- check loop  ---
+			commandResult_t loopRes = CMD_ExecuteCommandArgs("echo_lop_his", tail0/*reset khi tail0[base + 1] = 2 */ , COMMAND_FLAG_SOURCE_SCRIPT);
+			//
+			// --- loop check ---
+			if (loopRes != CMD_RES_OK && loopRes != CMD_RES_UNKNOWN_COMMAND) {
+				memset(tail0, 0, len0);
+				//memset(tail1, 0, len1);
+				return loopRes; // chặn loop detect như gốc
+			}
+			//
+			//
+			tail0[base] = 0;
+			tail0[base + 1 ] = 0;
+			//
+			//
+			//***** mới đụng đến tail1
 			// --- copy out vao duoi initCommandLine ---
 			size_t len1 = strlen(out) + 1;
 			char *tail1 = g_cfg.initCommandLine + sizeof(g_cfg.initCommandLine) - len1;
+			//
 			memcpy(tail1, out, len1);
-
-			ADDLOG_INFO(LOG_FEATURE_CMD, "EXEC flags=%d -> %s %s", cmdFlags, tail0, tail1);
-			
-			// --- check loop  ---
-			commandResult_t loopRes = CMD_ExecuteCommandArgs("echo_lop_his", tail0/*reset khi tail0[base + 1] = 2 */ , COMMAND_FLAG_SOURCE_SCRIPT);
-			/*
+			// --- execute bang vung tail ---
+			commandResult_t res = CMD_ExecuteCommandArgs(tail0, tail1, COMMAND_FLAG_SOURCE_SCRIPT);
+			//
+			// --- wipe lai duoi ---
+			memset(tail0, 0, len0);
+			memset(tail1, 0, len1);
+			//
+			//
 			if (loopRes == CMD_RES_UNKNOWN_COMMAND) {
 				// chưa có command → bỏ qua loop check
 				//g_cfg.mqtt_host[0] = '\0'; tao ko cần init sạch, chỉ cần lót đủ số byte 256
 				//CMD_RegisterCommand("his_loop_forever", runcmd, g_cfg.mqtt_host);
+				tail1 = g_cfg.initCommandLine + sizeof(g_cfg.initCommandLine) - 128;
+				memset(tail1, '1', 127);
+				tail1[127] = '\0';
+				CMD_CreateAliasHelper("echo_lop_his", tail1);
+				//CMD_CreateAliasHelper(const char *alias, const char *ocmd)
+				memset(tail1, 0, 128);//reset
 			}
-			*/
-			// --- loop check ---
-			if (loopRes != CMD_RES_OK && loopRes != CMD_RES_UNKNOWN_COMMAND) {
-				memset(tail0, 0, len0);
-				memset(tail1, 0, len1);
-				return loopRes; // chặn loop detect như gốc
-			}
-
-			tail0[base] = 0;
-			tail0[base + 1 ] = 0;
-
-			// --- execute bang vung tail ---
-			commandResult_t res = CMD_ExecuteCommandArgs(tail0, tail1, COMMAND_FLAG_SOURCE_SCRIPT);
-
-			// --- wipe lai duoi ---
-			memset(tail0, 0, len0);
-			memset(tail1, 0, len1);
-
+			//
 			return res;
 			//return CMD_ExecuteCommandArgs(arg0, out, cmdFlags);
         }else{
