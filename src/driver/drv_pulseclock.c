@@ -49,7 +49,8 @@ static void PulseClock_SetPin(int role, int val) {
 	for (int i = 0; i < PLATFORM_GPIO_MAX; i++) {
 		if (g_cfg.pins.channels[i] == 1
 			&& g_cfg.pins.roles[i] == role) {
-			HAL_PIN_SetOutputValue(i, val);
+            HAL_PIN_Setup_Output(i);
+            HAL_PIN_SetOutputValue(i, val);
 		}
 	}
 }
@@ -74,7 +75,6 @@ void PulseClock_onEverySec() {
     want_daysec += phys_pulseoffset;
     want_daysec -= want_daysec % phys_resolution;
     want_daysec=DaysecNormalise(want_daysec);
-
 
     // is device time set ?
     if (tc.year < 2026)
