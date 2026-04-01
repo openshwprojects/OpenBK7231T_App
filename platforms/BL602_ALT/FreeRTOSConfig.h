@@ -113,13 +113,14 @@ to exclude the API function. */
 header file. */
 void vApplicationMallocFailedHook(void);
 void vAssertCalled(void);
+
 #define configASSERT(x)                        \
     if ((x) == 0) {                            \
         printf("file [%s]\r\n", __FILE__);     \
         printf("func [%s]\r\n", __FUNCTION__); \
         printf("line [%d]\r\n", __LINE__);     \
         printf("%s\r\n", (const char *)(#x));  \
-        vAssertCalled();                       \
+        /*vAssertCalled();*/                       \
     }
 
 #if (configUSE_TICKLESS_IDLE != 0)

@@ -213,7 +213,11 @@ EfErrCode ef_port_init(ef_env const** default_env, size_t* default_env_size)
 	*default_env = default_env_set;
 	*default_env_size = sizeof(default_env_set) / sizeof(default_env_set[0]);
 
+#if configUSE_RECURSIVE_MUTEXES && PLATFORM_BL_NEW
+	ef_mutex = xSemaphoreCreateRecursiveMutex();
+#else
 	ef_mutex = xSemaphoreCreateMutex();
+#endif
 
 #if PLATFORM_BL_NEW
 	int ret;
@@ -461,7 +465,11 @@ EfErrCode ef_port_write(uint32_t addr, const uint32_t* buf, size_t size)
  */
 void ef_port_env_lock(void)
 {
+#if configUSE_RECURSIVE_MUTEXES && PLATFORM_BL_NEW
+	xSemaphoreTakeRecursive(ef_mutex, 0xFFFFFFFF);
+#else
 	xSemaphoreTake(ef_mutex, 0xFFFFFFFF);
+#endif
 }
 
 /**
@@ -469,7 +477,11 @@ void ef_port_env_lock(void)
  */
 void ef_port_env_unlock(void)
 {
+#if configUSE_RECURSIVE_MUTEXES && PLATFORM_BL_NEW
+	xSemaphoreGiveRecursive(ef_mutex);
+#else
 	xSemaphoreGive(ef_mutex);
+#endif
 }
 
 /**

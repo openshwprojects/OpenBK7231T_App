@@ -121,8 +121,8 @@ int http_rest_post_flash(http_request_t* request, int startaddr, int maxaddr)
 	uint8_t* recv_buffer;
 	struct sockaddr_in dest;
 	iot_sha256_context ctx;
-	uint8_t sha256_result[32];
-	uint8_t sha256_img[32];
+	__attribute__((aligned(32))) uint8_t sha256_result[32];
+	__attribute__((aligned(32))) uint8_t sha256_img[32];
 	__attribute__((aligned(32))) bl_mtd_handle_t handle;
 	//init_ota(startaddr);
 
@@ -138,6 +138,7 @@ int http_rest_post_flash(http_request_t* request, int startaddr, int maxaddr)
 	}
 
 	recv_buffer = os_malloc(OTA_PROGRAM_SIZE);
+	if(!recv_buffer) return http_rest_error(request, -20, "os_malloc failed");
 
 	unsigned int buffer_offset, flash_offset, ota_addr;
 	uint32_t bin_size, part_size, running_size;
@@ -322,7 +323,7 @@ int http_rest_post_flash(http_request_t* request, int startaddr, int maxaddr)
 	hal_boot2_update_ptable(&ptEntry);
 	printf("[OTA] [TCP] Rebooting\r\n");
 	//close_ota();
-	vPortFree(recv_buffer);
+	os_free(recv_buffer);
 	utils_sha256_free(&ctx);
 	bl_mtd_close(handle);
 

@@ -58,6 +58,7 @@ int8_t HAL_RequestHWTimer(float requestPeriodUs, float* realPeriodUs,
 		hw_timers[freetimer] = bflb_device_get_by_name("timer1");
 
 	uint32_t ticks = (uint32_t)((requestPeriodUs * TIMER_TICK_HZ) / 1e6);
+	if(ticks == 0) ticks = 1;
 
 	if(realPeriodUs)
 		*realPeriodUs = (ticks * 1e6f) / TIMER_TICK_HZ;
@@ -98,8 +99,9 @@ void HAL_HWTimerDeinit(int8_t timer)
 {
 	if(timer < FIRST_TIMER || timer > MAX_TIMER) return;
 
-	bflb_timer_stop(hw_timers[timer]);
+	HAL_HWTimerStop(timer);
 	bflb_irq_disable(hw_timers[timer]->irq_num);
+	bflb_timer_deinit(hw_timers[timer]);
 
 	g_callbacks[timer] = NULL;
 	g_args[timer] = NULL;

@@ -215,7 +215,7 @@ static void wifi_event_handler(input_event_t* event, void* private_data)
 			break;
 		case CODE_WIFI_ON_CONNECTING:
 		{
-#if !PLATFORM_BL_NEW
+#if !PLATFORM_BL616
 			if(g_wifiStatusCallback != 0)
 			{
 				g_wifiStatusCallback(WIFI_STA_CONNECTING);
@@ -230,7 +230,7 @@ static void wifi_event_handler(input_event_t* event, void* private_data)
 			break;
 		case CODE_WIFI_ON_GOT_IP:
 		{
-#if !PLATFORM_BL_NEW
+#if !PLATFORM_BL616
 			if(g_wifiStatusCallback != 0)
 			{
 				g_wifiStatusCallback(WIFI_STA_CONNECTED);
@@ -272,7 +272,7 @@ static void wifi_event_handler(input_event_t* event, void* private_data)
 #endif
 		case CODE_WIFI_ON_DISCONNECT:
 		{
-#if !PLATFORM_BL_NEW
+#if !PLATFORM_BL616
 			if(g_wifiStatusCallback != 0)
 			{
 				g_wifiStatusCallback(WIFI_STA_DISCONNECTED);
@@ -418,6 +418,13 @@ void HAL_FastConnectToWiFi(const char* oob_ssid, const char* connect_key, obkSta
 		ext_param.ap_info.use_dhcp = ip->localIPAddr[0] == 0 ? 1 : 0;
 		ext_param.flags = WIFI_CONNECT_PMF_CAPABLE | WIFI_CONNECT_STOP_SCAN_ALL_CHANNEL_IF_TARGET_AP_FOUND | WIFI_CONNECT_STOP_SCAN_CURRENT_CHANNEL_IF_TARGET_AP_FOUND;
 
+#if PLATFORM_BL_NEW
+		if(!g_wifi_init)
+		{
+			wifi_start_firmware();
+			g_wifi_init = true;
+		}
+#endif
 		if(g_powersave) wifi_mgmr_sta_ps_exit();
 		wifi_interface_t wifi_interface;
 		wifi_interface = wifi_mgmr_sta_enable();

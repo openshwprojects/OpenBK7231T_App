@@ -16,6 +16,8 @@ sdk_add_compile_options(
 	-Wno-unused-variable
 	-Wno-return-type
 	-g0
+	-fstrict-aliasing -fno-strict-overflow
+	-falign-functions=32 -falign-jumps=32 -falign-loops=32
 )
 
 if(DEFINED ENV{APP_VERSION})
