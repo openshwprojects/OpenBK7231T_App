@@ -3082,17 +3082,18 @@ bool MQTT_GetItemValue(int idx, char *out, int outLen) {
 
     switch(idx) {
 
-		case 0: // debug: size of initCommandLine
-			snprintf(out, outLen, "%zu", sizeof(g_cfg.initCommandLine));
-			return true;
+		//case 0: // debug: size of initCommandLine
+		//	snprintf(out, outLen, "%zu", sizeof(g_cfg.initCommandLine));
+		//	return true;
 
         case PUBLISHITEM_SELF_HOSTNAME:
             snprintf(out, outLen, "%s", CFG_GetShortDeviceName());
             return true;
 
         case PUBLISHITEM_SELF_BUILD:
+			// snprintf(out, outLen, "%s%c", CFG_GetMQTTGroupTopic(),0x1D);
 			//	uint8_t g_oneAllDelimiter = 0x1D;
-            snprintf(out, outLen, "%s%c", CFG_GetMQTTGroupTopic(),0x1D);
+            snprintf(out, outLen, "%s", CFG_GetMQTTGroupTopic());
             return true;
 
         case PUBLISHITEM_SELF_MAC:
@@ -3121,8 +3122,8 @@ bool MQTT_GetItemValue(int idx, char *out, int outLen) {
             return true;
 
         case PUBLISHITEM_SELF_FREEHEAP:
-            snprintf(out, outLen, "%zu", xPortGetFreeHeapSize());
-            return true;
+			//	uint8_t g_oneAllDelimiter = 0x1D;
+            snprintf(out, outLen, "%d%c%zu", xPortGetFreeHeapSize(),0x1D,sizeof(g_cfg.initCommandLine));
 
         case PUBLISHITEM_SELF_IP:
             snprintf(out, outLen, "%s", HAL_GetMyIPString());
@@ -3242,7 +3243,7 @@ int x = 0x12345678;
 
 
 static const int defaultIndices[] = {
-	0, //test initCommandLine size
+	//0, //test initCommandLine size
 	-14,  //Build origin PUBLISHITEM_SELF_BUILD           -14  //Build        chuyen sang lay MQTT_GROUP
 	-13,//#define PUBLISHITEM_SELF_MAC                    -13  //Device mac
 	-9,//#define PUBLISHITEM_SELF_DATETIME               -9  //Current unix datetime
@@ -3388,6 +3389,16 @@ void MQTT_BuildAndPublishBatch_ByIndex(int *indices, int count, uint8_t* leh, in
             //int v  = CHANNEL_Get(ch);
             //char value[32];
             //snprintf(value, sizeof(value), "%d", v);
+
+			// 🔍 check duplicate (scan backward)
+			for (int j = 0; j < i; j++) {
+				if (channels[j] == ch) {
+					ch = 2147483647;
+					break;
+				}
+			}
+			if (ch == 2147483647)
+				continue;
 
             int remain = ONEALL_PAYLOAD_MAX - len;
 
