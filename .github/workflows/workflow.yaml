@@ -238,40 +238,29 @@ jobs:
           # ALT firmware
           - platform: OpenBK7231N_ALT
             variant: default
-            gcc: apt
           - platform: OpenBK7231T_ALT
             variant: default
-            gcc: apt
           - platform: OpenBK7231U
             variant: default
-            gcc: apt
           - platform: OpenBK7238
             variant: default
-            gcc: apt
           - platform: OpenBK7252
             variant: default
-            gcc: apt
           - platform: OpenBK7252N
             variant: default
-            gcc: apt
           # extras for BK7238
           - platform: OpenBK7238
             variant: berry
-            gcc: apt
           - platform: OpenBK7238
             variant: irRemoteESP
-            gcc: apt
           - platform: OpenBK7238
             variant: battery
-            gcc: apt
 
           # bt proxy
           - platform: OpenBK7238
             variant: btproxy
-            gcc: apt
           - platform: OpenBK7231N_ALT
             variant: btproxy
-            gcc: apt
           - platform: OpenRTL87X0C
             variant: btproxy
             gcc: apt
