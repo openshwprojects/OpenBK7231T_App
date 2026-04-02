@@ -1510,8 +1510,9 @@ extern "C" {
 #define DPRINTLN(x)
 #endif
 #endif  // DEBUG
-#if PLATFORM_REALTEK
-#define strcasecmp strcmp
+#if PLATFORM_REALTEK || PLATFORM_BEKEN_NEW
+extern "C" int wal_stricmp(const char* a, const char* b);
+#define strcasecmp wal_stricmp
 #endif
 
 #ifdef UNIT_TEST
