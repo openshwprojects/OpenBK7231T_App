@@ -25,12 +25,7 @@ int32_t HMSToDaysec(uint8_t hour, uint8_t minute, uint8_t second) {
 }
 
 int32_t DaysecNormalise(int32_t daysec) {
-    while (daysec < 0)
-    {
-        daysec += 86400;
-    }
-    daysec = daysec % 86400;
-    return daysec;
+    return daysec % 86400;
 }
 
 uint8_t DaysecToHour(int32_t daysec) {
@@ -107,7 +102,8 @@ void PulseClock_onEverySec() {
                 DaysecToHour(phys_daysec), DaysecToMinute(phys_daysec), DaysecToSecond(phys_daysec) 
                );
 
-        if ((abs(phys_daysec - want_daysec) > (86400/2)) && PulseClock_CanRev() )
+        if ((((phys_daysec - want_daysec) % 86400) > (86400/2)) 
+                && PulseClock_CanRev() )
         {
             if ((phys_daysec / phys_resolution) % 2)
             {
