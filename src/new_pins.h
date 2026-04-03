@@ -679,20 +679,6 @@ typedef enum ioRole_e {
 	//iodetail:"file":"new_pins.h",
 	//iodetail:"driver":"RC"}
 	IOR_Button_ShutterDown,
-	//iodetail:{"name":"PulseClock_En",
-	//iodetail:"title":"PulseClock Enable Pin",
-	//iodetail:"descr":"",
-	//iodetail:"enum":"IOR_PulseClock_En",
-	//iodetail:"file":"new_pins.h",
-	//iodetail:"driver":""}
-	IOR_PulseClock_En,
-	//iodetail:{"name":"PulseClock_Dir",
-	//iodetail:"title":"PulseClock Direction Pin",
-	//iodetail:"descr":"",
-	//iodetail:"enum":"IOR_PulseClock_Dir",
-	//iodetail:"file":"new_pins.h",
-	//iodetail:"driver":""}
-	IOR_PulseClock_Dir,
 	//iodetail:{"name":"PulseClock_Fwd",
 	//iodetail:"title":"PulseClock Forward Pin",
 	//iodetail:"descr":"",
@@ -700,6 +686,20 @@ typedef enum ioRole_e {
 	//iodetail:"file":"new_pins.h",
 	//iodetail:"driver":""}
 	IOR_PulseClock_Fwd,
+	//iodetail:{"name":"PulseClock_FwdPos",
+	//iodetail:"title":"PulseClock Forward+ Pin",
+	//iodetail:"descr":"",
+	//iodetail:"enum":"IOR_PulseClock_FwdPos",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
+	IOR_PulseClock_FwdPos,
+	//iodetail:{"name":"PulseClock_FwdNeg",
+	//iodetail:"title":"PulseClock Forward- Pin",
+	//iodetail:"descr":"",
+	//iodetail:"enum":"IOR_PulseClock_FwdNeg",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
+	IOR_PulseClock_FwdNeg,
 	//iodetail:{"name":"PulseClock_Rev",
 	//iodetail:"title":"PulseClock Reverse Pin",
 	//iodetail:"descr":"",
@@ -707,6 +707,20 @@ typedef enum ioRole_e {
 	//iodetail:"file":"new_pins.h",
 	//iodetail:"driver":""}
 	IOR_PulseClock_Rev,
+	//iodetail:{"name":"PulseClock_RevPos",
+	//iodetail:"title":"PulseClock Reverse+ Pin",
+	//iodetail:"descr":"",
+	//iodetail:"enum":"IOR_PulseClock_RevPos",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
+	IOR_PulseClock_RevPos,
+	//iodetail:{"name":"PulseClock_RevNeg",
+	//iodetail:"title":"PulseClock Reverse- Pin",
+	//iodetail:"descr":"",
+	//iodetail:"enum":"IOR_PulseClock_RevNeg",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
+	IOR_PulseClock_RevNeg,
 	//iodetail:{"name":"Total_Options",
 	//iodetail:"title":"TODO",
 	//iodetail:"descr":"Current total number of available IOR roles",

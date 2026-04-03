@@ -55,11 +55,25 @@ static void PulseClock_SetPin(int role, int val) {
 	}
 }
 
+static bool PulseClock_CanRev() {
+	for (int i = 0; i < PLATFORM_GPIO_MAX; i++) {
+		if (g_cfg.pins.roles[i] == IOR_PulseClock_Rev 
+                || g_cfg.pins.roles[i] == IOR_PulseClock_RevPos 
+                || g_cfg.pins.roles[i] == IOR_PulseClock_RevNeg
+                ) {
+            return true;
+        }
+    }
+    return false;
+}
+
 static void PulseClock_SetAllOff() {
-    PulseClock_SetPin(IOR_PulseClock_En, 0);
-    PulseClock_SetPin(IOR_PulseClock_Dir, 0);
     PulseClock_SetPin(IOR_PulseClock_Fwd, 0);
+    PulseClock_SetPin(IOR_PulseClock_FwdPos, 0);
+    PulseClock_SetPin(IOR_PulseClock_FwdNeg, 0);
     PulseClock_SetPin(IOR_PulseClock_Rev, 0);
+    PulseClock_SetPin(IOR_PulseClock_RevPos, 0);
+    PulseClock_SetPin(IOR_PulseClock_RevNeg, 0);
 }
 
 void PulseClock_onEverySec() {
@@ -93,24 +107,41 @@ void PulseClock_onEverySec() {
                 DaysecToHour(phys_daysec), DaysecToMinute(phys_daysec), DaysecToSecond(phys_daysec) 
                );
 
-        if ((phys_daysec / phys_resolution) % 2)
+        if (abs(phys_daysec - want_daysec) > (86400/2) && PulseClock_CanRev() )
         {
-            addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "PulseClock: Advance even tick");
-            PulseClock_SetPin(IOR_PulseClock_Fwd,1);
-            PulseClock_SetPin(IOR_PulseClock_Dir,1);
-            PulseClock_SetPin(IOR_PulseClock_En,1);
-            rtos_delay_milliseconds(phys_pulsemillis);
-            PulseClock_SetAllOff();
+            if ((phys_daysec / phys_resolution) % 2)
+            {
+                addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "PulseClock: Reverse (neg)");
+                PulseClock_SetPin(IOR_PulseClock_RevNeg,1);
+                PulseClock_SetPin(IOR_PulseClock_Rev,1);
+            }
+            else
+            {
+                addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "PulseClock: Reverse (pos)");
+                PulseClock_SetPin(IOR_PulseClock_RevPos,1);
+                PulseClock_SetPin(IOR_PulseClock_Rev,1);
+            }
+            phys_daysec -= phys_resolution;
         }
         else
         {
-            addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "PulseClock: Advance odd tick");
-            PulseClock_SetPin(IOR_PulseClock_Rev,1);
-            PulseClock_SetPin(IOR_PulseClock_En,1);
-            rtos_delay_milliseconds(phys_pulsemillis);
-            PulseClock_SetAllOff();
+            if ((phys_daysec / phys_resolution) % 2)
+            {
+                addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "PulseClock: Forward (pos)");
+                PulseClock_SetPin(IOR_PulseClock_FwdPos,1);
+                PulseClock_SetPin(IOR_PulseClock_Fwd,1);
+            }
+            else
+            {
+                addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "PulseClock: Forward (neg)");
+                PulseClock_SetPin(IOR_PulseClock_FwdNeg,1);
+                PulseClock_SetPin(IOR_PulseClock_Fwd,1);
+            }
+            phys_daysec += phys_resolution;
         }
-        phys_daysec += phys_resolution;
+
+        rtos_delay_milliseconds(phys_pulsemillis);
+        PulseClock_SetAllOff();
         phys_daysec=DaysecNormalise(phys_daysec);
         HAL_FlashVars_SaveChannel(PHYS_DAYSEC_FV, (int)phys_daysec);
     }
