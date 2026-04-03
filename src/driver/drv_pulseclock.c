@@ -102,7 +102,7 @@ void PulseClock_onEverySec() {
                 DaysecToHour(phys_daysec), DaysecToMinute(phys_daysec), DaysecToSecond(phys_daysec) 
                );
 
-        if ((((phys_daysec - want_daysec) % 86400) > (86400/2)) 
+        if ((((phys_daysec - want_daysec) % 86400) < (86400/2)) 
                 && PulseClock_CanRev() )
         {
             if ((phys_daysec / phys_resolution) % 2)
