@@ -264,6 +264,7 @@ prebuild_OpenTR6260: berry
 
 prebuild_OpenRTL87X0C: berry
 	git submodule update --init --recursive --depth=1 sdk/OpenRTL87X0C
+	if [ ! -e sdk/OpenRTL87X0C/tools/arm-none-eabi-gcc/arm-none-eabi ]; then cd sdk/OpenRTL87X0C/tools/arm-none-eabi-gcc && XZ_OPT="-T0" tar -xf *.tar.xz; fi
 	@if [ -e platforms/RTL87X0C/pre_build.sh ]; then \
 		echo "prebuild found for OpenRTL87X0C"; \
 		sh platforms/RTL87X0C/pre_build.sh; \
@@ -592,7 +593,7 @@ OpenTR6260: prebuild_OpenTR6260
 	
 .PHONY: OpenRTL87X0C
 OpenRTL87X0C: prebuild_OpenRTL87X0C
-	$(MAKE) -C sdk/OpenRTL87X0C/project/OpenBeken/GCC-RELEASE APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT) -j $(shell nproc)
+	ARM_GCC_TOOLCHAIN=$(PWD)/sdk/OpenRTL87X0C/tools/arm-none-eabi-gcc/arm-none-eabi/bin/ $(MAKE) -C sdk/OpenRTL87X0C/project/OpenBeken/GCC-RELEASE APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT) -j $(shell nproc)
 	mkdir -p output/$(APP_VERSION)
 	cp sdk/OpenRTL87X0C/project/OpenBeken/GCC-RELEASE/application_is/Debug/bin/flash_is.bin output/$(APP_VERSION)/OpenRTL87X0C_$(APP_VERSION).bin
 	cp sdk/OpenRTL87X0C/project/OpenBeken/GCC-RELEASE/application_is/Debug/bin/firmware_is.bin output/$(APP_VERSION)/OpenRTL87X0C_$(APP_VERSION)_ota.img

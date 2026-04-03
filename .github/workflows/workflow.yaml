@@ -187,7 +187,6 @@ jobs:
             gcc: 8-2019-q3
           - platform: OpenRTL87X0C
             variant: default
-            gcc: apt
           - platform: OpenRTL8720D
             variant: default
             gcc: 10.3-2021.10
@@ -202,7 +201,7 @@ jobs:
             variant: default
           - platform: OpenLN8825
             variant: default
-            gcc: apt
+            gcc: 10.3-2021.10
 
           # extras for BK7231T
           - platform: OpenBK7231T
@@ -263,7 +262,6 @@ jobs:
             variant: btproxy
           - platform: OpenRTL87X0C
             variant: btproxy
-            gcc: apt
           - platform: OpenLN882H
             variant: btproxy
             gcc: 10.3-2021.10
