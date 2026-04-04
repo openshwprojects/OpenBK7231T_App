@@ -149,7 +149,7 @@ void PulseClock_onEverySec() {
         rtos_delay_milliseconds(phys_pulsemillis);
         PulseClock_SetAllOff();
         phys_daysec=DaysecNormalise(phys_daysec);
-        HAL_FlashVars_SaveChannel(PHYS_DAYSEC_FV, (int)phys_daysec);
+//        HAL_FlashVars_SaveChannel(PHYS_DAYSEC_FV, (int)phys_daysec);
     }
 }
 
@@ -185,7 +185,7 @@ void PulseClock_init() {
 	phys_pulseoffset = Tokenizer_GetArgIntegerDefault(2, 0);
 	phys_pulsemillis = Tokenizer_GetArgIntegerDefault(3, 500);
 	phys_maxsec = Tokenizer_GetArgIntegerDefault(4, 86400/2);
-	phys_daysec=(int32_t) HAL_FlashVars_GetChannelValue(PHYS_DAYSEC_FV);
+//	phys_daysec=(int32_t) HAL_FlashVars_GetChannelValue(PHYS_DAYSEC_FV);
     if (phys_daysec != DaysecNormalise(phys_daysec))
     {
         phys_daysec=PHYS_UNKNOWN;
