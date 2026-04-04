@@ -255,6 +255,7 @@
 #define ENABLE_DRIVER_TINYIR_NEC				1
 // allow testing, remove before merging
 //#define ENABLE_DRIVER_DCF77					1
+#define ENABLE_DRIVER_RC						1
 
 #elif PLATFORM_BEKEN
 
