@@ -26,14 +26,12 @@ int32_t HMSToDaysec(uint8_t hour, uint8_t minute, uint8_t second) {
 }
 
 int32_t DaysecNormalise(int32_t daysec) {
+    daysec=daysec % phys_maxsec;
     if (daysec < 0)
     {
-        return (daysec % phys_maxsec) + phys_maxsec;
+        daysec += phys_maxsec;
     }
-    else
-    {
-        return daysec % phys_maxsec;
-    }
+    return daysec; 
 }
 
 uint8_t DaysecToHour(int32_t daysec) {
@@ -114,9 +112,8 @@ void PulseClock_onEverySec() {
         
         addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "PulseClock: diff=%i, diffnormal=%i", diff, DaysecNormalise(diff));
 
-        if ((diff < 0) 
-            && ( DaysecNormalise(diff) >= phys_maxsec/2)
-            && PulseClock_CanRev() )
+        if (( (diff > 0) || (DaysecNormalise(diff) < phys_maxsec/2) )
+           && PulseClock_CanRev() )
         {
             if ((phys_daysec / phys_resolution) % 2)
             {
