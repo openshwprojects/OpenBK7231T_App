@@ -51,6 +51,7 @@ set(OBKM_SRC
 	${OBK_SRCS}new_ping.c
 	${OBK_SRCS}new_pins.c
 	${OBK_SRCS}rgb2hsv.c
+	${OBK_SRCS}safety/safety.c
 	${OBK_SRCS}tiny_crc8.c
 	${OBK_SRCS}httpclient/http_client.c
 	${OBK_SRCS}httpclient/utils_net.c

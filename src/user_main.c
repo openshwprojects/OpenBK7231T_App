@@ -22,6 +22,11 @@
 // overall config variables for app - like ENABLE_LITTLEFS
 #include "obk_config.h"
 
+// Safety supervisor - thermal throttling, etc
+#if ENABLE_SAFETY
+#include "safety/safety.h"
+#endif
+
 #include "httpserver/new_http.h"
 #include "httpserver/http_fns.h"
 #include "new_pins.h"
@@ -718,13 +723,8 @@ bool Main_HasFastConnect() {
 	}
 	return false;
 }
-#if PLATFORM_LN882H || PLATFORM_ESPIDF || PLATFORM_ESP8266 || PLATFORM_LN8825
-// Quick hack to display LN-only temperature,
-// we may improve it in the future
-extern float g_wifi_temperature;
-#else
-float g_wifi_temperature = 0;
-#endif
+// declare and define global var ONCE!
+float g_wifi_temperature = 0.0f;
 
 static byte g_secondsSpentInLowMemoryWarning = 0;
 void Main_OnEverySecond()
@@ -809,6 +809,9 @@ void Main_OnEverySecond()
 #endif
 #if ENABLE_LED_BASIC
 	LED_RunOnEverySecond();
+#endif
+#if ENABLE_SAFETY
+	SAFETY_OnEverySecond();
 #endif
 #ifndef OBK_DISABLE_ALL_DRIVERS
 	DRV_OnEverySecond();

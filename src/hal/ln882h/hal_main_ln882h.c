@@ -1,5 +1,6 @@
 #if PLATFORM_LN882H || PLATFORM_LN8825
 
+#include "../../new_common.h"
 #include "osal/osal.h"
 #include "utils/debug/log.h"
 #include "wifi.h"
@@ -34,7 +35,6 @@
 #endif
 
 static OS_Thread_t g_usr_app_thread;
-float g_wifi_temperature = 0.0f;
 
 extern void Main_Init();
 extern void Main_OnEverySecond();
@@ -49,6 +49,7 @@ void usr_app_task_entry(void *params)
 
 	int8_t cap_comp = 0;
 	uint16_t adc_val = 0;
+	float new_wifi_temperature;
 
 	if(NVDS_ERR_OK == ln_nvds_get_xtal_comp_val((uint8_t*)&cap_comp))
 	{
@@ -68,7 +69,8 @@ void usr_app_task_entry(void *params)
 	{
 		adc_val = HAL_ADC_Read(HAL_TEMP_ADC);
 		wifi_do_temp_cal_period(adc_val);
-		g_wifi_temperature = (25 + ((adc_val & 0xFFF) - 770) / 2.54f);
+		new_wifi_temperature = (25 + ((adc_val & 0xFFF) - 770) / 2.54f);
+		g_wifi_temperature = (0.8 * g_wifi_temperature) + (0.2 * new_wifi_temperature); // low pass IIR filter to smooth out readings
 		OS_MsDelay(1000);
 		Main_OnEverySecond();
 	}
