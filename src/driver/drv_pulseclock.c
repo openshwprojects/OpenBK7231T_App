@@ -19,13 +19,21 @@ static int32_t phys_daysec;
 static int32_t phys_resolution;
 static int32_t phys_pulseoffset;
 static int32_t phys_pulsemillis;
+static int32_t phys_maxsec;
 
 int32_t HMSToDaysec(uint8_t hour, uint8_t minute, uint8_t second) {
     return (hour * 3600) + (minute * 60) + (second);
 }
 
 int32_t DaysecNormalise(int32_t daysec) {
-    return daysec % 86400;
+    if (daysec < 0)
+    {
+        return (daysec % phys_maxsec) + phys_maxsec;
+    }
+    else
+    {
+        return daysec % phys_maxsec;
+    }
 }
 
 uint8_t DaysecToHour(int32_t daysec) {
@@ -94,7 +102,8 @@ void PulseClock_onEverySec() {
         phys_daysec=want_daysec;
     }
 
-    if (phys_daysec != want_daysec)
+    int32_t diff=(phys_daysec - want_daysec);
+    if (diff)
     {
         addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "PulseClock: ntp_time=%02i:%02i:%02i, want_time=%02i:%02i:%02i, phys_time=%02i:%02i:%02i", 
                 tc.hour, tc.minute, tc.second,
@@ -103,9 +112,10 @@ void PulseClock_onEverySec() {
                );
 
         
-        addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "PulseClock: diffmod %i", (phys_daysec - want_daysec) % 86400);
+        addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "PulseClock: diffmod %i", (phys_daysec - want_daysec) % phys_maxsec);
 
-        if ( (((phys_daysec - want_daysec) % 86400) < (86400/2)) 
+        if ( (diff < 0)
+                && ( DaySecNormalise(diff) < phys_maxsec/2)
                 && PulseClock_CanRev() )
         {
             if ((phys_daysec / phys_resolution) % 2)
@@ -177,15 +187,17 @@ void PulseClock_init() {
 	phys_resolution = Tokenizer_GetArgIntegerDefault(1, 60);
 	phys_pulseoffset = Tokenizer_GetArgIntegerDefault(2, 0);
 	phys_pulsemillis = Tokenizer_GetArgIntegerDefault(3, 500);
+	phys_maxsec = Tokenizer_GetArgIntegerDefault(4, 86400/2);
 	phys_daysec=(int32_t) HAL_FlashVars_GetChannelValue(PHYS_DAYSEC_FV);
     if (phys_daysec != DaysecNormalise(phys_daysec))
     {
         phys_daysec=PHYS_UNKNOWN;
     }
-    addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "PulseClock: init, resolution=%i, pulseoffset=%i, pulsemillis=%i, phystime=%02i:%02i:%02i", 
+    addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "PulseClock: init, resolution=%i, pulseoffset=%i, pulsemillis=%i, maxsec=%i, phystime=%02i:%02i:%02i", 
             phys_resolution, 
             phys_pulseoffset,
             phys_pulsemillis,
+            phys_maxsec,
             DaysecToHour(phys_daysec), DaysecToMinute(phys_daysec), DaysecToSecond(phys_daysec));
 	CMD_RegisterCommand("PulseClock_SetPhysTime", Cmd_SetPhysTime, NULL);
 }
