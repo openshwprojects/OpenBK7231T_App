@@ -115,7 +115,7 @@ void PulseClock_onEverySec() {
         addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "PulseClock: diffmod %i", (phys_daysec - want_daysec) % phys_maxsec);
 
         if ( (diff < 0)
-                && ( DaySecNormalise(diff) < phys_maxsec/2)
+                && ( DaysecNormalise(diff) < phys_maxsec/2)
                 && PulseClock_CanRev() )
         {
             if ((phys_daysec / phys_resolution) % 2)
