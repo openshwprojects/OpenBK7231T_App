@@ -1653,11 +1653,16 @@ void Main_Init()
 
 }
 
-#if PLATFORM_ESPIDF || PLATFORM_ESP8266 || PLATFORM_BL602 || (PLATFORM_REALTEK && !PLATFORM_REALTEK_NEW) \
+#if PLATFORM_ESPIDF || PLATFORM_ESP8266 || PLATFORM_BL602 || PLATFORM_REALTEK \
 || PLATFORM_XRADIO || PLATFORM_W600 || PLATFORM_W800 || PLATFORM_LN8825 || PLATFORM_LN882H || PLATFORM_BL_NEW
-
+#if PLATFORM_REALTEK_NEW
+void __wrap_vApplicationIdleHook(void)
+{
+	__real_vApplicationIdleHook();
+#else
 void vApplicationIdleHook(void)
 {
+#endif
 	isidle();
 }
 

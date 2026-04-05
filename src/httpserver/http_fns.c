@@ -60,6 +60,7 @@
 #include "lwip_netconf.h"
 #include "ameba_soc.h"
 #include "ameba_ota.h"
+//SemaphoreHandle_t scan_hdl;
 extern uint32_t current_fw_idx;
 #elif defined(PLATFORM_ESPIDF) || PLATFORM_ESP8266
 #include "esp_wifi.h"
@@ -1553,6 +1554,74 @@ int http_fn_cfg_wifi(http_request_t* request) {
 		}
 		xSemaphoreTake(scan_hdl, pdMS_TO_TICKS(10 * 1000));
 		vSemaphoreDelete(scan_hdl);
+#elif PLATFORM_REALTEK_NEW
+
+		extern int wifi_get_scan_records(uint32_t* ap_num, struct rtw_scan_result* ap_list);
+		int32_t scan_result_handler(uint32_t records_num, void* user_data)
+		{
+			(void)user_data;
+			struct rtw_scan_result* record;
+			struct rtw_scan_result* records_list = NULL;
+
+			if(records_num == 0)
+			{
+				//xSemaphoreGive(scan_hdl);
+				return RTK_FAIL;
+			}
+
+			records_list = (struct rtw_scan_result*)os_malloc(records_num * sizeof(struct rtw_scan_result));
+			if(records_list == NULL)
+			{
+				//xSemaphoreGive(scan_hdl);
+				return RTK_FAIL;
+			}
+
+			if(wifi_get_scan_records(&records_num, records_list) < 0)
+			{
+				os_free((uint8_t*)records_list);
+				//xSemaphoreGive(scan_hdl);
+				return RTK_FAIL;
+			}
+
+			for(uint8_t i = 0; i < records_num; i++)
+			{
+				record = &records_list[i];
+				record->ssid.val[record->ssid.len] = 0;
+				char ssid[33] = { 0 };
+				if(!strcmp((char*)record->ssid.val, ""))
+				{
+					snprintf(ssid, sizeof(ssid) - 1, "%s", "&lt;hidden&gt;");
+				}
+				else
+				{
+					strcpy((char*)&ssid, (char*)record->ssid.val);
+				}
+
+				hprintf255(request, "<tr><td>%s</td><td>%i</td><td>%i</td></tr>", (char*)&ssid, record->channel, record->signal_strength);
+			}
+			os_free((uint8_t*)records_list);
+			//xSemaphoreGive(scan_hdl);
+			return RTK_SUCCESS;
+		}
+
+		//scan_hdl = xSemaphoreCreateBinary();
+		//xSemaphoreTake(scan_hdl, 1);
+		struct rtw_scan_param scan_param = { 0 };
+
+		scan_param.scan_user_callback = scan_result_handler;
+		scan_param.max_ap_record_num = 20;
+		scan_param.chan_scan_time.active_scan_time = 110;
+		scan_param.chan_scan_time.passive_scan_time = 110;
+		//if(wifi_scan_networks(&scan_param, 0) != RTK_SUCCESS)
+		hprintf255(request, "<table><tr><th>SSID</th><th>Channel</th><th>Signal</th></tr>");
+		if(wifi_scan_networks(&scan_param, 1) != RTK_SUCCESS)
+		{
+			//xSemaphoreGive(scan_hdl);
+			//hprintf255(request, "ERROR: wifi scan failed!<br>");
+		};
+		hprintf255(request, "</table><br>");
+		//xSemaphoreTake(scan_hdl, pdMS_TO_TICKS(15 * 1000));
+		//vSemaphoreDelete(scan_hdl);
 #else
 		hprintf255(request, "TODO %s<br>", PLATFORM_MCU_NAME);
 #endif
