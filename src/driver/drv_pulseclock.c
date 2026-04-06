@@ -109,9 +109,6 @@ void PulseClock_onEverySec() {
                 DaysecToHour(phys_daysec), DaysecToMinute(phys_daysec), DaysecToSecond(phys_daysec) 
                );
 
-        
-        addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "PulseClock: diff=%i, diffnormal=%i", diff, DaysecNormalise(diff));
-
         if (( (diff > 0) && (DaysecNormalise(diff) < phys_maxsec/2) )
            && PulseClock_CanRev() )
         {
