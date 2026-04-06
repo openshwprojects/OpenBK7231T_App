@@ -116,7 +116,7 @@ commandResult_t CHT83XX_Calibrate(const void* context, const char* cmd, const ch
 	g_calTemp = Tokenizer_GetArgFloat(0);
 	g_calHum = Tokenizer_GetArgFloat(1);
 
-	ADDLOG_INFO(LOG_FEATURE_SENSOR, "Calibrate CHT: Calibration done temp %f and humidity %f ", g_calTemp, g_calHum);
+	ADDLOG_INFO(LOG_FEATURE_SENSOR, "Calibrate CHT: Calibration done temp %f and humidity %f", g_calTemp, g_calHum);
 
 	return CMD_RES_OK;
 }

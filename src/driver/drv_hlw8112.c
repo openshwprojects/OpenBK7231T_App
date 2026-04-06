@@ -62,7 +62,7 @@ int GPIO_HLW_SCSN = 9;
 
 void HLW8112_Print_Array(uint8_t *data, int size) {
 	for (int i = 0; i <= size; i++) {
-		ADDLOG_DEBUG(LOG_FEATURE_ENERGYMETER, "HLW8112_Print_Array i = %d :  v = %02hhX ", i, data[i]);
+		ADDLOG_DEBUG(LOG_FEATURE_ENERGYMETER, "HLW8112_Print_Array i = %d : v = %02hhX", i, data[i]);
 	}
 }
 #else
@@ -95,13 +95,13 @@ void HLW8112_SPI_Txn_End(void) {
 
 int HLW8112_SPI_ReadBytes(uint8_t *buffer, uint32_t size) {
 	int Result = SPI_ReadBytes(buffer, size);
-	ADDLOG_DEBUG(LOG_FEATURE_ENERGYMETER, "HLW8112_SPI_Read  result %x ", Result);
+	ADDLOG_DEBUG(LOG_FEATURE_ENERGYMETER, "HLW8112_SPI_Read result %x", Result);
 	return Result;
 }
 
 int HLW8112_SPI_WriteBytes(uint8_t *data, uint32_t size) {
   	int Result = SPI_WriteBytes(data, size);
-  	ADDLOG_DEBUG(LOG_FEATURE_ENERGYMETER, "HLW8112_SPI_Write  result %x ", Result);
+  	ADDLOG_DEBUG(LOG_FEATURE_ENERGYMETER, "HLW8112_SPI_Write result %x", Result);
   	return Result;
 }
 
@@ -109,7 +109,7 @@ int HLW8112_SPI_Transact(uint8_t *txBuffer, uint32_t txSize, uint8_t *rxBuffer, 
   	HLW8112_SPI_Txn_Begin();
   	int Result = SPI_Transmit(txBuffer, txSize, rxBuffer, rxSize);
   	HLW8112_SPI_Txn_End();
-  	ADDLOG_DEBUG(LOG_FEATURE_ENERGYMETER, "HLW8112_SPI_Transact  result %d", Result);
+  	ADDLOG_DEBUG(LOG_FEATURE_ENERGYMETER, "HLW8112_SPI_Transact result %d", Result);
   	return Result;
 }
 #pragma endregion
@@ -147,7 +147,7 @@ int HLW8112_ReadRegister8(uint8_t reg, uint8_t *valueResult) {
   	uint32_t tmpValue;
   	int result = HLW8112_ReadRegister(reg, 1, &tmpValue);
   	*valueResult = (uint8_t)tmpValue;
-  	ADDLOG_DEBUG(LOG_FEATURE_ENERGYMETER, "HLW8112_ReadRegister8 reg= %02X  :  v = %02X", reg, *valueResult);
+  	ADDLOG_DEBUG(LOG_FEATURE_ENERGYMETER, "HLW8112_ReadRegister8 reg= %02X : v = %02X", reg, *valueResult);
   	return result;
 }
 
@@ -155,19 +155,19 @@ int HLW8112_ReadRegister16(uint8_t reg, uint16_t *valueResult) {
   	uint32_t tmpValue;
   	int result = HLW8112_ReadRegister(reg, 2, &tmpValue);
   	*valueResult = (uint16_t)tmpValue;
-  	ADDLOG_DEBUG(LOG_FEATURE_ENERGYMETER, "HLW8112_ReadRegister16 reg= %02X  :  v = %04X", reg, *valueResult);
+  	ADDLOG_DEBUG(LOG_FEATURE_ENERGYMETER, "HLW8112_ReadRegister16 reg= %02X : v = %04X", reg, *valueResult);
   	return result;
 }
 
 int HLW8112_ReadRegister24(uint8_t reg, uint32_t *valueResult) {
 	int result = HLW8112_ReadRegister(reg, 3, valueResult);
-  	ADDLOG_DEBUG(LOG_FEATURE_ENERGYMETER, "HLW8112_ReadRegister24 reg= %02X  :  v = %06X", reg, *valueResult);
+  	ADDLOG_DEBUG(LOG_FEATURE_ENERGYMETER, "HLW8112_ReadRegister24 reg= %02X : v = %06X", reg, *valueResult);
   	return result;
 }
 
 int HLW8112_ReadRegister32(uint8_t reg, uint32_t *valueResult) {
   	int result = HLW8112_ReadRegister(reg, 4, valueResult);
-  	ADDLOG_DEBUG(LOG_FEATURE_ENERGYMETER, "HLW8112_ReadRegister32 reg= %02X  :  v = %08X", reg, *valueResult);
+  	ADDLOG_DEBUG(LOG_FEATURE_ENERGYMETER, "HLW8112_ReadRegister32 reg= %02X : v = %08X", reg, *valueResult);
   	return result;
 }
 #pragma endregion
@@ -290,7 +290,7 @@ void HLW8112_Restore_Stats(void) {
 }
 
 void HLW8112_save_stats(HLW8112_SaveFlags_t save) {
-	ADDLOG_DEBUG( LOG_FEATURE_ENERGYMETER , "HLW8112_SaveFlash_t  value = %08X", save);
+	ADDLOG_DEBUG( LOG_FEATURE_ENERGYMETER , "HLW8112_SaveFlash_t value = %08X", save);
 	if(save > 0 ){
 		//TODO write proper flash write debounce
 		int pg = OTA_GetProgress();  
@@ -675,7 +675,7 @@ int HLW8112_CheckCoeffs() {
   	}
 
 	if (checksum != regValue) {
-		ADDLOG_WARN( LOG_FEATURE_ENERGYMETER, "HLW8112_CheckCoeffs Chksum mismatch  computed = %04X  read =  %04X", checksum, regValue);
+		ADDLOG_WARN( LOG_FEATURE_ENERGYMETER, "HLW8112_CheckCoeffs Chksum mismatch = computed = %04X read = %04X", checksum, regValue);
 		return 1;
 	}
 	return 0;

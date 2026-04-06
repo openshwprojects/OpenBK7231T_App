@@ -1234,6 +1234,8 @@ typedef enum channelType_e {
 #define PLATFORM_GPIO_MAX 40
 #elif PLATFORM_RDA5981
 #define PLATFORM_GPIO_MAX 29
+#elif PLATFORM_BL616
+#define PLATFORM_GPIO_MAX 35
 #else
 #define PLATFORM_GPIO_MAX 29
 #endif
@@ -1264,7 +1266,7 @@ typedef enum channelType_e {
 #define SPECIAL_CHANNEL_FLASHVARS_LAST	264
 
 
-#if PLATFORM_W800 || PLATFORM_BK7252 || PLATFORM_BK7252N || PLATFORM_XR872
+#if PLATFORM_W800 || PLATFORM_BK7252 || PLATFORM_BK7252N || PLATFORM_XR872 || PLATFORM_BL616
 
 #define MAX_PIN_ROLES 48
 
@@ -1555,7 +1557,7 @@ typedef struct mainConfig_s {
 	// offset 0x000004BC
 	unsigned long LFS_Size; // szie of LFS volume.  it's aligned against the end of OTA
 	int loggerFlags;
-#if PLATFORM_W800 || PLATFORM_BK7252 || PLATFORM_BK7252N || PLATFORM_XR872
+#if PLATFORM_W800 || PLATFORM_BK7252 || PLATFORM_BK7252N || PLATFORM_XR872 || PLATFORM_BL616
 	byte unusedSectorAB[51];
 #elif PLATFORM_ESPIDF
 	byte unusedSectorAB[43];

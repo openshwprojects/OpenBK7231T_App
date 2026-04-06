@@ -187,7 +187,7 @@ void user_main(void)
 
   err = rtos_start_timer(&g_main_timer_1s);
   ASSERT(kNoErr == err);
-	ADDLOGF_DEBUG("started timer\r\n");
+	ADDLOGF_DEBUG("started timer");
 
   // initialise a one-shot timer, triggered by MQTT_TriggerRead() and others
   err = rtos_init_oneshot_timer(&g_timer_oneshot,

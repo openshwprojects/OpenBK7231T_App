@@ -94,8 +94,11 @@ static void tcp_client_thread(tcp_thread_t* arg)
 		char *newbuf = (char*)realloc(request.received, request.receivedLenmax + 2);
 		if(newbuf == NULL)
 		{
+			ADDLOG_ERROR(LOG_FEATURE_HTTP, "TCP Client realloc failed");
 			// no memory
-			goto exit;
+			//goto exit;
+			request.receivedLenmax -= INCOMING_BUFFER_SIZE;
+			continue;
 		}
 		request.received = buf = newbuf;
 	}
@@ -113,13 +116,13 @@ static void tcp_client_thread(tcp_thread_t* arg)
 		goto exit;
 	}
 
-	//addLog( "TCP received string %s\n",buf );
+	//addLog( "TCP received string %s",buf );
 	// returns length to be sent if any
-	 // ADDLOG_DEBUG(LOG_FEATURE_HTTP,  "TCP will process packet of len %i\n", request.receivedLen );
+	 // ADDLOG_DEBUG(LOG_FEATURE_HTTP,  "TCP will process packet of len %i", request.receivedLen );
 	int lenret = HTTP_ProcessPacket(&request);
 	if(lenret > 0)
 	{
-		ADDLOG_DEBUG(LOG_FEATURE_HTTP, "TCP sending reply len %i\n", lenret);
+		ADDLOG_DEBUG(LOG_FEATURE_HTTP, "TCP sending reply len %i", lenret);
 		send(fd, reply, lenret, 0);
 	}
 
@@ -366,7 +369,7 @@ void HTTPServer_Start()
 		(beken_thread_arg_t)0);
 	if(err != kNoErr)
 	{
-		ADDLOG_ERROR(LOG_FEATURE_HTTP, "create \"TCP_server\" thread failed with %i!\r\n", err);
+		ADDLOG_ERROR(LOG_FEATURE_HTTP, "create \"TCP_server\" thread failed with %i!", err);
 	}
 }
 

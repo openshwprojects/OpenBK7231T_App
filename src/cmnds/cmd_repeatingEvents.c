@@ -157,7 +157,7 @@ void RepeatingEvents_RunUpdate(float deltaTimeSeconds) {
 		cur = cur->next;
 	}
 
-	//addLogAdv(LOG_INFO, LOG_FEATURE_CMD,"RepeatingEvents_OnEverySecond checked %i events, ran %i\n",c_checked,c_ran);
+	//addLogAdv(LOG_INFO, LOG_FEATURE_CMD,"RepeatingEvents_OnEverySecond checked %i events, ran %i",c_checked,c_ran);
 }
 // addRepeatingEventID 1234 5 -1 DGR_SendPower "testgr" 1 1 
 // cancelRepeatingEvent 1234
@@ -213,7 +213,7 @@ commandResult_t RepeatingEvents_Cmd_ClearRepeatingEvents(const void *context, co
 		free(rem);
 		c++;
 	}
-	addLogAdv(LOG_INFO, LOG_FEATURE_CMD, "Fried %i rep. events", c);
+	addLogAdv(LOG_INFO, LOG_FEATURE_CMD, "Fired %i rep. events", c);
 	g_repeatingEvents = 0;
 	return CMD_RES_OK;
 }
@@ -244,7 +244,7 @@ static commandResult_t RepeatingEvents_Cmd_ListRepeatingEvents(const void *conte
 	c = 0;
 
 	while (ev) {
-		ADDLOG_INFO(LOG_FEATURE_EVENT, "Repeater %i has ID %i, interval %i, reps %i, and command %s",
+		ADDLOG_INFO(LOG_FEATURE_EVENT, "Repeater %i has ID %i, interval %f, reps %i, and command %s",
 			c,  ev->userID, ev->intervalSeconds, ev->times, ev->command);
 		ev = ev->next;
 		c++;

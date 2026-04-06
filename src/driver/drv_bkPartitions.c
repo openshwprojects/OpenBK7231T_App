@@ -191,10 +191,10 @@ void BKPartitions_QuickFrame() {
 	for (int pos = 0; pos <= scan_len; pos++) {
 		if (memcmp(&g_buf[pos], search_magic, magic_len) == 0) {
 			unsigned int abs_off = (unsigned int)(cur_adr + pos);
-			addLogAdv(LOG_INFO, LOG_FEATURE_CMD, "AS: found magic at 0x%X\n", abs_off);
+			addLogAdv(LOG_INFO, LOG_FEATURE_CMD, "AS: found magic at 0x%X", abs_off);
 			// find nearest first record 
 			int nearest = (abs_off/ 34) * 34;
-			addLogAdv(LOG_INFO, LOG_FEATURE_CMD, "AS: nearest at 0x%X\n", nearest);
+			addLogAdv(LOG_INFO, LOG_FEATURE_CMD, "AS: nearest at 0x%X", nearest);
 			ReadPartition(nearest);
 		}
 	}

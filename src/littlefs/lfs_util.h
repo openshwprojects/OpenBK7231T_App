@@ -44,6 +44,10 @@
 
 #if PLATFORM_BEKEN
 #include "mem_pub.h"
+#elif PLATFORM_BL_NEW
+#include "mm.h"
+#define os_malloc(x) kmalloc(x, MM_FLAG_ALIGN_32BYTE);
+#define os_free kfree
 #elif PLATFORM_BL602 || PLATFORM_ESPIDF || PLATFORM_XRADIO || PLATFORM_ESP8266 || PLATFORM_TXW81X || PLATFORM_RDA5981
 #define os_free free
 #define os_malloc malloc

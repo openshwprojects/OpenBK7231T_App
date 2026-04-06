@@ -47,7 +47,7 @@ static commandResult_t Calibrate(const char *cmd, const char *args, float raw,
     CFG_SetPowerMeasurementCalibrationFloat(cfg_index, *cal);
 
 #ifdef PWRCAL_DEBUG
-    ADDLOG_INFO(LOG_FEATURE_ENERGYMETER, "%s: you gave %f, set ref to %f\n",
+    ADDLOG_INFO(LOG_FEATURE_ENERGYMETER, "%s: you gave %f, set ref to %f",
                 cmd, real, *cal);
 #endif
     return CMD_RES_OK;

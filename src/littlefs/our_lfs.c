@@ -19,7 +19,7 @@
 #include "typedef.h"
 #include "flash_pub.h"
 
-#elif PLATFORM_BL602
+#elif PLATFORM_BL602 && !PLATFORM_BL_NEW
 
 #include <bl_flash.h>
 #include <bl_mtd.h>
@@ -27,6 +27,43 @@
 bl_mtd_info_t lfs_info = { 0 };
 bl_mtd_handle_t lfs_handle;
 bool lfs_init = false;
+
+#elif PLATFORM_BL_NEW
+
+#include "bflb_mtd.h"
+#define BL_MTD_PARTITION_NAME_FW_DEFAULT BFLB_MTD_PARTITION_NAME_FW_DEFAULT
+#define BL_MTD_PARTITION_NAME_ROMFS BFLB_MTD_PARTITION_NAME_ROMFS
+#define BL_MTD_OPEN_FLAG_BACKUP BFLB_MTD_OPEN_FLAG_BACKUP
+#define BL_MTD_OPEN_FLAG_BUSADDR BFLB_MTD_OPEN_FLAG_BUSADDR
+
+__attribute__((aligned(32))) bflb_mtd_info_t lfs_info = { 0 };
+__attribute__((aligned(32))) bflb_mtd_handle_t lfs_handle;
+static SemaphoreHandle_t fs_giant_lock;
+bool lfs_init = false;
+#define bl_mtd_open  bflb_mtd_open
+#define bl_mtd_info  bflb_mtd_info
+#define bl_mtd_read  bflb_mtd_read
+#define bl_mtd_write bflb_mtd_write
+#define bl_mtd_erase bflb_mtd_erase
+static int lfs_diskio_lock(const struct lfs_config* c)
+{
+#if configUSE_RECURSIVE_MUTEXES
+	xSemaphoreTakeRecursive(fs_giant_lock, portMAX_DELAY);
+#else
+	xSemaphoreTake(fs_giant_lock, portMAX_DELAY);
+#endif
+	return 0;
+}
+
+static int lfs_diskio_unlock(const struct lfs_config* c)
+{
+#if configUSE_RECURSIVE_MUTEXES
+	xSemaphoreGiveRecursive(fs_giant_lock);
+#else
+	xSemaphoreGive(fs_giant_lock);
+#endif
+	return 0;
+}
 
 #elif PLATFORM_LN882H
 
@@ -125,7 +162,7 @@ struct lfs_config cfg = {
     .erase = lfs_erase,
     .sync  = lfs_sync,
 
-#if PLATFORM_REALTEK_NEW
+#if PLATFORM_REALTEK_NEW || PLATFORM_BL_NEW
     .lock = lfs_diskio_lock,
     .unlock = lfs_diskio_unlock,
 #endif
@@ -155,7 +192,7 @@ static commandResult_t CMD_LFS_Size(const void *context, const char *cmd, const 
         return CMD_RES_OK;
     }
 
-#if PLATFORM_ESPIDF || PLATFORM_RTL8720D || PLATFORM_BL602 || PLATFORM_ESP8266 || PLATFORM_REALTEK_NEW
+#if PLATFORM_ESPIDF || PLATFORM_RTL8720D || PLATFORM_BL602 || PLATFORM_ESP8266 || PLATFORM_REALTEK_NEW || PLATFORM_BL_NEW
 	ADDLOG_ERROR(LOG_FEATURE_CMD, PLATFORM_MCU_NAME" doesn't support changing LFS size");
 	return CMD_RES_ERROR;
 #endif
@@ -185,7 +222,7 @@ static commandResult_t CMD_LFS_Size(const void *context, const char *cmd, const 
     // double check again that we're within bounds - don't want
     // boot overwrite or anything nasty....
     if ((newstart < LFS_BLOCKS_START_MIN) || (newstart >= LFS_BLOCKS_END)){
-        ADDLOG_ERROR(LOG_FEATURE_CMD, "LFSSize OUT OF BOUNDS start 0x%X ", newstart);
+        ADDLOG_ERROR(LOG_FEATURE_CMD, "LFSSize OUT OF BOUNDS start 0x%X", newstart);
         return CMD_RES_ERROR;
     }
     if ((newstart + newsize > LFS_BLOCKS_END) ||
@@ -295,7 +332,7 @@ static commandResult_t CMD_LFS_Format(const void *context, const char *cmd, cons
 	LFS_Start = newstart = 0;
 	LFS_Size = newsize = esplfs->size;
 
-#elif PLATFORM_BL602
+#elif PLATFORM_BL602 || PLATFORM_BL_NEW
 
 	LFS_Start = newstart = 0; // lfs_info.offset;
 	LFS_Size = newsize = lfs_info.size;
@@ -522,10 +559,17 @@ void init_lfs(int create){
         }
 #endif
 
-#if PLATFORM_BL602
+#if PLATFORM_BL602 || PLATFORM_BL_NEW
 
 		if(!lfs_init)
 		{
+#if PLATFORM_BL_NEW
+#if configUSE_RECURSIVE_MUTEXES
+			fs_giant_lock = xSemaphoreCreateRecursiveMutex();
+#else
+			fs_giant_lock = xSemaphoreCreateMutex();
+#endif
+#endif
 			int ret = bl_mtd_open(BL_MTD_PARTITION_NAME_ROMFS, &lfs_handle, BL_MTD_OPEN_FLAG_BUSADDR);
 			memset(&lfs_info, 0, sizeof(lfs_info));
 			if(ret < 0)
@@ -765,7 +809,7 @@ static int lfs_erase(const struct lfs_config *c, lfs_block_t block){
     return res;
 }
 
-#elif PLATFORM_BL602
+#elif PLATFORM_BL602 || PLATFORM_BL_NEW
 
 static int lfs_read(const struct lfs_config *c, lfs_block_t block,
 	lfs_off_t off, void *buffer, lfs_size_t size)

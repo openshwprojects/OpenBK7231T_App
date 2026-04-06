@@ -28,7 +28,7 @@
 
 #ifdef WINDOWS
 // nothing
-#elif PLATFORM_BL602
+#elif PLATFORM_BL602 && !PLATFORM_BL_NEW
 #include <bl_sys.h>
 #include <bl_adc.h>     //  For BL602 ADC HAL
 #include <bl602_adc.h>  //  For BL602 ADC Standard Driver
@@ -60,6 +60,7 @@
 #include "lwip_netconf.h"
 #include "ameba_soc.h"
 #include "ameba_ota.h"
+//SemaphoreHandle_t scan_hdl;
 extern uint32_t current_fw_idx;
 #elif defined(PLATFORM_ESPIDF) || PLATFORM_ESP8266
 #include "esp_wifi.h"
@@ -217,7 +218,7 @@ int http_fn_pmntp(http_request_t* request) {
 	if (http_getArg(request->url, "EPOCH", tmpA, sizeof(tmpA))) {
 		actepoch = (uint32_t)strtoul(tmpA,0,10);
 		TIME_setDeviceTime(actepoch);
-		addLogAdv(LOG_DEBUG, LOG_FEATURE_HTTP,"Set clock to %u! \n",actepoch);	
+		addLogAdv(LOG_DEBUG, LOG_FEATURE_HTTP,"Set clock to %u!",actepoch);	
 	}
 #if ENABLE_TIME_DST
 	if (! IsDST_initialized()) {
@@ -227,7 +228,7 @@ int http_fn_pmntp(http_request_t* request) {
 		// an offset including the one additional hour of DST  
 		// if we don't handle DST, simply accept this as "offset"
 		TIME_setDeviceTimeOffset(atoi(tmpA));
-		addLogAdv(LOG_DEBUG, LOG_FEATURE_HTTP,"Clock - set g_UTCoffset to %i! \n",
+		addLogAdv(LOG_DEBUG, LOG_FEATURE_HTTP,"Clock - set g_UTCoffset to %i!",
 			atoi(tmpA));	
 		}
 #if ENABLE_TIME_DST
@@ -984,7 +985,7 @@ typedef enum {
 			s = "Sleep Timer";
 		hprintf255(request, "<h5>Reboot reason: %i - %s</h5>", g_rebootReason, s);
 	}
-#elif PLATFORM_BL602
+#elif PLATFORM_BL602 && !PLATFORM_BL_NEW
 	char reason[26];
 	bl_sys_rstinfo_getsting(reason);
 	hprintf255(request, "<h5>Reboot reason: %s</h5>", reason);
@@ -1472,7 +1473,7 @@ int http_fn_cfg_wifi(http_request_t* request) {
 #ifdef WINDOWS
 
 		poststr(request, "Not available on Windows<br>");
-#elif PLATFORM_BL602
+#elif PLATFORM_BL602 && !PLATFORM_BL_NEW
                wifi_mgmr_ap_item_t *ap_info;
                uint32_t i, ap_num;
 
@@ -1553,6 +1554,74 @@ int http_fn_cfg_wifi(http_request_t* request) {
 		}
 		xSemaphoreTake(scan_hdl, pdMS_TO_TICKS(10 * 1000));
 		vSemaphoreDelete(scan_hdl);
+#elif PLATFORM_REALTEK_NEW
+
+		extern int wifi_get_scan_records(uint32_t* ap_num, struct rtw_scan_result* ap_list);
+		int32_t scan_result_handler(uint32_t records_num, void* user_data)
+		{
+			(void)user_data;
+			struct rtw_scan_result* record;
+			struct rtw_scan_result* records_list = NULL;
+
+			if(records_num == 0)
+			{
+				//xSemaphoreGive(scan_hdl);
+				return RTK_FAIL;
+			}
+
+			records_list = (struct rtw_scan_result*)os_malloc(records_num * sizeof(struct rtw_scan_result));
+			if(records_list == NULL)
+			{
+				//xSemaphoreGive(scan_hdl);
+				return RTK_FAIL;
+			}
+
+			if(wifi_get_scan_records(&records_num, records_list) < 0)
+			{
+				os_free((uint8_t*)records_list);
+				//xSemaphoreGive(scan_hdl);
+				return RTK_FAIL;
+			}
+
+			for(uint8_t i = 0; i < records_num; i++)
+			{
+				record = &records_list[i];
+				record->ssid.val[record->ssid.len] = 0;
+				char ssid[33] = { 0 };
+				if(!strcmp((char*)record->ssid.val, ""))
+				{
+					snprintf(ssid, sizeof(ssid) - 1, "%s", "&lt;hidden&gt;");
+				}
+				else
+				{
+					strcpy((char*)&ssid, (char*)record->ssid.val);
+				}
+
+				hprintf255(request, "<tr><td>%s</td><td>%i</td><td>%i</td></tr>", (char*)&ssid, record->channel, record->signal_strength);
+			}
+			os_free((uint8_t*)records_list);
+			//xSemaphoreGive(scan_hdl);
+			return RTK_SUCCESS;
+		}
+
+		//scan_hdl = xSemaphoreCreateBinary();
+		//xSemaphoreTake(scan_hdl, 1);
+		struct rtw_scan_param scan_param = { 0 };
+
+		scan_param.scan_user_callback = scan_result_handler;
+		scan_param.max_ap_record_num = 20;
+		scan_param.chan_scan_time.active_scan_time = 110;
+		scan_param.chan_scan_time.passive_scan_time = 110;
+		//if(wifi_scan_networks(&scan_param, 0) != RTK_SUCCESS)
+		hprintf255(request, "<table><tr><th>SSID</th><th>Channel</th><th>Signal</th></tr>");
+		if(wifi_scan_networks(&scan_param, 1) != RTK_SUCCESS)
+		{
+			//xSemaphoreGive(scan_hdl);
+			//hprintf255(request, "ERROR: wifi scan failed!<br>");
+		};
+		hprintf255(request, "</table><br>");
+		//xSemaphoreTake(scan_hdl, pdMS_TO_TICKS(15 * 1000));
+		//vSemaphoreDelete(scan_hdl);
 #else
 		hprintf255(request, "TODO %s<br>", PLATFORM_MCU_NAME);
 #endif
@@ -1635,7 +1704,7 @@ int http_fn_cfg_wifi_set(http_request_t* request) {
 	char tmpA[128];
 	int bChanged;
 
-	addLogAdv(LOG_INFO, LOG_FEATURE_HTTP, "HTTP_ProcessPacket: generating cfg_wifi_set \r\n");
+	addLogAdv(LOG_INFO, LOG_FEATURE_HTTP, "HTTP_ProcessPacket: generating cfg_wifi_set ");
 	bChanged = 0;
 
 	http_setup(request, httpMimeTypeHTML);
@@ -1693,7 +1762,7 @@ int http_fn_cfg_wifi_set(http_request_t* request) {
 
 int http_fn_cfg_loglevel_set(http_request_t* request) {
 	char tmpA[128];
-	addLogAdv(LOG_INFO, LOG_FEATURE_HTTP, "HTTP_ProcessPacket: generating cfg_loglevel_set \r\n");
+	addLogAdv(LOG_INFO, LOG_FEATURE_HTTP, "HTTP_ProcessPacket: generating cfg_loglevel_set ");
 
 	http_setup(request, httpMimeTypeHTML);
 	http_html_start(request, "Set log level");
@@ -1919,6 +1988,12 @@ HassDeviceInfo *hass_createEnumChannelInfo(int i) {
 	os_free(options);
 	return dev_info;
 }
+
+#if PLATFORM_BL_NEW
+extern void* _os_malloc(size_t size);
+extern void _os_free(void* ptr);
+#endif
+
 void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 	int i;
 	int relayCount;
@@ -1965,7 +2040,7 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 	ledDriverChipRunning = 0;
 #endif
 
-#if PLATFORM_TXW81X
+#if PLATFORM_TXW81X || PLATFORM_BL_NEW
 	hooks.malloc_fn = _os_malloc;
 	hooks.free_fn = _os_free;
 #else
@@ -2050,7 +2125,7 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 	}
 	else if (pwmCount > 0) {
 		if (pwmCount == 4) {
-			addLogAdv(LOG_ERROR, LOG_FEATURE_HTTP, "4 PWM device not yet handled\r\n");
+			addLogAdv(LOG_ERROR, LOG_FEATURE_HTTP, "4 PWM device not yet handled");
 		}
 		else if (pwmCount == 3) {
 			// Enable + RGB control
@@ -2501,7 +2576,7 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 			poststr(request, NULL);
 		}
 		else {
-			addLogAdv(LOG_ERROR, LOG_FEATURE_HTTP, "HA discovery: %s\r\n", msg);
+			addLogAdv(LOG_ERROR, LOG_FEATURE_HTTP, "HA discovery: %s", msg);
 		}
 	}
 }
@@ -2767,10 +2842,10 @@ int http_fn_cm(http_request_t* request) {
 	// exec command
 	if (request->method == HTTP_GET) {
 		commandLen = http_getArg(request->url, "cmnd", tmpA, sizeof(tmpA));
-		//ADDLOG_INFO(LOG_FEATURE_HTTP, "Got here (GET) %s;%s;%d\n", request->url, tmpA, commandLen);
+		//ADDLOG_INFO(LOG_FEATURE_HTTP, "Got here (GET) %s;%s;%d", request->url, tmpA, commandLen);
     } else if (request->method == HTTP_POST || request->method == HTTP_PUT) {
 		commandLen = http_getRawArg(request->bodystart, "cmnd", tmpA, sizeof(tmpA));
-		//ADDLOG_INFO(LOG_FEATURE_HTTP, "Got here (POST) %s;%s;%d\n", request->bodystart, tmpA, commandLen);
+		//ADDLOG_INFO(LOG_FEATURE_HTTP, "Got here (POST) %s;%s;%d", request->bodystart, tmpA, commandLen);
     }
 	if (commandLen) {
 		if (commandLen > (sizeof(tmpA) - 5)) {
@@ -3454,7 +3529,7 @@ int http_fn_ota_exec(http_request_t* request) {
 	http_html_start(request, "OTA request");
 	if (http_getArg(request->url, "host", tmpA, sizeof(tmpA))) {
 		hprintf255(request, "<h3>OTA requested for %s!</h3>", tmpA);
-		addLogAdv(LOG_INFO, LOG_FEATURE_HTTP, "http_fn_ota_exec: will try to do OTA for %s \r\n", tmpA);
+		addLogAdv(LOG_INFO, LOG_FEATURE_HTTP, "http_fn_ota_exec: will try to do OTA for %s", tmpA);
 		OTA_RequestDownloadFromHTTP(tmpA);
 	}
 	poststr(request, htmlFooterReturnToCfgOrMainPage);

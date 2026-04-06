@@ -50,7 +50,7 @@ static byte CFG_CalcChecksum(mainConfig_t *inf) {
 	}
 	remaining_size = configSize - header_size;
 
-	ADDLOG_DEBUG(LOG_FEATURE_CFG, "CFG_CalcChecksum: header size %i, total size %i, rem size %i\n",
+	ADDLOG_DEBUG(LOG_FEATURE_CFG, "CFG_CalcChecksum: header size %i, total size %i, rem size %i",
 		header_size, configSize, remaining_size);
 
 	// This is more flexible method and won't be affected by field offsets
@@ -78,7 +78,7 @@ bool CFG_HasValidLEDCorrectionTable() {
 	}
 }
 void CFG_SetDefaultLEDCorrectionTable() {
-	addLogAdv(LOG_INFO, LOG_FEATURE_CFG, "CFG_SetDefaultLEDCorrectionTable: setting defaults\r\n");
+	addLogAdv(LOG_INFO, LOG_FEATURE_CFG, "CFG_SetDefaultLEDCorrectionTable: setting defaults");
 	for (int c = 0; c < 3; c++) {
 		g_cfg.led_corr.rgb_cal[c] = 1.0f;
 	}

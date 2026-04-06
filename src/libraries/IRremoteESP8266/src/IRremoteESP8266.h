@@ -1513,6 +1513,8 @@ extern "C" {
 #if PLATFORM_REALTEK || PLATFORM_BEKEN_NEW
 extern "C" int wal_stricmp(const char* a, const char* b);
 #define strcasecmp wal_stricmp
+#elif PLATFORM_BL_NEW
+#include <strings.h>
 #endif
 
 #ifdef UNIT_TEST

@@ -204,6 +204,11 @@ typedef long BaseType_t;
 #define DEVICENAME_PREFIX_SHORT "rda5981"
 #define PLATFORM_MCU_NAME "RDA5981"
 #define MANUFACTURER "RDA Microelectronics"
+#elif PLATFORM_BL616
+#define DEVICENAME_PREFIX_FULL "OpenBL616"
+#define DEVICENAME_PREFIX_SHORT "bl616"
+#define PLATFORM_MCU_NAME "BL616"
+#define MANUFACTURER "Bouffalo Lab Team"
 #else
 #error "You must define a platform.."
 This platform is not supported, error!
@@ -271,6 +276,8 @@ This platform is not supported, error!
 #define USER_SW_VER "TXW81X_Test"
 #elif PLATFORM_RDA5981
 #define USER_SW_VER "RDA5981_Test"
+#elif PLATFORM_BL616
+#define USER_SW_VER "BL616_Test"
 #else
 #warning "USER_SW_VER undefined"
 #define USER_SW_VER "unknown"
@@ -384,7 +391,7 @@ typedef void * beken_thread_arg_t;
 typedef int (*beken_thread_function_t)(void *p);
 #define BEKEN_APPLICATION_PRIORITY 1
 
-#elif PLATFORM_BL602
+#elif PLATFORM_BL602 && !PLATFORM_BL_NEW
 
 #include <FreeRTOS.h>
 #include <task.h>
@@ -956,6 +963,73 @@ OSStatus rtos_suspend_thread(beken_thread_t thread);
 #define GLOBAL_INT_DISABLE()		;
 #define GLOBAL_INT_RESTORE()		;
 
+#elif PLATFORM_BL616 || PLATFORM_BL602
+
+#include "FreeRTOS.h"
+#include "task.h"
+#include "semphr.h"
+#include "queue.h"
+#include "event_groups.h"
+#include "mm.h"
+#if PLATFORM_BL616
+#include "utils/includes.h"
+
+#include "utils/common.h"
+#endif
+
+#include "lwip/err.h"
+#include "lwip/sockets.h"
+#include "lwip/sys.h"
+#include "lwip/netdb.h"
+#include "lwip/dns.h"
+
+typedef unsigned int UINT32;
+
+#define ASSERT
+#undef os_malloc
+#undef os_free
+//#define os_malloc	pvPortMalloc
+//#define os_free		vPortFree
+#define os_malloc(x)	kmalloc(x, MM_FLAG_ALIGN_32BYTE);
+#define os_free		kfree
+#define os_realloc krealloc
+#define malloc		os_malloc
+#define free		os_free
+#define calloc		os_calloc
+#define realloc		os_realloc
+#define xPortGetFreeHeapSize() kfree_size(0)
+#define bk_printf printf
+#undef vsnprintf
+#define vsnprintf vsnprintf3
+#define usleep usleepobk
+
+#define rtos_delay_milliseconds(x) vTaskDelay(x / portTICK_PERIOD_MS)
+#define delay_ms(x) vTaskDelay(x / portTICK_PERIOD_MS)
+
+#define lwip_close_force(x) lwip_close(x)
+#define kNoErr                      0       //! No error occurred.
+typedef void* beken_thread_arg_t;
+typedef xTaskHandle beken_thread_t;
+typedef void (*beken_thread_function_t)(beken_thread_arg_t arg);
+typedef int OSStatus;
+
+#define BEKEN_DEFAULT_WORKER_PRIORITY      (6)
+#define BEKEN_APPLICATION_PRIORITY         (7)
+
+OSStatus rtos_delete_thread(beken_thread_t* thread);
+OSStatus rtos_create_thread(beken_thread_t* thread,
+	uint8_t priority, const char* name,
+	beken_thread_function_t function,
+	uint32_t stack_size, beken_thread_arg_t arg);
+OSStatus rtos_suspend_thread(beken_thread_t* thread);
+//#undef GLOBAL_INT_DECLARATION
+//#undef GLOBAL_INT_DISABLE
+//#undef GLOBAL_INT_RESTORE
+//#define GLOBAL_INT_DECLARATION()	;
+//#define GLOBAL_INT_DISABLE()		;
+//#define GLOBAL_INT_RESTORE()		;
+
+#define OBK_OTA_EXTENSION ".bin.xz.ota"
 
 #else
 
@@ -1079,7 +1153,7 @@ int LWIP_GetMaxSockets();
 int LWIP_GetActiveSockets();
 
 #ifndef LINUX
-#if !PLATFORM_ESPIDF && !PLATFORM_ESP8266 && !PLATFORM_REALTEK_NEW && !PLATFORM_TXW81X
+#if !PLATFORM_ESPIDF && !PLATFORM_ESP8266 && !PLATFORM_REALTEK_NEW && !PLATFORM_TXW81X && !PLATFORM_BL616
 //delay function do 10*r nops, because rtos_delay_milliseconds is too much
 void usleep(int r);
 #endif

@@ -78,7 +78,7 @@ int httpclient_conn(httpclient_t *client)
 	int ret;
 	ret = client->net.doConnect(&client->net);
     if (0 != ret) {
-        ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT, "establish connection failed, error %i ",ret);
+        ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT, "establish connection failed, error %i",ret);
         return ERROR_HTTP_CONN;
     }
 
@@ -156,14 +156,14 @@ int httpclient_parse_host(const char *url, char *host, int *port, uint32_t maxho
     char *path_ptr;
     char *port_ptr;
 
-    ADDLOG_INFO(LOG_FEATURE_HTTP_CLIENT, "Parse url %s\r\n", url);
+    ADDLOG_INFO(LOG_FEATURE_HTTP_CLIENT, "Parse url %s", url);
 
     if (!strncmp(url, "HTTPS://", 8)){
-        ADDLOG_INFO(LOG_FEATURE_HTTP_CLIENT, "HTTPS:// found -> port 443\r\n");
+        ADDLOG_INFO(LOG_FEATURE_HTTP_CLIENT, "HTTPS:// found -> port 443");
         *port = 443;
     } else {
         if (!strncmp(url, "HTTP://", 7)){
-            ADDLOG_INFO(LOG_FEATURE_HTTP_CLIENT, "HTTP:// found -> port 80\r\n");
+            ADDLOG_INFO(LOG_FEATURE_HTTP_CLIENT, "HTTP:// found -> port 80");
             *port = 80;
         }
     }
@@ -198,7 +198,7 @@ int httpclient_parse_host(const char *url, char *host, int *port, uint32_t maxho
         if (num == 1){
             *port = p;
         }
-        ADDLOG_INFO(LOG_FEATURE_HTTP_CLIENT, "Host split into %s port %d\r\n", host, *port);
+        ADDLOG_INFO(LOG_FEATURE_HTTP_CLIENT, "Host split into %s port %d", host, *port);
     }
 
     return SUCCESS_RETURN;
@@ -318,7 +318,7 @@ int httpclient_send_header(httpclient_t *client, const char *url, int method, ht
     /* First we need to parse the url (http[s]://host[:port][/[path]]) */
     res = httpclient_parse_url(url, scheme, sizeof(scheme), host, HTTPCLIENT_MAX_HOST_LEN, &port, path, HTTPCLIENT_MAX_HOST_LEN);
     if (res != SUCCESS_RETURN) {
-        ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT, "httpclient_parse_url returned %d\r\n", res);
+        ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT, "httpclient_parse_url returned %d", res);
         //return res;
         rc = res;
         goto GO_ERR;
@@ -375,13 +375,13 @@ int httpclient_send_header(httpclient_t *client, const char *url, int method, ht
     //ret = httpclient_tcp_send_all(client->net.handle, send_buf, len);
     ret = client->net.doWrite(&client->net, send_buf, len, 5000);
     if (ret > 0) {
-        ADDLOG_DEBUG(LOG_FEATURE_HTTP_CLIENT, "Written %d bytes\r\n", ret);
+        ADDLOG_DEBUG(LOG_FEATURE_HTTP_CLIENT, "Written %d bytes", ret);
     } else if (ret == 0) {
-        ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT, "ret == 0,Connection was closed by server\r\n");
+        ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT, "ret == 0,Connection was closed by server");
         //return ERROR_HTTP_CLOSED; /* Connection was closed by server */
         rc = ERROR_HTTP_CLOSED;
     } else {
-        ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT, "Connection error (send returned %d)\r\n", ret);
+        ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT, "Connection error (send returned %d)", ret);
         //return ERROR_HTTP_CONN;
         rc = ERROR_HTTP_CONN;
     }
@@ -442,13 +442,13 @@ int httpclient_recv(httpclient_t *client, char *buf, int min_len, int max_len, i
         //timeout
         return 0;
     } else if (-1 == ret) {
-        ADDLOG_INFO(LOG_FEATURE_HTTP_CLIENT, "Connection closed.\r\n");
+        ADDLOG_INFO(LOG_FEATURE_HTTP_CLIENT, "Connection closed.");
         return ERROR_HTTP_CONN;
     } else {
-        ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT, "Connection error (recv returned %d)\r\n", ret);
+        ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT, "Connection error (recv returned %d)", ret);
         return ERROR_HTTP_CONN;
     }
-    ADDLOG_INFO(LOG_FEATURE_HTTP_CLIENT, "httpclient_recv %u bytes has been read\r\n", *p_read_len);
+    ADDLOG_INFO(LOG_FEATURE_HTTP_CLIENT, "httpclient_recv %u bytes has been read", *p_read_len);
     return 0;
 }
 
@@ -469,7 +469,7 @@ int httpclient_retrieve_content(httpclient_t *client, char *data, int len, uint3
     //utils_time_countdown_ms(&timer, timeout_ms);
 
     /* Receive data */
-    ADDLOG_DEBUG(LOG_FEATURE_HTTP_CLIENT, "Current data len: %d\r\n", len);
+    ADDLOG_DEBUG(LOG_FEATURE_HTTP_CLIENT, "Current data len: %d", len);
 
     client_data->is_more = true;
 
@@ -710,7 +710,7 @@ int httpclient_response_parse(httpclient_t *client, char *data, int len, uint32_
 
     crlf_ptr = strstr(data, "\r\n");
     if (crlf_ptr == NULL) {
-        ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT, "\r\n not found");
+        ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT, " not found");
         return ERROR_HTTP_UNRESOLVED_DNS;
     }
 
@@ -720,16 +720,16 @@ int httpclient_response_parse(httpclient_t *client, char *data, int len, uint32_
     /* Parse HTTP response */
     if (sscanf(data, "HTTP/%*d.%*d %d %*[^\r\n]", &(client->response_code)) != 1) {
         /* Cannot match string, error */
-        ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT, "Not a correct HTTP answer : %s\r\n", data);
+        ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT, "Not a correct HTTP answer: %s", data);
         return ERROR_HTTP_UNRESOLVED_DNS;
     }
 
     if ((client->response_code < 200) || (client->response_code >= 400)) {
         /* Did not return a 2xx code; TODO fetch headers/(&data?) anyway and implement a mean of writing/reading headers */
-        ADDLOG_WARN(LOG_FEATURE_HTTP_CLIENT, "Response code %d\r\n", client->response_code);
+        ADDLOG_WARN(LOG_FEATURE_HTTP_CLIENT, "Response code %d", client->response_code);
     }
 
-    ADDLOG_DEBUG(LOG_FEATURE_HTTP_CLIENT, "Reading headers%s\r\n", data);
+    ADDLOG_DEBUG(LOG_FEATURE_HTTP_CLIENT, "Reading headers%s", data);
 
     memmove(data, &data[crlf_pos + 2], len - (crlf_pos + 2) + 1); /* Be sure to move NULL-terminating char as well */
     len -= (crlf_pos + 2);
@@ -752,14 +752,14 @@ int httpclient_response_parse(httpclient_t *client, char *data, int len, uint32_
                 ret = httpclient_recv(client, data + len, 1, HTTPCLIENT_CHUNK_SIZE - len - 1, &new_trf_len, iotx_time_left(&timer));
                 len += new_trf_len;
                 data[len] = '\0';
-                ADDLOG_DEBUG(LOG_FEATURE_HTTP_CLIENT, "Read %d chars; In buf: [%s]\r\n", new_trf_len, data);
+                ADDLOG_DEBUG(LOG_FEATURE_HTTP_CLIENT, "Read %d chars; In buf: [%s]", new_trf_len, data);
                 if (ret == ERROR_HTTP_CONN) {
                     return ret;
                 } else {
                     continue;
                 }
             } else {
-                ADDLOG_DEBUG(LOG_FEATURE_HTTP_CLIENT, "header len > chunksize\r\n");
+                ADDLOG_DEBUG(LOG_FEATURE_HTTP_CLIENT, "header len > chunksize");
                 return ERROR_HTTP;
             }
         }
@@ -776,7 +776,7 @@ int httpclient_response_parse(httpclient_t *client, char *data, int len, uint32_
 
         n = sscanf(data, "%31[^:]: %31[^\r\n]", key, value);
         if (n == 2) {
-            ADDLOG_DEBUG(LOG_FEATURE_HTTP_CLIENT, "Read header : %s: %s\r\n", key, value);
+            ADDLOG_DEBUG(LOG_FEATURE_HTTP_CLIENT, "Read header: %s: %s", key, value);
             if (!strcmp(key, "Content-Length")) {
                 sscanf(value, "%d", (int *)&(client_data->response_content_len));
                 client_data->retrieve_len = client_data->response_content_len;
@@ -791,19 +791,19 @@ int httpclient_response_parse(httpclient_t *client, char *data, int len, uint32_
             len -= (crlf_pos + 2);
 
         } else if ((n == 1) && (key[0])) {
-            ADDLOG_DEBUG(LOG_FEATURE_HTTP_CLIENT, "Read header : %s: <no value>\r\n", key);
+            ADDLOG_DEBUG(LOG_FEATURE_HTTP_CLIENT, "Read header: %s: <no value>", key);
             memmove(data, &data[crlf_pos + 2], len - (crlf_pos + 2) + 1); /* Be sure to move NULL-terminating char as well */
             len -= (crlf_pos + 2);
 
         } else {
-            ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT, "Could not parse header\r\n");
+            ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT, "Could not parse header");
             return ERROR_HTTP;
         }
     }
 
     if(client->response_code != 200)
         {
-        ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT, "Could not found\r\n");
+        ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT, "Could not found");
         return MQTT_SUB_INFO_NOT_FOUND_ERROR;
     }
 
@@ -950,20 +950,20 @@ int httpclient_common(httpclient_t *client, const char *url, int port, const cha
     if (0 == client->net.handle) {
         //Establish connection if no.
     	httpclient_parse_host(url, host, &port, sizeof(host));
-    	ADDLOG_DEBUG(LOG_FEATURE_HTTP_CLIENT, "host: '%s', port: %d\r\n", host, port);
+    	ADDLOG_DEBUG(LOG_FEATURE_HTTP_CLIENT, "host: '%s', port: %d", host, port);
 
     	iotx_net_init(&client->net, host, port, ca_crt);
 
     	ret = httpclient_connect(client);
     	if (0 != ret) {
-            ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT, "httpclient_connect is error,ret = %d\r\n", ret);
+            ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT, "httpclient_connect is error,ret = %d", ret);
             httpclient_close(client);
             return ret;
     	}
 
         ret = httpclient_send_request(client, url, method, client_data);
         if (0 != ret) {
-            ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT, "httpclient_send_request is error,ret = %d\r\n", ret);
+            ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT, "httpclient_send_request is error,ret = %d", ret);
             httpclient_close(client);
             return ret;
         }
@@ -976,7 +976,7 @@ int httpclient_common(httpclient_t *client, const char *url, int port, const cha
          || (0 != client_data->response_buf_len)) {
         ret = httpclient_recv_response(client, iotx_time_left(&timer), client_data);
         if (ret < 0) {
-            ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT, "httpclient_recv_response is error,ret = %d\r\n", ret);
+            ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT, "httpclient_recv_response is error,ret = %d", ret);
             httpclient_close(client);
             return ret;
         }
@@ -984,7 +984,7 @@ int httpclient_common(httpclient_t *client, const char *url, int port, const cha
 
     if (! client_data->is_more) {
         //Close the HTTP if no more data.
-        ADDLOG_INFO(LOG_FEATURE_HTTP_CLIENT, "close http channel\r\n");
+        ADDLOG_INFO(LOG_FEATURE_HTTP_CLIENT, "close http channel");
         httpclient_close(client);
     }
     return (ret >= 0) ? 0 : -1;
@@ -1027,7 +1027,7 @@ static void httprequest_thread( beken_thread_arg_t arg )
     int method = request->method;
     int timeout_ms = request->timeout;
 
-    //addLog("start request thread\r\n");
+    //addLog("start request thread");
     //rtos_delay_milliseconds(500);
 
 
@@ -1035,7 +1035,7 @@ static void httprequest_thread( beken_thread_arg_t arg )
         HTTPClient_SetCustomHeader(client, header);  //Sets the custom header if needed.
     }
 
-    //addLog("after HTTPClient_SetCustomHeader\r\n");
+    //addLog("after HTTPClient_SetCustomHeader");
     //rtos_delay_milliseconds(500);
 
 
@@ -1043,7 +1043,7 @@ static void httprequest_thread( beken_thread_arg_t arg )
 
     if (0 == client->net.handle) {
         //Establish connection if no.
-        //addLog("before httpclient_parse_host\r\n");
+        //addLog("before httpclient_parse_host");
         //rtos_delay_milliseconds(500);
     	ret = httpclient_parse_host(url, host, &port, sizeof(host));
 
@@ -1059,11 +1059,11 @@ static void httprequest_thread( beken_thread_arg_t arg )
         //rtos_delay_milliseconds(500);
 
     	iotx_net_init(&client->net, host, port, ca_crt);
-        //addLog("after iotx_net_init\r\n");
+        //addLog("after iotx_net_init");
         //rtos_delay_milliseconds(500);
 
     	ret = httpclient_connect(client);
-        //addLog("after httpclient_connect %d\r\n", ret);
+        //addLog("after httpclient_connect %d", ret);
         //rtos_delay_milliseconds(500);
     	if (0 != ret) {
             ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT, "httpclient_connect is error,ret = %d", ret);
@@ -1168,7 +1168,7 @@ int HTTPClient_Async_SendGeneric(httprequest_t *request){
 									(beken_thread_arg_t)request );
     if(err != kNoErr)
     {
-       ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT, "create \"httprequest\" thread failed!\r\n");
+       ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT, "create \"httprequest\" thread failed!");
        return -1;
     }
 
@@ -1224,7 +1224,7 @@ int HTTPClient_Async_SendGet(const char *url_in, const char *tgFile, const char 
 	//url = strdup(url_in);
 #endif
 	if(url == 0) {
-		ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT, "HTTPClient_Async_SendGet for %s, failed to alloc URL memory\r\n");
+		ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT, "HTTPClient_Async_SendGet for %s, failed to alloc URL memory");
 		return 1;
 	}
 	if (postGetCommand && *postGetCommand) {
@@ -1236,10 +1236,10 @@ int HTTPClient_Async_SendGet(const char *url_in, const char *tgFile, const char 
 	request = (httprequest_t *) malloc(sizeof(httprequest_t));
 #endif
 	if(request == 0) {
-		ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT, "HTTPClient_Async_SendGet for %s, failed to alloc request memory\r\n");
+		ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT, "HTTPClient_Async_SendGet for %s, failed to alloc request memory");
 		return 1;
 	}
-    ADDLOG_INFO(LOG_FEATURE_HTTP_CLIENT, "HTTPClient_Async_SendGet for %s, sizeof(httprequest_t) == %i!\r\n",
+    ADDLOG_INFO(LOG_FEATURE_HTTP_CLIENT, "HTTPClient_Async_SendGet for %s, sizeof(httprequest_t) == %i!",
 		url_in,sizeof(httprequest_t));
 
 	memset(request, 0, sizeof(*request));
@@ -1284,17 +1284,17 @@ int HTTPClient_Async_SendPost(const char *url_in, int http_port, const char *con
 	// So $CH5 gets changed to channel value integer, etc...
 	url = CMD_ExpandingStrdup(url_in);
 	if (url == 0) {
-		ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT, "HTTPClient_Async_SendPost for %s, failed to alloc URL memory\r\n");
+		ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT, "HTTPClient_Async_SendPost for %s, failed to alloc URL memory");
 		return 1;
 	}
 
 	request = (httprequest_t *)malloc(sizeof(httprequest_t));
 	if (url == 0) {
-		ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT, "HTTPClient_Async_SendPost for %s, failed to alloc request memory\r\n");
+		ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT, "HTTPClient_Async_SendPost for %s, failed to alloc request memory");
 		return 1;
 	}
 
-	ADDLOG_INFO(LOG_FEATURE_HTTP_CLIENT, "HTTPClient_Async_SendPost for %s, sizeof(httprequest_t) == %i!\r\n",
+	ADDLOG_INFO(LOG_FEATURE_HTTP_CLIENT, "HTTPClient_Async_SendPost for %s, sizeof(httprequest_t) == %i!",
 		url_in, sizeof(httprequest_t));
 
 	memset(request, 0, sizeof(*request));

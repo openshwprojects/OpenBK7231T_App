@@ -258,7 +258,7 @@ publish:
       - path: "output/**/*_QIO_*.bin"
       - path: "output/**/*.rbl"
       - path: "output/**/*.img"
-      - path: "output/**/OpenBL602*"
+      - path: "output/**/OpenBL*"
       - path: "output/**/OpenW600*"
       - path: "output/**/OpenW800*"
       - path: "output/**/OpenLN882*"

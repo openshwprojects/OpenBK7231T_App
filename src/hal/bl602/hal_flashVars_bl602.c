@@ -1,4 +1,4 @@
-#if PLATFORM_BL602
+#if PLATFORM_BL602 || PLATFORM_BL616
 
 #include "../../new_common.h"
 #include "../hal_flashVars.h"

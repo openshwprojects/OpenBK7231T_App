@@ -38,7 +38,7 @@ void HTTPServer_Stop()
 
 	if (err != kNoErr)
 	{
-		ADDLOG_ERROR(LOG_FEATURE_HTTP, "stop \"TCP_server\" thread failed with %i!\r\n", err);
+		ADDLOG_ERROR(LOG_FEATURE_HTTP, "stop \"TCP_server\" thread failed with %i!", err);
 	}
 }
 
@@ -117,12 +117,12 @@ static void tcp_client_thread(beken_thread_arg_t arg)
 		goto exit;
 	}
 
-	//addLog( "TCP received string %s\n",buf );
+	//addLog( "TCP received string %s",buf );
 	// returns length to be sent if any
-	//ADDLOG_ERROR(LOG_FEATURE_HTTP,  "TCP will process packet of len %i\n", request.receivedLen );
+	//ADDLOG_ERROR(LOG_FEATURE_HTTP,  "TCP will process packet of len %i", request.receivedLen );
 	int lenret = HTTP_ProcessPacket(&request);
 	if (lenret > 0) {
-		//ADDLOG_ERROR(LOG_FEATURE_HTTP, "TCP sending reply len %i\n", lenret);
+		//ADDLOG_ERROR(LOG_FEATURE_HTTP, "TCP sending reply len %i", lenret);
 		send(fd, reply, lenret, 0);
 	}
 
@@ -254,11 +254,11 @@ void HTTPServer_Start()
 
 		if (err == kNoErr)
 		{
-			ADDLOG_ERROR(LOG_FEATURE_HTTP, "Created HTTP SV thread with (stack=%u)\r\n", stackSize);
+			ADDLOG_ERROR(LOG_FEATURE_HTTP, "Created HTTP SV thread with (stack=%u)", stackSize);
 			break;
 		}
 
-		ADDLOG_ERROR(LOG_FEATURE_HTTP, "create \"TCP_server\" thread failed with %i (stack=%u)\r\n", err, stackSize);
+		ADDLOG_ERROR(LOG_FEATURE_HTTP, "create \"TCP_server\" thread failed with %i (stack=%u)", err, stackSize);
 		stackSize >>= 1;
 	}
 }

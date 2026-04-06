@@ -133,7 +133,7 @@ static void DRV_SSDP_CreateSocket_Receive() {
     g_ssdp_socket_receive = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
     if (g_ssdp_socket_receive < 0) {
 		g_ssdp_socket_receive = -1;
-		addLogAdv(LOG_ERROR, LOG_FEATURE_HTTP,"DRV_SSDP_CreateSocket_Receive: failed to do socket\n");
+		addLogAdv(LOG_ERROR, LOG_FEATURE_HTTP,"DRV_SSDP_CreateSocket_Receive: failed to do socket");
         return ;
     }
 
@@ -143,7 +143,7 @@ static void DRV_SSDP_CreateSocket_Receive() {
 		iResult = setsockopt(g_ssdp_socket_receive, SOL_SOCKET, SO_BROADCAST, (char *)&flag, sizeof(flag));
 		if (iResult != 0)
 		{
-			addLogAdv(LOG_ERROR, LOG_FEATURE_HTTP,"DRV_SSDP_CreateSocket_Receive: failed to do setsockopt SO_BROADCAST\n");
+			addLogAdv(LOG_ERROR, LOG_FEATURE_HTTP,"DRV_SSDP_CreateSocket_Receive: failed to do setsockopt SO_BROADCAST");
 			close(g_ssdp_socket_receive);
 			g_ssdp_socket_receive = -1;
 			return ;
@@ -157,7 +157,7 @@ static void DRV_SSDP_CreateSocket_Receive() {
 				g_ssdp_socket_receive, SOL_SOCKET, SO_REUSEADDR, (char*) &flag, sizeof(flag)
 			) < 0
 		){
-			addLogAdv(LOG_ERROR, LOG_FEATURE_HTTP,"DRV_SSDP_CreateSocket_Receive: failed to do setsockopt SO_REUSEADDR\n");
+			addLogAdv(LOG_ERROR, LOG_FEATURE_HTTP,"DRV_SSDP_CreateSocket_Receive: failed to do setsockopt SO_REUSEADDR");
 			close(g_ssdp_socket_receive);
 			g_ssdp_socket_receive = -1;
 		  return ;
@@ -174,7 +174,7 @@ static void DRV_SSDP_CreateSocket_Receive() {
     // bind to receive address
     //
     if (bind(g_ssdp_socket_receive, (struct sockaddr*) &addr, sizeof(addr)) < 0) {
-		addLogAdv(LOG_ERROR, LOG_FEATURE_HTTP,"DRV_DGR_CreateSocket_Receive: failed to do bind\n");
+		addLogAdv(LOG_ERROR, LOG_FEATURE_HTTP,"DRV_DGR_CreateSocket_Receive: failed to do bind");
 		close(g_ssdp_socket_receive);
 		g_ssdp_socket_receive = -1;
         return ;
@@ -199,7 +199,7 @@ static void DRV_SSDP_CreateSocket_Receive() {
 		if (
 			iResult < 0
 		){
-			addLogAdv(LOG_ERROR, LOG_FEATURE_HTTP,"DRV_SSDP_CreateSocket_Receive: failed to do setsockopt IP_ADD_MEMBERSHIP %i\n",iResult);
+			addLogAdv(LOG_ERROR, LOG_FEATURE_HTTP,"DRV_SSDP_CreateSocket_Receive: failed to do setsockopt IP_ADD_MEMBERSHIP %i",iResult);
 			close(g_ssdp_socket_receive);
 			g_ssdp_socket_receive = -1;
 			return ;
@@ -208,7 +208,7 @@ static void DRV_SSDP_CreateSocket_Receive() {
 
 	lwip_fcntl(g_ssdp_socket_receive, F_SETFL,O_NONBLOCK);
 
-	addLogAdv(LOG_INFO, LOG_FEATURE_HTTP,"DRV_SSDP_CreateSocket_Receive: Socket created, waiting for packets\n");
+	addLogAdv(LOG_INFO, LOG_FEATURE_HTTP,"DRV_SSDP_CreateSocket_Receive: Socket created, waiting for packets");
 }
 
 
@@ -318,7 +318,7 @@ static void DRV_SSDP_Send_Notify() {
     int len = strlen(notify_message);
 
 	addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_HTTP,"DRV_SSDP_Send_Notify: space: %d msg:%d", strlen(notify_template) +  100, len);
-	addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_HTTP,"DRV_SSDP_Send_Notify: \r\n%s\r\n", notify_message);
+	addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_HTTP,"DRV_SSDP_Send_Notify: \r%s", notify_message);
 
     // set up destination address
     //
@@ -495,7 +495,7 @@ void DRV_SSDP_RunQuickTick() {
     );
     udp_msgbuf[UDP_MSGBUF_LEN] = 0;
     if (nbytes <= 0) {
-        //addLogAdv(LOG_INFO, LOG_FEATURE_HTTP,"nothing\n");
+        //addLogAdv(LOG_INFO, LOG_FEATURE_HTTP,"nothing");
         return ;
     }
     // just so we can terminate for print

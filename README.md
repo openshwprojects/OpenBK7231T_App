@@ -34,6 +34,7 @@ Although this repository is named `OpenBK7231T_App`, it has evolved into a multi
 -   TXW81X (eg TXW817-810, see [development thread](https://www.elektroda.com/rtvforum/topic4033757.html))
 -   RDA5981 (eg RDA5981AM, RDA5981BM, WRD2L, TYWRD3S, HLK-M50, see [development thread](https://www.elektroda.com/rtvforum/topic4105474.html), see [guide](https://www.elektroda.com/rtvforum/topic4148573.html))
 -   LN8825B (eg SCW-T503)
+-   BL616/BL618 (eg Ai-M62-12F, Ai-M61-32S)
 
 Please use automatically compiled binaries from the Releases tab. To build OpenBeken yourself for any supported platform, fork our version of the submodule SDK first, and then check out this app repository alongside it. Details further down. Alternatively consider using the easier [override method.](https://www.elektroda.com/rtvforum/topic4082682.html)
 
