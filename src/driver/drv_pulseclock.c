@@ -182,10 +182,10 @@ void PulseClock_init() {
 	phys_pulsemillis = Tokenizer_GetArgIntegerDefault(3, 500);
 	phys_maxsec = Tokenizer_GetArgIntegerDefault(4, 86400/2);
 //	phys_daysec=(int32_t) HAL_FlashVars_GetChannelValue(PHYS_DAYSEC_FV);
-    if (phys_daysec != DaysecNormalise(phys_daysec))
-    {
+//    if (phys_daysec != DaysecNormalise(phys_daysec))
+//    {
         phys_daysec=PHYS_UNKNOWN;
-    }
+//    }
     addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "PulseClock: init, resolution=%i, pulseoffset=%i, pulsemillis=%i, maxsec=%i, phystime=%02i:%02i:%02i", 
             phys_resolution, 
             phys_pulseoffset,
