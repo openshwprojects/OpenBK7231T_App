@@ -452,11 +452,11 @@ OpenXR872: prebuild_OpenXR872 sdk/OpenXR872/project/demo/hello_demo/shared
 
 .PHONY: OpenXR806
 OpenXR806: prebuild_OpenXR806 sdk/OpenXR806/project/demo/sharedApp/shared
-	$(MAKE) -C sdk/OpenXR806/src CC_DIR=$(ARM_NONE_EABI_GCC_PATH) APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT) -j $(shell nproc) --no-print-directory
-	$(MAKE) -C sdk/OpenXR806/src install CC_DIR=$(ARM_NONE_EABI_GCC_PATH) APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT) -j $(shell nproc) --no-print-directory
-	$(MAKE) -C sdk/OpenXR806/project/demo/sharedApp/gcc CC_DIR=$(ARM_NONE_EABI_GCC_PATH) APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT) -j $(shell nproc) --no-print-directory
-	$(MAKE) -C sdk/OpenXR806/project/demo/sharedApp/gcc image CC_DIR=$(ARM_NONE_EABI_GCC_PATH) APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT) -j $(shell nproc) --no-print-directory
-	$(MAKE) -C sdk/OpenXR806/project/demo/sharedApp/gcc image_xz CC_DIR=$(ARM_NONE_EABI_GCC_PATH) APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT) -j $(shell nproc) --no-print-directory
+	$(MAKE) -C sdk/OpenXR806/src CC_DIR=$(ARM_NONE_EABI_GCC_PATH) APP_VERSION=$(APP_VERSION) OPLATFORM=3 OBK_VARIANT=$(OBK_VARIANT) -j $(shell nproc) --no-print-directory
+	$(MAKE) -C sdk/OpenXR806/src install CC_DIR=$(ARM_NONE_EABI_GCC_PATH) APP_VERSION=$(APP_VERSION) OPLATFORM=3 OBK_VARIANT=$(OBK_VARIANT) -j $(shell nproc) --no-print-directory
+	$(MAKE) -C sdk/OpenXR806/project/demo/sharedApp/gcc CC_DIR=$(ARM_NONE_EABI_GCC_PATH) APP_VERSION=$(APP_VERSION) OPLATFORM=3 OBK_VARIANT=$(OBK_VARIANT) -j $(shell nproc) --no-print-directory
+	$(MAKE) -C sdk/OpenXR806/project/demo/sharedApp/gcc image CC_DIR=$(ARM_NONE_EABI_GCC_PATH) APP_VERSION=$(APP_VERSION) OPLATFORM=3 OBK_VARIANT=$(OBK_VARIANT) -j $(shell nproc) --no-print-directory
+	$(MAKE) -C sdk/OpenXR806/project/demo/sharedApp/gcc image_xz CC_DIR=$(ARM_NONE_EABI_GCC_PATH) APP_VERSION=$(APP_VERSION) OPLATFORM=3 OBK_VARIANT=$(OBK_VARIANT) -j $(shell nproc) --no-print-directory
 	mkdir -p output/$(APP_VERSION)
 	cp sdk/OpenXR806/project/demo/sharedApp/image/xr806/xr_system.img output/$(APP_VERSION)/OpenXR806_$(APP_VERSION).img
 	cp sdk/OpenXR806/project/demo/sharedApp/image/xr806/xr_system_img_xz.img output/$(APP_VERSION)/OpenXR806_$(APP_VERSION)_ota.img

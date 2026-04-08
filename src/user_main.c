@@ -1299,8 +1299,13 @@ void Main_Init_AfterDelay_Unsafe(bool bStartAutoRunScripts) {
 			// start IR driver 5 seconds after boot.  It may affect wifi connect?
 			// yet we also want it to start if no wifi for IR control...
 #ifndef OBK_DISABLE_ALL_DRIVERS
+#if ENABLE_DRIVER_IR || ENABLE_DRIVER_IRREMOTEESP
 			DRV_StartDriver("IR");
 			//ScheduleDriverStart("IR",5);
+#elif ENABLE_DRIVER_TINYIR_NEC
+			if(PIN_FindPinIndexForRole(IOR_IRSend, -1) == -1) 
+				DRV_StartDriver("TinyIR_NEC");
+#endif
 #endif
 		}
 

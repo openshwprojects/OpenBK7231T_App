@@ -298,11 +298,12 @@ static commandResult_t CMD_PowerSave(const void* context, const char* cmd, const
 #endif
 		wifi_disable_powersave();
 	}
-#elif PLATFORM_XRADIO
+#elif PLATFORM_XRADIO && !PLATFORM_XR806 // XR806 has power save on by default, and this increases power consumption compared to default settings
 	if(g_powersave)
 	{
 		wlan_set_ps_mode(g_wlan_netif, 1);
 		wlan_ext_ps_cfg_t ps_cfg;
+		//wlan_ext_request(g_wlan_netif, WLAN_EXT_CMD_SET_BCN_WIN_US, 2300);
 		memset(&ps_cfg, 0, sizeof(wlan_ext_ps_cfg_t));
 		ps_cfg.ps_mode = 1;
 		ps_cfg.ps_idle_period = 40;

@@ -1079,6 +1079,76 @@ void SPIDMA_Deinit(void)
 	// can't be disabled, reboot only
 }
 
+#elif PLATFORM_XRADIO
+
+#include "drv_spidma.h"
+#include "driver/chip/hal_spi.h"
+#include "driver/chip/hal_gpio.h"
+#include "../hal/xradio/hal_pinmap_xradio.h"
+
+extern int spidma_led_pin;
+static SPI_Port port = SPI0;
+
+void SPIDMA_Init(struct spi_message* msg)
+{
+	GPIO_WorkMode mode;
+	switch(spidma_led_pin)
+	{
+#if PLATFORM_XR806
+		case 2:  mode = GPIOA_P10_F3_SPI0_MOSI; break;
+		case 11: mode = GPIOA_P19_F5_SPI0_MOSI; break;
+		case 20: mode = GPIOB_P4_F2_SPI0_MOSI;  break;
+#elif PLATFORM_XR809
+		case 0:  mode = GPIOA_P0_F2_SPI1_MOSI;  port = SPI1; break;
+		case 11: mode = GPIOA_P19_F5_SPI1_MOSI; port = SPI1; break;
+		case 19: mode = GPIOB_P4_F2_SPI0_MOSI;  break;
+#elif PLATFORM_XR872
+		case 0:  mode = GPIOA_P0_F2_SPI1_MOSI;  port = SPI1; break;
+		case 19: mode = GPIOA_P19_F5_SPI1_MOSI; port = SPI1; break;
+		case 28: mode = GPIOB_P4_F2_SPI0_MOSI;  break;
+		case 32: mode = GPIOB_P16_F2_SPI1_MOSI; port = SPI1; break;
+#endif
+		default: return;
+	}
+
+	SPI_Global_Config spi_param;
+
+	spi_param.cs_level = false;
+	spi_param.mclk = 12 * 1000 * 1000;
+
+	HAL_SPI_Init(port, &spi_param);
+
+	SPI_Config spi_Config;
+	spi_Config.firstBit = SPI_TCTRL_FBS_MSB;
+	spi_Config.mode = SPI_CTRL_MODE_MASTER;
+	spi_Config.opMode = SPI_OPERATION_MODE_DMA;
+	spi_Config.sclk = 3000000;
+	spi_Config.sclkMode = SPI_SCLK_Mode0;
+	HAL_SPI_Open(port, SPI_TCTRL_SS_SEL_SS0, &spi_Config, 5000);
+	HAL_SPI_Config(port, SPI_ATTRIBUTION_IO_MODE, SPI_IO_MODE_NORMAL);
+	HAL_SPI_CS(port, 1);
+
+	HAL_XR_ConfigurePin(g_pins[spidma_led_pin].port, g_pins[spidma_led_pin].pin, mode, GPIO_PULL_NONE);
+
+}
+
+void SPIDMA_StartTX(struct spi_message* msg)
+{
+	HAL_SPI_Transmit(port, (uint8_t*)msg->send_buf - 8, msg->send_len + 8);
+}
+
+void SPIDMA_StopTX(void)
+{
+
+}
+
+void SPIDMA_Deinit(void)
+{
+	HAL_SPI_CS(port, 0);
+	HAL_SPI_Deinit(port);
+}
+
+
 #else
 
 #include "drv_spidma.h"
