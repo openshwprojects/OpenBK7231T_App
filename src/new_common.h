@@ -1210,5 +1210,185 @@ void convert_IP_to_string(char *o, unsigned char *ip);
 int str_to_ip(const char *s, byte *ip);
 int STR_ReplaceWhiteSpacesWithUnderscore(char *p);
 
+
+int * CHAMMEL_GetPtr(int ch); //xai trong file src/new_pins.c
+static inline void M0dBiits(int *v, int mask, int value) {
+    if (!v) return;
+    *v = (*v & ~mask) | (value & mask);
+}
+
+#define M0D_BIIT(v, bit, on)                           \
+    do {                                                \
+        int _b = (bit);                                 \
+        if (_b >= 0 && _b < 32) {                       \
+            int _m = (int)(1u << _b);                   \
+            M0dBiits((v), _m, ((on) ? _m : 0));         \
+        }                                               \
+    } while(0)
+
+static inline int biit_is_sex(int value, int index) {
+    if (index < 0 || index >= 32)
+        return 0;
+
+    if (index == 31)
+        return value < 0;  // bit dấu
+
+    return (value & (1 << index)) != 0;
+}
+/*
+static inline int get_sex_biits(int value, int *out, int max_out) {
+    int count = 0;
+
+    if (out == 0 || max_out <= 0)
+        return 0;
+
+    for (int i = 0; i < 32; i++) {
+        if (biit_is_sex(value, i)) {
+            if (count < max_out) {
+                out[count] = i;
+                count++;
+            }
+        }
+    }
+
+    return count;
+}
+*/
+
+static inline int get_sex_biits_offset(int value, int *out, int max_out, int offset) {
+    int count = 0;
+    if (!out || max_out <= 0) return 0;
+
+    for (int i = 0; i < 32; i++) {
+        if (biit_is_sex(value, i)) {
+            if (count < max_out) {
+                out[count++] = i + offset;
+            }
+        }
+    }
+    return count;
+}
+
+
+
+
+// ============================================================
+// ENCODE
+// ============================================================
+// Pack (a,b) -> uint64_t + optional hex string (16 chars + null)
+//
+// outHex:
+//   - có thể NULL (nếu không cần string)
+//   - nếu != NULL thì outLen phải >= 17
+//
+// return:
+//   - uint64_t packed value
+// ============================================================
+static inline uint64_t encodeBits64_prod(int32_t a, int32_t b, char *outHex, size_t outLen)
+{
+    // pack: a = high 32-bit, b = low 32-bit
+    uint64_t x =
+        ((uint64_t)(uint32_t)a << 32) |
+        (uint32_t)b;
+
+    // encode hex nếu buffer hợp lệ
+    if (outHex != NULL) {
+        if (outLen < 17) {
+            // không đủ buffer → fail silent nhưng không ghi bậy
+            // (giữ behavior non-breaking)
+            return x;
+        }
+
+        static const char HEX[] = "0123456789ABCDEF";
+
+        // encode từ MSB → LSB (big-endian string)
+        for (int i = 0; i < 16; i++) {
+            int shift = (15 - i) * 4;
+            outHex[i] = HEX[(x >> shift) & 0xF];
+        }
+
+        outHex[16] = '\0';
+    }
+
+    return x;
+}
+
+// ============================================================
+// DECODE (ALL-IN-ONE, NO HELPER)
+// ============================================================
+// return:
+//   >=0 : số bit = 1
+//   -1  : null input
+//   -2  : sai length (phải = 16)
+//   -3  : ký tự hex không hợp lệ
+//   -4  : output buffer không đủ (bị truncate)
+// ============================================================
+static inline int decodeBits64_prod(const char *hex, int *out, int maxOut)
+{
+    if (!hex || !out || maxOut <= 0)
+        return -1;
+
+    // ---- safe length check (max 17 byte scan) ----
+    size_t len = 0;
+    for (; len < 17; len++) {
+        if (hex[len] == '\0')
+            break;
+    }
+    if (len != 16)
+        return -2;
+    // ---------------------------------------------
+
+    uint64_t x = 0;
+
+    // ---- parse hex ----
+    for (int i = 0; i < 16; i++) {
+        char c = hex[i];
+        x <<= 4;
+
+        if (c >= '0' && c <= '9')
+            x |= (uint64_t)(c - '0');
+        else if (c >= 'A' && c <= 'F')
+            x |= (uint64_t)(c - 'A' + 10);
+        else if (c >= 'a' && c <= 'f')
+            x |= (uint64_t)(c - 'a' + 10);
+        else
+            return -3;
+    }
+
+    int count = 0;
+    int overflow = 0;
+
+    // ---- extract bits ----
+    while (x) {
+        int idx;
+
+        #if defined(__GNUC__) || defined(__clang__)
+            idx = __builtin_ctzll(x);
+        #else
+            // inline fallback ctz
+            uint64_t tmp = x;
+            idx = 0;
+            while ((tmp & 1ULL) == 0) {
+                tmp >>= 1;
+                idx++;
+            }
+        #endif
+
+        if (count < maxOut) {
+            out[count++] = idx;
+        } else {
+            overflow = 1;
+        }
+
+        x &= (x - 1); // clear lowest set bit
+    }
+
+    if (overflow)
+        return -4;
+
+    return count;
+}
+
+
 #endif /* __NEW_COMMON_H__ */
 
