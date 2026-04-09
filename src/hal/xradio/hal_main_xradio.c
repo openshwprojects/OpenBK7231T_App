@@ -30,9 +30,7 @@ static void obk_task(void* pvParameters)
 {
 #if PLATFORM_XR872 || PLATFORM_XR806
 	wlan_ext_temp_volt_get_t param;
-	uint8_t temp_sec = 0;
-	wlan_ext_request(g_wlan_netif, WLAN_EXT_CMD_GET_TEMP_VOLT, (int)(&param));
-	g_wifi_temperature = (float)param.Temperature / 16;
+	uint8_t temp_sec = 10;
 #endif
 	vTaskDelay(50 / portTICK_PERIOD_MS);
 	Main_Init();

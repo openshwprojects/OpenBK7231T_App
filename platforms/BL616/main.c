@@ -30,6 +30,8 @@ void _os_free(void* ptr)
 	kfree(ptr);
 }
 
+void __wrap_bflb_gpio_pad_check(uint8_t pin) {}
+
 static void obk_task(void* pvParameters)
 {
 	Main_Init();
