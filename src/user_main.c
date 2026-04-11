@@ -1009,6 +1009,7 @@ void Main_OnEverySecond()
 		}
 	}
 
+#if ENABLE_PING_WATCHDOG
 	//ADDLOGF_INFO("g_startPingWatchDogAfter %i, g_bPingWatchDogStarted %i", g_startPingWatchDogAfter, g_bPingWatchDogStarted);
 	if (g_bHasWiFiConnected) {
 		if (g_startPingWatchDogAfter) {
@@ -1026,9 +1027,7 @@ void Main_OnEverySecond()
 				{
 					// mark as enabled
 					g_timeSinceLastPingReply = 0;
-#if ENABLE_PING_WATCHDOG
 					Main_SetupPingWatchDog(pingTargetServer);
-#endif
 				}
 				else {
 					// mark as disabled
@@ -1036,8 +1035,9 @@ void Main_OnEverySecond()
 				}
 			}
 		}
-
 	}
+#endif
+
 	if (g_connectToWiFi)
 	{
 		g_connectToWiFi--;
