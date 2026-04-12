@@ -55,10 +55,19 @@ echo "[INFO] TEMP=$TEMP"
 echo "[INFO] TMP=$TMP"
 echo "[INFO] TMPDIR=$TMPDIR"
 
+ACTION="$5"
+
 # Navigate to the build system directory
 cd "$SDK_DIR/platforms/bk7231t/bk7231t_os"
 
+if [ "$ACTION" = "clean" ]; then
+    echo "[INFO] Running BK7231T clean from $(pwd)..."
+    make APP_BIN_NAME="$APP_NAME" USER_SW_VER="$(echo $APP_VERSION | cut -d'-' -f1)" APP_VERSION="$APP_VERSION" clean -C ./
+    echo "[INFO] Clean complete!"
+    exit 0
+fi
+
 echo "[INFO] Running BK7231T build from $(pwd)..."
-bash build.sh "$APP_NAME" "$APP_VERSION" bk7231t "OBK_VARIANT=$OBK_VARIANT"
+bash build.sh "$APP_NAME" "$APP_VERSION" bk7231t "OBK_VARIANT=$OBK_VARIANT TARGET_PLATFORM=bk7231t"
 
 echo "[INFO] Build complete!"

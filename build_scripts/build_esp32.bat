@@ -1,14 +1,17 @@
 @echo off
 setlocal EnableDelayedExpansion
+pushd "%~dp0\.."
 
 :: Default settings
 set APP_VERSION=dev_esp32
 set OBK_VARIANT=2
 set ESP_FSIZE=4MB
 set TARGET=esp32
+set ACTION=build
 
 :: Check for target argument
 if not "%~1"=="" set TARGET=%~1
+if not "%~2"=="" set ACTION=%~2
 
 if "%TARGET%"=="esp32" (
     set BUILD_DIR=platforms\ESP-IDF\build-32
@@ -46,6 +49,7 @@ echo Size: %ESP_FSIZE%
 echo Variant (2=tuyaMCU/4MB): %OBK_VARIANT%
 echo Bootloader Addr: %BOOTLOADER_ADDR%
 echo Build Directory: %BUILD_DIR%
+echo Action: %ACTION%
 echo ==============================================
 
 :: Check if ESP-IDF environment is active
@@ -84,6 +88,14 @@ exit /b 1
 :idf_ready
 echo [INFO] ESP-IDF environment is ready.
 
+:: If just cleaning
+if "%ACTION%"=="clean" (
+    echo [INFO] Cleaning %TARGET%...
+    if exist %BUILD_DIR% cmake --build %BUILD_DIR% --target clean
+    echo [INFO] Clean complete!
+    exit /b 0
+)
+
 :: Prepare partition tables based on OBK_VARIANT
 if exist platforms\ESP-IDF\sdkconfig del platforms\ESP-IDF\sdkconfig
 if exist platforms\ESP-IDF\partitions.csv del platforms\ESP-IDF\partitions.csv
@@ -93,6 +105,10 @@ copy /y platforms\ESP-IDF\partitions-4mb.csv platforms\ESP-IDF\partitions.csv >n
 
 :: Set environment variables for IDF cmake
 set IDF_TARGET=%TARGET%
+
+
+:: --- Berry prebuild ---
+call build_scripts\berry_prebuild.bat
 
 :: Configure CMake via ESP-IDF toolchain
 echo [INFO] Running CMake configuration for %TARGET%...
@@ -155,3 +171,4 @@ echo Factory Bin: !FACTORY_BIN!
 echo OTA Bin:     !IMG_BIN!
 echo ==============================================
 exit /b 0
+

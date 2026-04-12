@@ -1,26 +1,30 @@
 @echo off
 setlocal EnableDelayedExpansion
+pushd "%~dp0\.."
 
 :: ========================================================
-:: OpenBeken BK7231T Windows build script
+:: OpenBeken BK7231N Windows build script
 :: Uses Git Bash + bundled ARM GCC toolchain + Windows
 :: packaging tools that are all already in the SDK.
 :: ========================================================
 
-set APP_NAME=OpenBK7231T_App
-set APP_VERSION=dev_bk7231t
-set SDK_DIR=sdk\OpenBK7231T
+set APP_NAME=OpenBK7231N_App
+set APP_VERSION=dev_bk7231n
+set SDK_DIR=sdk\OpenBK7231N
 set OBK_VARIANT=2
+set ACTION=build
 
 :: Allow overriding version from command line
 if not "%~1"=="" set APP_VERSION=%~1
+if not "%~2"=="" set ACTION=%~2
 
 echo ==============================================
-echo Building OpenBeken for BK7231T on Windows
+echo Building OpenBeken for BK7231N on Windows
 echo App Name:    %APP_NAME%
 echo App Version: %APP_VERSION%
 echo Variant:     %OBK_VARIANT%
 echo SDK Dir:     %SDK_DIR%
+echo Action:      %ACTION%
 echo ==============================================
 
 :: --- Check prerequisites ---
@@ -43,7 +47,7 @@ exit /b 1
 echo [INFO] Using Git Bash: %GIT_BASH%
 
 :: 2. Check that SDK submodule is checked out
-if not exist "%SDK_DIR%\platforms\bk7231t\bk7231t_os\build.sh" (
+if not exist "%SDK_DIR%\platforms\BK7231N\BK7231N_os\build.sh" (
     echo [INFO] SDK submodule not found, checking out...
     git submodule update --init --recursive --depth=1 %SDK_DIR%
     if !errorlevel! neq 0 (
@@ -54,9 +58,9 @@ if not exist "%SDK_DIR%\platforms\bk7231t\bk7231t_os\build.sh" (
 echo [INFO] SDK submodule OK.
 
 :: 3. Check that Windows ARM GCC toolchain exists
-if not exist "%SDK_DIR%\platforms\bk7231t\toolchain\windows\gcc-arm-none-eabi-4_9-2015q1\bin\arm-none-eabi-gcc.exe" (
+if not exist "%SDK_DIR%\platforms\BK7231N\toolchain\windows\gcc-arm-none-eabi-4_9-2015q1\bin\arm-none-eabi-gcc.exe" (
     echo [ERROR] Windows ARM GCC toolchain not found in SDK!
-    echo Expected at: %SDK_DIR%\platforms\bk7231t\toolchain\windows\gcc-arm-none-eabi-4_9-2015q1\bin\
+    echo Expected at: %SDK_DIR%\platforms\BK7231N\toolchain\windows\gcc-arm-none-eabi-4_9-2015q1\bin\
     exit /b 1
 )
 echo [INFO] ARM GCC toolchain OK.
@@ -84,6 +88,10 @@ if not exist "output\mbedtls-2.28.5" (
 :: 6. Ensure output directory exists
 if not exist "output\%APP_VERSION%" mkdir "output\%APP_VERSION%"
 
+
+:: --- Berry prebuild ---
+call build_scripts\berry_prebuild.bat
+
 :: --- Build via Git Bash ---
 :: The build.sh and application.mk already handle Windows vs Linux toolchain paths.
 :: The trick is: application.mk uses `uname` to decide toolchain dir, and build.sh
@@ -91,23 +99,23 @@ if not exist "output\%APP_VERSION%" mkdir "output\%APP_VERSION%"
 :: Under Git Bash, uname returns MINGW64_NT-... which is NOT "Linux", so it picks
 :: the Windows paths. We just need to provide `make` to Git Bash.
 
-echo [INFO] Starting build via Git Bash...
+echo [INFO] Starting %ACTION% via Git Bash...
 echo.
 
 :: Run the inner build script, passing parameters as arguments.
 :: This avoids the fragile inline echo approach that loses $variables.
-"%GIT_BASH%" --login -i "%CD%\build_bk7231t_inner.sh" "%APP_NAME%" "%APP_VERSION%" "%SDK_DIR%" "%OBK_VARIANT%"
+"%GIT_BASH%" --login -i "%CD%\build_scripts\build_bk7231n_inner.sh" "%APP_NAME%" "%APP_VERSION%" "%SDK_DIR%" "%OBK_VARIANT%" "%ACTION%"
 set BUILD_RESULT=%errorlevel%
 
 if %BUILD_RESULT% neq 0 (
     echo.
-    echo [ERROR] BK7231T build failed with exit code %BUILD_RESULT%!
+    echo [ERROR] BK7231N build failed with exit code %BUILD_RESULT%!
     echo.
     echo [INFO] Checking for partial build artifacts...
-    echo [INFO] Looking in: %SDK_DIR%\platforms\bk7231t\bk7231t_os\tools\generate\
-    if exist "%SDK_DIR%\platforms\bk7231t\bk7231t_os\tools\generate" (
-        dir /b "%SDK_DIR%\platforms\bk7231t\bk7231t_os\tools\generate\*.bin" 2>nul
-        dir /b "%SDK_DIR%\platforms\bk7231t\bk7231t_os\tools\generate\*.rbl" 2>nul
+    echo [INFO] Looking in: %SDK_DIR%\platforms\BK7231N\BK7231N_os\tools\generate\
+    if exist "%SDK_DIR%\platforms\BK7231N\BK7231N_os\tools\generate" (
+        dir /b "%SDK_DIR%\platforms\BK7231N\BK7231N_os\tools\generate\*.bin" 2>nul
+        dir /b "%SDK_DIR%\platforms\BK7231N\BK7231N_os\tools\generate\*.rbl" 2>nul
     )
     echo.
     echo [INFO] Checking output dir: output\%APP_VERSION%\
@@ -124,7 +132,7 @@ if %BUILD_RESULT% neq 0 (
 :: --- Copy output ---
 echo.
 echo [INFO] Checking output files...
-set GEN_DIR=%SDK_DIR%\platforms\bk7231t\bk7231t_os\tools\generate
+set GEN_DIR=%SDK_DIR%\platforms\BK7231N\BK7231N_os\tools\generate
 
 set COPIED_COUNT=0
 if exist "%GEN_DIR%\%APP_NAME%_%APP_VERSION%.rbl" (
@@ -163,3 +171,4 @@ for %%F in (output\%APP_VERSION%\*.bin output\%APP_VERSION%\*.rbl) do (
 )
 echo ==============================================
 exit /b 0
+
