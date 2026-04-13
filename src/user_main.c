@@ -743,6 +743,7 @@ void Main_OnEverySecond()
 #ifdef WINDOWS
 	g_bHasWiFiConnected = 1;
 #endif
+	ADDLOGF_INFO("Entering");
 
 	// display temperature - thanks to giedriuslt
 // only in Normal mode, and if boot is not failing
@@ -812,7 +813,9 @@ void Main_OnEverySecond()
 	LED_RunOnEverySecond();
 #endif
 #ifndef OBK_DISABLE_ALL_DRIVERS
+	ADDLOGF_INFO("DRV_OnEverySecond");
 	DRV_OnEverySecond();
+	ADDLOGF_INFO("After DRV_OnEverySecond");
 #if defined(PLATFORM_BEKEN) || defined(WINDOWS) || defined(PLATFORM_BL602) || defined(PLATFORM_ESPIDF) \
  || defined (PLATFORM_RTL87X0C) || PLATFORM_ESP8266 && !PLATFORM_BL_NEW
 	UART_RunEverySecond();
