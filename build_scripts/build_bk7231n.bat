@@ -57,6 +57,17 @@ if not exist "%SDK_DIR%\platforms\BK7231N\BK7231N_os\build.sh" (
 )
 echo [INFO] SDK submodule OK.
 
+:: 2b. Check that Berry submodule is checked out
+if not exist "libraries\berry\src\be_api.c" (
+    echo [INFO] Berry submodule not found, checking out...
+    git submodule update --init --depth=1 libraries\berry
+    if !errorlevel! neq 0 (
+        echo [ERROR] Failed to checkout Berry submodule!
+        exit /b 1
+    )
+)
+echo [INFO] Berry submodule OK.
+
 :: 3. Check that Windows ARM GCC toolchain exists
 if not exist "%SDK_DIR%\platforms\BK7231N\toolchain\windows\gcc-arm-none-eabi-4_9-2015q1\bin\arm-none-eabi-gcc.exe" (
     echo [ERROR] Windows ARM GCC toolchain not found in SDK!

@@ -33,6 +33,17 @@ if not exist "%IDF_PATH%\tools\idf.py" (
     exit /b 1
 )
 
+:: Check that Berry submodule is checked out
+if not exist "libraries\berry\src\be_api.c" (
+    echo [INFO] Berry submodule not found, checking out...
+    git submodule update --init --depth=1 libraries\berry
+    if !errorlevel! neq 0 (
+        echo [ERROR] Failed to checkout Berry submodule!
+        exit /b 1
+    )
+)
+echo [INFO] Berry submodule OK.
+
 :: Set environment variables for the build
 set APP_VERSION=%APP_VERSION%
 set OBK_VARIANT=%OBK_VARIANT%
@@ -104,9 +115,23 @@ if defined ESPRESSIF_VENV (
     echo [INFO] Activating Python venv: !ESPRESSIF_VENV!
     call "!ESPRESSIF_VENV!\Scripts\activate.bat"
 ) else (
-    echo [INFO] No ESP8266 Python venv found, using system Python.
-    echo [INFO] If dependency checks fail, run:
-    echo         python sdk\OpenESP8266\tools\idf_tools.py install-python-env
+    echo [INFO] No ESP8266 Python venv found, installing...
+    python "%IDF_PATH%\tools\idf_tools.py" install-python-env
+    if !errorlevel! neq 0 (
+        echo [ERROR] Failed to install ESP8266 Python environment!
+        echo [INFO] You can try manually: python sdk\OpenESP8266\tools\idf_tools.py install-python-env
+        exit /b 1
+    )
+    :: Re-scan for the newly created venv
+    for /d %%v in ("%USERPROFILE%\.espressif\python_env\rtos3.4_py*") do (
+        if exist "%%v\Scripts\activate.bat" set "ESPRESSIF_VENV=%%v"
+    )
+    if defined ESPRESSIF_VENV (
+        echo [INFO] Activating Python venv: !ESPRESSIF_VENV!
+        call "!ESPRESSIF_VENV!\Scripts\activate.bat"
+    ) else (
+        echo [WARNING] Python venv was installed but could not be found. Using system Python.
+    )
 )
 
 :: If just cleaning

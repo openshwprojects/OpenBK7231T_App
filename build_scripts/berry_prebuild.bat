@@ -3,10 +3,18 @@ setlocal EnableDelayedExpansion
 
 :: ========================================================
 :: OpenBeken Berry prebuild script
-:: Must be called from the repository root directory
+:: Can be called from any directory - resolves repo root
+:: from the script's own location.
 :: ========================================================
 
+:: Resolve repo root (one level up from build_scripts)
+set "REPO_ROOT=%~dp0.."
+pushd "!REPO_ROOT!"
+set "REPO_ROOT=%CD%"
+popd
+
 echo [INFO] Running Berry prebuild...
+echo [INFO] Repo root: !REPO_ROOT!
 
 set PYTHON_CMD=
 where python >nul 2>nul
@@ -27,13 +35,13 @@ if "%PYTHON_CMD%"=="" (
 
 echo [INFO] Using Python command: !PYTHON_CMD!
 
-if not exist "libraries\berry\generate" (
+if not exist "!REPO_ROOT!\libraries\berry\generate" (
     echo [INFO] Creating libraries\berry\generate directory...
-    mkdir "libraries\berry\generate"
+    mkdir "!REPO_ROOT!\libraries\berry\generate"
 )
 
 echo [INFO] Executing Berry C-Object-Compiler (coc)...
-!PYTHON_CMD! libraries\berry\tools\coc\coc -o libraries\berry\generate libraries\berry\src src\berry\modules -c include\berry_conf.h
+!PYTHON_CMD! "!REPO_ROOT!\libraries\berry\tools\coc\coc" -o "!REPO_ROOT!\libraries\berry\generate" "!REPO_ROOT!\libraries\berry\src" "!REPO_ROOT!\src\berry\modules" -c "!REPO_ROOT!\include\berry_conf.h"
 
 if !errorlevel! neq 0 (
     echo [ERROR] Berry prebuild failed with exit code !errorlevel!!

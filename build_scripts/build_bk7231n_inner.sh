@@ -68,6 +68,6 @@ if [ "$ACTION" = "clean" ]; then
 fi
 
 echo "[INFO] Running BK7231N build from $(pwd)..."
-bash build.sh "$APP_NAME" "$APP_VERSION" bk7231n "OBK_VARIANT=$OBK_VARIANT TARGET_PLATFORM=bk7231n"
+bash build.sh "$APP_NAME" "$APP_VERSION" bk7231n "OBK_VARIANT=$OBK_VARIANT TARGET_PLATFORM=bk7231n OBK_DIR=../../../apps/$APP_NAME BERRY_SRCPATH=../../../apps/$APP_NAME/libraries/berry/src BERRY_MODULEPATH=../../../apps/$APP_NAME/src/berry/modules"
 
 echo "[INFO] Build complete!"
