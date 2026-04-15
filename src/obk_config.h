@@ -627,7 +627,7 @@
 //#define ENABLE_DRIVER_CHARTS					1
 //#define ENABLE_DRIVER_OPENWEATHERMAP			1
 #define ENABLE_DRIVER_DHT						1
-#define ENABLE_DRIVER_BMP280        1
+#define ENABLE_DRIVER_BMPI2C        1
 
 
 
