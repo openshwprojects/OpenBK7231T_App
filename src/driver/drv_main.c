@@ -23,7 +23,7 @@
 #include "drv_ds3231.h"
 #include "drv_hlw8112.h"
 #include "drv_DCF77.h"
-#include "drv_BMP280.h"
+#include "drv_bmp280.h"
 
 void DRV_MQTTServer_Init();
 void DRV_MQTTServer_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState);
