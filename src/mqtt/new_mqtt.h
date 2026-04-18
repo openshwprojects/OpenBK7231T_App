@@ -125,13 +125,8 @@ typedef int (*mqtt_callback_fn)(obk_mqtt_request_t* request);
 // topics must be unique (i.e. you can't have /about and /aboutme or /about/me)
 // ALL topics currently must start with main device topic root.
 // ID is unique and non-zero - so that callbacks can be replaced....
-int MQTT_GetConnectEvents(void);
 const char* get_error_name(int err);
-int MQTT_GetConnectResult(void);
 char* MQTT_GetStatusMessage(void);
-int MQTT_GetPublishEventCounter(void);
-int MQTT_GetPublishErrorCounter(void);
-int MQTT_GetReceivedEventCounter(void);
 
 OBK_Publish_Result PublishQueuedItems();
 OBK_Publish_Result MQTT_ChannelPublish(int channel, int flags);
@@ -157,7 +152,6 @@ OBK_Publish_Result MQTT_PublishMain_StringFloat(const char* sChannel, float f,
 OBK_Publish_Result MQTT_PublishMain_StringInt(const char* sChannel, int val, int flags);
 OBK_Publish_Result MQTT_PublishMain_StringString(const char* sChannel, const char* valueStr, int flags);
 void MQTT_PublishOnlyDeviceChannelsIfPossible();
-void MQTT_QueuePublish(const char* topic, const char* channel, const char* value, int flags);
 void MQTT_QueuePublishWithCommand(const char* topic, const char* channel, const char* value, int flags, PostPublishCommands command);
 OBK_Publish_Result MQTT_Publish(const char* sTopic, const char* sChannel, const char* value, int flags);
 OBK_Publish_Result MQTT_PublishStat(const char* statName, const char* statValue);
@@ -179,6 +173,42 @@ typedef struct obk_mqtt_publishReplyPrinter_s {
 
 void MQTT_PublishPrinterContentsToStat(obk_mqtt_publishReplyPrinter_t *printer, const char *statName);
 void MQTT_PublishPrinterContentsToTele(obk_mqtt_publishReplyPrinter_t *printer, const char *statName);
+
+extern int mqtt_connect_events;
+extern int mqtt_connect_result;
+extern int mqtt_published_events;
+extern int mqtt_publish_errors;
+extern int mqtt_received_events;
+
+static inline int MQTT_GetConnectEvents(void)
+{
+	return mqtt_connect_events;
+}
+
+static inline int MQTT_GetPublishEventCounter(void)
+{
+	return mqtt_published_events;
+}
+
+static inline int MQTT_GetPublishErrorCounter(void)
+{
+	return mqtt_publish_errors;
+}
+
+static inline int MQTT_GetReceivedEventCounter(void)
+{
+	return mqtt_received_events;
+}
+
+static inline int MQTT_GetConnectResult(void)
+{
+	return mqtt_connect_result;
+}
+
+static inline void MQTT_QueuePublish(const char* topic, const char* channel, const char* value, int flags)
+{
+	MQTT_QueuePublishWithCommand(topic, channel, value, flags, None);
+}
 
 #endif // ENABLE_MQTT
 

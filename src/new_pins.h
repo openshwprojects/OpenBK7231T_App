@@ -1627,7 +1627,6 @@ void PIN_AddCommands(void);
 void PINS_BeginDeepSleepWithPinWakeUp(unsigned int wakeUpTime);
 void PIN_SetupPins();
 void PIN_OnReboot();
-void CFG_ClearPins();
 int PIN_CountPinsWithRole(int role);
 int PIN_CountPinsWithRoleOrRole(int role, int role2);
 int PIN_GetPinRoleForPinIndex(int index);
@@ -1658,7 +1657,6 @@ bool CHANNEL_ShouldBePublished(int ch);
 bool CHANNEL_IsPowerRelayChannel(int ch);
 // See: enum channelType_t
 void CHANNEL_SetType(int ch, int type);
-int CHANNEL_GetType(int ch);
 bool CHANNEL_IsHumidity(int type);
 bool CHANNEL_IsTemperature(int type);
 bool CHANNEL_IsPressure(int type);
@@ -1667,7 +1665,6 @@ bool CHANNEL_GetGenericHumidity(float *out);
 bool CHANNEL_GetGenericTemperature(float *out);
 bool CHANNEL_GetGenericPressure(float *out);
 void CHANNEL_SetFirstChannelByTypeEx(int requiredType, int newVal, int ausemovingaverage);
-void CHANNEL_SetFirstChannelByType(int requiredType, int newVal);
 // CHANNEL_SET_FLAG_*
 void CHANNEL_SetAll(int iVal, int iFlags);
 void CHANNEL_SetStateOnly(int iVal);
@@ -1723,4 +1720,12 @@ int XJ_MovingAverage_int(int aprevvalue, int aactvalue);
 // used e.g. for Tokenizer_GetPin()
 int PIN_FindIndexFromString(const char *name);
 
+static inline int CHANNEL_GetType(int ch)
+{
+	return g_cfg.pins.channelTypes[ch];
+}
+static inline void CHANNEL_SetFirstChannelByType(int requiredType, int newVal)
+{
+	CHANNEL_SetFirstChannelByTypeEx(requiredType, newVal, 0);
+}
 #endif

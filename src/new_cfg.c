@@ -15,7 +15,7 @@
 
 #define DEFAULT_BOOT_SUCCESS_TIME 5
 
-mainConfig_t g_cfg;
+mainConfig_t g_cfg = { 0 };
 int g_configInitialized = 0;
 int g_cfg_pendingChanges = 0;
 
@@ -87,9 +87,6 @@ void CFG_SetDefaultLEDCorrectionTable() {
 	g_cfg.led_corr.cw_bright_min = 0.1f;
 	g_cfg_pendingChanges++;
 }
-void CFG_MarkAsDirty() {
-	g_cfg_pendingChanges++;
-}
 void CFG_ClearIO() {
 	memset(&g_cfg.pins, 0, sizeof(g_cfg.pins));
 	g_cfg_pendingChanges++;
@@ -132,38 +129,8 @@ void CFG_SetDefaultConfig() {
 
 	// group topic will be unique for each platform, so it's easy
 	// to do group OTA without worrying about feeding wrong RBL for wrong platform
-#if PLATFORM_BK7231T
-	strcpy_safe(g_cfg.mqtt_group, "bekens_t", sizeof(g_cfg.mqtt_group));
-#elif PLATFORM_BK7231N
-	strcpy_safe(g_cfg.mqtt_group, "bekens_n", sizeof(g_cfg.mqtt_group));
-#elif PLATFORM_W600
-	strcpy_safe(g_cfg.mqtt_group, "w600s", sizeof(g_cfg.mqtt_group));
-#elif PLATFORM_W800
-	strcpy_safe(g_cfg.mqtt_group, "w800s", sizeof(g_cfg.mqtt_group));
-#elif PLATFORM_XR809
-	strcpy_safe(g_cfg.mqtt_group, "xr809s", sizeof(g_cfg.mqtt_group));
-#elif PLATFORM_XR872
-	strcpy_safe(g_cfg.mqtt_group, "xr872s", sizeof(g_cfg.mqtt_group));
-#elif PLATFORM_XR806
-	strcpy_safe(g_cfg.mqtt_group, "xr806s", sizeof(g_cfg.mqtt_group));
-#elif PLATFORM_BL602
-	strcpy_safe(g_cfg.mqtt_group, "bl602s", sizeof(g_cfg.mqtt_group));
-#elif PLATFORM_ESPIDF
-	strcpy_safe(g_cfg.mqtt_group, "esp", sizeof(g_cfg.mqtt_group));
-#elif PLATFORM_TR6260
-	strcpy_safe(g_cfg.mqtt_group, "tr6260", sizeof(g_cfg.mqtt_group));
-#elif PLATFORM_ECR6600
-	strcpy_safe(g_cfg.mqtt_group, "ecr6600", sizeof(g_cfg.mqtt_group));
-#elif PLATFORM_RTL87X0C
-	strcpy_safe(g_cfg.mqtt_group, "rtl87x0c", sizeof(g_cfg.mqtt_group));
-#elif PLATFORM_RTL8710A
-	strcpy_safe(g_cfg.mqtt_group, "rtl8711am", sizeof(g_cfg.mqtt_group));
-#elif PLATFORM_RTL8710B
-	strcpy_safe(g_cfg.mqtt_group, "rtl8710b", sizeof(g_cfg.mqtt_group));
-#elif PLATFORM_RTL8720D
-	strcpy_safe(g_cfg.mqtt_group, "rtl8720d", sizeof(g_cfg.mqtt_group));
-#elif WINDOWS
-	strcpy_safe(g_cfg.mqtt_group, "bekens", sizeof(g_cfg.mqtt_group));
+#ifdef DEF_MQTT_GROUP
+	strcpy_safe(g_cfg.mqtt_group, DEF_MQTT_GROUP, sizeof(g_cfg.mqtt_group));
 #else
 	strcpy_safe(g_cfg.mqtt_group, "obks", sizeof(g_cfg.mqtt_group));
 #endif
@@ -222,12 +189,6 @@ int CFG_CountLEDRemapChannels() {
 	}
 	return r;
 }
-const char *CFG_GetWebappRoot(){
-	return g_cfg.webappRoot;
-}
-const char *CFG_GetShortStartupCommand() {
-	return g_cfg.initCommandLine;
-}
 
 void CFG_SetBootOkSeconds(int v) {
 	// at least 1 second, always
@@ -246,36 +207,6 @@ int CFG_GetBootOkSeconds() {
 		return DEFAULT_BOOT_SUCCESS_TIME;
 	}
 	return g_cfg.timeRequiredToMarkBootSuccessfull;
-}
-const char *CFG_GetPingHost() {
-	return g_cfg.ping_host;
-}
-int CFG_GetPingDisconnectedSecondsToRestart() {
-	return g_cfg.ping_seconds;
-}
-int CFG_GetPingIntervalSeconds() {
-	return g_cfg.ping_interval;
-}
-void CFG_SetPingHost(const char *s) {
-	// this will return non-zero if there were any changes
-	if(strcpy_safe_checkForChanges(g_cfg.ping_host, s,sizeof(g_cfg.ping_host))) {
-		// mark as dirty (value has changed)
-		g_cfg_pendingChanges++;
-	}
-}
-void CFG_SetPingDisconnectedSecondsToRestart(int i) {
-	if(g_cfg.ping_seconds != i) {
-		g_cfg.ping_seconds = i;
-		// mark as dirty (value has changed)
-		g_cfg_pendingChanges++;
-	}
-}
-void CFG_SetPingIntervalSeconds(int i) {
-	if(g_cfg.ping_interval != i) {
-		g_cfg.ping_interval = i;
-		// mark as dirty (value has changed)
-		g_cfg_pendingChanges++;
-	}
 }
 void CFG_SetShortStartupCommand_AndExecuteNow(const char *s) {
 	CFG_SetShortStartupCommand(s);
@@ -297,16 +228,6 @@ int CFG_SetWebappRoot(const char *s) {
 	return 1;
 }
 
-const char *CFG_GetDeviceName(){
-	if(g_configInitialized==0)
-		return "";
-	return g_cfg.longDeviceName;
-}
-const char *CFG_GetShortDeviceName(){
-	if(g_configInitialized==0)
-		return "";
-	return g_cfg.shortDeviceName;
-}
 // called from SDK 
 const char *CFG_GetOpenBekenHostName() {
 	if (CFG_HasFlag(OBK_FLAG_USE_SHORT_DEVICE_NAME_AS_HOSTNAME)) {
@@ -315,9 +236,6 @@ const char *CFG_GetOpenBekenHostName() {
 	return CFG_GetDeviceName();
 }
 
-int CFG_GetMQTTPort() {
-	return g_cfg.mqtt_port;
-}
 void CFG_SetShortDeviceName(const char *s) {
 
 	// this will return non-zero if there were any changes
@@ -350,30 +268,6 @@ void CFG_SetOpenAccessPoint() {
 	g_cfg.wifi_pass[0] = 0;
 	// mark as dirty (value has changed)
 	g_cfg_pendingChanges++;
-}
-const char *CFG_GetWiFiSSID(){
-	return g_cfg.wifi_ssid;
-}
-const char *CFG_GetWiFiPass(){
-	static char wifi_pass[sizeof(g_cfg.wifi_pass) + 1];
-
-	memcpy(wifi_pass, g_cfg.wifi_pass, sizeof(g_cfg.wifi_pass));
-	wifi_pass[sizeof(g_cfg.wifi_pass)] = 0;
-	return wifi_pass;
-}
-const char *CFG_GetWiFiSSID2() {
-#if ALLOW_SSID2
-	return g_cfg.wifi_ssid2;
-#else
-	return "";
-#endif
-}
-const char *CFG_GetWiFiPass2() {
-#if ALLOW_SSID2
-	return g_cfg.wifi_pass2;
-#else
-	return "";
-#endif
 }
 int CFG_SetWiFiSSID(const char *s) {
 	// this will return non-zero if there were any changes
@@ -419,75 +313,6 @@ int CFG_SetWiFiPass2(const char *s) {
 #endif
 	return 0;
 }
-const char *CFG_GetMQTTHost() {
-	return g_cfg.mqtt_host;
-}
-const char *CFG_GetMQTTClientId() {
-	return g_cfg.mqtt_clientId;
-}
-const char *CFG_GetMQTTGroupTopic() {
-	return g_cfg.mqtt_group;
-}
-const char *CFG_GetMQTTUserName() {
-	return g_cfg.mqtt_userName;
-}
-const char *CFG_GetMQTTPass() {
-	return g_cfg.mqtt_pass;
-}
-
-bool CHANNEL_IsHumidity(int type) {
-	if (type == ChType_Humidity)
-		return true;
-	if (type == ChType_Humidity_div10)
-		return true;
-	return false;
-}
-bool CHANNEL_IsTemperature(int type) {
-	if (type == ChType_Temperature)
-		return true;
-	if (type == ChType_Temperature_div10)
-		return true;
-	if (type == ChType_Temperature_div100)
-		return true;
-	if (type == ChType_Temperature_div2)
-		return true;
-	return false;
-}
-bool CHANNEL_IsPressure(int type) {
-	if (type == ChType_Pressure_div100)
-		return true;
-	return false;
-}
-bool CHANNEL_GetGenericOfType(float *out, bool(*checker)(int type)) {
-	int i, t;
-
-	for (i = 0; i < CHANNEL_MAX; i++) {
-		t = g_cfg.pins.channelTypes[i];
-		if (checker(t)) {
-			*out = CHANNEL_GetFinalValue(i);
-			return true;
-		}
-	}
-	return false;
-}
-bool CHANNEL_GetGenericHumidity(float *out) {
-	return CHANNEL_GetGenericOfType(out, CHANNEL_IsHumidity);
-}
-bool CHANNEL_GetGenericTemperature(float *out) {
-	return CHANNEL_GetGenericOfType(out, CHANNEL_IsTemperature);
-}
-bool CHANNEL_GetGenericPressure(float *out) {
-	return CHANNEL_GetGenericOfType(out, CHANNEL_IsPressure);
-}
-void CHANNEL_SetType(int ch, int type) {
-	if (g_cfg.pins.channelTypes[ch] != type) {
-		g_cfg.pins.channelTypes[ch] = type;
-		g_cfg_pendingChanges++;
-	}
-}
-int CHANNEL_GetType(int ch) {
-	return g_cfg.pins.channelTypes[ch];
-}
 void CFG_SetMQTTHost(const char *s) {
 	// this will return non-zero if there were any changes
 	if(strcpy_safe_checkForChanges(g_cfg.mqtt_host, s,sizeof(g_cfg.mqtt_host))) {
@@ -529,14 +354,6 @@ void CFG_SetMQTTPass(const char *s) {
 		g_cfg_pendingChanges++;
 	}
 }
-void CFG_ClearPins() {
-	memset(&g_cfg.pins,0,sizeof(g_cfg.pins));
-	g_cfg_pendingChanges++;
-}
-void CFG_IncrementOTACount() {
-	g_cfg.otaCounter++;
-	g_cfg_pendingChanges++;
-}
 void CFG_SetMac(char *mac) {
 	if(memcmp(mac,g_cfg.mac,6)) {
 		memcpy(g_cfg.mac,mac,6);
@@ -570,15 +387,6 @@ void CFG_DeviceGroups_SetRecvFlags(int newRecvFlags) {
 		g_cfg.dgr_recvFlags = newRecvFlags;
 		g_cfg_pendingChanges++;
 	}
-}
-const char *CFG_DeviceGroups_GetName() {
-	return g_cfg.dgr_name;
-}
-int CFG_DeviceGroups_GetSendFlags() {
-	return g_cfg.dgr_sendFlags;
-}
-int CFG_DeviceGroups_GetRecvFlags() {
-	return g_cfg.dgr_recvFlags;
 }
 void CFG_SetFlags(uint32_t first4bytes, uint32_t second4bytes) {
 	if (g_cfg.genericFlags != first4bytes || g_cfg.genericFlags2 != second4bytes) {
@@ -634,17 +442,6 @@ void CFG_SetLoggerFlag(int flag, bool bValue) {
 		*cfgValue = nf;
 		g_cfg_pendingChanges++;
 	}
-}
-bool CFG_HasLoggerFlag(int flag) {
-	return BIT_CHECK(g_cfg.loggerFlags, flag);
-}
-int CFG_GetFlags() {
-	return g_cfg.genericFlags;
-}
-uint64_t CFG_GetFlags64() {
-	//unsigned long long* pAllGenericFlags = (unsigned long*)&g_cfg.genericFlags;
-	//*pAllGenericFlags;
-	return (uint64_t)g_cfg.genericFlags | (uint64_t)g_cfg.genericFlags2 << 32;
 }
 bool CFG_HasFlag(int flag) {
 	if (flag >= 32) {
@@ -706,63 +503,12 @@ void PIN_SetPinChannel2ForPinIndex(int index, int ch) {
 //	}
 //}
 
-const char *CFG_GetNTPServer() {
-	return g_cfg.ntpServer;
-}
 void CFG_SetNTPServer(const char *s) {	
 	if(strcpy_safe_checkForChanges(g_cfg.ntpServer, s,sizeof(g_cfg.ntpServer))) {
 		g_cfg_pendingChanges++;
 	}
 }
-int CFG_GetPowerMeasurementCalibrationInteger(int index, int def) {
-	if(g_cfg.cal.values[index].i == 0) {
-		return def;
-	}
-	return g_cfg.cal.values[index].i;
-}
-void CFG_SetPowerMeasurementCalibrationInteger(int index, int value) {
-	if(g_cfg.cal.values[index].i != value) {
-		g_cfg.cal.values[index].i = value;
-		g_cfg_pendingChanges++;
-	}
-}
-float CFG_GetPowerMeasurementCalibrationFloat(int index, float def) {
-	if(g_cfg.cal.values[index].i == 0) {
-		return def;
-	}
-	return g_cfg.cal.values[index].f;
-}
-void CFG_SetPowerMeasurementCalibrationFloat(int index, float value) {
-	if(g_cfg.cal.values[index].f != value) {
-		g_cfg.cal.values[index].f = value;
-		g_cfg_pendingChanges++;
-	}
-}
-void CFG_SetButtonLongPressTime(int value) {
-	if(g_cfg.buttonLongPress != value) {
-		g_cfg.buttonLongPress = value;
-		g_cfg_pendingChanges++;
-	}
-}
-void CFG_SetButtonShortPressTime(int value) {
-	if(g_cfg.buttonShortPress != value) {
-		g_cfg.buttonShortPress = value;
-		g_cfg_pendingChanges++;
-	}
-}
-void CFG_SetButtonRepeatPressTime(int value) {
-	if(g_cfg.buttonHoldRepeat != value) {
-		g_cfg.buttonHoldRepeat = value;
-		g_cfg_pendingChanges++;
-	}
-}
-const char *CFG_GetWebPassword() {
-#if ALLOW_WEB_PASSWORD
-	return g_cfg.webPassword;
-#else
-	return "";
-#endif
-}
+
 void CFG_SetWebPassword(const char *s) {
 #if ALLOW_WEB_PASSWORD
 	// this will return non-zero if there were any changes
