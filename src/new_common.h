@@ -54,15 +54,9 @@ void OTA_RequestDownloadFromHTTP(const char *s);
 #define MANUFACTURER "Linux"
 #endif
 #elif PLATFORM_XR806
-#if (OBK_VARIANT == OBK_VARIANT_XR806_DCDC)
-#define DEVICENAME_PREFIX_FULL "OpenXR806_DCDC"
-#define DEVICENAME_PREFIX_SHORT "oxr"
-#define PLATFORM_MCU_NAME "XR806"
-#else
 #define DEVICENAME_PREFIX_FULL "OpenXR806"
 #define DEVICENAME_PREFIX_SHORT "oxr"
 #define PLATFORM_MCU_NAME "XR806"
-#endif
 #define MANUFACTURER "Xradio Technology"
 #elif PLATFORM_XR809
 #define DEVICENAME_PREFIX_FULL "OpenXR809"
@@ -236,7 +230,7 @@ This platform is not supported, error!
 #define USER_SW_VER "XR872_Test"
 #elif PLATFORM_XR806
 #if (OBK_VARIANT == OBK_VARIANT_XR806_DCDC)
-#define USER_SW_VER "XR806_DCDC_Test"
+#define USER_SW_VER "XR806_Test_DCDC"
 #else
 #define USER_SW_VER "XR806_Test"
 #endif
