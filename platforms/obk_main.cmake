@@ -118,6 +118,7 @@ set(OBKM_SRC
 	${OBK_SRCS}driver/drv_pt6523.c
 	${OBK_SRCS}driver/drv_pwm_groups.c
 	${OBK_SRCS}driver/drv_pwmToggler.c
+ ${OBK_SRCS}driver/drv_virtualLights.c
 	${OBK_SRCS}driver/drv_pwrCal.c
 	${OBK_SRCS}driver/drv_rn8209.c
 	${OBK_SRCS}driver/drv_sgp.c

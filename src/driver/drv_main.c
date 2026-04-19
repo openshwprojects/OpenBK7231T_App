@@ -8,6 +8,7 @@
 #include "drv_ir.h"
 #include "drv_rc.h"
 #include "drv_local.h"
+#include "drv_virtualLights.h"
 #include "drv_ntp.h"
 #include "drv_deviceclock.h"
 #include "drv_public.h"
@@ -206,6 +207,22 @@ static driver_t g_drivers[] = {
 	NULL,                                    // onHassDiscovery
 	false,                                   // loaded
 	},
+#endif
+#if ENABLE_DRIVER_VIRTUALLIGHTS
+        //drvdetail:{"name":"VirtualLights",
+        //drvdetail:"title":"Virtual Lights",
+        //drvdetail:"descr":"Splits white and RGB controls into separate virtual entities/UI blocks for combined PWM + SM16703P devices.",
+        //drvdetail:"requires":""}
+        { "VirtualLights",                        // Driver Name
+        VirtualLights_Init,                      // Init
+        NULL,                                    // onEverySecond
+        VirtualLights_AppendInformationToHTTPIndexPage, // appendInformationToHTTPIndexPage
+        NULL,                                    // runQuickTick
+        VirtualLights_Shutdown,                  // stopFunction
+        VirtualLights_OnChannelChanged,          // onChannelChanged
+        VirtualLights_OnHassDiscovery,           // onHassDiscovery
+        false,                                   // loaded
+        },
 #endif
 #if ENABLE_DRIVER_PIXELANIM
 	//drvdetail:{"name":"PixelAnim",
