@@ -460,6 +460,7 @@ XR806_SHAREDAPP_DEFCONFIG := project/demo/sharedApp/gcc/defconfig
 XR806_BOOTLOADER_DCDC_DEFCONFIG := project/bootloader/gcc/defconfig_dcdc
 XR806_SHAREDAPP_DCDC_DEFCONFIG := project/demo/sharedApp/gcc/defconfig_dcdc
 XR806_BUILD_ARGS := CC_DIR=$(ARM_NONE_EABI_GCC_PATH) APP_VERSION=$(APP_VERSION) OPLATFORM=3 OBK_VARIANT=$(OBK_VARIANT) -j $(shell nproc) --no-print-directory
+XR806_DCDC_BUILD_ARGS := CC_DIR=$(ARM_NONE_EABI_GCC_PATH) APP_VERSION=$(APP_VERSION) OPLATFORM=3 OBK_VARIANT=9 -j $(shell nproc) --no-print-directory
 
 .PHONY: OpenXR806 OpenXR806_DCDC
 OpenXR806: prebuild_OpenXR806 $(XR806_SDK_DIR)/project/demo/sharedApp/shared
@@ -477,11 +478,11 @@ OpenXR806: prebuild_OpenXR806 $(XR806_SDK_DIR)/project/demo/sharedApp/shared
 OpenXR806_DCDC: prebuild_OpenXR806_DCDC $(XR806_SDK_DIR)/project/demo/sharedApp/shared
 	$(MAKE) -C $(XR806_SDK_DIR) PRJ=$(XR806_BOOTLOADER_PRJ) KCONFIG_DEFCONFIG=$(XR806_BOOTLOADER_DCDC_DEFCONFIG) defconfig --no-print-directory
 	$(MAKE) -C $(XR806_SDK_DIR) PRJ=$(XR806_BOOTLOADER_PRJ) build_clean --no-print-directory
-	$(MAKE) -C $(XR806_SDK_DIR) PRJ=$(XR806_BOOTLOADER_PRJ) $(XR806_BUILD_ARGS) build
+	$(MAKE) -C $(XR806_SDK_DIR) PRJ=$(XR806_BOOTLOADER_PRJ) $(XR806_DCDC_BUILD_ARGS) build
 	$(MAKE) -C $(XR806_SDK_DIR) PRJ=$(XR806_SHAREDAPP_PRJ) KCONFIG_DEFCONFIG=$(XR806_SHAREDAPP_DCDC_DEFCONFIG) defconfig --no-print-directory
 	$(MAKE) -C $(XR806_SDK_DIR) PRJ=$(XR806_SHAREDAPP_PRJ) build_clean --no-print-directory
-	$(MAKE) -C $(XR806_SDK_DIR) PRJ=$(XR806_SHAREDAPP_PRJ) $(XR806_BUILD_ARGS) build
-	$(MAKE) -C $(XR806_SDK_DIR) PRJ=$(XR806_SHAREDAPP_PRJ) $(XR806_BUILD_ARGS) image_xz
+	$(MAKE) -C $(XR806_SDK_DIR) PRJ=$(XR806_SHAREDAPP_PRJ) $(XR806_DCDC_BUILD_ARGS) build
+	$(MAKE) -C $(XR806_SDK_DIR) PRJ=$(XR806_SHAREDAPP_PRJ) $(XR806_DCDC_BUILD_ARGS) image_xz
 	mkdir -p output/$(APP_VERSION)
 	cp $(XR806_SDK_DIR)/project/demo/sharedApp/image/xr806/xr_system.img output/$(APP_VERSION)/OpenXR806_DCDC_$(APP_VERSION).img
 	cp $(XR806_SDK_DIR)/project/demo/sharedApp/image/xr806/xr_system_img_xz.img output/$(APP_VERSION)/OpenXR806_DCDC_$(APP_VERSION)_ota.img
