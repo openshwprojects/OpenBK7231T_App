@@ -211,6 +211,10 @@
 #define ENABLE_DRIVER_DMX						1
 #define ENABLE_DRIVER_MQTTSERVER				1
 //#define ENABLE_DRIVER_ARISTON					1
+#define ENABLE_DRIVER_AHT2X				1
+#define ENABLE_DRIVER_CHT83XX				1
+#define ENABLE_DRIVER_BMP280				1
+
 
 #elif PLATFORM_BL602
 
@@ -743,6 +747,12 @@
 #if ENABLE_DRIVER_IRREMOTEESP
 #undef ENABLE_DRIVER_IR
 #endif
+
+
+// for testing: enable new driver by default
+#define ENABLE_DRIVER_VEML7700					1
+#define ENABLE_DRIVER_XHTXX						1
+
 
 // closing OBK_CONFIG_H
 #endif
