@@ -488,13 +488,13 @@ void Test_Tasmota_MQTT_RGBCW() {
 	*/
 	CMD_ExecuteCommand("CT 153", 0);
 	SIM_ClearMQTTHistory();
-	SIM_SendFakeMQTTAndRunSimFrame_CMND("CT", "");
+	SIM_SendFakeMQTTAndRunSimFrame_CMND("CT", "153");
 	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT("stat/rgbcwBulb/RESULT", false);
 	SELFTEST_ASSERT_JSON_VALUE_INTEGER(0, "CT", 153);
 	SIM_ClearMQTTHistory();
 	CMD_ExecuteCommand("CT 444", 0);
 	SIM_ClearMQTTHistory();
-	SIM_SendFakeMQTTAndRunSimFrame_CMND("CT", "");
+	SIM_SendFakeMQTTAndRunSimFrame_CMND("CT", "444");
 	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT("stat/rgbcwBulb/RESULT", false);
 	SELFTEST_ASSERT_JSON_VALUE_INTEGER(0, "CT", 444);
 	SIM_ClearMQTTHistory();
@@ -549,13 +549,13 @@ void Test_Tasmota_MQTT_RGBCW() {
 	*/
 	CMD_ExecuteCommand("Dimmer 20", 0);
 	SIM_ClearMQTTHistory();
-	SIM_SendFakeMQTTAndRunSimFrame_CMND("Dimmer", "");
+	SIM_SendFakeMQTTAndRunSimFrame_CMND("Dimmer", "20");
 	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT("stat/rgbcwBulb/RESULT", false);
 	SELFTEST_ASSERT_JSON_VALUE_INTEGER(0, "Dimmer", 20);
 	SIM_ClearMQTTHistory();
 	CMD_ExecuteCommand("Dimmer 88", 0);
 	SIM_ClearMQTTHistory();
-	SIM_SendFakeMQTTAndRunSimFrame_CMND("Dimmer", "");
+	SIM_SendFakeMQTTAndRunSimFrame_CMND("Dimmer", "88");
 	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT("stat/rgbcwBulb/RESULT", false);
 	SELFTEST_ASSERT_JSON_VALUE_INTEGER(0, "Dimmer", 88);
 	SIM_ClearMQTTHistory();
