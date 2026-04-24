@@ -209,6 +209,11 @@ typedef long BaseType_t;
 #define DEVICENAME_PREFIX_SHORT "bl616"
 #define PLATFORM_MCU_NAME "BL616"
 #define MANUFACTURER "Bouffalo Lab Team"
+#elif PLATFORM_GD32VW553
+#define DEVICENAME_PREFIX_FULL "OpenGD32VW553"
+#define DEVICENAME_PREFIX_SHORT "gd32vw553"
+#define PLATFORM_MCU_NAME "GD32VW553"
+#define MANUFACTURER "GigaDevices"
 #else
 #error "You must define a platform.."
 This platform is not supported, error!
@@ -278,6 +283,8 @@ This platform is not supported, error!
 #define USER_SW_VER "RDA5981_Test"
 #elif PLATFORM_BL616
 #define USER_SW_VER "BL616_Test"
+#elif PLATFORM_GD32VW553
+#define USER_SW_VER "GD32VW553_Test"
 #else
 #warning "USER_SW_VER undefined"
 #define USER_SW_VER "unknown"
@@ -1030,6 +1037,41 @@ OSStatus rtos_suspend_thread(beken_thread_t* thread);
 //#define GLOBAL_INT_RESTORE()		;
 
 #define OBK_OTA_EXTENSION ".bin.xz.ota"
+
+#elif PLATFORM_GD32VW553
+
+#include "stdint.h"
+#include "FreeRTOS.h"
+#include "task.h"
+#include "semphr.h"
+#include "queue.h"
+#include "event_groups.h"
+
+typedef unsigned int UINT32;
+
+#define bk_printf printf
+#define os_malloc malloc
+#define os_free free
+#define os_realloc realloc
+#define rtos_delay_milliseconds(x) vTaskDelay(x / portTICK_PERIOD_MS)
+#define delay_ms(x) vTaskDelay(x / portTICK_PERIOD_MS)
+
+#define lwip_close_force(x) lwip_close(x)
+#define kNoErr                      0       //! No error occurred.
+typedef void* beken_thread_arg_t;
+typedef xTaskHandle beken_thread_t;
+typedef void (*beken_thread_function_t)(beken_thread_arg_t arg);
+typedef int OSStatus;
+
+#define BEKEN_DEFAULT_WORKER_PRIORITY      (6)
+#define BEKEN_APPLICATION_PRIORITY         (7)
+
+OSStatus rtos_delete_thread(beken_thread_t* thread);
+OSStatus rtos_create_thread(beken_thread_t* thread,
+	uint8_t priority, const char* name,
+	beken_thread_function_t function,
+	uint32_t stack_size, beken_thread_arg_t arg);
+OSStatus rtos_suspend_thread(beken_thread_t* thread);
 
 #else
 

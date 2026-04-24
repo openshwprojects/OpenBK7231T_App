@@ -416,6 +416,14 @@ prebuild_OpenBL602_ALT: berry
 	else echo "prebuild for OpenBL602_ALT not found ... "; \
 	fi
 
+prebuild_OpenGD32VW553: berry
+	git submodule update --init --recursive --depth=1 sdk/OpenGD32VW553
+	@if [ -e platforms/GD32VW553/pre_build.sh ]; then \
+		echo "prebuild found for OpenGD32VW553"; \
+		sh platforms/GD32VW553/pre_build.sh; \
+	else echo "prebuild for OpenGD32VW553 not found ... "; \
+	fi
+
 prebuild_OpenRDA5981: berry
 ifdef GITHUB_ACTIONS
 	# just so that there would be no cache error
@@ -784,6 +792,14 @@ OpenBL602_ALT: prebuild_OpenBL602_ALT
 	mkdir -p output/$(APP_VERSION)
 	dd conv=notrunc bs=1K skip=4 if=platforms/BL602_ALT/build/build_out/OpenBeken_bl602.bin of=output/$(APP_VERSION)/OpenBL602_ALT_${APP_VERSION}.bin
 	cp ./platforms/BL602_ALT/build/build_out/OpenBeken_bl602.xz.ota output/$(APP_VERSION)/OpenBL602_ALT_${APP_VERSION}_OTA.bin.xz.ota
+
+.PHONY: OpenGD32VW553
+OpenGD32VW553: prebuild_OpenGD32VW553
+	cd sdk/OpenGD32VW553 && APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT) ./cmake_build.sh ../../../platforms/GD32VW553
+	mkdir -p output/$(APP_VERSION)
+	cp sdk/OpenGD32VW553/scripts/images/image-all.bin output/$(APP_VERSION)/OpenGD32VW553_$(APP_VERSION).bin
+	cp sdk/OpenGD32VW553/scripts/images/image-ota.bin output/$(APP_VERSION)/OpenGD32VW553_$(APP_VERSION)_ota.img
+	md5sum sdk/OpenGD32VW553/scripts/images/image-ota.bin | awk '{print $1}' | xxd -r -p >> output/$(APP_VERSION)/OpenGD32VW553_$(APP_VERSION)_ota.img
 
 # Add custom Makefile if required
 -include custom.mk

@@ -344,6 +344,17 @@ static commandResult_t CMD_PowerSave(const void* context, const char* cmd, const
 	{
 		wland_set_sta_sleep(0);
 	}
+#elif PLATFORM_GD32VW553
+	if(bOn)
+	{
+		//wifi_netlink_enable_vif_ps(0);
+		wifi_netlink_ps_mode_set(0, 0);
+		wifi_netlink_ps_mode_set(0, 1);
+	}
+	else
+	{
+		wifi_netlink_ps_mode_set(0, 0);
+	}
 #else
 	ADDLOG_INFO(LOG_FEATURE_CMD, "PowerSave is not implemented on this platform");
 #endif
