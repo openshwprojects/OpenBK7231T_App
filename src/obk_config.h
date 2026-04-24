@@ -727,9 +727,12 @@
 #define NEW_TCP_SERVER							1
 #define ENABLE_LITTLEFS							1
 #define ENABLE_DRIVER_LED 						1
-#define ENABLE_TEST_COMMANDS					1
+//#define ENABLE_TEST_COMMANDS					1
 #define ENABLE_TASMOTA_JSON						1
 #define ENABLE_DRIVER_SSDP						1
+//#define ENABLE_DRIVER_MDNS						1 // stack overflow in wifi lib
+#define ENABLE_DRIVER_SM16703P					1
+#define ENABLE_DRIVER_PIXELANIM					1
 
 #else
 
