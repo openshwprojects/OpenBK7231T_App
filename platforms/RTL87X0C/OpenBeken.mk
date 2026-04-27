@@ -27,12 +27,13 @@ SRC_C  += $(OBK_DIR)/src/hal/realtek/hal_pins_realtek.c
 SRC_C  += $(OBK_DIR)/src/hal/realtek/hal_wifi_realtek.c
 SRC_C  += $(OBK_DIR)/src/hal/realtek/hal_ota_realtek.c
 
-# GAITEK AC custom UART driver source
-SRC_C  += $(OBK_DIR)/src/driver/drv_gaitekAC.c
-
 OBK_SRCS = $(OBK_DIR)/src/
 include $(OBK_DIR)/platforms/obk_main.mk
 SRC_C += $(OBKM_SRC)
+
+# GAITEK AC custom UART driver source
+SRC_C += $(OBK_DIR)/src/driver/drv_gaitekAC.c
+
 SRC_CPP += $(OBKM_SRC_CXX)
 CFLAGS += $(OBK_CFLAGS) -D__FILE__=\"\" -Wno-builtin-macro-redefined
 CPPFLAGS += $(INCLUDES) -fpermissive
