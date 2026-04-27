@@ -3,6 +3,9 @@ OBK_DIR = ../../../../..
 CFLAGS += -DPLATFORM_RTL87X0C -DPLATFORM_REALTEK -Wno-error=implicit-function-declaration -Wno-error=incompatible-pointer-types -Wno-error=return-mismatch -Wno-error=int-conversion -Wno-error=changes-meaning
 CFLAGS += -DENABLE_DRIVER_MDNS=1 -DLWIP_MDNS_RESPONDER=1
 
+# GAITEK AC custom UART driver
+CFLAGS += -DENABLE_DRIVER_GAITEKAC=1
+
 # Ensure our lwIP option wrapper is picked before SDK lwipopts.h.
 INCLUDES := -I$(OBK_DIR)/platforms/RTL87X0C $(INCLUDES)
 
@@ -23,6 +26,9 @@ SRC_C  += $(OBK_DIR)/src/hal/realtek/hal_hwtimer_realtek.c
 SRC_C  += $(OBK_DIR)/src/hal/realtek/hal_pins_realtek.c
 SRC_C  += $(OBK_DIR)/src/hal/realtek/hal_wifi_realtek.c
 SRC_C  += $(OBK_DIR)/src/hal/realtek/hal_ota_realtek.c
+
+# GAITEK AC custom UART driver source
+SRC_C  += $(OBK_DIR)/src/driver/drv_gaitekAC.c
 
 OBK_SRCS = $(OBK_DIR)/src/
 include $(OBK_DIR)/platforms/obk_main.mk
