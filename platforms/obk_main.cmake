@@ -77,6 +77,7 @@ set(OBKM_SRC
 	${OBK_SRCS}driver/drv_cse7766.c
 	${OBK_SRCS}driver/drv_ddp.c
 	${OBK_SRCS}driver/drv_dmx512.c
+	${OBK_SRCS}driver/drv_dreo.c
 	${OBK_SRCS}driver/drv_debouncer.c
 	${OBK_SRCS}driver/drv_dht_internal.c
 	${OBK_SRCS}driver/drv_dht.c
