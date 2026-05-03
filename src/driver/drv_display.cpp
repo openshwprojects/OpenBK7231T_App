@@ -9,6 +9,7 @@
 #include <esp_display_panel.hpp>
 #include <lvgl.h>
 #include "display/lvgl_v8_port.h"
+#include "esp_log.h"
 
 using namespace esp_panel::drivers;
 using namespace esp_panel::board;
@@ -37,6 +38,7 @@ extern "C" void Display_Init() {
     board->init();
     
     ADDLOG_INFO(LOG_FEATURE_DRV, "Board init() done, calling begin()...");
+    esp_log_level_set("*", ESP_LOG_VERBOSE);
     if(!board->begin()) {
         ADDLOG_ERROR(LOG_FEATURE_DRV, "Board begin() failed!");
         delete board;
