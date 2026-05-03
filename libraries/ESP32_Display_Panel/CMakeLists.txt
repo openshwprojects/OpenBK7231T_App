@@ -6,7 +6,7 @@ file(GLOB_RECURSE C_SRCS "${SRCS_DIR}/*.c")
 idf_component_register(
     SRCS ${C_SRCS} ${CPP_SRCS}
     INCLUDE_DIRS ${SRCS_DIR} "."
-    REQUIRES driver esp_lcd
+    REQUIRES driver esp_lcd ESP32_IO_Expander esp-lib-utils
 )
 
 target_compile_options(${COMPONENT_LIB}

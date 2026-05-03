@@ -11,6 +11,7 @@ idf_component_register(
         ${SRCS_DIR}
     REQUIRES
         driver
+        esp-lib-utils
 )
 
 target_compile_options(${COMPONENT_LIB}

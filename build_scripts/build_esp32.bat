@@ -111,8 +111,10 @@ set CMAKE_ARGS=
 if "%TARGET%"=="esp32s3ram" (
     set IDF_TARGET=esp32s3
     set SDKCONFIG_DEFAULTS=sdkconfig.defaults;sdkconfig.defaults.esp32s3ram
+    set ENABLE_DISPLAY=1
     set CMAKE_ARGS=-DSDKCONFIG_DEFAULTS="sdkconfig.defaults;sdkconfig.defaults.esp32s3ram" -DENABLE_DISPLAY=1
 ) else (
+    set ENABLE_DISPLAY=0
     set IDF_TARGET=%TARGET%
 )
 
