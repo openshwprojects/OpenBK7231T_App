@@ -1,0 +1,652 @@
+menuconfig ESP_PANEL_BOARD_USE_LCD
+    bool "LCD settings"
+    default n
+    help
+        Enable this option if you are using a LCD.
+
+if ESP_PANEL_BOARD_USE_LCD
+    choice
+        prompt "Controller"
+        default ESP_PANEL_LCD_CONTROLLER_ILI9341
+
+        config ESP_PANEL_LCD_CONTROLLER_AXS15231B
+            bool "AXS15231B"
+
+        config ESP_PANEL_LCD_CONTROLLER_EK9716B
+            bool "EK9716B"
+
+        config ESP_PANEL_LCD_CONTROLLER_EK79007
+            bool "EK79007"
+
+        config ESP_PANEL_LCD_CONTROLLER_GC9A01
+            bool "GC9A01"
+
+        config ESP_PANEL_LCD_CONTROLLER_GC9B71
+            bool "GC9B71"
+
+        config ESP_PANEL_LCD_CONTROLLER_GC9503
+            bool "GC9503"
+
+        config ESP_PANEL_LCD_CONTROLLER_HX8399
+            bool "HX8399"
+
+        config ESP_PANEL_LCD_CONTROLLER_ILI9341
+            bool "ILI9341"
+
+        config ESP_PANEL_LCD_CONTROLLER_ILI9881C
+            bool "ILI9881C"
+
+        config ESP_PANEL_LCD_CONTROLLER_JD9165
+            bool "JD9165"
+
+        config ESP_PANEL_LCD_CONTROLLER_JD9365
+            bool "JD9365"
+
+        config ESP_PANEL_LCD_CONTROLLER_NV3022B
+            bool "NV3022B"
+
+        config ESP_PANEL_LCD_CONTROLLER_SH8601
+            bool "SH8601"
+
+        config ESP_PANEL_LCD_CONTROLLER_SPD2010
+            bool "SPD2010"
+
+        config ESP_PANEL_LCD_CONTROLLER_ST7262
+            bool "ST7262"
+
+        config ESP_PANEL_LCD_CONTROLLER_ST7701
+            bool "ST7701"
+
+        config ESP_PANEL_LCD_CONTROLLER_ST7703
+            bool "ST7703"
+
+        config ESP_PANEL_LCD_CONTROLLER_ST7789
+            bool "ST7789"
+
+        config ESP_PANEL_LCD_CONTROLLER_ST7796
+            bool "ST7796"
+
+        config ESP_PANEL_LCD_CONTROLLER_ST77903
+            bool "ST77903"
+
+        config ESP_PANEL_LCD_CONTROLLER_ST77916
+            bool "ST77916"
+
+        config ESP_PANEL_LCD_CONTROLLER_ST77922
+            bool "ST77922"
+    endchoice
+
+    menu "Bus settings"
+        choice
+            prompt "Bus type"
+            default ESP_PANEL_BOARD_LCD_BUS_TYPE_SPI
+
+            config ESP_PANEL_BOARD_LCD_BUS_TYPE_SPI
+                bool "SPI"
+
+            config ESP_PANEL_BOARD_LCD_BUS_TYPE_QSPI
+                bool "QSPI"
+
+            config ESP_PANEL_BOARD_LCD_BUS_TYPE_RGB
+                bool "RGB"
+
+            config ESP_PANEL_BOARD_LCD_BUS_TYPE_MIPI_DSI
+                bool "MIPI-DSI"
+        endchoice
+
+        config ESP_PANEL_BOARD_LCD_BUS_TYPE
+            int
+            default 0 if ESP_PANEL_BOARD_LCD_BUS_TYPE_SPI
+            default 1 if ESP_PANEL_BOARD_LCD_BUS_TYPE_QSPI
+            default 2 if ESP_PANEL_BOARD_LCD_BUS_TYPE_RGB
+            default 5 if ESP_PANEL_BOARD_LCD_BUS_TYPE_MIPI_DSI
+
+        config ESP_PANEL_BOARD_LCD_BUS_SKIP_INIT_HOST
+            bool "Skip to initialize bus host"
+            depends on ESP_PANEL_BOARD_LCD_BUS_TYPE_SPI || ESP_PANEL_BOARD_LCD_BUS_TYPE_QSPI
+            default n
+            help
+                If set to 1, the bus will skip to initialize the corresponding host. Users need to initialize the host in advance.
+                For drivers which created by this library, even if they use the same host, the host will be initialized only once.
+                So it is not necessary to set this to true. For other drivers (like Wire), please set this to true to ensure
+                that the host is initialized only once.
+
+        if ESP_PANEL_BOARD_LCD_BUS_TYPE_SPI
+            config ESP_PANEL_BOARD_LCD_SPI_HOST_ID
+                int "SPI host ID"
+                default 1
+                range 1 3
+
+            config ESP_PANEL_BOARD_LCD_SPI_MODE
+                int "SPI mode"
+                default 0
+                range 0 3
+
+            config ESP_PANEL_BOARD_LCD_SPI_CLK_HZ
+                int "SPI clock frequency (Hz)"
+                default 40000000
+                range 1 80000000
+                help
+                    Should be an integer divisor of 80M, typically set to 40M.
+
+            config ESP_PANEL_BOARD_LCD_SPI_CMD_BITS
+                int "SPI command bit length"
+                default 8
+                range 0 32
+
+            config ESP_PANEL_BOARD_LCD_SPI_PARAM_BITS
+                int "SPI parameter bit length"
+                default 8
+                range 0 32
+
+            menu "Pins"
+                config ESP_PANEL_BOARD_LCD_SPI_IO_CS
+                    int "CS"
+                    default 5
+                    range -1 1000
+
+                config ESP_PANEL_BOARD_LCD_SPI_IO_DC
+                    int "DC (RS)"
+                    default 4
+                    range 0 1000
+
+                config ESP_PANEL_BOARD_LCD_SPI_IO_SCK
+                    depends on !ESP_PANEL_BOARD_LCD_BUS_SKIP_INIT_HOST
+                    int "SCLK (SCL)"
+                    default 7
+                    range 0 1000
+
+                config ESP_PANEL_BOARD_LCD_SPI_IO_MOSI
+                    depends on !ESP_PANEL_BOARD_LCD_BUS_SKIP_INIT_HOST
+                    int "MOSI (SDA)"
+                    default 6
+                    range 0 1000
+
+                config ESP_PANEL_BOARD_LCD_SPI_IO_MISO
+                    depends on !ESP_PANEL_BOARD_LCD_BUS_SKIP_INIT_HOST
+                    int "MISO (SDO)"
+                    default -1
+                    range -1 1000
+            endmenu
+        endif
+
+        if ESP_PANEL_BOARD_LCD_BUS_TYPE_QSPI
+            config ESP_PANEL_BOARD_LCD_QSPI_HOST_ID
+                int "QSPI host ID"
+                default 1
+                range 1 3
+
+            config ESP_PANEL_BOARD_LCD_QSPI_MODE
+                int "QSPI mode"
+                default 0
+                range 0 3
+
+            config ESP_PANEL_BOARD_LCD_QSPI_CLK_HZ
+                int "QSPI clock frequency (Hz)"
+                default 40000000
+                range 1 80000000
+                help
+                    Should be an integer divisor of 80M, typically set to 40M.
+
+            config ESP_PANEL_BOARD_LCD_QSPI_CMD_BITS
+                int "QSPI command bit length"
+                default 32
+                range 0 32
+
+            config ESP_PANEL_BOARD_LCD_QSPI_PARAM_BITS
+                int "QSPI parameter bit length"
+                default 8
+                range 0 32
+
+            menu "Pins"
+                config ESP_PANEL_BOARD_LCD_QSPI_IO_CS
+                    int "CS"
+                    default 5
+                    range -1 1000
+
+                if !ESP_PANEL_BOARD_LCD_BUS_SKIP_INIT_HOST
+                    config ESP_PANEL_BOARD_LCD_QSPI_IO_SCK
+                        int "SCK (SCL)"
+                        default 9
+                        range 0 1000
+
+                    config ESP_PANEL_BOARD_LCD_QSPI_IO_DATA0
+                        int "DATA0"
+                        default 10
+                        range 0 1000
+
+                    config ESP_PANEL_BOARD_LCD_QSPI_IO_DATA1
+                        int "DATA1"
+                        default 11
+                        range 0 1000
+
+                    config ESP_PANEL_BOARD_LCD_QSPI_IO_DATA2
+                        int "DATA2"
+                        default 12
+                        range 0 1000
+
+                    config ESP_PANEL_BOARD_LCD_QSPI_IO_DATA3
+                        int "DATA3"
+                        default 13
+                        range 0 1000
+                endif
+            endmenu
+        endif
+
+        if ESP_PANEL_BOARD_LCD_BUS_TYPE_RGB
+            menuconfig ESP_PANEL_BOARD_LCD_RGB_USE_CONTROL_PANEL
+                bool "3-wire SPI interface"
+                default y
+                help
+                    Set to 0 if using simple "RGB" interface which does not contain "3-wire SPI" interface.
+
+            if ESP_PANEL_BOARD_LCD_RGB_USE_CONTROL_PANEL
+                config ESP_PANEL_BOARD_LCD_RGB_SPI_MODE
+                    int "SPI mode"
+                    default 0
+                    range 0 3
+
+                config ESP_PANEL_BOARD_LCD_RGB_SPI_CMD_BYTES
+                    int "Command bytes"
+                    default 1
+                    range 1 4
+
+                config ESP_PANEL_BOARD_LCD_RGB_SPI_PARAM_BYTES
+                    int "Parameter bytes"
+                    default 1
+                    range 1 4
+
+                config ESP_PANEL_BOARD_LCD_RGB_SPI_USE_DC_BIT
+                    bool "Use DC bit"
+                    default y
+
+                menu "Pins"
+                    config ESP_PANEL_BOARD_LCD_RGB_SPI_IO_CS
+                        int "CS"
+                        default 0
+                        range 0 1000
+
+                    config ESP_PANEL_BOARD_LCD_RGB_SPI_IO_SCK
+                        int "SCL"
+                        default 1
+                        range 0 1000
+
+                    config ESP_PANEL_BOARD_LCD_RGB_SPI_IO_SDA
+                        int "SDA"
+                        default 2
+                        range 0 1000
+
+                    config ESP_PANEL_BOARD_LCD_RGB_SPI_CS_USE_EXPNADER
+                        bool "Use IO expander to control CS"
+                        default n
+
+                    config ESP_PANEL_BOARD_LCD_RGB_SPI_SCL_USE_EXPNADER
+                        bool "Use IO expander to control SCL"
+                        default n
+
+                    config ESP_PANEL_BOARD_LCD_RGB_SPI_SDA_USE_EXPNADER
+                        bool "Use IO expander to control SDA"
+                        default n
+                endmenu
+            endif
+
+            menu "RGB interface"
+                menu "Timing parameters"
+                    config ESP_PANEL_BOARD_LCD_RGB_HPW
+                        int "HPW (Horizontal Pulse Width)"
+                        default 10
+                        range 0 1000
+
+                    config ESP_PANEL_BOARD_LCD_RGB_HBP
+                        int "HBP (Horizontal Back Porch)"
+                        default 10
+                        range 1 1000
+
+                    config ESP_PANEL_BOARD_LCD_RGB_HFP
+                        int "HFP (Horizontal Front Porch)"
+                        default 20
+                        range 0 1000
+
+                    config ESP_PANEL_BOARD_LCD_RGB_VPW
+                        int "VPW (Vertical Pulse Width)"
+                        default 10
+                        range 0 1000
+
+                    config ESP_PANEL_BOARD_LCD_RGB_VBP
+                        int "VBP (Vertical Back Porch)"
+                        default 10
+                        range 0 1000
+
+                    config ESP_PANEL_BOARD_LCD_RGB_VFP
+                        int "VFP (Vertical Front Porch)"
+                        default 10
+                        range 0 1000
+
+                    config ESP_PANEL_BOARD_LCD_RGB_CLK_HZ
+                        int "Clock frequency (Hz)"
+                        default 16000000
+                        range 1 100000000
+
+                    config ESP_PANEL_BOARD_LCD_RGB_PCLK_ACTIVE_NEG
+                        bool "Enable clock active on falling edge"
+                        default n
+                        help
+                            Set to use falling edge, otherwise use rising edge.
+                endmenu
+
+                config ESP_PANEL_BOARD_LCD_RGB_BOUNCE_BUF_SIZE
+                    int "Bounce buffer size (bytes)"
+                    default 0
+                    range 0 65535
+                    help
+                        Bounce buffer size in bytes. It is used to avoid screen drift for ESP32-S3.
+                        Typically set to [LCD_width * 10]. The size should satisfy [size * N] = [LCD_width * LCD_height],
+                        where N is an even number.
+
+                choice
+                    prompt "Data width & pixel format"
+                    default ESP_PANEL_BOARD_LCD_RGB_DATA_FORMAT_16_RGB565
+
+                    config ESP_PANEL_BOARD_LCD_RGB_DATA_FORMAT_8_RGB888
+                        bool "8-bit & RGB888"
+
+                    config ESP_PANEL_BOARD_LCD_RGB_DATA_FORMAT_16_RGB565
+                        bool "16-bit & RGB565"
+                endchoice
+
+                config ESP_PANEL_BOARD_LCD_RGB_DATA_WIDTH
+                    int
+                    default 8 if ESP_PANEL_BOARD_LCD_RGB_DATA_FORMAT_8_RGB888
+                    default 16 if ESP_PANEL_BOARD_LCD_RGB_DATA_FORMAT_16_RGB565
+
+                config ESP_PANEL_BOARD_LCD_RGB_PIXEL_BITS
+                    int
+                    default 24 if ESP_PANEL_BOARD_LCD_RGB_DATA_FORMAT_8_RGB888
+                    default 16 if ESP_PANEL_BOARD_LCD_RGB_DATA_FORMAT_16_RGB565
+
+                menu "Pins"
+                    config ESP_PANEL_BOARD_LCD_RGB_IO_HSYNC
+                        int "HSYNC"
+                        default 46
+                        range 0 1000
+
+                    config ESP_PANEL_BOARD_LCD_RGB_IO_VSYNC
+                        int "VSYNC"
+                        default 3
+                        range 0 1000
+
+                    config ESP_PANEL_BOARD_LCD_RGB_IO_DE
+                        int "DE"
+                        default 17
+                        range -1 1000
+
+                    config ESP_PANEL_BOARD_LCD_RGB_IO_PCLK
+                        int "PCLK"
+                        default 9
+                        range 0 1000
+
+                    config ESP_PANEL_BOARD_LCD_RGB_IO_DISP
+                        int "DISP"
+                        default -1
+                        range -1 1000
+
+                    config ESP_PANEL_BOARD_LCD_RGB_IO_DATA0
+                        int "DATA0"
+                        default 10
+                        range 0 1000
+
+                    config ESP_PANEL_BOARD_LCD_RGB_IO_DATA1
+                        int "DATA1"
+                        default 11
+                        range 0 1000
+
+                    config ESP_PANEL_BOARD_LCD_RGB_IO_DATA2
+                        int "DATA2"
+                        default 12
+                        range 0 1000
+
+                    config ESP_PANEL_BOARD_LCD_RGB_IO_DATA3
+                        int "DATA3"
+                        default 13
+                        range 0 1000
+
+                    config ESP_PANEL_BOARD_LCD_RGB_IO_DATA4
+                        int "DATA4"
+                        default 14
+                        range 0 1000
+
+                    config ESP_PANEL_BOARD_LCD_RGB_IO_DATA5
+                        int "DATA5"
+                        default 21
+                        range 0 1000
+
+                    config ESP_PANEL_BOARD_LCD_RGB_IO_DATA6
+                        int "DATA6"
+                        default 47
+                        range 0 1000
+
+                    config ESP_PANEL_BOARD_LCD_RGB_IO_DATA7
+                        int "DATA7"
+                        default 48
+                        range 0 1000
+
+                    if ESP_PANEL_BOARD_LCD_RGB_DATA_WIDTH > 8
+                        config ESP_PANEL_BOARD_LCD_RGB_IO_DATA8
+                            int "DATA8"
+                            default 45
+                            range 0 1000
+
+                        config ESP_PANEL_BOARD_LCD_RGB_IO_DATA9
+                            int "DATA9"
+                            default 38
+                            range 0 1000
+
+                        config ESP_PANEL_BOARD_LCD_RGB_IO_DATA10
+                            int "DATA10"
+                            default 39
+                            range 0 1000
+
+                        config ESP_PANEL_BOARD_LCD_RGB_IO_DATA11
+                            int "DATA11"
+                            default 40
+                            range 0 1000
+
+                        config ESP_PANEL_BOARD_LCD_RGB_IO_DATA12
+                            int "DATA12"
+                            default 41
+                            range 0 1000
+
+                        config ESP_PANEL_BOARD_LCD_RGB_IO_DATA13
+                            int "DATA13"
+                            default 42
+                            range 0 1000
+
+                        config ESP_PANEL_BOARD_LCD_RGB_IO_DATA14
+                            int "DATA14"
+                            default 2
+                            range 0 1000
+
+                        config ESP_PANEL_BOARD_LCD_RGB_IO_DATA15
+                            int "DATA15"
+                            default 1
+                            range 0 1000
+                    endif
+                endmenu
+            endmenu
+        endif
+
+        if ESP_PANEL_BOARD_LCD_BUS_TYPE_MIPI_DSI
+            menu "MIPI-DSI settings"
+                config ESP_PANEL_BOARD_LCD_MIPI_DSI_LANE_NUM
+                    int "Number of data lanes"
+                    default 2
+                    range 1 2
+                    help
+                        ESP32-P4 supports 1 or 2 lanes.
+
+                config ESP_PANEL_BOARD_LCD_MIPI_DSI_LANE_RATE_MBPS
+                    int "Bit rate per lane (Mbps)"
+                    default 1000
+                    range 1 1500
+                    help
+                        Bit rate per lane in Mbps. Check LCD datasheet for supported rates.
+                        ESP32-P4 supports max 1500Mbps.
+            endmenu
+
+            menu "MIPI-DPI settings"
+                menu "Timing parameters"
+                    config ESP_PANEL_BOARD_LCD_MIPI_DPI_HPW
+                        int "HPW (Horizontal Pulse Width)"
+                        default 10
+                        range 0 1000
+
+                    config ESP_PANEL_BOARD_LCD_MIPI_DPI_HBP
+                        int "HBP (Horizontal Back Porch)"
+                        default 160
+                        range 0 1000
+
+                    config ESP_PANEL_BOARD_LCD_MIPI_DPI_HFP
+                        int "HFP (Horizontal Front Porch)"
+                        default 160
+                        range 0 1000
+
+                    config ESP_PANEL_BOARD_LCD_MIPI_DPI_VPW
+                        int "VPW (Vertical Pulse Width)"
+                        default 1
+                        range 0 1000
+
+                    config ESP_PANEL_BOARD_LCD_MIPI_DPI_VBP
+                        int "VBP (Vertical Back Porch)"
+                        default 23
+                        range 0 1000
+
+                    config ESP_PANEL_BOARD_LCD_MIPI_DPI_VFP
+                        int "VFP (Vertical Front Porch)"
+                            default 12
+                            range 0 1000
+
+                    config ESP_PANEL_BOARD_LCD_MIPI_DPI_CLK_MHZ
+                        int "Clock frequency (MHz)"
+                        default 52
+                        range 1 1000
+                endmenu
+
+                choice
+                    prompt "Pixel format"
+                    default ESP_PANEL_BOARD_LCD_MIPI_DPI_PIXEL_RGB565
+
+                    config ESP_PANEL_BOARD_LCD_MIPI_DPI_PIXEL_RGB565
+                        bool "RGB565 (16 bits)"
+
+                    config ESP_PANEL_BOARD_LCD_MIPI_DPI_PIXEL_RGB666
+                        bool "RGB666 (18 bits)"
+
+                    config ESP_PANEL_BOARD_LCD_MIPI_DPI_PIXEL_RGB888
+                        bool "RGB888 (24 bits)"
+                endchoice
+
+                config ESP_PANEL_BOARD_LCD_MIPI_DPI_PIXEL_BITS
+                    int
+                    default 16 if ESP_PANEL_BOARD_LCD_MIPI_DPI_PIXEL_RGB565
+                    default 18 if ESP_PANEL_BOARD_LCD_MIPI_DPI_PIXEL_RGB666
+                    default 24 if ESP_PANEL_BOARD_LCD_MIPI_DPI_PIXEL_RGB888
+            endmenu
+
+            menu "PHY power"
+                config ESP_PANEL_BOARD_LCD_MIPI_PHY_LDO_ID
+                    int "LDO ID"
+                    default 3
+                    range -1 10
+                    help
+                        LDO ID for DSI PHY power. Set to -1 if not used.
+            endmenu
+        endif
+    endmenu
+
+    menu "Special settings"
+        depends on ESP_PANEL_BOARD_LCD_BUS_TYPE_RGB && ESP_PANEL_BOARD_LCD_RGB_USE_CONTROL_PANEL
+        config ESP_PANEL_BOARD_LCD_FLAGS_ENABLE_IO_MULTIPLEX
+            bool "Enable IO multiplex"
+            default n
+            help
+                If set to 1, the 3-wire SPI pins are sharing other pins of the RGB interface to save GPIOs.
+                Then, the control panel and its pins (except CS signal) will be released after LCD call `init()`.
+                All `*_by_cmd` flags will be invalid.
+
+        config ESP_PANEL_BOARD_LCD_FLAGS_MIRROR_BY_CMD
+            bool "Mirror by LCD command instead of software"
+            depends on !ESP_PANEL_BOARD_LCD_FLAGS_ENABLE_IO_MULTIPLEX
+            default y
+            help
+                If set to 1, the `mirror()` function will be implemented by LCD command.
+                Otherwise, the function will be implemented by software.
+                Only valid when `ESP_PANEL_BOARD_LCD_FLAGS_ENABLE_IO_MULTIPLEX` is 0.
+    endmenu
+
+    menu "Color settings"
+        choice
+            prompt "Color bits"
+            default ESP_PANEL_BOARD_LCD_COLOR_BITS_RGB565
+
+            config ESP_PANEL_BOARD_LCD_COLOR_BITS_RGB565
+                bool "RGB565 (16 bits)"
+
+            config ESP_PANEL_BOARD_LCD_COLOR_BITS_RGB666
+                bool "RGB666 (18 bits)"
+
+            config ESP_PANEL_BOARD_LCD_COLOR_BITS_RGB888
+                bool "RGB888 (24 bits)"
+        endchoice
+
+        config ESP_PANEL_BOARD_LCD_COLOR_BITS
+            int
+            default 16 if ESP_PANEL_BOARD_LCD_COLOR_BITS_RGB565
+            default 18 if ESP_PANEL_BOARD_LCD_COLOR_BITS_RGB666
+            default 24 if ESP_PANEL_BOARD_LCD_COLOR_BITS_RGB888
+
+        config ESP_PANEL_BOARD_LCD_COLOR_BGR_ORDER
+            bool "Use BGR color order instead of RGB"
+            default n
+
+        config ESP_PANEL_BOARD_LCD_COLOR_INEVRT_BIT
+            bool "Invert color bit (0->1, 1->0)"
+            default n
+    endmenu
+
+    menu "Transformation settings"
+        config ESP_PANEL_BOARD_LCD_SWAP_XY
+            bool "Swap X and Y Axes"
+            default n
+
+        config ESP_PANEL_BOARD_LCD_MIRROR_X
+            bool "Mirror X Axes"
+            default n
+
+        config ESP_PANEL_BOARD_LCD_MIRROR_Y
+            bool "Mirror Y Axes"
+            default n
+
+        config ESP_PANEL_BOARD_LCD_GAP_X
+            int "Gap of X start coordinate"
+            default 0
+            range 0 ESP_PANEL_BOARD_WIDTH
+
+        config ESP_PANEL_BOARD_LCD_GAP_Y
+            int "Gap of Y start coordinate"
+            default 0
+            range 0 ESP_PANEL_BOARD_HEIGHT
+    endmenu
+
+    menu "Control pins"
+        config ESP_PANEL_BOARD_LCD_RST_IO
+            int "Reset pin"
+            default -1
+            range -1 1000
+
+        config ESP_PANEL_BOARD_LCD_RST_LEVEL
+            depends on ESP_PANEL_BOARD_LCD_RST_IO >= 0
+            int "Reset level"
+            default 0
+            range 0 1
+    endmenu
+endif

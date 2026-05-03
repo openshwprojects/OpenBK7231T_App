@@ -1,0 +1,67 @@
+choice
+    prompt "Select the manufacturer"
+    default ESP_PANEL_BOARD_MANUFACTURER_ALL
+
+    config ESP_PANEL_BOARD_MANUFACTURER_ALL
+        bool "All"
+        help
+            Espressif, Elecrow, M5Stack, Shenzhen Jingcai Intelligent, Waveshare
+
+    config ESP_PANEL_BOARD_MANUFACTURER_ESPRESSIF
+        bool "Espressif"
+        help
+            https://www.espressif.com/en/products/devkits
+
+    config ESP_PANEL_BOARD_MANUFACTURER_ELECROW
+        bool "Elecrow"
+        help
+            https://www.elecrow.com
+
+    config ESP_PANEL_BOARD_MANUFACTURER_M5STACK
+        bool "M5Stack"
+        help
+            https://m5stack.com/
+
+    config ESP_PANEL_BOARD_MANUFACTURER_JINGCAI
+        bool "Shenzhen Jingcai Intelligent"
+        help
+            https://www.displaysmodule.com/
+
+    config ESP_PANEL_BOARD_MANUFACTURER_WAVESHARE
+        bool "Waveshare"
+        help
+            https://www.waveshare.com/
+
+    config ESP_PANEL_BOARD_MANUFACTURER_VIEWE
+        bool "VIEWE"
+        help
+            https://viewedisplay.com/
+endchoice
+
+choice
+    prompt "Select a target board"
+
+    if ESP_PANEL_BOARD_MANUFACTURER_ESPRESSIF || ESP_PANEL_BOARD_MANUFACTURER_ALL
+        orsource "./espressif/Kconfig.espressif"
+    endif
+
+    if ESP_PANEL_BOARD_MANUFACTURER_ELECROW || ESP_PANEL_BOARD_MANUFACTURER_ALL
+        orsource "./elecrow/Kconfig.elecrow"
+    endif
+
+    if ESP_PANEL_BOARD_MANUFACTURER_M5STACK || ESP_PANEL_BOARD_MANUFACTURER_ALL
+        orsource "./m5stack/Kconfig.m5stack"
+    endif
+
+    if ESP_PANEL_BOARD_MANUFACTURER_JINGCAI || ESP_PANEL_BOARD_MANUFACTURER_ALL
+        orsource "./jingcai/Kconfig.jingcai"
+    endif
+
+    if ESP_PANEL_BOARD_MANUFACTURER_WAVESHARE || ESP_PANEL_BOARD_MANUFACTURER_ALL
+        orsource "./waveshare/Kconfig.waveshare"
+    endif
+
+    if ESP_PANEL_BOARD_MANUFACTURER_VIEWE || ESP_PANEL_BOARD_MANUFACTURER_ALL
+        orsource "./viewe/Kconfig.viewe"
+    endif
+endchoice

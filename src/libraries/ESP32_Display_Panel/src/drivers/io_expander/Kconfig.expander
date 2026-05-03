@@ -1,0 +1,25 @@
+menu "IO Expander"
+    menu "Enable used drivers in factory"
+        config ESP_PANEL_DRIVERS_EXPANDER_USE_ALL
+            bool "Use all"
+            default n
+
+        if !ESP_PANEL_DRIVERS_EXPANDER_USE_ALL
+            config ESP_PANEL_DRIVERS_EXPANDER_USE_CH422G
+                bool "Use CH422G"
+                default n
+
+            config ESP_PANEL_DRIVERS_EXPANDER_USE_HT8574
+                bool "Use HT8574"
+                default n
+
+            config ESP_PANEL_DRIVERS_EXPANDER_USE_TCA95XX_8BIT
+                bool "Use TCA95XX (8-bit)"
+                default n
+
+            config ESP_PANEL_DRIVERS_EXPANDER_USE_TCA95XX_16BIT
+                bool "Use TCA95XX (16-bit)"
+                default n
+        endif
+    endmenu
+endmenu

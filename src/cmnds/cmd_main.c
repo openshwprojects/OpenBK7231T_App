@@ -1174,6 +1174,9 @@ void CMD_Init_Delayed() {
 		CMD_StartTCPCommandLine();
 	}
 #endif
+#if ENABLE_DRIVER_DISPLAY
+	CMD_ExecuteCommand("startDriver Display", 0);
+#endif
 #if PLATFORM_BEKEN || WINDOWS || PLATFORM_BL602 || PLATFORM_ESPIDF || PLATFORM_ESP8266 \
 	|| PLATFORM_REALTEK || PLATFORM_ECR6600 || PLATFORM_XRADIO
 	UART_AddCommands();

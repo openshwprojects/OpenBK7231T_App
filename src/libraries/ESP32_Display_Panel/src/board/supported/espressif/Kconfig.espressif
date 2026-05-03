@@ -1,0 +1,64 @@
+config BOARD_ESPRESSIF_ESP32_C3_LCDKIT
+    bool "ESP32-C3-LCDkit"
+    help
+        https://docs.espressif.com/projects/esp-dev-kits/en/latest/esp32c3/esp32-c3-lcdkit/index.html
+
+config BOARD_ESPRESSIF_ESP32_S3_BOX
+    bool "ESP32-S3-Box"
+    help
+        https://github.com/espressif/esp-box/tree/master
+
+config BOARD_ESPRESSIF_ESP32_S3_BOX_3
+    bool "ESP32-S3-Box-3 & ESP32-S3-Box-3B"
+    help
+        https://github.com/espressif/esp-box/tree/master
+
+config BOARD_ESPRESSIF_ESP32_S3_BOX_3_BETA
+    bool "ESP32-S3-Box-3(beta)"
+    help
+        https://github.com/espressif/esp-box/tree/c4c954888e11250423f083df0067d99e22d59fbe
+
+config BOARD_ESPRESSIF_ESP32_S3_BOX_LITE
+    bool "ESP32-S3-Box-Lite"
+    help
+        https://github.com/espressif/esp-box/tree/master
+
+config BOARD_ESPRESSIF_ESP32_S3_EYE
+    bool "ESP32-S3-EYE"
+    help
+        https://github.com/espressif/esp-who/blob/master/docs/en/get-started/ESP32-S3-EYE_Getting_Started_Guide.md
+
+config BOARD_ESPRESSIF_ESP32_S3_KORVO_2
+    bool "ESP32-S3-Korvo-2"
+    help
+        https://docs.espressif.com/projects/esp-adf/en/latest/design-guide/dev-boards/user-guide-esp32-s3-korvo-2.html
+
+config BOARD_ESPRESSIF_ESP32_S3_LCD_EV_BOARD
+    bool "ESP32-S3-LCD-EV-Board(v1.1-v1.4)"
+    help
+        https://docs.espressif.com/projects/esp-dev-kits/en/latest/esp32s3/esp32-s3-lcd-ev-board/user_guide_v1.4.html
+
+config BOARD_ESPRESSIF_ESP32_S3_LCD_EV_BOARD_V1_5
+    bool "ESP32-S3-LCD-EV-Board(v1.5)"
+    help
+        https://docs.espressif.com/projects/esp-dev-kits/en/latest/esp32s3/esp32-s3-lcd-ev-board/user_guide.html
+
+config BOARD_ESPRESSIF_ESP32_S3_LCD_EV_BOARD_2
+    bool "ESP32-S3-LCD-EV-Board-2(v1.1-v1.4)"
+    help
+        https://docs.espressif.com/projects/esp-dev-kits/en/latest/esp32s3/esp32-s3-lcd-ev-board/user_guide_v1.4.html
+
+config BOARD_ESPRESSIF_ESP32_S3_LCD_EV_BOARD_2_V1_5
+    bool "ESP32-S3-LCD-EV-Board-2(v1.5)"
+    help
+        https://docs.espressif.com/projects/esp-dev-kits/en/latest/esp32s3/esp32-s3-lcd-ev-board/user_guide.html
+
+config BOARD_ESPRESSIF_ESP32_S3_USB_OTG
+    bool "ESP32-S3-USB-OTG"
+    help
+        https://docs.espressif.com/projects/esp-dev-kits/en/latest/esp32s3/esp32-s3-usb-otg/index.html
+
+config BOARD_ESPRESSIF_ESP32_P4_FUNCTION_EV_BOARD
+    bool "ESP32-P4-Function-EV-Board (with 7-inch 1024x600 LCD)"
+    help
+        https://docs.espressif.com/projects/esp-dev-kits/en/latest/esp32p4/esp32-p4-function-ev-board/index.html

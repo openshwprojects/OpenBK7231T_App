@@ -1,0 +1,104 @@
+menu "LCD"
+    menu "Enable used drivers in factory"
+        config ESP_PANEL_DRIVERS_LCD_USE_ALL
+            bool "Use all"
+            default n
+
+        if !ESP_PANEL_DRIVERS_LCD_USE_ALL
+            config ESP_PANEL_DRIVERS_LCD_USE_AXS15231B
+                bool "Use AXS15231B"
+                default n
+
+            config ESP_PANEL_DRIVERS_LCD_USE_EK9716B
+                bool "Use EK9716B"
+                default n
+
+            config ESP_PANEL_DRIVERS_LCD_USE_EK79007
+                bool "Use EK79007"
+                default n
+
+            config ESP_PANEL_DRIVERS_LCD_USE_GC9A01
+                bool "Use GC9A01"
+                default n
+
+            config ESP_PANEL_DRIVERS_LCD_USE_GC9B71
+                bool "Use GC9B71"
+                default n
+
+            config ESP_PANEL_DRIVERS_LCD_USE_GC9503
+                bool "Use GC9503"
+                default n
+
+            config ESP_PANEL_DRIVERS_LCD_USE_HX8399
+                bool "Use HX8399"
+                default n
+
+            config ESP_PANEL_DRIVERS_LCD_USE_ILI9341
+                bool "Use ILI9341"
+                default n
+
+            config ESP_PANEL_DRIVERS_LCD_USE_ILI9881C
+                bool "Use ILI9881C"
+                default n
+
+            config ESP_PANEL_DRIVERS_LCD_USE_JD9165
+                bool "Use JD9165"
+                default n
+
+            config ESP_PANEL_DRIVERS_LCD_USE_JD9365
+                bool "Use JD9365"
+                default n
+
+            config ESP_PANEL_DRIVERS_LCD_USE_NV3022B
+                bool "Use NV3022B"
+                default n
+
+            config ESP_PANEL_DRIVERS_LCD_USE_SH8601
+                bool "Use SH8601"
+                default n
+
+            config ESP_PANEL_DRIVERS_LCD_USE_SPD2010
+                bool "Use SPD2010"
+                default n
+
+            config ESP_PANEL_DRIVERS_LCD_USE_ST7262
+                bool "Use ST7262"
+                default n
+
+            config ESP_PANEL_DRIVERS_LCD_USE_ST7701
+                bool "Use ST7701"
+                default n
+
+            config ESP_PANEL_DRIVERS_LCD_USE_ST7703
+                bool "Use ST7703"
+                default n
+
+            config ESP_PANEL_DRIVERS_LCD_USE_ST7789
+                bool "Use ST7789"
+                default n
+
+            config ESP_PANEL_DRIVERS_LCD_USE_ST7796
+                bool "Use ST7796"
+                default n
+
+            config ESP_PANEL_DRIVERS_LCD_USE_ST77903
+                bool "Use ST77903"
+                default n
+
+            config ESP_PANEL_DRIVERS_LCD_USE_ST77916
+                bool "Use ST77916"
+                default n
+
+            config ESP_PANEL_DRIVERS_LCD_USE_ST77922
+                bool "Use ST77922"
+                default n
+        endif
+    endmenu
+
+    config ESP_PANEL_DRIVERS_LCD_COMPILE_UNUSED_DRIVERS
+        bool "Compile unused drivers"
+        default y
+        help
+            When disabled, code for unused drivers will be excluded to speed up compilation.
+            Make sure the driver is not used when this option is disabled.
+endmenu

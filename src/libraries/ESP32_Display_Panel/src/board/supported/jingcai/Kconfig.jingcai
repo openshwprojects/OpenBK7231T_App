@@ -1,0 +1,9 @@
+config BOARD_JINGCAI_ESP32_4848S040C_I_Y_3
+    bool "ESP32-4848S040C_I_Y_3"
+    help
+        https://www.displaysmodule.com/sale-41828962-experience-the-power-of-the-esp32-display-module-sku-esp32-4848s040c-i-y-3.html
+
+config BOARD_JINGCAI_JC8048W550C
+    bool "JC8048W550C"
+    help
+        https://www.displaysmodule.com/sale-43987867-capacitive-touch-advanced-tft-hmi-display-module-jc8048w550-800-480-pixel-resolution-st7262-driver-c.html

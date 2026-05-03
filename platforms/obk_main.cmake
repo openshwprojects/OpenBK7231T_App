@@ -180,6 +180,8 @@ endif()
 set(OBKM_SRC_CXX
 	${OBK_SRCS}driver/drv_ir.cpp
 	${OBK_SRCS}driver/drv_ir_new.cpp
+	${OBK_SRCS}driver/drv_display.cpp
+	${OBK_SRCS}driver/display/lvgl_v8_port.cpp
 	${OBK_SRCS}libraries/IRremoteESP8266/src/IRac.cpp
 	${OBK_SRCS}libraries/IRremoteESP8266/src/IRproto.cpp
 	${OBK_SRCS}libraries/IRremoteESP8266/src/IRrecv.cpp

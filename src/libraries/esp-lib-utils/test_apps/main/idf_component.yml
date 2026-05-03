@@ -1,0 +1,7 @@
+## IDF Component Manager Manifest File
+dependencies:
+  test_utils:
+    path: ${IDF_PATH}/tools/unit-test-app/components/test_utils
+  esp-lib-utils:
+    version: "*"
+    override_path: "../../../esp-lib-utils"

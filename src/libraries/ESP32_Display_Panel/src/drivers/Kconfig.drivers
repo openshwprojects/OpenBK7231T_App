@@ -1,0 +1,11 @@
+menu "Drivers"
+    orsource "./bus/Kconfig.bus"
+
+    orsource "./lcd/Kconfig.lcd"
+
+    orsource "./touch/Kconfig.touch"
+
+    orsource "./backlight/Kconfig.backlight"
+
+    orsource "./io_expander/Kconfig.expander"
+endmenu

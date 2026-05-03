@@ -1,0 +1,36 @@
+menu "Bus"
+    menu "Enable used drivers in factory"
+        config ESP_PANEL_DRIVERS_BUS_USE_ALL
+            bool "Use all"
+            default n
+
+        if !ESP_PANEL_DRIVERS_BUS_USE_ALL
+            config ESP_PANEL_DRIVERS_BUS_USE_SPI
+                bool "Use SPI"
+                default n
+
+            config ESP_PANEL_DRIVERS_BUS_USE_QSPI
+                bool "Use QSPI"
+                default n
+
+            config ESP_PANEL_DRIVERS_BUS_USE_RGB
+                bool "Use RGB"
+                default n
+
+            config ESP_PANEL_DRIVERS_BUS_USE_I2C
+                bool "Use I2C"
+                default n
+
+            config ESP_PANEL_DRIVERS_BUS_USE_MIPI_DSI
+                bool "Use MIPI DSI"
+                default n
+        endif
+    endmenu
+
+    config ESP_PANEL_DRIVERS_BUS_COMPILE_UNUSED_DRIVERS
+        bool "Compile unused drivers"
+        default y
+        help
+            When disabled, code for unused drivers will be excluded to speed up compilation.
+            Make sure the driver is not used when this option is disabled.
+endmenu

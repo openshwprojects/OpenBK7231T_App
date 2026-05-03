@@ -37,6 +37,9 @@ if "%TARGET%"=="esp32" (
 ) else if "%TARGET%"=="esp32s3" (
     set BUILD_DIR=platforms\ESP-IDF\build-s3
     set BOOTLOADER_ADDR=0x0
+) else if "%TARGET%"=="esp32s3ram" (
+    set BUILD_DIR=platforms\ESP-IDF\build-s3ram
+    set BOOTLOADER_ADDR=0x0
 ) else (
     echo [ERROR] Unknown target: %TARGET%
     exit /b 1
@@ -104,15 +107,21 @@ if exist platforms\ESP-IDF\partitions.csv del platforms\ESP-IDF\partitions.csv
 copy /y platforms\ESP-IDF\partitions-4mb.csv platforms\ESP-IDF\partitions.csv >nul
 
 :: Set environment variables for IDF cmake
-set IDF_TARGET=%TARGET%
-
+set CMAKE_ARGS=
+if "%TARGET%"=="esp32s3ram" (
+    set IDF_TARGET=esp32s3
+    set SDKCONFIG_DEFAULTS=sdkconfig.defaults;sdkconfig.defaults.esp32s3ram
+    set CMAKE_ARGS=-DSDKCONFIG_DEFAULTS="sdkconfig.defaults;sdkconfig.defaults.esp32s3ram" -DENABLE_DISPLAY=1
+) else (
+    set IDF_TARGET=%TARGET%
+)
 
 :: --- Berry prebuild ---
 call build_scripts\berry_prebuild.bat
 
 :: Configure CMake via ESP-IDF toolchain
 echo [INFO] Running CMake configuration for %TARGET%...
-cmake platforms\ESP-IDF -B %BUILD_DIR% -G "Ninja"
+cmake platforms\ESP-IDF -B %BUILD_DIR% -G "Ninja" %CMAKE_ARGS%
 if !errorlevel! neq 0 (
     echo [ERROR] CMake configuration failed!
     exit /b 1
@@ -147,6 +156,8 @@ if "%TARGET%"=="esp32" (
     set OUT_NAME=OpenESP32S2
 ) else if "%TARGET%"=="esp32s3" (
     set OUT_NAME=OpenESP32S3
+) else if "%TARGET%"=="esp32s3ram" (
+    set OUT_NAME=OpenESP32S3RAM
 ) else (
     set OUT_NAME=Open%TARGET%
 )
@@ -156,9 +167,13 @@ echo [INFO] Merging binaries with esptool...
 set FACTORY_BIN=output\%APP_VERSION%\!OUT_NAME!_%APP_VERSION%.factory.bin
 set IMG_BIN=output\%APP_VERSION%\!OUT_NAME!_%APP_VERSION%.img
 
-python -m esptool -c %TARGET% merge_bin -o !FACTORY_BIN! --flash_mode dio --flash_size %ESP_FSIZE% %BOOTLOADER_ADDR% %BUILD_DIR%\bootloader\bootloader.bin 0x8000 %BUILD_DIR%\partition_table\partition-table.bin 0x10000 %BUILD_DIR%\OpenBeken.bin
+python -m esptool --chip %IDF_TARGET% merge_bin -o "output\%APP_VERSION%\%OUT_NAME%.factory.bin" ^
+    --flash_mode dio --flash_freq 40m --flash_size %ESP_FSIZE% ^
+    %BOOTLOADER_ADDR% "%BUILD_DIR%\bootloader\bootloader.bin" ^
+    0x8000 "%BUILD_DIR%\partition_table\partition-table.bin" ^
+    0x10000 "%BUILD_DIR%\OpenBeken.bin"
 if !errorlevel! neq 0 (
-    echo [ERROR] esptool merge failed!
+    echo [ERROR] esptool merge failed
     exit /b 1
 )
 

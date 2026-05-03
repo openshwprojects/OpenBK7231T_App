@@ -1,0 +1,2 @@
+.github/scripts/check_lib_versions.sh
+tools/check_executables.py

@@ -1,0 +1,14 @@
+config BOARD_M5STACK_M5CORE2
+    bool "M5STACK_M5CORE2"
+    help
+        https://docs.m5stack.com/en/core/core2
+
+config BOARD_M5STACK_M5CORES3
+    bool "M5STACK_M5CORES3"
+    help
+        https://docs.m5stack.com/en/core/CoreS3
+
+config BOARD_M5STACK_M5DIAL
+    bool "M5STACK_M5DIAL"
+    help
+        https://docs.m5stack.com/en/core/M5Dial

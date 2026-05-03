@@ -1,0 +1,23 @@
+config ESP_PANEL_BOARD_NAME
+    string "Board name (Manufacturer:Model)"
+    default "Custom:Custom"
+    help
+        Board name. (format: "Manufacturer:Model")
+
+config ESP_PANEL_BOARD_WIDTH
+    int "Panel width (horizontal, in pixels)"
+    default 320
+    range 1 10000
+
+config ESP_PANEL_BOARD_HEIGHT
+    int "Panel height (vertical, in pixels)"
+    default 240
+    range 1 10000
+
+orsource "./Kconfig.board_custom.lcd"
+
+orsource "./Kconfig.board_custom.touch"
+
+orsource "./Kconfig.board_custom.backlight"
+
+orsource "./Kconfig.board_custom.expander"

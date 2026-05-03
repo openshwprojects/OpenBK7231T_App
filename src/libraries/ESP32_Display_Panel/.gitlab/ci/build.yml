@@ -1,0 +1,174 @@
+.build_template: &build_template
+  stage: build
+  tags:
+    - build
+  image: ${IMAGE}
+  variables:
+    # Enable ccache for all build jobs. See configure_ci_environment.sh for more ccache related settings.
+    IDF_CCACHE_ENABLE: "1"
+    BATCH_BUILD: "1"
+    V: "0"
+    WARNING_STR: ""
+
+.build_examples_template: &build_examples_template
+  <<: *build_template
+  artifacts:
+    when: always
+    paths:
+      - "**/build*/size.json"
+      - "**/build*/build_log.txt"
+      - "**/build*/*.bin"
+      # upload to s3 server to save the artifacts size
+      - "**/build*/*.map"
+      - "**/build*/*.elf"
+      - "**/build*/flasher_args.json"
+      - "**/build*/flash_args"
+      - "**/build*/flash_project_args"
+      - "**/build*/config/sdkconfig.json"
+      - "**/build*/bootloader/*.bin"
+      - "**/build*/bootloader/*.elf"
+      - "**/build*/partition_table/*.bin"
+      - "**/build*/mmap_build/*.bin"
+      - "**/build*/**/*.bin"
+      - size_info.txt
+    expire_in: 1 week
+  variables:
+    IDF_CI_BUILD: "1"
+    # By configuring this macro, you can append the compiled configuration file.
+    # For example, using "sdkconf.etc=default" specifies the default sdkconfig file.
+    EXAMPLE_CONFIG: "="
+  script:
+    - pip install "idf-component-manager"
+    - pip install idf_build_apps
+    - python .gitlab/tools/build_apps.py ${EXAMPLE_DIR} --config ${EXAMPLE_CONFIG} -t all -vv
+
+#  Images for different target ESP-IDF
+.build_general_idf_release_image:
+  parallel:
+    matrix:
+      - IMAGE: espressif/idf:release-v5.1
+      - IMAGE: espressif/idf:release-v5.2
+      - IMAGE: espressif/idf:release-v5.3
+      - IMAGE: espressif/idf:release-v5.4
+
+.build_esp32_p4_idf_release_image:
+  parallel:
+    matrix:
+      - IMAGE: espressif/idf:release-v5.3
+      - IMAGE: espressif/idf:release-v5.4
+
+# Test apps lcd
+build_test_apps_drivers_lcd_3wire_spi_rgb:
+  extends:
+    - .build_examples_template
+    - .build_general_idf_release_image
+    - .rules:build:test_apps_drivers_lcd_3wire_spi_rgb
+  variables:
+    EXAMPLE_DIR: test_apps/drivers/lcd/3wire_spi_rgb
+
+build_test_apps_drivers_lcd_mipi_dsi:
+  extends:
+    - .build_examples_template
+    - .build_esp32_p4_idf_release_image
+    - .rules:build:test_apps_drivers_lcd_mipi_dsi
+  variables:
+    EXAMPLE_DIR: test_apps/drivers/lcd/mipi_dsi
+
+build_test_apps_drivers_lcd_qspi:
+  extends:
+    - .build_examples_template
+    - .build_general_idf_release_image
+    - .rules:build:test_apps_drivers_lcd_qspi
+  variables:
+    EXAMPLE_DIR: test_apps/drivers/lcd/qspi
+
+build_test_apps_drivers_lcd_rgb:
+  extends:
+    - .build_examples_template
+    - .build_general_idf_release_image
+    - .rules:build:test_apps_drivers_lcd_rgb
+  variables:
+    EXAMPLE_DIR: test_apps/drivers/lcd/rgb
+
+build_test_apps_drivers_lcd_spi:
+  extends:
+    - .build_examples_template
+    - .build_general_idf_release_image
+    - .rules:build:test_apps_drivers_lcd_spi
+  variables:
+    EXAMPLE_DIR: test_apps/drivers/lcd/spi
+
+# Test apps touch
+build_test_apps_drivers_touch_i2c:
+  extends:
+    - .build_examples_template
+    - .build_general_idf_release_image
+    - .rules:build:test_apps_drivers_touch_i2c
+  variables:
+    EXAMPLE_DIR: test_apps/drivers/touch/i2c
+
+build_test_apps_drivers_touch_spi:
+  extends:
+    - .build_examples_template
+    - .build_general_idf_release_image
+    - .rules:build:test_apps_drivers_touch_spi
+  variables:
+    EXAMPLE_DIR: test_apps/drivers/touch/spi
+
+# Test apps board
+build_test_apps_board_common:
+  extends:
+    - .build_examples_template
+    - .build_general_idf_release_image
+    - .rules:build:test_apps_board_common
+  variables:
+    EXAMPLE_DIR: test_apps/board/common
+
+build_test_apps_board_elecrow:
+  extends:
+    - .build_examples_template
+    - .build_general_idf_release_image
+    - .rules:build:test_apps_board_elecrow
+  variables:
+    EXAMPLE_DIR: test_apps/board/elecrow
+
+build_test_apps_board_espressif:
+  extends:
+    - .build_examples_template
+    - .build_general_idf_release_image
+    - .rules:build:test_apps_board_espressif
+  variables:
+    EXAMPLE_DIR: test_apps/board/espressif
+
+build_test_apps_board_jingcai:
+  extends:
+    - .build_examples_template
+    - .build_general_idf_release_image
+    - .rules:build:test_apps_board_jingcai
+  variables:
+    EXAMPLE_DIR: test_apps/board/jingcai
+
+build_test_apps_board_m5stack:
+  extends:
+    - .build_examples_template
+    - .build_general_idf_release_image
+    - .rules:build:test_apps_board_m5stack
+  variables:
+    EXAMPLE_DIR: test_apps/board/m5stack
+
+build_test_apps_board_waveshare:
+  extends:
+    - .build_examples_template
+    - .build_general_idf_release_image
+    - .rules:build:test_apps_board_waveshare
+  variables:
+    EXAMPLE_DIR: test_apps/board/waveshare
+
+# Test apps examples
+build_test_apps_gui_lvgl_v8_port:
+  extends:
+    - .build_examples_template
+    - .build_general_idf_release_image
+    - .rules:build:test_apps_gui_lvgl_v8_port
+  variables:
+    EXAMPLE_DIR: test_apps/gui/lvgl_v8_port

@@ -1,0 +1,7 @@
+version: "0.2.0"
+description: esp-lib-utils is a library designed for ESP SoCs to provide utility functions, including logging, checking, and memory.
+url: https://github.com/esp-arduino-libs/esp-lib-utils
+repository: https://github.com/esp-arduino-libs/esp-lib-utils.git
+issues: https://github.com/esp-arduino-libs/esp-lib-utils/issues
+dependencies:
+  idf: ">=5.1"

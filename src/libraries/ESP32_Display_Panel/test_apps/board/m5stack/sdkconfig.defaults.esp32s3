@@ -1,0 +1,13 @@
+CONFIG_COMPILER_OPTIMIZATION_PERF=y
+
+CONFIG_SPIRAM=y
+CONFIG_SPIRAM_SPEED_80M=y
+# Enable the XIP-PSRAM feature, so the ext-mem cache won't be disabled when SPI1 is operating the main flash
+# For v5.2 and below
+CONFIG_SPIRAM_FETCH_INSTRUCTIONS=y
+CONFIG_SPIRAM_RODATA=y
+# For v5.3 and above
+CONFIG_SPIRAM_XIP_FROM_PSRAM=y
+
+# Used in conjunction with "RGB Bounce Buffer"
+CONFIG_ESP32S3_DATA_CACHE_LINE_64B=y

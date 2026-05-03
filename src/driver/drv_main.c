@@ -24,6 +24,9 @@
 #include "drv_hlw8112.h"
 #include "drv_DCF77.h"
 
+void Display_Init();
+void Display_RunFrame();
+
 void DRV_MQTTServer_Init();
 void DRV_MQTTServer_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState);
 void DRV_MQTTServer_RunEverySecond();
@@ -1523,6 +1526,18 @@ static driver_t g_drivers[] = {
 	}
 #endif
 	//{ "", NULL, NULL, NULL, NULL, NULL, NULL, NULL, false },
+#if ENABLE_DRIVER_DISPLAY
+	{ "Display",                             // Driver Name
+	Display_Init,                            // Init
+	NULL,                                    // onEverySecond
+	NULL,                                    // appendInformationToHTTPIndexPage
+	Display_RunFrame,                        // runQuickTick
+	NULL,                                    // stopFunction
+	NULL,                                    // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
+	},
+#endif
 };
 
 

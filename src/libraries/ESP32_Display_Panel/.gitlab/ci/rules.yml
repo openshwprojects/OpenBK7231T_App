@@ -1,0 +1,604 @@
+############
+# Patterns #
+############
+
+# build system, if changed, build all apps
+.patterns-build_system: &patterns-build_system
+  # For test
+  - ".gitlab/**/*"
+  - ".build-rules.yml"
+
+# component general files
+.patterns-component_general: &patterns-component_general
+  - "src/esp_panel_conf_internal.h"
+  - "src/esp_panel_types.h"
+  - "src/esp_panel_versions.h"
+  - "CMakeLists.txt"
+  - "idf_component.yml"
+  - "Kconfig"
+
+# component utils files
+.patterns-component_utils_all: &patterns-component_utils_all
+  - "src/utils/**/*"
+
+# component drivers-general files
+.patterns-component_drivers_general: &patterns-component_drivers_general
+  - "esp_panel_drivers_conf.h"
+  - "src/drivers/esp_panel_drivers_conf_internal.h"
+  - "src/drivers/Kconfig.drivers"
+
+# component drivers-backlight files
+.patterns-component_drivers_backlight_all: &patterns-component_drivers_backlight_all
+  - "src/drivers/backlight/**/*"
+
+# component drivers-host files
+.patterns-component_drivers_host_general: &patterns-component_drivers_host_general
+  - "src/drivers/host/esp_panel_host.*"
+
+.patterns-component_drivers_host_dsi: &patterns-component_drivers_host_dsi
+  - "src/drivers/host/port/esp_panel_host_dsi.*"
+
+.patterns-component_drivers_host_i2c: &patterns-component_drivers_host_i2c
+  - "src/drivers/host/port/esp_panel_host_i2c.*"
+
+.patterns-component_drivers_host_spi: &patterns-component_drivers_host_spi
+  - "src/drivers/host/port/esp_panel_host_spi.*"
+
+.patterns-component_drivers_host_all: &patterns-component_drivers_host_all
+  - "src/drivers/host/**/*"
+
+# component drivers-bus files
+.patterns-component_drivers_bus_general: &patterns-component_drivers_bus_general
+  - "src/drivers/bus/esp_panel_bus_conf_internal.h"
+  - "src/drivers/bus/esp_panel_bus.*"
+  - "src/drivers/bus/Kconfig.bus"
+
+.patterns-component_drivers_bus_dsi: &patterns-component_drivers_bus_dsi
+  - "src/drivers/bus/port/esp_panel_bus_dsi.*"
+
+.patterns-component_drivers_bus_i2c: &patterns-component_drivers_bus_i2c
+  - "src/drivers/bus/port/esp_panel_bus_i2c.*"
+
+.patterns-component_drivers_bus_qspi: &patterns-component_drivers_bus_qspi
+  - "src/drivers/bus/port/esp_panel_bus_qspi.*"
+
+.patterns-component_drivers_bus_rgb: &patterns-component_drivers_bus_rgb
+  - "src/drivers/bus/port/esp_panel_bus_rgb.*"
+
+.patterns-component_drivers_bus_3wire_spi_rgb: &patterns-component_drivers_bus_3wire_spi_rgb
+  - "src/drivers/bus/port/esp_lcd_panel_io_3wire_spi.c"
+  - "src/drivers/bus/port/esp_lcd_panel_io_additions.h"
+
+.patterns-component_drivers_bus_spi: &patterns-component_drivers_bus_spi
+  - "src/drivers/bus/port/esp_panel_bus_spi.*"
+
+.patterns-component_drivers_bus_all: &patterns-component_drivers_bus_all
+  - "src/drivers/bus/**/*"
+
+# component drivers-lcd files
+.patterns-component_drivers_lcd_general: &patterns-component_drivers_lcd_general
+  - "src/drivers/lcd/port/esp_panel_lcd_vendor_types.h"
+  - "src/drivers/lcd/esp_panel_lcd_conf_internal.h"
+  - "src/drivers/lcd/esp_panel_lcd.*"
+  - "src/drivers/lcd/Kconfig.lcd"
+
+.patterns-component_drivers_lcd_mipi_dsi: &patterns-component_drivers_lcd_mipi_dsi
+  - "src/drivers/lcd/**/*ek79007*"
+  - "src/drivers/lcd/**/*hx8399*"
+  - "src/drivers/lcd/**/*ili9881c*"
+  - "src/drivers/lcd/**/*jd9165*"
+  - "src/drivers/lcd/**/*jd9365*"
+  - "src/drivers/lcd/**/*st7701*"
+  - "src/drivers/lcd/**/*st7703*"
+  - "src/drivers/lcd/**/*st7796*"
+  - "src/drivers/lcd/**/*st77922*"
+
+.patterns-component_drivers_lcd_qspi: &patterns-component_drivers_lcd_qspi
+  - "src/drivers/lcd/**/*axs15231b*"
+  - "src/drivers/lcd/**/*gc9b71*"
+  - "src/drivers/lcd/**/*sh8601*"
+  - "src/drivers/lcd/**/*spd2010*"
+  - "src/drivers/lcd/**/*st77916*"
+  - "src/drivers/lcd/**/*st77922*"
+
+.patterns-component_drivers_lcd_rgb: &patterns-component_drivers_lcd_rgb
+  - "src/drivers/lcd/**/*ek9716b*"
+  - "src/drivers/lcd/**/*st7262*"
+
+.patterns-component_drivers_lcd_3wire_spi_rgb: &patterns-component_drivers_lcd_3wire_spi_rgb
+  - "src/drivers/lcd/**/*gc9503*"
+  - "src/drivers/lcd/**/*st7701*"
+  - "src/drivers/lcd/**/*st77903*"
+  - "src/drivers/lcd/**/*st77922*"
+
+.patterns-component_drivers_lcd_spi: &patterns-component_drivers_lcd_spi
+  - "src/drivers/lcd/**/*gc9a01*"
+  - "src/drivers/lcd/**/*gc9b71*"
+  - "src/drivers/lcd/**/*ili9341*"
+  - "src/drivers/lcd/**/*nv3022b*"
+  - "src/drivers/lcd/**/*sh8601*"
+  - "src/drivers/lcd/**/*spd2010*"
+  - "src/drivers/lcd/**/*st7789*"
+  - "src/drivers/lcd/**/*st7796*"
+  - "src/drivers/lcd/**/*st77916*"
+  - "src/drivers/lcd/**/*st77922*"
+
+.patterns-component_drivers_lcd_all: &patterns-component_drivers_lcd_all
+  - "src/drivers/lcd/**/*"
+
+# component drivers-touch files
+.patterns-component_drivers_touch_general: &patterns-component_drivers_touch_general
+  - "src/drivers/touch/port/esp_lcd_touch.*"
+  - "src/drivers/touch/esp_panel_touch_conf_internal.h"
+  - "src/drivers/touch/esp_panel_touch.*"
+  - "src/drivers/touch/Kconfig.touch"
+
+.patterns-component_drivers_touch_spi: &patterns-component_drivers_touch_spi
+  - "src/drivers/touch/**/*stmpe610*"
+  - "src/drivers/touch/**/*xpt2046*"
+
+.patterns-component_drivers_touch_i2c: &patterns-component_drivers_touch_i2c
+  - "src/drivers/touch/**/*axs15231b*"
+  - "src/drivers/touch/**/*chsc6540*"
+  - "src/drivers/touch/**/*cst816s*"
+  - "src/drivers/touch/**/*ft5x06*"
+  - "src/drivers/touch/**/*gt911*"
+  - "src/drivers/touch/**/*gt1151*"
+  - "src/drivers/touch/**/*spd2010*"
+  - "src/drivers/touch/**/*st1633*"
+  - "src/drivers/touch/**/*st7123*"
+  - "src/drivers/touch/**/*tt21100*"
+
+.patterns-component_drivers_touch_all: &patterns-component_drivers_touch_all
+  - "src/drivers/touch/**/*"
+
+# component board files
+.patterns-component_board_general: &patterns-component_board_general
+  - "src/board/*.*"
+
+.patterns-component_board_custom: &patterns-component_board_custom
+  - "src/board/custom/**/*"
+
+.patterns-component_board_supported_elecrow: &patterns-component_board_supported_elecrow
+  - "src/board/supported/elecrow/**/*"
+
+.patterns-component_board_supported_espressif: &patterns-component_board_supported_espressif
+  - "src/board/supported/espressif/**/*"
+
+.patterns-component_board_supported_jingcai: &patterns-component_board_supported_jingcai
+  - "src/board/supported/jingcai/**/*"
+
+.patterns-component_board_supported_m5stack: &patterns-component_board_supported_m5stack
+  - "src/board/supported/m5stack/**/*"
+
+.patterns-component_board_supported_viewe: &patterns-component_board_supported_viewe
+  - "src/board/supported/viewe/**/*"
+
+.patterns-component_board_supported_waveshare: &patterns-component_board_supported_waveshare
+  - "src/board/supported/waveshare/**/*"
+
+.patterns-component_board_supported_all: &patterns-component_board_supported_all
+  - "src/board/supported/**/*"
+
+# component all files
+.patterns-component_all: &patterns-component_all
+  - "src/**/*"
+
+# docs files
+.patterns-docs_md: &patterns-docs_md
+  - "**/*.md"
+
+# test_apps lcd files
+.patterns-test_apps_drivers_lcd_general: &patterns-test_apps_drivers_lcd_general
+  - "test_apps/common_components/lcd_general_test/**/*"
+
+.patterns-test_apps_drivers_lcd_3wire_spi_rgb: &patterns-test_apps_drivers_lcd_3wire_spi_rgb
+  - "test_apps/drivers/lcd/3wire_spi_rgb/**/*"
+
+.patterns-test_apps_drivers_lcd_mipi_dsi: &patterns-test_apps_drivers_lcd_mipi_dsi
+  - "test_apps/drivers/lcd/mipi_dsi/**/*"
+
+.patterns-test_apps_drivers_lcd_qspi: &patterns-test_apps_drivers_lcd_qspi
+  - "test_apps/drivers/lcd/qspi/**/*"
+
+.patterns-test_apps_drivers_lcd_rgb: &patterns-test_apps_drivers_lcd_rgb
+  - "test_apps/drivers/lcd/rgb/**/*"
+
+.patterns-test_apps_drivers_lcd_spi: &patterns-test_apps_drivers_lcd_spi
+  - "test_apps/drivers/lcd/spi/**/*"
+
+# test_apps touch files
+.patterns-test_apps_drivers_touch_general: &patterns-test_apps_drivers_touch_general
+  - "test_apps/common_components/touch_general_test/**/*"
+
+.patterns-test_apps_drivers_touch_i2c: &patterns-test_apps_drivers_touch_i2c
+  - "test_apps/drivers/touch/i2c/**/*"
+
+.patterns-test_apps_drivers_touch_spi: &patterns-test_apps_drivers_touch_spi
+  - "test_apps/drivers/touch/spi/**/*"
+
+# test_apps board files
+.patterns-test_apps_board_common: &patterns-test_apps_board_common
+  - "test_apps/board/common/**/*"
+
+.patterns-test_apps_board_elecrow: &patterns-test_apps_board_elecrow
+  - "test_apps/board/elecrow/**/*"
+
+.patterns-test_apps_board_espressif: &patterns-test_apps_board_espressif
+  - "test_apps/board/espressif/**/*"
+
+.patterns-test_apps_board_jingcai: &patterns-test_apps_board_jingcai
+  - "test_apps/board/jingcai/**/*"
+
+.patterns-test_apps_board_m5stack: &patterns-test_apps_board_m5stack
+  - "test_apps/board/m5stack/**/*"
+
+.patterns-test_apps_board_viewe: &patterns-test_apps_board_viewe
+  - "test_apps/board/viewe/**/*"
+
+.patterns-test_apps_board_waveshare: &patterns-test_apps_board_waveshare
+  - "test_apps/board/waveshare/**/*"
+
+# test_apps gui files
+.patterns-test_apps_gui_lvgl_v8_port: &patterns-test_apps_gui_lvgl_v8_port
+  - "test_apps/gui/lvgl_v8_port/**/*"
+
+##############
+# if anchors #
+##############
+.if-protected: &if-protected
+  if: '($CI_COMMIT_REF_NAME == "master" || $CI_COMMIT_BRANCH =~ /^release\/v/ || $CI_COMMIT_TAG =~ /^v\d+\.\d+(\.\d+)?($|-)/)'
+
+.if-dev-push: &if-dev-push
+  if: '$CI_COMMIT_REF_NAME != "master" && $CI_COMMIT_BRANCH !~ /^release\/v/ && $CI_COMMIT_TAG !~ /^v\d+\.\d+(\.\d+)?($|-)/ && ($CI_PIPELINE_SOURCE == "push" || $CI_PIPELINE_SOURCE == "merge_request_event")'
+
+##################
+# Auto Generated #
+##################
+.if-trigger-job: &if-trigger-job
+  if: '$BOT_DYNAMIC_TEST_JOBS && $BOT_DYNAMIC_TEST_JOBS =~ $CI_JOB_NAME'
+
+.if-label-build: &if-label-build
+  if: '$BOT_LABEL_BUILD || $CI_MERGE_REQUEST_LABELS =~ /^(?:[^,\n\r]+,)*build(?:,[^,\n\r]+)*$/i'
+
+.if-label-target_test: &if-label-target_test
+  if: '$BOT_LABEL_TARGET_TEST || $CI_MERGE_REQUEST_LABELS =~ /^(?:[^,\n\r]+,)*target_test(?:,[^,\n\r]+)*$/i'
+
+.if-label-pre_check: &if-label-pre_check
+  if: '$BOT_LABEL_PRE_CHECK || $CI_MERGE_REQUEST_LABELS =~ /^(?:[^,\n\r]+,)*pre_check(?:,[^,\n\r]+)*$/i'
+
+.if_label-deploy: &if-label-deploy
+  if: '$BOT_LABEL_DEPLOY || $CI_MERGE_REQUEST_LABELS =~ /^(?:[^,\n\r]+,)*deploy(?:,[^,\n\r]+)*$/i'
+
+# rules for readme
+.rules:pre_check:readme:
+  rules:
+    - <<: *if-protected
+    - <<: *if-label-pre_check
+    - <<: *if-trigger-job
+    - <<: *if-dev-push
+      changes: *patterns-docs_md
+    - <<: *if-dev-push
+      changes: *patterns-build_system
+
+# rules for test_apps drivers-lcd
+.rules:build:test_apps_drivers_lcd_3wire_spi_rgb:
+  rules:
+    - <<: *if-protected
+    - <<: *if-label-build
+    - <<: *if-label-target_test
+    - <<: *if-trigger-job
+    - <<: *if-dev-push
+      changes: *patterns-build_system
+    - <<: *if-dev-push
+      changes: *patterns-component_general
+    - <<: *if-dev-push
+      changes: *patterns-component_utils_all
+    - <<: *if-dev-push
+      changes: *patterns-component_drivers_general
+    - <<: *if-dev-push
+      changes: *patterns-component_drivers_bus_general
+    - <<: *if-dev-push
+      changes: *patterns-component_drivers_bus_3wire_spi_rgb
+    - <<: *if-dev-push
+      changes: *patterns-component_drivers_lcd_general
+    - <<: *if-dev-push
+      changes: *patterns-component_drivers_lcd_3wire_spi_rgb
+    - <<: *if-dev-push
+      changes: *patterns-test_apps_drivers_lcd_general
+    - <<: *if-dev-push
+      changes: *patterns-test_apps_drivers_lcd_3wire_spi_rgb
+
+.rules:build:test_apps_drivers_lcd_mipi_dsi:
+  rules:
+    - <<: *if-protected
+    - <<: *if-label-build
+    - <<: *if-label-target_test
+    - <<: *if-trigger-job
+    - <<: *if-dev-push
+      changes: *patterns-build_system
+    - <<: *if-dev-push
+      changes: *patterns-component_general
+    - <<: *if-dev-push
+      changes: *patterns-component_utils_all
+    - <<: *if-dev-push
+      changes: *patterns-component_drivers_general
+    - <<: *if-dev-push
+      changes: *patterns-component_drivers_host_general
+    - <<: *if-dev-push
+      changes: *patterns-component_drivers_host_dsi
+    - <<: *if-dev-push
+      changes: *patterns-component_drivers_bus_general
+    - <<: *if-dev-push
+      changes: *patterns-component_drivers_bus_dsi
+    - <<: *if-dev-push
+      changes: *patterns-component_drivers_lcd_general
+    - <<: *if-dev-push
+      changes: *patterns-component_drivers_lcd_mipi_dsi
+    - <<: *if-dev-push
+      changes: *patterns-test_apps_drivers_lcd_general
+    - <<: *if-dev-push
+      changes: *patterns-test_apps_drivers_lcd_mipi_dsi
+
+.rules:build:test_apps_drivers_lcd_qspi:
+  rules:
+    - <<: *if-protected
+    - <<: *if-label-build
+    - <<: *if-label-target_test
+    - <<: *if-trigger-job
+    - <<: *if-dev-push
+      changes: *patterns-build_system
+    - <<: *if-dev-push
+      changes: *patterns-component_general
+    - <<: *if-dev-push
+      changes: *patterns-component_utils_all
+    - <<: *if-dev-push
+      changes: *patterns-component_drivers_general
+    - <<: *if-dev-push
+      changes: *patterns-component_drivers_host_general
+    - <<: *if-dev-push
+      changes: *patterns-component_drivers_host_spi
+    - <<: *if-dev-push
+      changes: *patterns-component_drivers_bus_general
+    - <<: *if-dev-push
+      changes: *patterns-component_drivers_bus_qspi
+    - <<: *if-dev-push
+      changes: *patterns-component_drivers_lcd_general
+    - <<: *if-dev-push
+      changes: *patterns-component_drivers_lcd_qspi
+    - <<: *if-dev-push
+      changes: *patterns-test_apps_drivers_lcd_general
+    - <<: *if-dev-push
+      changes: *patterns-test_apps_drivers_lcd_qspi
+
+.rules:build:test_apps_drivers_lcd_rgb:
+  rules:
+    - <<: *if-protected
+    - <<: *if-label-build
+    - <<: *if-label-target_test
+    - <<: *if-trigger-job
+    - <<: *if-dev-push
+      changes: *patterns-build_system
+    - <<: *if-dev-push
+      changes: *patterns-component_general
+    - <<: *if-dev-push
+      changes: *patterns-component_utils_all
+    - <<: *if-dev-push
+      changes: *patterns-component_drivers_general
+    - <<: *if-dev-push
+      changes: *patterns-component_drivers_bus_general
+    - <<: *if-dev-push
+      changes: *patterns-component_drivers_bus_rgb
+    - <<: *if-dev-push
+      changes: *patterns-component_drivers_lcd_general
+    - <<: *if-dev-push
+      changes: *patterns-component_drivers_lcd_rgb
+    - <<: *if-dev-push
+      changes: *patterns-test_apps_drivers_lcd_general
+    - <<: *if-dev-push
+      changes: *patterns-test_apps_drivers_lcd_rgb
+
+.rules:build:test_apps_drivers_lcd_spi:
+  rules:
+    - <<: *if-protected
+    - <<: *if-label-build
+    - <<: *if-label-target_test
+    - <<: *if-trigger-job
+    - <<: *if-dev-push
+      changes: *patterns-build_system
+    - <<: *if-dev-push
+      changes: *patterns-component_general
+    - <<: *if-dev-push
+      changes: *patterns-component_utils_all
+    - <<: *if-dev-push
+      changes: *patterns-component_drivers_general
+    - <<: *if-dev-push
+      changes: *patterns-component_drivers_host_general
+    - <<: *if-dev-push
+      changes: *patterns-component_drivers_host_spi
+    - <<: *if-dev-push
+      changes: *patterns-component_drivers_bus_general
+    - <<: *if-dev-push
+      changes: *patterns-component_drivers_bus_spi
+    - <<: *if-dev-push
+      changes: *patterns-component_drivers_lcd_general
+    - <<: *if-dev-push
+      changes: *patterns-component_drivers_lcd_spi
+    - <<: *if-dev-push
+      changes: *patterns-test_apps_drivers_lcd_general
+    - <<: *if-dev-push
+      changes: *patterns-test_apps_drivers_lcd_spi
+
+# rules for test_apps drivers-touch
+.rules:build:test_apps_drivers_touch_i2c:
+  rules:
+    - <<: *if-protected
+    - <<: *if-label-build
+    - <<: *if-label-target_test
+    - <<: *if-trigger-job
+    - <<: *if-dev-push
+      changes: *patterns-build_system
+    - <<: *if-dev-push
+      changes: *patterns-component_general
+    - <<: *if-dev-push
+      changes: *patterns-component_utils_all
+    - <<: *if-dev-push
+      changes: *patterns-component_drivers_general
+    - <<: *if-dev-push
+      changes: *patterns-component_drivers_host_general
+    - <<: *if-dev-push
+      changes: *patterns-component_drivers_host_i2c
+    - <<: *if-dev-push
+      changes: *patterns-component_drivers_bus_general
+    - <<: *if-dev-push
+      changes: *patterns-component_drivers_bus_i2c
+    - <<: *if-dev-push
+      changes: *patterns-component_drivers_touch_general
+    - <<: *if-dev-push
+      changes: *patterns-component_drivers_touch_i2c
+    - <<: *if-dev-push
+      changes: *patterns-test_apps_drivers_touch_general
+    - <<: *if-dev-push
+      changes: *patterns-test_apps_drivers_touch_i2c
+
+.rules:build:test_apps_drivers_touch_spi:
+  rules:
+    - <<: *if-protected
+    - <<: *if-label-build
+    - <<: *if-label-target_test
+    - <<: *if-trigger-job
+    - <<: *if-dev-push
+      changes: *patterns-build_system
+    - <<: *if-dev-push
+      changes: *patterns-component_general
+    - <<: *if-dev-push
+      changes: *patterns-component_utils_all
+    - <<: *if-dev-push
+      changes: *patterns-component_drivers_general
+    - <<: *if-dev-push
+      changes: *patterns-component_drivers_host_general
+    - <<: *if-dev-push
+      changes: *patterns-component_drivers_host_spi
+    - <<: *if-dev-push
+      changes: *patterns-component_drivers_bus_general
+    - <<: *if-dev-push
+      changes: *patterns-component_drivers_bus_spi
+    - <<: *if-dev-push
+      changes: *patterns-component_drivers_touch_general
+    - <<: *if-dev-push
+      changes: *patterns-component_drivers_touch_spi
+    - <<: *if-dev-push
+      changes: *patterns-test_apps_drivers_touch_general
+    - <<: *if-dev-push
+      changes: *patterns-test_apps_drivers_touch_spi
+
+# rules for test_apps board-common
+.rules:build:test_apps_board_common:
+  rules:
+    - <<: *if-protected
+    - <<: *if-label-build
+    - <<: *if-label-target_test
+    - <<: *if-trigger-job
+    - <<: *if-dev-push
+      changes: *patterns-build_system
+    - <<: *if-dev-push
+      changes: *patterns-component_all
+    - <<: *if-dev-push
+      changes: *patterns-component_board_general
+    - <<: *if-dev-push
+      changes: *patterns-test_apps_board_common
+
+# rules for test_apps board-others
+.rules:build:test_apps_board_elecrow:
+  rules:
+    - <<: *if-protected
+    - <<: *if-label-build
+    - <<: *if-label-target_test
+    - <<: *if-trigger-job
+    - <<: *if-dev-push
+      changes: *patterns-build_system
+    - <<: *if-dev-push
+      changes: *patterns-component_board_supported_elecrow
+    - <<: *if-dev-push
+      changes: *patterns-test_apps_board_elecrow
+
+.rules:build:test_apps_board_espressif:
+  rules:
+    - <<: *if-protected
+    - <<: *if-label-build
+    - <<: *if-label-target_test
+    - <<: *if-trigger-job
+    - <<: *if-dev-push
+      changes: *patterns-build_system
+    - <<: *if-dev-push
+      changes: *patterns-component_board_supported_espressif
+    - <<: *if-dev-push
+      changes: *patterns-test_apps_board_espressif
+
+.rules:build:test_apps_board_jingcai:
+  rules:
+    - <<: *if-protected
+    - <<: *if-label-build
+    - <<: *if-label-target_test
+    - <<: *if-trigger-job
+    - <<: *if-dev-push
+      changes: *patterns-build_system
+    - <<: *if-dev-push
+      changes: *patterns-component_board_supported_jingcai
+    - <<: *if-dev-push
+      changes: *patterns-test_apps_board_jingcai
+
+.rules:build:test_apps_board_m5stack:
+  rules:
+    - <<: *if-protected
+    - <<: *if-label-build
+    - <<: *if-label-target_test
+    - <<: *if-trigger-job
+    - <<: *if-dev-push
+      changes: *patterns-build_system
+    - <<: *if-dev-push
+      changes: *patterns-component_board_supported_m5stack
+    - <<: *if-dev-push
+      changes: *patterns-test_apps_board_m5stack
+
+.rules:build:test_apps_board_viewe:
+  rules:
+    - <<: *if-protected
+    - <<: *if-label-build
+    - <<: *if-label-target_test
+    - <<: *if-trigger-job
+    - <<: *if-dev-push
+      changes: *patterns-build_system
+    - <<: *if-dev-push
+      changes: *patterns-component_board_supported_viewe
+    - <<: *if-dev-push
+      changes: *patterns-test_apps_board_viewe
+
+.rules:build:test_apps_board_waveshare:
+  rules:
+    - <<: *if-protected
+    - <<: *if-label-build
+    - <<: *if-label-target_test
+    - <<: *if-trigger-job
+    - <<: *if-dev-push
+      changes: *patterns-build_system
+    - <<: *if-dev-push
+      changes: *patterns-component_board_supported_waveshare
+    - <<: *if-dev-push
+      changes: *patterns-test_apps_board_waveshare
+
+# rules for test_apps examples-lvgl_v8_port
+.rules:build:test_apps_gui_lvgl_v8_port:
+  rules:
+    - <<: *if-protected
+    - <<: *if-label-build
+    - <<: *if-label-target_test
+    - <<: *if-trigger-job
+    - <<: *if-dev-push
+      changes: *patterns-build_system
+    - <<: *if-dev-push
+      changes: *patterns-component_all
+    - <<: *if-dev-push
+      changes: *patterns-component_board_general
+    - <<: *if-dev-push
+      changes: *patterns-test_apps_gui_lvgl_v8_port

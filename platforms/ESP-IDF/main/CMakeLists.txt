@@ -18,6 +18,7 @@ set(PROJ_ALL_SRC
 	${OBK_SRCS}hal/espidf/hal_uart_espidf.c
 	${OBK_SRCS}hal/espidf/hal_ota_espidf.c
 	${OBKM_SRC}
+	${OBKM_SRC_CXX}
 	${BERRY_SRC_C}
 	../../../libraries/mqtt_patched.c
 )
@@ -35,8 +36,13 @@ if(ENABLE_MDNS_ESPIDF)
 		../../../sdk/esp-idf/components/lwip/lwip/src/apps/mdns/mdns_out.c
 	)
 endif()
+set(PRIV_REQ_COMPONENTS mqtt lwip esp_wifi nvs_flash esp_driver_tsens esp_driver_gpio esp_pm esp_partition app_update esp_adc esp_driver_uart esp_driver_ledc spi_flash esp_driver_spi esp_driver_gptimer)
+if(ENABLE_DISPLAY)
+	list(APPEND PRIV_REQ_COMPONENTS ESP32_Display_Panel lvgl)
+endif()
+
 idf_component_register(SRCS ${PROJ_ALL_SRC} WHOLE_ARCHIVE
-			PRIV_REQUIRES mqtt lwip esp_wifi nvs_flash esp_driver_tsens esp_driver_gpio esp_pm esp_partition app_update esp_adc esp_driver_uart esp_driver_ledc spi_flash esp_driver_spi esp_driver_gptimer)
+			PRIV_REQUIRES ${PRIV_REQ_COMPONENTS})
 
 target_compile_definitions(${COMPONENT_LIB} PRIVATE USER_SW_VER="$ENV{APP_VERSION}")
 target_compile_definitions(${COMPONENT_LIB} PRIVATE OBK_VARIANT=$ENV{OBK_VARIANT})

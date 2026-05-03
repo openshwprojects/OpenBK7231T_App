@@ -1,0 +1,22 @@
+menu "ESP Display Panel Configurations"
+    config ESP_PANEL_DRIVERS_FILE_SKIP
+        bool "Enable to skip `esp_panel_drivers_conf.h`"
+        default y
+        help
+            If want to use `esp_panel_drivers_conf.h` to configure the panel, uncheck this option. Otherwise, the configurations in sdkconfig will be used.
+
+    config ESP_PANEL_BOARD_FILE_SKIP
+        bool "Enable to skip `esp_panel_board_*.h`"
+        default y
+        help
+            If want to use `esp_panel_board_*.h` to configure the panel, uncheck this option. Otherwise, the configurations in sdkconfig will be used.
+
+    if ESP_PANEL_DRIVERS_FILE_SKIP
+        orsource "./src/drivers/Kconfig.drivers"
+    endif
+
+    if ESP_PANEL_BOARD_FILE_SKIP
+        orsource "./src/board/Kconfig.board"
+    endif
+
+endmenu

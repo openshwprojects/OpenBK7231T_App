@@ -1,0 +1,4 @@
+config BOARD_ELECROW_CROWPANEL_7_0
+    bool "ELECROW_CROWPANEL_7_0"
+    help
+        https://www.elecrow.com/esp32-display-7-inch-hmi-display-rgb-tft-lcd-touch-screen-support-lvgl.html

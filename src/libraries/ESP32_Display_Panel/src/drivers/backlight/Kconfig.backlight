@@ -1,0 +1,32 @@
+menu "Backlight"
+    menu "Enable used drivers in factory"
+        config ESP_PANEL_DRIVERS_BACKLIGHT_USE_ALL
+            bool "Use all"
+            default n
+
+        if !ESP_PANEL_DRIVERS_BACKLIGHT_USE_ALL
+            config ESP_PANEL_DRIVERS_BACKLIGHT_USE_SWITCH_GPIO
+                bool "Use switch (GPIO)"
+                default n
+
+            config ESP_PANEL_DRIVERS_BACKLIGHT_USE_SWITCH_EXPANDER
+                bool "Use switch (Expander)"
+                default n
+
+            config ESP_PANEL_DRIVERS_BACKLIGHT_USE_PWM_LEDC
+                bool "Use PWM (LEDC)"
+                default n
+
+            config ESP_PANEL_DRIVERS_BACKLIGHT_USE_CUSTOM
+                bool "Use custom function"
+                default n
+        endif
+    endmenu
+
+    config ESP_PANEL_DRIVERS_BACKLIGHT_COMPILE_UNUSED_DRIVERS
+        bool "Compile unused drivers"
+        default y
+        help
+            When disabled, code for unused drivers will be excluded to speed up compilation.
+            Make sure the driver is not used when this option is disabled.
+endmenu

@@ -1,0 +1,91 @@
+menuconfig ESP_PANEL_BOARD_USE_EXPANDER
+    bool "IO expander settings"
+    default n
+    help
+        Enable this option if you are using an IO expander.
+
+if ESP_PANEL_BOARD_USE_EXPANDER
+    choice
+        prompt "Chip"
+        default ESP_PANEL_BOARD_EXPANDER_CHIP_TCA95XX_8BIT
+        help
+            Select the IO expander chip model.
+
+        config ESP_PANEL_BOARD_EXPANDER_CHIP_CH422G
+            bool "CH422G"
+
+        config ESP_PANEL_BOARD_EXPANDER_CHIP_HT8574
+            bool "HT8574"
+
+        config ESP_PANEL_BOARD_EXPANDER_CHIP_TCA95XX_8BIT
+            bool "TCA95XX_8BIT"
+
+        config ESP_PANEL_BOARD_EXPANDER_CHIP_TCA95XX_16BIT
+            bool "TCA95XX_16BIT"
+    endchoice
+
+    config ESP_PANEL_BOARD_EXPANDER_SKIP_INIT_HOST
+        bool "Skip bus host initialization"
+        default n
+        help
+            If enabled, the bus will skip initializing the corresponding host.
+            Users need to initialize the host in advance.
+            For drivers created by this library, even if they use the same host,
+            the host will be initialized only once. So it is not necessary to enable this.
+            For other devices, please enable this to ensure the host is initialized only once.
+
+    menu "I2C bus settings"
+        config ESP_PANEL_BOARD_EXPANDER_I2C_HOST_ID
+            int "I2C host ID"
+            default 0
+            range 0 1
+            help
+                I2C host ID, typically set to 0.
+
+        config ESP_PANEL_BOARD_EXPANDER_I2C_ADDRESS
+            int "I2C address (7-bit)"
+            default 0
+            range 0 127
+            help
+                The actual I2C address. Even for the same model of IC,
+                the I2C address may be different, and confirmation based on
+                the actual hardware connection is required.
+
+        if !ESP_PANEL_BOARD_EXPANDER_SKIP_INIT_HOST
+            config ESP_PANEL_BOARD_EXPANDER_I2C_CLK_HZ
+                int "Clock frequency (Hz)"
+                default 400000
+                range 1 400000
+                help
+                    I2C clock frequency, typically set to 400KHz.
+
+            menu "Pins"
+                config ESP_PANEL_BOARD_EXPANDER_I2C_IO_SCL
+                    int "SCL"
+                    default 18
+                    range 0 48
+                    help
+                    GPIO number for I2C SCL signal.
+
+                config ESP_PANEL_BOARD_EXPANDER_I2C_IO_SDA
+                    int "SDA"
+                    default 8
+                    range 0 48
+                    help
+                        GPIO number for I2C SDA signal.
+
+                config ESP_PANEL_BOARD_EXPANDER_I2C_SCL_PULLUP
+                    bool "Enable SCL pull-up"
+                    default y
+                    help
+                        Enable internal pull-up for SCL line.
+
+                config ESP_PANEL_BOARD_EXPANDER_I2C_SDA_PULLUP
+                    bool "Enable SDA pull-up"
+                    default y
+                    help
+                        Enable internal pull-up for SDA line.
+            endmenu
+        endif
+    endmenu
+endif

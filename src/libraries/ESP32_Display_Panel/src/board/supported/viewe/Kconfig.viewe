@@ -1,0 +1,49 @@
+config BOARD_VIEWE_UEDX24320024E_WB_A
+    bool "UEDX24320024E-WB-A"
+    help
+        https://viewedisplay.com/product/esp32-2-4-inch-240x320-rgb-ips-tft-display-touch-screen-arduino-lvgl-wifi-ble-uart-smart-module/
+
+config BOARD_VIEWE_UEDX24320028E_WB_A
+    bool "UEDX24320028E-WB-A"
+    help
+        https://viewedisplay.com/product/esp32-2-8-inch-240x320-mcu-ips-tft-display-touch-screen-arduino-lvgl-wifi-ble-uart-smart-module/
+
+config BOARD_VIEWE_UEDX24320035E_WB_A
+    bool "UEDX24320035E-WB-A"
+    help
+        https://viewedisplay.com/product/esp32-3-5-inch-240x320-mcu-ips-tft-display-touch-screen-arduino-lvgl-wifi-ble-uart-smart-module/
+
+config BOARD_VIEWE_UEDX32480035E_WB_A
+    bool "UEDX32480035E-WB-A"
+    help
+        https://github.com/VIEWESMART/Product-Specification-and-Schematic/blob/main/ESP32/3.5inch/320480/UEDX32480035E-WB-A%20SPEC.pdf
+
+config BOARD_VIEWE_UEDX48270043E_WB_A
+    bool "UEDX48270043E-WB-A"
+    help
+        https://github.com/VIEWESMART/Product-Specification-and-Schematic/blob/main/ESP32/4.3inch/Low-Resolution_480272/UEDX48270043E-WB-A%20SPEC.pdf
+
+config BOARD_VIEWE_UEDX48480040E_WB_A
+    bool "UEDX48480040E-WB-A"
+    help
+        https://viewedisplay.com/product/esp32-4-inch-tft-display-touch-screen-arduino-lvgl/
+
+config BOARD_VIEWE_UEDX80480043E_WB_A
+    bool "UEDX80480043E-WB-A"
+    help
+        https://viewedisplay.com/product/esp32-4-3-inch-800x480-rgb-ips-tft-display-touch-screen-arduino-lvgl/
+
+config BOARD_VIEWE_UEDX80480050E_WB_A
+    bool "UEDX80480050E-WB-A"
+    help
+        https://viewedisplay.com/product/esp32-5-inch-800x480-rgb-ips-tft-display-touch-screen-arduino-lvgl/
+
+config BOARD_VIEWE_UEDX80480050E_WB_A_2
+    bool "UEDX80480050E-WB-A-2"
+    help
+        https://viewedisplay.com/product/esp32-5-inch-800x480-rgb-ips-tft-display-touch-screen-arduino-lvgl/
+
+config BOARD_VIEWE_UEDX80480070E_WB_A
+    bool "UEDX80480070E-WB-A"
+    help
+        https://viewedisplay.com/product/esp32-7-inch-800x480-rgb-ips-tft-display-touch-screen-arduino-lvgl-uart/

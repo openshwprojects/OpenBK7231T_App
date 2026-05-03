@@ -1,0 +1,56 @@
+menu "Example Configurations"
+    choice LVGL_PORT_AVOID_TEARING_MODE_CHOICE
+        prompt "Avoid Tearing Mode"
+        default LVGL_PORT_AVOID_TEARING_MODE_NONE
+
+        config LVGL_PORT_AVOID_TEARING_MODE_NONE
+            bool "None"
+
+        config LVGL_PORT_AVOID_TEARING_MODE_1
+            bool "Mode1: LCD double-buffer & LVGL full-refresh"
+            depends on SOC_LCD_RGB_SUPPORTED || SOC_MIPI_DSI_SUPPORTED
+
+        config LVGL_PORT_AVOID_TEARING_MODE_2
+            bool "Mode2: LCD triple-buffer & LVGL full-refresh"
+            depends on SOC_LCD_RGB_SUPPORTED || SOC_MIPI_DSI_SUPPORTED
+
+        config LVGL_PORT_AVOID_TEARING_MODE_3
+            bool "Mode3: LCD double-buffer & LVGL direct-mode (recommended)"
+            depends on SOC_LCD_RGB_SUPPORTED || SOC_MIPI_DSI_SUPPORTED
+    endchoice
+
+    config LVGL_PORT_AVOID_TEARING_MODE
+        int
+        default 3 if LVGL_PORT_AVOID_TEARING_MODE_3
+        default 2 if LVGL_PORT_AVOID_TEARING_MODE_2
+        default 1 if LVGL_PORT_AVOID_TEARING_MODE_1
+        default 0 if LVGL_PORT_AVOID_TEARING_MODE_NONE
+
+    choice LVGL_PORT_ROTATION_DEGREE_CHOICE
+        prompt "Rotation Degree"
+        default LVGL_PORT_ROTATION_DEGREE_0
+
+        config LVGL_PORT_ROTATION_DEGREE_0
+            bool "0 degree"
+            depends on LVGL_PORT_AVOID_TEARING_MODE != 0
+
+        config LVGL_PORT_ROTATION_DEGREE_90
+            bool "90 degree"
+            depends on LVGL_PORT_AVOID_TEARING_MODE != 0
+
+        config LVGL_PORT_ROTATION_DEGREE_180
+            bool "180 degree"
+            depends on LVGL_PORT_AVOID_TEARING_MODE != 0
+
+        config LVGL_PORT_ROTATION_DEGREE_270
+            bool "270 degree"
+            depends on LVGL_PORT_AVOID_TEARING_MODE != 0
+    endchoice
+
+    config LVGL_PORT_ROTATION_DEGREE
+        int
+        default 0 if LVGL_PORT_ROTATION_DEGREE_0
+        default 90 if LVGL_PORT_ROTATION_DEGREE_90
+        default 180 if LVGL_PORT_ROTATION_DEGREE_180
+        default 270 if LVGL_PORT_ROTATION_DEGREE_270
+endmenu

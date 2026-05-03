@@ -1,0 +1,210 @@
+menuconfig ESP_PANEL_BOARD_USE_TOUCH
+    bool "Touch panel settings"
+    default n
+    help
+        Enable this option if you are using a touch panel.
+
+if ESP_PANEL_BOARD_USE_TOUCH
+    choice
+        prompt "Controller"
+        default ESP_PANEL_BOARD_TOUCH_CONTROLLER_TT21100
+
+        config ESP_PANEL_BOARD_TOUCH_CONTROLLER_AXS15231B
+            bool "AXS15231B"
+
+        config ESP_PANEL_BOARD_TOUCH_CONTROLLER_CST816S
+            bool "CST816S"
+
+        config ESP_PANEL_BOARD_TOUCH_CONTROLLER_FT5x06
+            bool "FT5x06"
+
+        config ESP_PANEL_BOARD_TOUCH_CONTROLLER_GT911
+            bool "GT911"
+
+        config ESP_PANEL_BOARD_TOUCH_CONTROLLER_GT1151
+            bool "GT1151"
+
+        config ESP_PANEL_BOARD_TOUCH_CONTROLLER_SPD2010
+            bool "SPD2010"
+
+        config ESP_PANEL_BOARD_TOUCH_CONTROLLER_ST1633
+            bool "ST1633"
+
+        config ESP_PANEL_BOARD_TOUCH_CONTROLLER_ST7123
+            bool "ST7123"
+
+        config ESP_PANEL_BOARD_TOUCH_CONTROLLER_STMPE610
+            bool "STMPE610"
+
+        config ESP_PANEL_BOARD_TOUCH_CONTROLLER_TT21100
+            bool "TT21100"
+
+        config ESP_PANEL_BOARD_TOUCH_CONTROLLER_XPT2046
+            bool "XPT2046"
+    endchoice
+
+    menu "Bus settings"
+        choice
+            prompt "Bus type"
+            default ESP_PANEL_BOARD_TOUCH_BUS_TYPE_I2C
+
+            config ESP_PANEL_BOARD_TOUCH_BUS_TYPE_I2C
+                bool "I2C"
+
+            config ESP_PANEL_BOARD_TOUCH_BUS_TYPE_SPI
+                bool "SPI"
+        endchoice
+
+        config ESP_PANEL_BOARD_TOUCH_BUS_SKIP_INIT_HOST
+            bool "Skip bus host initialization"
+            depends on ESP_PANEL_BOARD_TOUCH_BUS_TYPE_I2C || ESP_PANEL_BOARD_TOUCH_BUS_TYPE_SPI
+            default n
+            help
+                If enabled, the bus will skip initializing the corresponding host.
+                Users need to initialize the host in advance.
+                For drivers created by this library, even if they use the same host,
+                the host will be initialized only once. So it is not necessary to enable this.
+                For other drivers (like Wire), please enable this to ensure the host is
+                initialized only once.
+
+        config ESP_PANEL_BOARD_TOUCH_BUS_TYPE
+            int
+            default 0 if ESP_PANEL_BOARD_TOUCH_BUS_TYPE_SPI
+            default 3 if ESP_PANEL_BOARD_TOUCH_BUS_TYPE_I2C
+
+        if ESP_PANEL_BOARD_TOUCH_BUS_TYPE_I2C
+            config ESP_PANEL_BOARD_TOUCH_I2C_HOST_ID
+                int "I2C host ID"
+                default 0
+                range 0 1
+                help
+                    I2C host ID, typically set to 0.
+
+            config ESP_PANEL_BOARD_TOUCH_I2C_ADDRESS
+                int "I2C address (7-bit)"
+                default 0
+                range 0 127
+                help
+                    For touch controllers with only one address, set to 0.
+                    For controllers with multiple addresses, set to 0 or the specific address.
+                    For example, GT911 has two addresses: 0x5D(default) and 0x14.
+
+            if !ESP_PANEL_BOARD_TOUCH_BUS_SKIP_INIT_HOST
+                config ESP_PANEL_BOARD_TOUCH_I2C_CLK_HZ
+                    int "I2C clock frequency (Hz)"
+                    default 400000
+                    range 1 400000
+                    help
+                        I2C clock frequency, typically set to 400KHz.
+
+                menu "Pins"
+                    config ESP_PANEL_BOARD_TOUCH_I2C_IO_SCL
+                        int "SCL"
+                        default 18
+                        range 0 1000
+
+                    config ESP_PANEL_BOARD_TOUCH_I2C_IO_SDA
+                        int "SDA"
+                        default 8
+                        range 0 1000
+
+                    config ESP_PANEL_BOARD_TOUCH_I2C_SCL_PULLUP
+                        bool "Enable SCL pull-up"
+                        default y
+
+                    config ESP_PANEL_BOARD_TOUCH_I2C_SDA_PULLUP
+                        bool "Enable SDA pull-up"
+                        default y
+                endmenu
+            endif
+        endif
+
+        if ESP_PANEL_BOARD_TOUCH_BUS_TYPE_SPI
+            config ESP_PANEL_BOARD_TOUCH_SPI_HOST_ID
+                int "SPI host ID"
+                default 1
+                range 1 3
+                help
+                    SPI host ID, typically set to 1.
+
+            if !ESP_PANEL_BOARD_TOUCH_BUS_SKIP_INIT_HOST
+                config ESP_PANEL_BOARD_TOUCH_SPI_CLK_HZ
+                    int "SPI clock frequency (Hz)"
+                    default 40000000
+                    range 1 80000000
+                    help
+                        SPI clock frequency, should be an integer divisor of 80MHz.
+            endif
+
+            menu "Pins"
+                config ESP_PANEL_BOARD_TOUCH_SPI_IO_CS
+                    int "CS"
+                    default 5
+                    range -1 1000
+
+                if !ESP_PANEL_BOARD_TOUCH_BUS_SKIP_INIT_HOST
+                    config ESP_PANEL_BOARD_TOUCH_SPI_IO_SCK
+                        int "SCK"
+                        default 7
+                        range 0 1000
+
+                    config ESP_PANEL_BOARD_TOUCH_SPI_IO_MOSI
+                        int "MOSI"
+                        default 6
+                        range 0 1000
+
+                    config ESP_PANEL_BOARD_TOUCH_SPI_IO_MISO
+                        int "MISO"
+                        default 9
+                        range 0 1000
+                endif
+            endmenu
+        endif
+    endmenu
+
+    menu "Transformation settings"
+        config ESP_PANEL_BOARD_TOUCH_SWAP_XY
+            bool "Swap X and Y axes"
+            default n
+
+        config ESP_PANEL_BOARD_TOUCH_MIRROR_X
+            bool "Mirror X axis"
+            default n
+
+        config ESP_PANEL_BOARD_TOUCH_MIRROR_Y
+            bool "Mirror Y axis"
+            default n
+    endmenu
+
+    menu "Control pins"
+        config ESP_PANEL_BOARD_TOUCH_RST_IO
+            int "Reset pin"
+            default -1
+            range -1 48
+            help
+                Reset pin number. Set to -1 if not used.
+
+        config ESP_PANEL_BOARD_TOUCH_RST_LEVEL
+            depends on ESP_PANEL_BOARD_TOUCH_RST_IO >= 0
+            int "Reset active level"
+            default 0
+            range 0 1
+            help
+                Reset signal active level. 0: active low, 1: active high.
+
+        config ESP_PANEL_BOARD_TOUCH_INT_IO
+            int "Interrupt pin"
+            default -1
+            range -1 48
+            help
+                Interrupt pin number. Set to -1 if not used.
+
+        config ESP_PANEL_BOARD_TOUCH_INT_LEVEL
+            depends on ESP_PANEL_BOARD_TOUCH_INT_IO >= 0
+            int "Interrupt active level"
+            default 0
+            range 0 1
+            help
+                Interrupt signal active level. 0: active low, 1: active high.
+    endmenu
+endif

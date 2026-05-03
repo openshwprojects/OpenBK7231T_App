@@ -1,0 +1,2 @@
+[codespell]
+skip = ./src/touch/port/esp_lcd_touch_xpt2046.c,

@@ -1,0 +1,82 @@
+menuconfig ESP_PANEL_BOARD_USE_BACKLIGHT
+    bool "Backlight settings"
+    default n
+    help
+        Enable this option if you are using a backlight.
+
+if ESP_PANEL_BOARD_USE_BACKLIGHT
+    choice
+        prompt "Backlight type"
+        default ESP_PANEL_BOARD_BACKLIGHT_TYPE_PWM_LEDC
+
+        config ESP_PANEL_BOARD_BACKLIGHT_TYPE_SWITCH_GPIO
+            bool "Switch (GPIO)"
+            help
+                Use switch(GPIO) to control the backlight.
+
+        config ESP_PANEL_BOARD_BACKLIGHT_TYPE_SWITCH_EXPANDER
+            bool "Switch (Expander)"
+            help
+                Use switch(Expander) to control the backlight.
+
+        config ESP_PANEL_BOARD_BACKLIGHT_TYPE_PWM_LEDC
+            bool "PWM (LEDC)"
+            help
+                Use PWM(LEDC) to control the backlight.
+
+        config ESP_PANEL_BOARD_BACKLIGHT_TYPE_CUSTOM
+            bool "Custom"
+            help
+                Use custom function to control the backlight.
+    endchoice
+
+    config ESP_PANEL_BOARD_BACKLIGHT_TYPE
+        int
+        default 0 if ESP_PANEL_BOARD_BACKLIGHT_TYPE_SWITCH_GPIO
+        default 1 if ESP_PANEL_BOARD_BACKLIGHT_TYPE_SWITCH_EXPANDER
+        default 2 if ESP_PANEL_BOARD_BACKLIGHT_TYPE_PWM_LEDC
+        default 3 if ESP_PANEL_BOARD_BACKLIGHT_TYPE_CUSTOM
+        help
+            Backlight type.
+
+    menu "Control pin"
+        depends on ESP_PANEL_BOARD_BACKLIGHT_TYPE_SWITCH_GPIO || ESP_PANEL_BOARD_BACKLIGHT_TYPE_SWITCH_EXPANDER || ESP_PANEL_BOARD_BACKLIGHT_TYPE_PWM_LEDC
+
+        config ESP_PANEL_BOARD_BACKLIGHT_IO
+            int "Pin"
+            default 0
+            range 0 1000
+            help
+                GPIO number for backlight control.
+
+        config ESP_PANEL_BOARD_BACKLIGHT_ON_LEVEL
+            int "Active level"
+            default 1
+            range 0 1
+            help
+                Active level for backlight control.
+    endmenu
+
+    menu "PWM parameters"
+        depends on ESP_PANEL_BOARD_BACKLIGHT_TYPE_PWM_LEDC
+
+        config ESP_PANEL_BOARD_BACKLIGHT_PWM_FREQ_HZ
+            int "Frequency"
+            default 5000
+            help
+                Frequency for PWM control.
+
+        config ESP_PANEL_BOARD_BACKLIGHT_PWM_DUTY_RESOLUTION
+            int "Duty resolution"
+            default 10
+            range 1 20
+            help
+                Duty resolution for PWM control.
+    endmenu
+
+    config ESP_PANEL_BOARD_BACKLIGHT_IDLE_OFF
+        bool "Idle off"
+        default n
+        help
+            Set to 1 if you want to turn off the backlight after initializing the panel; otherwise, set it to turn on.
+endif

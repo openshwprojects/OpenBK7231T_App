@@ -1,0 +1,74 @@
+# Note: All operators are binary operators. For more than two operands, you may use the nested parentheses trick.
+# For example:
+#    *  A == 1 or (B == 2 and C in [1,2,3])
+#    *  (A == 1 and B == 2) or (C not in ["3", "4", 5])
+
+# Test apps
+# Board
+test_apps/board/common:
+  enable:
+    - if: INCLUDE_DEFAULT == 1
+
+test_apps/board/elecrow:
+  enable:
+    - if: INCLUDE_DEFAULT == 1
+
+test_apps/board/espressif:
+  enable:
+    - if: INCLUDE_DEFAULT == 1
+
+test_apps/board/jingcai:
+  enable:
+    - if: INCLUDE_DEFAULT == 1
+
+test_apps/board/m5stack:
+  enable:
+    - if: INCLUDE_DEFAULT == 1
+
+test_apps/board/viewe:
+  enable:
+    - if: INCLUDE_DEFAULT == 1
+
+test_apps/board/waveshare:
+  enable:
+    - if: INCLUDE_DEFAULT == 1
+
+# Drivers
+test_apps/drivers/lcd/3wire_spi_rgb:
+  disable:
+    - if: SOC_LCD_RGB_SUPPORTED != 1
+    - if: IDF_TARGET == "esp32p4"
+      temporary: true
+      reason: not ready
+
+test_apps/drivers/lcd/qspi:
+  disable:
+    - if: SOC_GPSPI_SUPPORTED != 1
+
+test_apps/drivers/lcd/mipi_dsi:
+  disable:
+    - if: SOC_MIPI_DSI_SUPPORTED != 1
+
+test_apps/drivers/lcd/rgb:
+  disable:
+    - if: SOC_LCD_RGB_SUPPORTED != 1
+    - if: IDF_TARGET == "esp32p4"
+      temporary: true
+      reason: not ready
+
+test_apps/drivers/lcd/spi:
+  disable:
+    - if: SOC_GPSPI_SUPPORTED != 1
+
+test_apps/drivers/touch/i2c:
+  disable:
+    - if: SOC_I2C_SUPPORTED != 1
+
+test_apps/drivers/touch/spi:
+  disable:
+    - if: SOC_GPSPI_SUPPORTED != 1
+
+# Examples
+test_apps/gui/lvgl_v8_port:
+  enable:
+    - if: INCLUDE_DEFAULT == 1

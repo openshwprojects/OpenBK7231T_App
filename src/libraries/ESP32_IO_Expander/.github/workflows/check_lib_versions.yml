@@ -1,0 +1,29 @@
+name: Check Library Versions
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+
+jobs:
+    check_lib_versions:
+        runs-on: ubuntu-latest
+        steps:
+        - uses: actions/checkout@v2
+        - name: Get latest release info of repository
+          id: last_release
+          uses: InsonusK/get-latest-release@v1.1.0
+          with:
+            myToken: ${{ github.token }}
+            exclude_types: "draft|prerelease"
+            view_top: 1
+        - name: Print result
+          run: |
+            echo "id: ${{ steps.last_release.outputs.id }}"
+            echo "name: ${{ steps.last_release.outputs.name }}"
+            echo "tag_name: ${{ steps.last_release.outputs.tag_name }}"
+            echo "created_at: ${{ steps.last_release.outputs.created_at }}"
+            echo "draft: ${{ steps.last_release.outputs.draft }}"
+            echo "prerelease: ${{ steps.last_release.outputs.prerelease }}"
+            echo "url: ${{ steps.last_release.outputs.url }}"
+        - name: Check & Compare versions
+          run: bash ./.github/scripts/check_lib_versions.sh --latest_version=${{ steps.last_release.outputs.tag_name }}

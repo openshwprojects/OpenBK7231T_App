@@ -1,0 +1,116 @@
+menu "Touch"
+    config ESP_PANEL_DRIVERS_TOUCH_MAX_POINTS
+        int "Max point number"
+        default 10
+        help
+            Maximum number of touch points that can be handled by the touch driver.
+            This value should be set to the maximum number of touch points supported by the touch controller.
+
+    config ESP_PANEL_DRIVERS_TOUCH_MAX_BUTTONS
+        int "Max button number"
+        default 5
+        help
+            Maximum number of buttons that can be handled by the touch driver.
+            This value should be set to the maximum number of buttons supported by the touch controller.
+
+    menu "Enable used drivers in factory"
+        config ESP_PANEL_DRIVERS_TOUCH_USE_ALL
+            bool "Use all"
+            default n
+
+        if !ESP_PANEL_DRIVERS_TOUCH_USE_ALL
+            config ESP_PANEL_DRIVERS_TOUCH_USE_AXS15231B
+                bool "Use AXS15231B"
+                default n
+
+            config ESP_PANEL_DRIVERS_TOUCH_USE_CHSC6540
+                bool "Use CHSC6540"
+                default n
+
+            config ESP_PANEL_DRIVERS_TOUCH_USE_CST816S
+                bool "Use CST816S"
+                default n
+
+            config ESP_PANEL_DRIVERS_TOUCH_USE_FT5x06
+                bool "Use FT5x06"
+                default n
+
+            config ESP_PANEL_DRIVERS_TOUCH_USE_GT911
+                bool "Use GT911"
+                default n
+
+            config ESP_PANEL_DRIVERS_TOUCH_USE_GT1151
+                bool "Use GT1151"
+                default n
+
+            config ESP_PANEL_DRIVERS_TOUCH_USE_SPD2010
+                bool "Use SPD2010"
+                default n
+
+            config ESP_PANEL_DRIVERS_TOUCH_USE_ST1633
+                bool "Use ST1633"
+                default n
+
+            config ESP_PANEL_DRIVERS_TOUCH_USE_ST7123
+                bool "Use ST7123"
+                default n
+
+            config ESP_PANEL_DRIVERS_TOUCH_USE_STMPE610
+                bool "Use STMPE610"
+                default n
+
+            config ESP_PANEL_DRIVERS_TOUCH_USE_TT21100
+                bool "Use TT21100"
+                default n
+
+            config ESP_PANEL_DRIVERS_TOUCH_USE_XPT2046
+                bool "Use XPT2046"
+                default n
+        endif
+    endmenu
+
+    config ESP_PANEL_DRIVERS_TOUCH_COMPILE_UNUSED_DRIVERS
+        bool "Compile unused drivers"
+        default y
+        help
+            When disabled, code for unused drivers will be excluded to speed up compilation.
+            Make sure the driver is not used when this option is disabled.
+
+    menu "XPT2046 Configuration"
+        depends on ESP_PANEL_DRIVERS_TOUCH_USE_XPT2046 || ESP_PANEL_DRIVERS_TOUCH_COMPILE_UNUSED_DRIVERS
+
+        config ESP_PANEL_DRIVERS_TOUCH_XPT2046_Z_THRESHOLD
+            int "Minimum Z pressure threshold"
+            default 400
+            help
+                Minimum pressure threshold for touch detection.
+
+        config ESP_PANEL_DRIVERS_TOUCH_XPT2046_INTERRUPT_MODE
+            bool "Use Interrupt (PENIRQ) output"
+            default n
+            help
+                When enabled, XPT2046 outputs low on PENIRQ when touch is detected (Full Power Mode).
+                Consumes more power but provides interrupt capability.
+
+        config ESP_PANEL_DRIVERS_TOUCH_XPT2046_VREF_ON_MODE
+            bool "Keep internal Vref enabled"
+            default n
+            help
+                When enabled, internal Vref remains on between conversions. Slightly higher power consumption,
+                but requires fewer transactions for battery voltage, aux voltage and temperature readings.
+
+        config ESP_PANEL_DRIVERS_TOUCH_XPT2046_CONVERT_ADC_TO_COORDS
+            bool "Convert touch coordinates to screen coordinates"
+            default y
+            help
+                When enabled, raw ADC values (0-4096) are converted to screen coordinates.
+                When disabled, process_coordinates must be called manually to convert values.
+
+        config ESP_PANEL_DRIVERS_TOUCH_XPT2046_ENABLE_LOCKING
+            bool "Use data structure locking"
+            default n
+            help
+                When enabled, driver locks touch position data structures during reads.
+                Warning: May cause unexpected crashes.
+    endmenu
+endmenu

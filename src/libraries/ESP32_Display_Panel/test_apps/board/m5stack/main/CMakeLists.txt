@@ -1,0 +1,4 @@
+idf_component_register(
+    SRCS "test_app_main.cpp" "test_board_supported.cpp"
+    WHOLE_ARCHIVE
+)

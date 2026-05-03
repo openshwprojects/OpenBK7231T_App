@@ -1,0 +1,7 @@
+## IDF Component Manager Manifest File
+dependencies:
+  ESP32_Display_Panel:
+    version: "*"
+    override_path: "../../../../../ESP32_Display_Panel"
+  lvgl/lvgl:
+    version: "^8"
