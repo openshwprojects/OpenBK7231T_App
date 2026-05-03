@@ -23,7 +23,7 @@ static void gui_build_main_screen() {
     
     // Create a label
     lv_obj_t * label = lv_label_create(screen_main);
-    lv_label_set_text(label, "OpenBeken Display Test");
+    lv_label_set_text(label, "OpenBeken Display Text 2");
     lv_obj_align(label, LV_ALIGN_CENTER, 0, 0);
     lv_obj_set_style_text_color(label, lv_color_hex(0xFFFFFF), LV_PART_MAIN);
 }
