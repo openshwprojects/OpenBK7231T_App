@@ -25,6 +25,6 @@ idf_build_set_property(COMPILE_OPTIONS "-Wno-error=format-truncation" APPEND)
 idf_build_set_property(COMPILE_OPTIONS "-Wno-error=incompatible-pointer-types" APPEND)
 
 if(ENABLE_DISPLAY)
-    list(APPEND EXTRA_COMPONENT_DIRS "$ENV{IDF_PATH}/../../src/libraries/ESP32_Display_Panel" "$ENV{IDF_PATH}/../../src/libraries/lvgl" "$ENV{IDF_PATH}/../../src/libraries/ESP32_IO_Expander" "$ENV{IDF_PATH}/../../src/libraries/esp-lib-utils")
+    list(APPEND EXTRA_COMPONENT_DIRS "$ENV{IDF_PATH}/../../libraries/ESP32_Display_Panel" "$ENV{IDF_PATH}/../../libraries/lvgl" "$ENV{IDF_PATH}/../../libraries/ESP32_IO_Expander" "$ENV{IDF_PATH}/../../libraries/esp-lib-utils")
     idf_build_set_property(COMPILE_OPTIONS "-DLV_CONF_INCLUDE_SIMPLE=1" "-DBOARD_WAVESHARE_ESP32_S3_TOUCH_LCD_5=1" "-DESP_PANEL_BOARD_DEFAULT_USE_SUPPORTED=1" "-DESP_PANEL_BOARD_USE_SUPPORTED_FILE=1" "-DESP_PANEL_BOARD_INCLUDE_SUPPORTED_SIMPLE=1" APPEND)
 endif()
