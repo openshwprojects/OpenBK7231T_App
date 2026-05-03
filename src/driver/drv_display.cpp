@@ -4,7 +4,7 @@
 #include "../logging/logging.h"
 #include "../hal/hal_pins.h"
 
-#if defined(PLATFORM_ESPIDF)
+#if defined(PLATFORM_ESPIDF) && defined(ENABLE_DISPLAY)
 
 #include <esp_display_panel.hpp>
 #include <lvgl.h>

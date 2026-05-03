@@ -1,4 +1,4 @@
-#if defined(PLATFORM_ESPIDF)
+#if defined(PLATFORM_ESPIDF) && defined(ENABLE_DISPLAY)
 
 
 

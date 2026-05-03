@@ -25,9 +25,9 @@ endif()
 
 #set(PROJECT_VER "$ENV{APP_VERSION}")
 project(OpenBeken)
-idf_build_set_property(COMPILE_OPTIONS "-Wno-error=format-truncation" APPEND)
-idf_build_set_property(COMPILE_OPTIONS "-Wno-error=incompatible-pointer-types" APPEND)
+idf_build_set_property(COMPILE_OPTIONS "-Wno-error=format-truncation" "-Wno-error=incompatible-pointer-types" "-Wno-error=int-conversion" "-Wno-error=unused-but-set-variable" "-Wno-error=unused-function" "-Wno-error=unused-variable" "-Wno-error=implicit-fallthrough" APPEND)
+
 
 if(ENABLE_DISPLAY OR (DEFINED ENV{ENABLE_DISPLAY} AND "$ENV{ENABLE_DISPLAY}" EQUAL "1"))
-    idf_build_set_property(COMPILE_OPTIONS "-DLV_CONF_INCLUDE_SIMPLE=1" "-DBOARD_WAVESHARE_ESP32_S3_TOUCH_LCD_5=1" "-DESP_PANEL_BOARD_DEFAULT_USE_SUPPORTED=1" "-DESP_PANEL_BOARD_USE_SUPPORTED_FILE=1" "-DESP_PANEL_BOARD_INCLUDE_SUPPORTED_SIMPLE=1" APPEND)
+    idf_build_set_property(COMPILE_OPTIONS "-DENABLE_DISPLAY=1" "-DLV_CONF_INCLUDE_SIMPLE=1" "-DBOARD_WAVESHARE_ESP32_S3_TOUCH_LCD_5=1" "-DESP_PANEL_BOARD_DEFAULT_USE_SUPPORTED=1" "-DESP_PANEL_BOARD_USE_SUPPORTED_FILE=1" "-DESP_PANEL_BOARD_INCLUDE_SUPPORTED_SIMPLE=1" APPEND)
 endif()

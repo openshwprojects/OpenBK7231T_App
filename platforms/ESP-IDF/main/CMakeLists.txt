@@ -45,5 +45,7 @@ endif()
 idf_component_register(SRCS ${PROJ_ALL_SRC} WHOLE_ARCHIVE
 			PRIV_REQUIRES ${PRIV_REQ_COMPONENTS})
 
+target_compile_options(${COMPONENT_LIB} PRIVATE "-Wno-error=format-truncation" "-Wno-error=incompatible-pointer-types" "-Wno-error=int-conversion" "-Wno-error=unused-but-set-variable" "-Wno-error=unused-function" "-Wno-error=unused-variable" "-Wno-error=implicit-fallthrough" "-Wno-error=maybe-uninitialized")
+
 target_compile_definitions(${COMPONENT_LIB} PRIVATE USER_SW_VER="$ENV{APP_VERSION}")
 target_compile_definitions(${COMPONENT_LIB} PRIVATE OBK_VARIANT=$ENV{OBK_VARIANT})
