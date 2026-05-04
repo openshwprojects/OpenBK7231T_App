@@ -1102,6 +1102,37 @@ static void mqtt_incoming_publish_cb(void* arg, const char* topic, u32_t tot_len
 		}
 	}
 	addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "MQTT client in mqtt_incoming_publish_cb topic %s", topic);
+
+        // ignore own published state topics and discovery/config chatter
+        if (topic != NULL) {
+                size_t __len = strlen(topic);
+                const char *clientId = CFG_GetMQTTClientId();
+                size_t clientLen = strlen(clientId);
+
+                // Ignore only self-echoed state topics from our own namespace:
+                //   <clientId>/<anything>/get
+                // Do NOT ignore normal telemetry topics like:
+                //   <clientId>/build
+                //   <clientId>/ip
+                //   <clientId>/ssid
+                //   <clientId>/rssi
+                //   <clientId>/uptime
+                if (__len > clientLen + 5 &&
+                    !strncmp(topic, clientId, clientLen) &&
+                    topic[clientLen] == '/' &&
+                    !strcmp(topic + __len - 4, "/get")) {
+
+                        addLogAdv(LOG_DEBUG, LOG_FEATURE_MQTT, "MQTT: ignoring self state topic %s", topic);
+                        return;
+                }
+
+                // Still ignore HA discovery/config chatter in normal command handling
+                if (!strncmp(topic, "homeassistant/", strlen("homeassistant/"))) {
+                        addLogAdv(LOG_DEBUG, LOG_FEATURE_MQTT, "MQTT: ignoring HA discovery topic %s", topic);
+                        return;
+                }
+        }
+
 }
 
 static void mqtt_request_cb(void* arg, err_t err)
