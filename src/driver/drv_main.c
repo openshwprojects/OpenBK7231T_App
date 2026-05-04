@@ -26,6 +26,7 @@
 
 void Display_Init();
 void Display_RunFrame();
+void Display_Shutdown();
 
 void DRV_MQTTServer_Init();
 void DRV_MQTTServer_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState);
@@ -1532,7 +1533,7 @@ static driver_t g_drivers[] = {
 	NULL,                                    // onEverySecond
 	NULL,                                    // appendInformationToHTTPIndexPage
 	Display_RunFrame,                        // runQuickTick
-	NULL,                                    // stopFunction
+	Display_Shutdown,                        // stopFunction
 	NULL,                                    // onChannelChanged
 	NULL,                                    // onHassDiscovery
 	false,                                   // loaded

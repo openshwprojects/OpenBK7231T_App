@@ -17,6 +17,7 @@ using namespace esp_panel::drivers;
 using namespace esp_panel::board;
 
 static bool g_display_ready = false;
+static TaskHandle_t g_lvgl_task_handle = NULL;
 static lv_obj_t *screen_main;
 static lv_obj_t *counter_label;
 static int click_count = 0;
@@ -35,7 +36,7 @@ static void gui_build_main_screen() {
 
     // Title label
     lv_obj_t *title = lv_label_create(screen_main);
-    lv_label_set_text(title, "OpenBeken Display Demo");
+    lv_label_set_text(title, "OpenBeken Display Demo 2");
     lv_obj_align(title, LV_ALIGN_TOP_MID, 0, 30);
     lv_obj_set_style_text_color(title, lv_color_hex(0xFFFFFF), LV_PART_MAIN);
     lv_obj_set_style_text_font(title, &lv_font_montserrat_14, LV_PART_MAIN);
@@ -108,10 +109,19 @@ extern "C" void Display_Init() {
     lvgl_port_unlock();
 
     // Spawn dedicated LVGL task with 8KB stack
-    xTaskCreate(lvgl_task, "lvgl", 8192, NULL, 5, NULL);
+    xTaskCreate(lvgl_task, "lvgl", 8192, NULL, 5, &g_lvgl_task_handle);
 
     g_display_ready = true;
     ADDLOG_INFO(LOG_FEATURE_DRV, "Display driver ready!");
+}
+
+extern "C" void Display_Shutdown() {
+    if (g_lvgl_task_handle != NULL) {
+        vTaskDelete(g_lvgl_task_handle);
+        g_lvgl_task_handle = NULL;
+    }
+    g_display_ready = false;
+    ADDLOG_INFO(LOG_FEATURE_DRV, "Display driver shut down!");
 }
 
 extern "C" void Display_RunFrame() {
@@ -121,6 +131,9 @@ extern "C" void Display_RunFrame() {
 #else
 
 extern "C" void Display_Init() {
+}
+
+extern "C" void Display_Shutdown() {
 }
 
 extern "C" void Display_RunFrame() {
