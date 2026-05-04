@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 ubuntu:20.04
+FROM --platform=linux/amd64 ubuntu:24.04
 
 ARG DEBIAN_FRONTEND=noninteractive
 ARG USERNAME=devuser
@@ -15,9 +15,15 @@ RUN dpkg --add-architecture i386 \
                 libc6-i386 make \
                 build-essential cmake gcc-arm-none-eabi
 
-RUN pip3 install pycryptodomex configobj toml fdt
+RUN pip3 install --break-system-packages pycryptodomex configobj toml fdt
 
-RUN useradd -m -s /bin/bash -u "${UID}" ${USERNAME}
+RUN if getent passwd "${UID}" >/dev/null; then \
+        existing_user="$(getent passwd "${UID}" | cut -d: -f1)"; \
+        usermod -l "${USERNAME}" "$existing_user" || true; \
+        usermod -d "/home/${USERNAME}" -m "${USERNAME}" || true; \
+    else \
+        useradd -m -s /bin/bash -u "${UID}" "${USERNAME}"; \
+    fi
 
 COPY build_target_platforms.sh /build_target_platforms.sh
 RUN chmod 775 /build_target_platforms.sh

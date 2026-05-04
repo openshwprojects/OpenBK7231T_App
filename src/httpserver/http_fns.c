@@ -73,6 +73,7 @@ extern uint32_t current_fw_idx;
 #include "temp_detect_pub.h"
 #elif defined(PLATFORM_ECR6600)
 #include "hal_system.h"
+#include "../driver/drv_virtualLights.h"
 #endif
 
 #if (defined(PLATFORM_BK7231T) || defined(PLATFORM_BK7231N)) && !defined(PLATFORM_BEKEN_NEW)
@@ -777,6 +778,7 @@ int http_fn_index(http_request_t* request) {
 			c_pwms = 3;
 		}
 
+		if (!VirtualLights_IsEnabled()) {
 		if (c_pwms > 0) {
 			const char* c;
 			if (CHANNEL_Check(SPECIAL_CHANNEL_LEDPOWER)) {
@@ -825,6 +827,7 @@ int http_fn_index(http_request_t* request) {
 			hprintf255(request, "<input type=\"hidden\" name=\"%sIndex\" value=\"%i\">", inputName, SPECIAL_CHANNEL_BASECOLOR);
 			hprintf255(request, "<input  type=\"submit\" class='disp-none' value=\"Toggle Light\"/></form>");
 			poststr(request, "</td></tr>");
+		}
 		}
 		bool bShowCWForPixelAnim = false;
 #if ENABLE_DRIVER_PIXELANIM
@@ -2118,10 +2121,14 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 			dev_info = hass_init_light_device_info(LIGHT_RGBCW);
 		}
 		// Enable + RGB control + CW control
-		MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
-		hass_free_device_info(dev_info);
-		dev_info = NULL;
-		discoveryQueued = true;
+		if (dev_info != NULL) {
+			MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
+			hass_free_device_info(dev_info);
+			dev_info = NULL;
+			discoveryQueued = true;
+		} else {
+			addLogAdv(LOG_INFO, LOG_FEATURE_HASS, "HASS: skipped RGBCW legacy/global light discovery publish because VirtualLights is enabled");
+		}
 	}
 	else if (pwmCount > 0) {
 		if (pwmCount == 4) {

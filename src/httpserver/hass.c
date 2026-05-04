@@ -775,7 +775,11 @@ HassDeviceInfo* hass_init_light_device_info(ENTITY_TYPE type) {
 	HassDeviceInfo* info = NULL;
 	double brightness_scale = 100;
 
-	//We can just use 1 to generate unique_id and name for single PWM.
+        if (VirtualLights_IsEnabled()) {
+                addLogAdv(LOG_INFO, LOG_FEATURE_HASS, "HASS: skipping legacy/global light discovery because VirtualLights is enabled");
+                return NULL;
+        }
+//We can just use 1 to generate unique_id and name for single PWM.
 	//The payload_on/payload_off have to match the state_topic/command_topic values.
 	info = hass_init_device_info(type, 1, "1", "0", 0, NULL);
 

@@ -76,6 +76,12 @@ void MultiPinI2CScanner_AppendInformationToHTTPIndexPage(http_request_t *request
 
 void SM16703P_Init();
 void SM16703P_Shutdown();
+
+void VirtualLights_Init();
+void VirtualLights_Shutdown();
+void VirtualLights_OnChannelChanged(int ch, int value);
+void VirtualLights_OnHassDiscovery(const char *topic);
+void VirtualLights_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState);
 // set RGBCW values - Cold and Warm White are optional and might be ignored if hardware does not support them, or if
 // channel order does not include them.
 // default is RGB, so C and W are ignored by default - needs to be enabled with something like 'SM16703P_Init 20 RGBCW'

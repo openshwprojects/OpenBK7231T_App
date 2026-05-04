@@ -145,6 +145,7 @@ OBKM_SRC  += $(OBK_SRCS)driver/drv_shiftRegister.c
 OBKM_SRC  += $(OBK_SRCS)driver/drv_sht3x.c
 OBKM_SRC  += $(OBK_SRCS)driver/drv_sm15155e.c
 OBKM_SRC  += $(OBK_SRCS)driver/drv_sm16703P.c
+OBKM_SRC  += $(OBK_SRCS)driver/drv_virtualLights.c
 OBKM_SRC  += $(OBK_SRCS)driver/drv_simpleEEPROM.c
 OBKM_SRC  += $(OBK_SRCS)driver/drv_leds_shared.c
 OBKM_SRC  += $(OBK_SRCS)driver/drv_ltr_als.c
