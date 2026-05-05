@@ -1,6 +1,3 @@
-
-
-
 #include "new_common.h"
 #include "new_pins.h"
 #include "quicktick.h"
@@ -825,9 +822,6 @@ int CHANNEL_FindIndexForType(int requiredType) {
 		}
 	}
 	return -1;
-}
-void CHANNEL_SetFirstChannelByType(int requiredType, int newVal) {
-	CHANNEL_SetFirstChannelByTypeEx(requiredType, newVal, 0);
 }
 
 void CHANNEL_SetAll(int iVal, int iFlags) {
@@ -2022,6 +2016,67 @@ int CHANNEL_GetRoleForOutputChannel(int ch) {
 	return IOR_None;
 }
 
+bool CHANNEL_IsHumidity(int type)
+{
+	if(type == ChType_Humidity)
+		return true;
+	if(type == ChType_Humidity_div10)
+		return true;
+	return false;
+}
+bool CHANNEL_IsTemperature(int type)
+{
+	if(type == ChType_Temperature)
+		return true;
+	if(type == ChType_Temperature_div10)
+		return true;
+	if(type == ChType_Temperature_div100)
+		return true;
+	if(type == ChType_Temperature_div2)
+		return true;
+	return false;
+}
+bool CHANNEL_IsPressure(int type)
+{
+	if(type == ChType_Pressure_div100)
+		return true;
+	return false;
+}
+bool CHANNEL_GetGenericOfType(float* out, bool(*checker)(int type))
+{
+	int i, t;
+
+	for(i = 0; i < CHANNEL_MAX; i++)
+	{
+		t = g_cfg.pins.channelTypes[i];
+		if(checker(t))
+		{
+			*out = CHANNEL_GetFinalValue(i);
+			return true;
+		}
+	}
+	return false;
+}
+bool CHANNEL_GetGenericHumidity(float* out)
+{
+	return CHANNEL_GetGenericOfType(out, CHANNEL_IsHumidity);
+}
+bool CHANNEL_GetGenericTemperature(float* out)
+{
+	return CHANNEL_GetGenericOfType(out, CHANNEL_IsTemperature);
+}
+bool CHANNEL_GetGenericPressure(float* out)
+{
+	return CHANNEL_GetGenericOfType(out, CHANNEL_IsPressure);
+}
+void CHANNEL_SetType(int ch, int type)
+{
+	if(g_cfg.pins.channelTypes[ch] != type)
+	{
+		g_cfg.pins.channelTypes[ch] = type;
+		g_cfg_pendingChanges++;
+	}
+}
 
 #define EVENT_CB(ev)   
 

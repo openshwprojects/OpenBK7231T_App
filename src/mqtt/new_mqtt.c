@@ -228,12 +228,12 @@ ip_addr_t mqtt_ip LWIP_MQTT_EXAMPLE_IPADDR_INIT;
 mqtt_client_t* mqtt_client;
 static int g_timeSinceLastMQTTPublish = 0;
 static int mqtt_initialised = 0;
-static int mqtt_connect_events = 0;
-static int mqtt_connect_result = ERR_OK;
+int mqtt_connect_events = 0;
+int mqtt_connect_result = ERR_OK;
 static char mqtt_status_message[256];
-static int mqtt_published_events = 0;
-static int mqtt_publish_errors = 0;
-static int mqtt_received_events = 0;
+int mqtt_published_events = 0;
+int mqtt_publish_errors = 0;
+int mqtt_received_events = 0;
 
 static int g_just_connected = 0;
 
@@ -311,31 +311,6 @@ int channelSet(obk_mqtt_request_t* request);
 int channelGet(obk_mqtt_request_t* request);
 static int MQTT_do_connect(mqtt_client_t* client);
 static void mqtt_connection_cb(mqtt_client_t* client, void* arg, mqtt_connection_status_t status);
-
-int MQTT_GetConnectEvents(void)
-{
-	return mqtt_connect_events;
-}
-
-int MQTT_GetPublishEventCounter(void)
-{
-	return mqtt_published_events;
-}
-
-int MQTT_GetPublishErrorCounter(void)
-{
-	return mqtt_publish_errors;
-}
-
-int MQTT_GetReceivedEventCounter(void)
-{
-	return mqtt_received_events;
-}
-
-int MQTT_GetConnectResult(void)
-{
-	return mqtt_connect_result;
-}
 
 //Based on mqtt_connection_status_t and https://www.nongnu.org/lwip/2_1_x/group__mqtt.html
 const char* get_callback_error(int reason) {
@@ -2480,16 +2455,6 @@ void MQTT_InvokeCommandAtEnd(PostPublishCommands command) {
 		tail->command = command;
 	}
 }
-
-/// @brief Queue an entry for publish.
-/// @param topic 
-/// @param channel 
-/// @param value 
-/// @param flags
-void MQTT_QueuePublish(const char* topic, const char* channel, const char* value, int flags) {
-	MQTT_QueuePublishWithCommand(topic, channel, value, flags, None);
-}
-
 
 /// @brief Publish MQTT_QUEUED_ITEMS_PUBLISHED_AT_ONCE queued items.
 /// @return 
