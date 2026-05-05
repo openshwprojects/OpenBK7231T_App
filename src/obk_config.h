@@ -269,6 +269,7 @@
 //#define ENABLE_LFS_SPI						1
 //#define ENABLE_DRIVER_TESTSPIFLASH			1
 
+#define	ENABLE_DRIVER_MAX6675					1
 //#define	ENABLE_DRIVER_UART_TCP					1
 
 //#define	ENABLE_DRIVER_SSD1306					1
