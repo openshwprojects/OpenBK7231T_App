@@ -317,3 +317,7 @@ void TinyIR_NEC_RunFrame();
 void DRV_ESPHome_API_Init();
 void DRV_ESPHome_API_Deinit();
 void DRV_ESPHome_API_OnEverySecond();
+
+void PulseClock_onEverySec();
+void PulseClock_init();
+

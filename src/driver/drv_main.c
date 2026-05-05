@@ -10,6 +10,7 @@
 #include "drv_local.h"
 #include "drv_ntp.h"
 #include "drv_deviceclock.h"
+#include "drv_pulseclock.h"
 #include "drv_public.h"
 #include "drv_mdns.h"
 #include "drv_ssdp.h"
@@ -1520,9 +1521,25 @@ static driver_t g_drivers[] = {
 	NULL,                                    // onChannelChanged
 	NULL,                                    // onHassDiscovery
 	false,                                   // loaded
-	}
+	},
 #endif
-	//{ "", NULL, NULL, NULL, NULL, NULL, NULL, NULL, false },
+#if ENABLE_DRIVER_PULSECLOCK
+	//drvdetail:{"name":"Pulse Clock",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"TODO",
+	//drvdetail:"requires":""}
+	{ "PulseClock",                          // Driver Name
+	PulseClock_init,	                     // Init
+	PulseClock_onEverySec,                   // onEverySecond
+	PulseClock_AppendInformationToHTTPIndexPage, // appendInformationToHTTPIndexPage
+	NULL, 						             // runQuickTick
+	NULL,				                     // stopFunction
+	NULL,						             // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
+	},
+#endif
+//{ "", NULL, NULL, NULL, NULL, NULL, NULL, NULL, false },
 };
 
 

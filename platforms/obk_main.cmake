@@ -163,6 +163,7 @@ set(OBKM_SRC
 	${OBK_SRCS}i2c/drv_i2c_main.c
 	${OBK_SRCS}i2c/drv_i2c_mcp23017.c
 	${OBK_SRCS}i2c/drv_i2c_tc74.c
+    ${OBK_SRCS}/driver/drv_pulseclock.c
 
 #	${OBK_SRCS}driver/drv_bmp280.c
 #	${OBK_SRCS}driver/drv_test_charts.c
