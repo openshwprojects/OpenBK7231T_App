@@ -13,6 +13,7 @@
 #define OBK_VARIANT_HLW8112						6
 #define OBK_VARIANT_BATTERY						7
 #define OBK_VARIANT_BTPROXY						8
+#define OBK_VARIANT_XR806_DCDC					9
 #define OBK_VARIANT_ESP2M						1
 #define OBK_VARIANT_ESP4M						2
 #define OBK_VARIANT_ESP2M_BERRY					3

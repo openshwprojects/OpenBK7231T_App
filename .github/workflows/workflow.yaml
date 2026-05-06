@@ -165,6 +165,9 @@ jobs:
           - platform: OpenXR806
             variant: default
             gcc: 8-2019-q3
+          - platform: OpenXR806_DCDC
+            variant: default
+            gcc: 8-2019-q3
           - platform: OpenXR872
             variant: default
             gcc: 8-2019-q3

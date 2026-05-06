@@ -229,7 +229,11 @@ This platform is not supported, error!
 #elif PLATFORM_XR872
 #define USER_SW_VER "XR872_Test"
 #elif PLATFORM_XR806
+#if (OBK_VARIANT == OBK_VARIANT_XR806_DCDC)
+#define USER_SW_VER "XR806_Test_DCDC"
+#else
 #define USER_SW_VER "XR806_Test"
+#endif
 #elif defined(PLATFORM_BK7231N)
 #define USER_SW_VER "BK7231N_Test"
 #elif defined(PLATFORM_BK7231T)
