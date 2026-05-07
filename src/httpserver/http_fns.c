@@ -2125,7 +2125,7 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 	}
 	else if (pwmCount > 0) {
 		if (pwmCount == 4) {
-			addLogAdv(LOG_ERROR, LOG_FEATURE_HTTP, "4 PWM device not yet handled");
+			dev_info = hass_init_light_device_info(LIGHT_RGBCW);
 		}
 		else if (pwmCount == 3) {
 			// Enable + RGB control
