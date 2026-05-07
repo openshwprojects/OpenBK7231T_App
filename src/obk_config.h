@@ -256,7 +256,7 @@
 //#undef ENABLE_DRIVER_DS1820
 //#undef ENABLE_DRIVER_CSE7766
 //#undef ENABLE_DRIVER_BL0937
-//#undef ENABLE_DRIVER_BL0942
+#undef ENABLE_DRIVER_BL0942
 #define ENABLE_DRIVER_IRREMOTEESP				1
 //#endif
 //#define ENABLE_DRIVER_NEO6M						1
@@ -640,7 +640,7 @@
 #define ENABLE_EXPAND_CONSTANT					1
 #define ENABLE_ADVANCED_CHANNELTYPES_DISCOVERY	1
 #define ENABLE_OBK_SCRIPTING					1
-// #define ENABLE_DRIVER_BL0942					1
+ #define ENABLE_DRIVER_BL0942					1
 #define ENABLE_DRIVER_BL0937					1
 #define ENABLE_TASMOTA_JSON						1
 #define ENABLE_TASMOTADEVICEGROUPS				1
@@ -734,7 +734,7 @@
 #if ENABLE_DRIVER_BL0937 || ENABLE_DRIVER_BL0942 || ENABLE_DRIVER_BL0942SPI || ENABLE_DRIVER_CSE7766
 #define ENABLE_BL_SHARED						1
 // allow use two BL0942 on two ports  +940 bytes
-// #define ENABLE_BL_TWIN						1
+ #define ENABLE_BL_TWIN						1
 // allow moving average energy calculation +180 bytes
 // #define ENABLE_BL_MOVINGAVG					1
 #endif
