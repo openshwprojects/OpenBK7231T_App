@@ -413,6 +413,9 @@ void PIN_SetupPins() {
 #if ENABLE_LED_BASIC
 	LED_SetStripStateOutputs();
 #endif
+#if PLATFORM_ESP8266
+	HAL_PIN_PWM_Finalize();
+#endif
 	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "PIN_SetupPins pins have been set up.");
 }
 
