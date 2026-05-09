@@ -450,6 +450,10 @@ void HAL_PIN_Setup_Output(int index)
 
 #if PLATFORM_ESP8266
 
+// ESP8266 RTOS SDK LEDC is a compatibility wrapper around the grouped software PWM driver.
+// OpenBeken configures PWM pins one at a time, but ESP8266 PWM must be initialised
+// as one channel group. Keep ESP32 on real LEDC and use native PWM here.
+
 #define ESP8266_PWM_MAX_CH 8
 #define ESP8266_PWM_PERIOD_US 1000
 
