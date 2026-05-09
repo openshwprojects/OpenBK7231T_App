@@ -136,7 +136,9 @@ static struct tag_logMemory {
 	int tailserial;
 	int tailtcp;
 	int tailhttp;
+#if ENABLE_LITTLEFS && ENABLE_LOG2LFS
 	int taillfs;
+#endif
 	SemaphoreHandle_t mutex;
 } logMemory;
 
@@ -267,7 +269,11 @@ void initLog2LFS(void){
 static void initLog(void)
 {
 	bk_printf("Entering initLog()...\r\n");
+#if ENABLE_LITTLEFS && ENABLE_LOG2LFS
 	logMemory.head = logMemory.tailserial = logMemory.tailtcp = logMemory.tailhttp = logMemory.taillfs = 0;
+#else
+	logMemory.head = logMemory.tailserial = logMemory.tailtcp = logMemory.tailhttp = 0;
+#endif
 	logMemory.mutex = xSemaphoreCreateMutex();
 	initialised = 1;
 	startSerialLog();
@@ -479,10 +485,12 @@ void addLogAdv(int level, int feature, const char* fmt, ...)
 		{
 			logMemory.tailhttp = (logMemory.tailhttp + 1) % LOGSIZE;
 		}
+#if ENABLE_LITTLEFS && ENABLE_LOG2LFS
 		if (logMemory.taillfs == logMemory.head)
 		{
 			logMemory.taillfs = (logMemory.taillfs + 1) % LOGSIZE;
 		}
+#endif
 	}
 
 	if (taken == pdTRUE) {
