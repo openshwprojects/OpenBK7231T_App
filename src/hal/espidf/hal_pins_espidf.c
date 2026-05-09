@@ -463,6 +463,7 @@ static uint32_t esp8266_pwm_duty[ESP8266_PWM_MAX_CH];
 static float esp8266_pwm_value[ESP8266_PWM_MAX_CH];
 static int esp8266_pwm_count = 0;
 static bool esp8266_pwm_started = false;
+static bool esp8266_pwm_finalized = false;
 
 static int ESP8266_GetPWMChannelForPinIndex(int index)
 {
@@ -533,6 +534,16 @@ static bool ESP8266_PWM_Rebuild(void)
 	return true;
 }
 
+void HAL_PIN_PWM_Finalize(void)
+{
+	esp8266_pwm_finalized = true;
+
+	if(!esp8266_pwm_started)
+	{
+		ESP8266_PWM_Rebuild();
+	}
+}
+
 int PIN_GetPWMIndexForPinIndex(int index)
 {
 	if(index >= g_numPins)
@@ -588,7 +599,10 @@ void HAL_PIN_PWM_Stop(int index)
 	gpio_set_level(pin->pin, 0);
 	pin->isConfigured = false;
 
-	ESP8266_PWM_Rebuild();
+	if(esp8266_pwm_finalized)
+	{
+		ESP8266_PWM_Rebuild();
+	}
 }
 
 void HAL_PIN_PWM_Start(int index, int freq)
@@ -632,9 +646,9 @@ void HAL_PIN_PWM_Start(int index, int freq)
 	ESP_ConfigurePin(pin->pin, GPIO_MODE_OUTPUT, false, false, GPIO_INTR_DISABLE);
 	ADDLOG_INFO(LOG_FEATURE_PINS, "ESP8266 PWM queued ch %i pin %i", ch, pin->pin);
 
-	// During boot all PWM pins are normally queued before the LED driver pushes initial values.
-	// If a user changes pin roles at runtime, rebuild immediately so the new channel exists.
-	if(esp8266_pwm_started)
+	// PIN_SetupPins finalises the ESP8266 PWM group after all configured PWM pins are queued.
+	// If a user changes pin roles after initial setup, rebuild immediately so the new channel exists.
+	if(esp8266_pwm_finalized)
 	{
 		ESP8266_PWM_Rebuild();
 	}
@@ -667,6 +681,10 @@ void HAL_PIN_PWM_Update(int index, float value)
 
 	if(!esp8266_pwm_started)
 	{
+		if(!esp8266_pwm_finalized)
+		{
+			return;
+		}
 		if(!ESP8266_PWM_Rebuild())
 		{
 			return;
