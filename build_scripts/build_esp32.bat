@@ -223,5 +223,15 @@ echo Output files located in output\%APP_VERSION%
 echo Factory Bin: !FACTORY_BIN!
 echo OTA Bin:     !IMG_BIN!
 echo ==============================================
+
+if "%ACTION%"=="flash" (
+    echo [INFO] Flashing via UART...
+    python -m esptool --chip %IDF_TARGET% write_flash 0x0 "output\%APP_VERSION%\%OUT_NAME%.factory.bin"
+    if !errorlevel! neq 0 (
+        echo [ERROR] esptool flash failed
+        exit /b 1
+    )
+)
+
 exit /b 0
 
