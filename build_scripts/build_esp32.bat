@@ -40,6 +40,15 @@ if "%TARGET%"=="esp32" (
 ) else if "%TARGET%"=="esp32s3ram" (
     set BUILD_DIR=platforms\ESP-IDF\build-s3ram
     set BOOTLOADER_ADDR=0x0
+) else if "%TARGET%"=="esp32s3ram_waveshare_5" (
+    set BUILD_DIR=platforms\ESP-IDF\build-s3ram-waveshare-5
+    set BOOTLOADER_ADDR=0x0
+) else if "%TARGET%"=="esp32s3ram_waveshare_4_3" (
+    set BUILD_DIR=platforms\ESP-IDF\build-s3ram-waveshare-4-3
+    set BOOTLOADER_ADDR=0x0
+) else if "%TARGET%"=="esp32s3ram_elecrow_7" (
+    set BUILD_DIR=platforms\ESP-IDF\build-s3ram-elecrow-7
+    set BOOTLOADER_ADDR=0x0
 ) else (
     echo [ERROR] Unknown target: %TARGET%
     exit /b 1
@@ -113,6 +122,27 @@ if "%TARGET%"=="esp32s3ram" (
     set SDKCONFIG_DEFAULTS=sdkconfig.defaults;sdkconfig.defaults.esp32s3ram
     set ENABLE_DISPLAY=1
     set CMAKE_ARGS=-DSDKCONFIG_DEFAULTS="sdkconfig.defaults;sdkconfig.defaults.esp32s3ram" -DENABLE_DISPLAY=1
+) else if "%TARGET%"=="esp32s3ram_waveshare_5" (
+    set IDF_TARGET=esp32s3
+    echo CONFIG_BOARD_WAVESHARE_ESP32_S3_TOUCH_LCD_5=y > platforms\ESP-IDF\sdkconfig.tmp
+    echo CONFIG_ESP_PANEL_BOARD_DEFAULT_USE_SUPPORTED=y >> platforms\ESP-IDF\sdkconfig.tmp
+    set SDKCONFIG_DEFAULTS=sdkconfig.defaults;sdkconfig.defaults.esp32s3ram;sdkconfig.tmp
+    set ENABLE_DISPLAY=1
+    set CMAKE_ARGS=-DSDKCONFIG_DEFAULTS="sdkconfig.defaults;sdkconfig.defaults.esp32s3ram;sdkconfig.tmp" -DENABLE_DISPLAY=1
+) else if "%TARGET%"=="esp32s3ram_waveshare_4_3" (
+    set IDF_TARGET=esp32s3
+    echo CONFIG_BOARD_WAVESHARE_ESP32_S3_TOUCH_LCD_4_3=y > platforms\ESP-IDF\sdkconfig.tmp
+    echo CONFIG_ESP_PANEL_BOARD_DEFAULT_USE_SUPPORTED=y >> platforms\ESP-IDF\sdkconfig.tmp
+    set SDKCONFIG_DEFAULTS=sdkconfig.defaults;sdkconfig.defaults.esp32s3ram;sdkconfig.tmp
+    set ENABLE_DISPLAY=1
+    set CMAKE_ARGS=-DSDKCONFIG_DEFAULTS="sdkconfig.defaults;sdkconfig.defaults.esp32s3ram;sdkconfig.tmp" -DENABLE_DISPLAY=1
+) else if "%TARGET%"=="esp32s3ram_elecrow_7" (
+    set IDF_TARGET=esp32s3
+    echo CONFIG_BOARD_ELECROW_CROWPANEL_7_0=y > platforms\ESP-IDF\sdkconfig.tmp
+    echo CONFIG_ESP_PANEL_BOARD_DEFAULT_USE_SUPPORTED=y >> platforms\ESP-IDF\sdkconfig.tmp
+    set SDKCONFIG_DEFAULTS=sdkconfig.defaults;sdkconfig.defaults.esp32s3ram;sdkconfig.tmp
+    set ENABLE_DISPLAY=1
+    set CMAKE_ARGS=-DSDKCONFIG_DEFAULTS="sdkconfig.defaults;sdkconfig.defaults.esp32s3ram;sdkconfig.tmp" -DENABLE_DISPLAY=1
 ) else (
     set ENABLE_DISPLAY=0
     set IDF_TARGET=%TARGET%
@@ -160,6 +190,12 @@ if "%TARGET%"=="esp32" (
     set OUT_NAME=OpenESP32S3
 ) else if "%TARGET%"=="esp32s3ram" (
     set OUT_NAME=OpenESP32S3RAM
+) else if "%TARGET%"=="esp32s3ram_waveshare_5" (
+    set OUT_NAME=OpenESP32S3RAM_WAVESHARE_5
+) else if "%TARGET%"=="esp32s3ram_waveshare_4_3" (
+    set OUT_NAME=OpenESP32S3RAM_WAVESHARE_4_3
+) else if "%TARGET%"=="esp32s3ram_elecrow_7" (
+    set OUT_NAME=OpenESP32S3RAM_ELECROW_7
 ) else (
     set OUT_NAME=Open%TARGET%
 )
