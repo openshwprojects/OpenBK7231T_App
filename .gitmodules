@@ -89,3 +89,19 @@
 	path = sdk/bouffalo_sdk
 	url = https://github.com/bouffalolab/bouffalo_sdk
 	branch = master
+[submodule "libraries/ESP32_Display_Panel"]
+	path = libraries/ESP32_Display_Panel
+	url = https://github.com/esp-arduino-libs/ESP32_Display_Panel.git
+	branch = master
+[submodule "libraries/ESP32_IO_Expander"]
+	path = libraries/ESP32_IO_Expander
+	url = https://github.com/esp-arduino-libs/ESP32_IO_Expander.git
+	branch = master
+[submodule "libraries/esp-lib-utils"]
+	path = libraries/esp-lib-utils
+	url = https://github.com/esp-arduino-libs/esp-lib-utils.git
+	branch = master
+[submodule "libraries/lvgl"]
+	path = libraries/lvgl
+	url = https://github.com/lvgl/lvgl.git
+	branch = release/v8.4

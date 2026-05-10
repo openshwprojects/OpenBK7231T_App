@@ -36,7 +36,7 @@ static void gui_build_main_screen() {
 
     // Title label
     lv_obj_t *title = lv_label_create(screen_main);
-    lv_label_set_text(title, "OpenBeken Display Demo 2");
+    lv_label_set_text(title, "OpenBeken Display Demo 3");
     lv_obj_align(title, LV_ALIGN_TOP_MID, 0, 30);
     lv_obj_set_style_text_color(title, lv_color_hex(0xFFFFFF), LV_PART_MAIN);
     lv_obj_set_style_text_font(title, &lv_font_montserrat_14, LV_PART_MAIN);
