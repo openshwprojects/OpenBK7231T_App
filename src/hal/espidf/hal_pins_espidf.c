@@ -691,20 +691,19 @@ void HAL_PIN_PWM_Update(int index, float value)
 		}
 	}
 
-	if(value != esp8266_pwm_value[ch])
+	// ESP8266 PWM can lose sync with this cache after grouped pwm_init/pwm_start.
+	// Always push requested duty so RGB/CW mode switches turn old channels off.
+	esp8266_pwm_value[ch] = value;
+	esp_err_t err = pwm_set_duty((uint8_t)ch, duty);
+	if(err != ESP_OK)
 	{
-		esp8266_pwm_value[ch] = value;
-		esp_err_t err = pwm_set_duty((uint8_t)ch, duty);
-		if(err != ESP_OK)
-		{
-			ADDLOG_ERROR(LOG_FEATURE_PINS, "ESP8266 PWM set duty failed: ch %i err %i", ch, err);
-			return;
-		}
-		err = pwm_start();
-		if(err != ESP_OK)
-		{
-			ADDLOG_ERROR(LOG_FEATURE_PINS, "ESP8266 PWM restart failed: ch %i err %i", ch, err);
-		}
+		ADDLOG_ERROR(LOG_FEATURE_PINS, "ESP8266 PWM set duty failed: ch %i err %i", ch, err);
+		return;
+	}
+	err = pwm_start();
+	if(err != ESP_OK)
+	{
+		ADDLOG_ERROR(LOG_FEATURE_PINS, "ESP8266 PWM restart failed: ch %i err %i", ch, err);
 	}
 }
 
