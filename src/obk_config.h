@@ -730,9 +730,12 @@
 //#define ENABLE_TEST_COMMANDS					1
 #define ENABLE_TASMOTA_JSON						1
 #define ENABLE_DRIVER_SSDP						1
-//#define ENABLE_DRIVER_MDNS						1 // stack overflow in wifi lib
+#define ENABLE_DRIVER_MDNS						1
 #define ENABLE_DRIVER_SM16703P					1
 #define ENABLE_DRIVER_PIXELANIM					1
+#define ENABLE_DRIVER_TINYIR_NEC				1
+//#define ENABLE_DRIVER_IRREMOTEESP				1
+#define ENABLE_DRIVER_TUYAMCU					1
 
 #else
 

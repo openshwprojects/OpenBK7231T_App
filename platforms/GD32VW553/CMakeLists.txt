@@ -24,9 +24,11 @@ target_sources(${TARGET_EXE} PRIVATE
 	${OBK_SRCS}hal/gd32vw553/hal_flashConfig_gd32vw553.c
 	${OBK_SRCS}hal/gd32vw553/hal_flashVars_gd32vw553.c
 	${OBK_SRCS}hal/gd32vw553/hal_generic_gd32vw553.c
+	${OBK_SRCS}hal/gd32vw553/hal_hwtimer_gd32vw553.c
 	${OBK_SRCS}hal/gd32vw553/hal_main_gd32vw553.c
 	${OBK_SRCS}hal/gd32vw553/hal_ota_gd32vw553.c
 	${OBK_SRCS}hal/gd32vw553/hal_pins_gd32vw553.c
+	${OBK_SRCS}hal/gd32vw553/hal_uart_gd32vw553.c
 	${OBK_SRCS}hal/gd32vw553/hal_wifi_gd32vw553.c
 	${OBKM_SRC}
 	${OBKM_SRC_CXX}

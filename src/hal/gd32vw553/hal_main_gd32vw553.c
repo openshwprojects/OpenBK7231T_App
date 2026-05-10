@@ -36,10 +36,23 @@ static void obk_task(void* pvParameters)
 		if(temp_sec >= 10)
 		{
 			adc_flag_clear(ADC_FLAG_EOC);
+			adc_tempsensor_vrefint_enable();
+			//adc_clock_config(ADC_ADCCK_PCLK2_DIV6);
+			adc_external_trigger_config(ADC_ROUTINE_CHANNEL, EXTERNAL_TRIGGER_DISABLE);
+			adc_channel_length_config(ADC_ROUTINE_CHANNEL, 1);
+			adc_routine_channel_config(0, ADC_CHANNEL_9, ADC_SAMPLETIME_55POINT5);
+			adc_special_function_config(ADC_CONTINUOUS_MODE, DISABLE);
+			adc_special_function_config(ADC_SCAN_MODE, DISABLE);
+			adc_data_alignment_config(ADC_DATAALIGN_RIGHT);
+			adc_channel_length_config(ADC_ROUTINE_CHANNEL, 1);
+			adc_resolution_config(ADC_RESOLUTION_12B);
+
+			adc_enable();
+			adc_software_trigger_enable(ADC_ROUTINE_CHANNEL);
 			while(SET != adc_flag_get(ADC_FLAG_EOC));
 
 			uint16_t raw = adc_routine_data_read();
-			g_wifi_temperature = (1.42 - raw * 3.3 / 4096) * 1000 / 4.3 + 25;
+			g_wifi_temperature = (1.43f - raw * 3.3f / 4096) * 1000 / 4.3f + 25;
 			temp_sec = 0;
 		}
 		temp_sec++;
@@ -74,17 +87,10 @@ int main(void)
 
 	g_mac = wifi_vif_mac_addr_get(WIFI_VIF_INDEX_DEFAULT);
 
-	rcu_periph_clock_enable(RCU_ADC);
-	adc_tempsensor_vrefint_enable();
-	adc_clock_config(ADC_ADCCK_PCLK2_DIV6);
-	adc_special_function_config(ADC_CONTINUOUS_MODE, ENABLE);
-	adc_special_function_config(ADC_SCAN_MODE, DISABLE);
-	adc_data_alignment_config(ADC_DATAALIGN_RIGHT);
-	adc_channel_length_config(ADC_ROUTINE_CHANNEL, 1);
-	adc_routine_channel_config(0, ADC_CHANNEL_9, ADC_SAMPLETIME_55POINT5);
+	rcu_periph_clock_enable(RCU_SYSCFG);
 
-	adc_enable();
-	adc_software_trigger_enable(ADC_ROUTINE_CHANNEL);
+	rcu_periph_clock_enable(RCU_ADC);
+	adc_clock_config(ADC_ADCCK_PCLK2_DIV6);
 
 	rcu_periph_clock_enable(RCU_GPIOA);
 	rcu_periph_clock_enable(RCU_GPIOB);

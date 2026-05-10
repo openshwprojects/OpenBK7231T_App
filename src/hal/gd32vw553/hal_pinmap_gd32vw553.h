@@ -11,6 +11,9 @@ typedef struct gd32PinMapping_s
 	const char* name;
 	uint32_t gpio;
 	uint32_t pin;
+	uint32_t pwmtimer;
+	uint16_t pwmchannel;
+	uint32_t pwmaf;
 } gd32PinMapping_t;
 
 extern gd32PinMapping_t g_pins[];

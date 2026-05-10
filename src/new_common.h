@@ -1047,6 +1047,10 @@ OSStatus rtos_suspend_thread(beken_thread_t* thread);
 #include "queue.h"
 #include "event_groups.h"
 
+#if __cplusplus
+#define LWIP_TIMEVAL_PRIVATE 0
+#endif
+
 typedef unsigned int UINT32;
 
 #define bk_printf printf
