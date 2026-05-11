@@ -1538,14 +1538,16 @@ static driver_t g_drivers[] = {
 	NULL,                                    // appendInformationToHTTPIndexPage
 	NULL,                                    // runQuickTick
 	DisplayHello_Shutdown,                   // stopFunction
-	NULL },                                  // onEveryMinute
+	NULL,                                    // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
+	},
 	{ "DisplayDemo",                         // Driver Name
 	DisplayDemo_Init,                        // Init
 	DisplayDemo_OnEverySecond,               // onEverySecond
 	NULL,                                    // appendInformationToHTTPIndexPage
 	NULL,                                    // runQuickTick
 	DisplayDemo_Shutdown,                    // stopFunction
-	NULL },                                  // onEveryMinute
 	NULL,                                    // onChannelChanged
 	NULL,                                    // onHassDiscovery
 	false,                                   // loaded

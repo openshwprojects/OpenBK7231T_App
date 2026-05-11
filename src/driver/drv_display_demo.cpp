@@ -32,7 +32,7 @@ static void gui_build_main_screen() {
     lv_obj_t * tab_btns = lv_tabview_get_tab_btns(tabview);
     lv_obj_set_style_bg_color(tab_btns, lv_color_hex(0x1A1A2E), LV_PART_MAIN);
     lv_obj_set_style_text_color(tab_btns, lv_color_hex(0xAAAAAA), LV_PART_MAIN);
-    lv_obj_set_style_text_color(tab_btns, lv_color_hex(0xFFFFFF), LV_PART_ITEMS | LV_STATE_CHECKED);
+    lv_obj_set_style_text_color(tab_btns, lv_color_hex(0xFFFFFF), (lv_style_selector_t)((int)LV_PART_ITEMS | (int)LV_STATE_CHECKED));
 
     // Add 3 tabs
     lv_obj_t * tab1 = lv_tabview_add_tab(tabview, "Controls");
@@ -50,7 +50,7 @@ static void gui_build_main_screen() {
     // A switch
     lv_obj_t * sw = lv_switch_create(tab1);
     lv_obj_align(sw, LV_ALIGN_CENTER, -60, 20);
-    lv_obj_set_style_bg_color(sw, lv_color_hex(0xE94560), LV_PART_INDICATOR | LV_STATE_CHECKED);
+    lv_obj_set_style_bg_color(sw, lv_color_hex(0xE94560), (lv_style_selector_t)((int)LV_PART_INDICATOR | (int)LV_STATE_CHECKED));
 
     // An arc
     lv_obj_t * arc = lv_arc_create(tab1);
