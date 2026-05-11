@@ -1199,6 +1199,19 @@ extern int g_rebootReason;
 extern float g_wifi_temperature;
 extern char g_wifi_bssid[33];
 extern uint8_t g_wifi_channel;
+// are we acting as (Open-) Access point or as client? 
+// initialized in user_main.c
+// included as "external int g_WifiMode;" 
+// in other code like hal_wifi-code or http_fns.c
+// in order to change when moving e.g. from sta to access-point.
+// otherwise user_main.c will try to connect as client if this is not changed!
+extern uint8_t g_WifiMode;	// 0 = STA	1 = OpenAP	2 = WAP-AP 
+#if ENABLE_WPA_AP
+extern char g_AP_Wifi_SSID[64];
+extern char g_AP_Wifi_PW[64];
+void restartWifiIn(int x);
+#endif
+
 
 typedef int(*jsonCb_t)(void *userData, const char *fmt, ...);
 #if ENABLE_TASMOTA_JSON
