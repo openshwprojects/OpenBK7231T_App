@@ -1175,7 +1175,7 @@ void CMD_Init_Delayed() {
 	}
 #endif
 #if ENABLE_DRIVER_DISPLAY
-	CMD_ExecuteCommand("startDriver DisplayHello", 0);
+	CMD_ExecuteCommand("startDriver DisplayDemo", 0);
 #endif
 #if PLATFORM_BEKEN || WINDOWS || PLATFORM_BL602 || PLATFORM_ESPIDF || PLATFORM_ESP8266 \
 	|| PLATFORM_REALTEK || PLATFORM_ECR6600 || PLATFORM_XRADIO

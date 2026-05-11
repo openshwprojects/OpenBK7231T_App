@@ -28,6 +28,10 @@ void DisplayHello_Init();
 void DisplayHello_OnEverySecond();
 void DisplayHello_Shutdown();
 
+void DisplayDemo_Init();
+void DisplayDemo_OnEverySecond();
+void DisplayDemo_Shutdown();
+
 void DRV_MQTTServer_Init();
 void DRV_MQTTServer_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState);
 void DRV_MQTTServer_RunEverySecond();
@@ -1534,6 +1538,14 @@ static driver_t g_drivers[] = {
 	NULL,                                    // appendInformationToHTTPIndexPage
 	NULL,                                    // runQuickTick
 	DisplayHello_Shutdown,                   // stopFunction
+	NULL },                                  // onEveryMinute
+	{ "DisplayDemo",                         // Driver Name
+	DisplayDemo_Init,                        // Init
+	DisplayDemo_OnEverySecond,               // onEverySecond
+	NULL,                                    // appendInformationToHTTPIndexPage
+	NULL,                                    // runQuickTick
+	DisplayDemo_Shutdown,                    // stopFunction
+	NULL },                                  // onEveryMinute
 	NULL,                                    // onChannelChanged
 	NULL,                                    // onHassDiscovery
 	false,                                   // loaded

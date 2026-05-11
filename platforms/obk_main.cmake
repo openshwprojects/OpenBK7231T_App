@@ -182,6 +182,7 @@ set(OBKM_SRC_CXX
 	${OBK_SRCS}driver/drv_ir_new.cpp
 	${OBK_SRCS}driver/drv_display_shared.cpp
 	${OBK_SRCS}driver/drv_display_hello.cpp
+	${OBK_SRCS}driver/drv_display_demo.cpp
 	${OBK_SRCS}driver/display/lvgl_v8_port.cpp
 	${OBK_SRCS}libraries/IRremoteESP8266/src/IRac.cpp
 	${OBK_SRCS}libraries/IRremoteESP8266/src/IRproto.cpp
