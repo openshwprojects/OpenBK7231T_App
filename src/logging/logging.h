@@ -14,8 +14,16 @@
 #ifndef _OBK_LOGGING_H
 #define _OBK_LOGGING_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 void addLogAdv(int level, int feature, const char *fmt, ...);
 void LOG_SetRawSocketCallback(int newFD);
+
+#ifdef __cplusplus
+}
+#endif
 
 #define ADDLOG_ERROR(x, fmt, ...) addLogAdv(LOG_ERROR, x, fmt, ##__VA_ARGS__)
 #define ADDLOG_WARN(x, fmt, ...)  addLogAdv(LOG_WARN, x, fmt, ##__VA_ARGS__)
