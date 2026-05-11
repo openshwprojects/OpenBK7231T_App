@@ -1,0 +1,14 @@
+dependencies:
+  espressif/esp-lib-utils:
+    public: true
+    version: 0.2.*
+  idf: '>=5.1'
+description: ESP32_IO_Expander is a library designed for driving IO expander chips
+  using ESP SoCs
+issues: https://github.com/esp-arduino-libs/ESP32_IO_Expander/issues
+repository: git://github.com/esp-arduino-libs/ESP32_IO_Expander.git
+repository_info:
+  commit_sha: f67d0615cdf2322749635569512dc1e4e689f00e
+  path: .
+url: https://github.com/esp-arduino-libs/ESP32_IO_Expander
+version: 1.1.1

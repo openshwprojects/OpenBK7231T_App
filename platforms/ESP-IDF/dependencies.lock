@@ -1,0 +1,32 @@
+dependencies:
+  esp-lib-utils:
+    dependencies: []
+    source:
+      path: E:\OBK\OBK_LCD_test\OpenBK7231T_App\libraries\esp-lib-utils
+      type: local
+    version: 0.2.0
+  espressif/esp32_io_expander:
+    component_hash: c34d64ac6022fb351dc8e2a24eff5b60884c91fd8c50f96dd7d1b1728fae16d8
+    dependencies:
+    - name: espressif/esp-lib-utils
+      registry_url: https://components.espressif.com
+      require: public
+      version: 0.2.*
+    - name: idf
+      require: private
+      version: '>=5.1'
+    source:
+      registry_url: https://components.espressif.com/
+      type: service
+    version: 1.1.1
+  idf:
+    source:
+      type: idf
+    version: 5.5.1
+direct_dependencies:
+- espressif/esp-lib-utils
+- espressif/esp32_io_expander
+- idf
+manifest_hash: 712ebc2cc95bca203149128a98bbec34598bef1bdbede66c76af8bcc358d5dac
+target: esp32s3
+version: 2.0.0
