@@ -21,18 +21,18 @@ static int tick_count = 0;
 
 static void gui_build_main_screen() {
     screen_main = lv_obj_create(NULL);
-    // Dark background
-    lv_obj_set_style_bg_color(screen_main, lv_color_hex(0x121220), LV_PART_MAIN);
+    // White background
+    lv_obj_set_style_bg_color(screen_main, lv_color_hex(0xFFFFFF), LV_PART_MAIN);
 
     // Create a tab view
     lv_obj_t * tabview = lv_tabview_create(screen_main, LV_DIR_TOP, 50);
-    lv_obj_set_style_bg_color(tabview, lv_color_hex(0x121220), LV_PART_MAIN);
+    lv_obj_set_style_bg_color(tabview, lv_color_hex(0xFFFFFF), LV_PART_MAIN);
     
     // Get the buttons part of the tabview and style it
     lv_obj_t * tab_btns = lv_tabview_get_tab_btns(tabview);
-    lv_obj_set_style_bg_color(tab_btns, lv_color_hex(0x1A1A2E), LV_PART_MAIN);
-    lv_obj_set_style_text_color(tab_btns, lv_color_hex(0xAAAAAA), LV_PART_MAIN);
-    lv_obj_set_style_text_color(tab_btns, lv_color_hex(0xFFFFFF), (lv_style_selector_t)((int)LV_PART_ITEMS | (int)LV_STATE_CHECKED));
+    lv_obj_set_style_bg_color(tab_btns, lv_color_hex(0xF0F0F0), LV_PART_MAIN);
+    lv_obj_set_style_text_color(tab_btns, lv_color_hex(0x999999), LV_PART_MAIN);
+    lv_obj_set_style_text_color(tab_btns, lv_color_hex(0x2196F3), (lv_style_selector_t)((int)LV_PART_ITEMS | (int)LV_STATE_CHECKED));
 
     // Add 3 tabs
     lv_obj_t * tab1 = lv_tabview_add_tab(tabview, "Controls");
@@ -44,32 +44,32 @@ static void gui_build_main_screen() {
     lv_obj_t * slider = lv_slider_create(tab1);
     lv_obj_align(slider, LV_ALIGN_TOP_MID, 0, 20);
     lv_obj_set_width(slider, 200);
-    lv_obj_set_style_bg_color(slider, lv_color_hex(0x0F3460), LV_PART_MAIN);
-    lv_obj_set_style_bg_color(slider, lv_color_hex(0xE94560), LV_PART_INDICATOR);
+    lv_obj_set_style_bg_color(slider, lv_color_hex(0xDDDDDD), LV_PART_MAIN);
+    lv_obj_set_style_bg_color(slider, lv_color_hex(0x2196F3), LV_PART_INDICATOR);
 
     // A switch
     lv_obj_t * sw = lv_switch_create(tab1);
     lv_obj_align(sw, LV_ALIGN_CENTER, -60, 20);
-    lv_obj_set_style_bg_color(sw, lv_color_hex(0xE94560), (lv_style_selector_t)((int)LV_PART_INDICATOR | (int)LV_STATE_CHECKED));
+    lv_obj_set_style_bg_color(sw, lv_color_hex(0x4CAF50), (lv_style_selector_t)((int)LV_PART_INDICATOR | (int)LV_STATE_CHECKED));
 
     // An arc
     lv_obj_t * arc = lv_arc_create(tab1);
     lv_obj_set_size(arc, 100, 100);
     lv_obj_align(arc, LV_ALIGN_CENTER, 60, 20);
     lv_arc_set_value(arc, 40);
-    lv_obj_set_style_arc_color(arc, lv_color_hex(0x0F3460), LV_PART_MAIN);
-    lv_obj_set_style_arc_color(arc, lv_color_hex(0xE94560), LV_PART_INDICATOR);
+    lv_obj_set_style_arc_color(arc, lv_color_hex(0xDDDDDD), LV_PART_MAIN);
+    lv_obj_set_style_arc_color(arc, lv_color_hex(0x2196F3), LV_PART_INDICATOR);
 
     // --- TAB 2: Dashboard ---
     chart = lv_chart_create(tab2);
     lv_obj_set_size(chart, 240, 150);
     lv_obj_align(chart, LV_ALIGN_CENTER, 0, 0);
     lv_chart_set_type(chart, LV_CHART_TYPE_LINE);
-    lv_obj_set_style_bg_color(chart, lv_color_hex(0x16213E), LV_PART_MAIN);
-    lv_obj_set_style_line_color(chart, lv_color_hex(0x00FF00), LV_PART_ITEMS);
+    lv_obj_set_style_bg_color(chart, lv_color_hex(0xFAFAFA), LV_PART_MAIN);
+    lv_obj_set_style_line_color(chart, lv_color_hex(0xCCCCCC), LV_PART_ITEMS);
     
     // Add data series
-    ser = lv_chart_add_series(chart, lv_color_hex(0xE94560), LV_CHART_AXIS_PRIMARY_Y);
+    ser = lv_chart_add_series(chart, lv_color_hex(0x009688), LV_CHART_AXIS_PRIMARY_Y);
     for(int i = 0; i < 10; i++) {
         lv_chart_set_next_value(chart, ser, lv_rand(10, 90));
     }
@@ -78,7 +78,7 @@ static void gui_build_main_screen() {
     mem_label = lv_label_create(tab3);
     lv_label_set_text(mem_label, "Mem: --");
     lv_obj_align(mem_label, LV_ALIGN_TOP_LEFT, 10, 10);
-    lv_obj_set_style_text_color(mem_label, lv_color_hex(0xAAAAAA), LV_PART_MAIN);
+    lv_obj_set_style_text_color(mem_label, lv_color_hex(0x555555), LV_PART_MAIN);
 
     chip_label = lv_label_create(tab3);
     esp_chip_info_t chip_info;
@@ -87,7 +87,7 @@ static void gui_build_main_screen() {
     snprintf(cbuf, sizeof(cbuf), "Cores: %d\nRev: %d", chip_info.cores, chip_info.revision);
     lv_label_set_text(chip_label, cbuf);
     lv_obj_align(chip_label, LV_ALIGN_TOP_LEFT, 10, 60);
-    lv_obj_set_style_text_color(chip_label, lv_color_hex(0xAAAAAA), LV_PART_MAIN);
+    lv_obj_set_style_text_color(chip_label, lv_color_hex(0x555555), LV_PART_MAIN);
 }
 
 extern "C" void DisplayDemo_Init() {

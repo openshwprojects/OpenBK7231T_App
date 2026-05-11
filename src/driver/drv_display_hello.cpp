@@ -29,36 +29,36 @@ static void btn_event_cb(lv_event_t *e) {
 
 static void gui_build_main_screen() {
     screen_main = lv_obj_create(NULL);
-    // Dark background
-    lv_obj_set_style_bg_color(screen_main, lv_color_hex(0x1A1A2E), LV_PART_MAIN);
+    // White background
+    lv_obj_set_style_bg_color(screen_main, lv_color_hex(0xFFFFFF), LV_PART_MAIN);
 
     // Title label
     lv_obj_t *title = lv_label_create(screen_main);
     lv_label_set_text(title, "OpenBeken Display Hello");
     lv_obj_align(title, LV_ALIGN_TOP_MID, 0, 30);
-    lv_obj_set_style_text_color(title, lv_color_hex(0xFFFFFF), LV_PART_MAIN);
+    lv_obj_set_style_text_color(title, lv_color_hex(0x333333), LV_PART_MAIN);
     lv_obj_set_style_text_font(title, &lv_font_montserrat_14, LV_PART_MAIN);
 
     // Counter label
     counter_label = lv_label_create(screen_main);
     lv_label_set_text(counter_label, "Clicks: 0");
     lv_obj_align(counter_label, LV_ALIGN_CENTER, 0, -40);
-    lv_obj_set_style_text_color(counter_label, lv_color_hex(0xE94560), LV_PART_MAIN);
+    lv_obj_set_style_text_color(counter_label, lv_color_hex(0x2196F3), LV_PART_MAIN);
     lv_obj_set_style_text_font(counter_label, &lv_font_montserrat_14, LV_PART_MAIN);
     
     // Tick label
     tick_label = lv_label_create(screen_main);
     lv_label_set_text(tick_label, "Ticks: 0");
     lv_obj_align(tick_label, LV_ALIGN_CENTER, 0, -20);
-    lv_obj_set_style_text_color(tick_label, lv_color_hex(0x00FF00), LV_PART_MAIN);
+    lv_obj_set_style_text_color(tick_label, lv_color_hex(0x555555), LV_PART_MAIN);
     lv_obj_set_style_text_font(tick_label, &lv_font_montserrat_14, LV_PART_MAIN);
 
     // Button
     lv_obj_t *btn = lv_btn_create(screen_main);
     lv_obj_set_size(btn, 200, 60);
     lv_obj_align(btn, LV_ALIGN_CENTER, 0, 40);
-    lv_obj_set_style_bg_color(btn, lv_color_hex(0x0F3460), LV_PART_MAIN);
-    lv_obj_set_style_bg_color(btn, lv_color_hex(0x16213E), LV_PART_MAIN | LV_STATE_PRESSED);
+    lv_obj_set_style_bg_color(btn, lv_color_hex(0x2196F3), LV_PART_MAIN);
+    lv_obj_set_style_bg_color(btn, lv_color_hex(0x1976D2), (lv_style_selector_t)((int)LV_PART_MAIN | (int)LV_STATE_PRESSED));
     lv_obj_set_style_radius(btn, 10, LV_PART_MAIN);
     lv_obj_add_event_cb(btn, btn_event_cb, LV_EVENT_CLICKED, NULL);
 
@@ -73,7 +73,7 @@ static void gui_build_main_screen() {
     mem_label = lv_label_create(screen_main);
     lv_label_set_text(mem_label, "Mem: --");
     lv_obj_align(mem_label, LV_ALIGN_BOTTOM_RIGHT, -10, -10);
-    lv_obj_set_style_text_color(mem_label, lv_color_hex(0xAAAAAA), LV_PART_MAIN);
+    lv_obj_set_style_text_color(mem_label, lv_color_hex(0x777777), LV_PART_MAIN);
     lv_obj_set_style_text_font(mem_label, &lv_font_montserrat_14, LV_PART_MAIN);
 
     // Chip Info Label (Bottom Left)
@@ -84,7 +84,7 @@ static void gui_build_main_screen() {
     snprintf(cbuf, sizeof(cbuf), "Cores: %d, Rev: %d", chip_info.cores, chip_info.revision);
     lv_label_set_text(chip_label, cbuf);
     lv_obj_align(chip_label, LV_ALIGN_BOTTOM_LEFT, 10, -10);
-    lv_obj_set_style_text_color(chip_label, lv_color_hex(0xAAAAAA), LV_PART_MAIN);
+    lv_obj_set_style_text_color(chip_label, lv_color_hex(0x777777), LV_PART_MAIN);
     lv_obj_set_style_text_font(chip_label, &lv_font_montserrat_14, LV_PART_MAIN);
 }
 
