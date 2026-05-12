@@ -95,6 +95,22 @@ static driver_t g_drivers[] = {
 	false,                                      // loaded
 	},
 #endif
+#if ENABLE_DRIVER_ARISTON
+	//drvdetail:{"name":"Ariston",
+	//drvdetail:"title":"Ariston Boiler",
+	//drvdetail:"descr":"Driver for Ariston boiler UART protocol bridge",
+	//drvdetail:"requires":""}
+	{ "Ariston",                             // Driver Name
+	Ariston_Init,                            // Init
+	Ariston_OnEverySecond,                   // onEverySecond
+	Ariston_AppendInformationToHTTPIndexPage,// appendInformationToHTTPIndexPage
+	Ariston_RunFrame,                        // runQuickTick
+	NULL,                                    // stopFunction
+	NULL,                                    // onChannelChanged
+	Ariston_OnHassDiscovery,                 // onHassDiscovery
+	false,                                   // loaded
+	},
+#endif
 #ifdef ENABLE_DRIVER_GIRIERMCU
 	//drvdetail:{"name":"GirierMCU",
 	//drvdetail:"title":"GirierMCU",

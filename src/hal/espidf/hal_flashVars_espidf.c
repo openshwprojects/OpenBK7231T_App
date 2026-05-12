@@ -162,4 +162,47 @@ void HAL_FlashVars_SaveTotalConsumption(float total_consumption)
 
 }
 
+int HAL_GetAristonEnergyStatus(ARISTON_ENERGY_DATA* data)
+{
+	if (!data) {
+		return 0;
+	}
+	memset(data, 0, sizeof(*data));
+	InitFlashIfNeeded();
+	nvs_handle_t handle = 0;
+	if (nvs_open("config", NVS_READONLY, &handle) != ESP_OK) {
+		return 0;
+	}
+	size_t size = sizeof(*data);
+	esp_err_t err = nvs_get_blob(handle, "aem", data, &size);
+	nvs_close(handle);
+	if (err != ESP_OK || size != sizeof(*data)) {
+		memset(data, 0, sizeof(*data));
+		return 0;
+	}
+	return 1;
+}
+
+int HAL_SetAristonEnergyStatus(const ARISTON_ENERGY_DATA* data)
+{
+	if (!data) {
+		return 0;
+	}
+	InitFlashIfNeeded();
+	nvs_handle_t handle = 0;
+	if (nvs_open("config", NVS_READWRITE, &handle) != ESP_OK) {
+		return 0;
+	}
+	if (nvs_set_blob(handle, "aem", data, sizeof(*data)) != ESP_OK) {
+		nvs_close(handle);
+		return 0;
+	}
+	if (nvs_commit(handle) != ESP_OK) {
+		nvs_close(handle);
+		return 0;
+	}
+	nvs_close(handle);
+	return 1;
+}
+
 #endif // PLATFORM_ESPIDF

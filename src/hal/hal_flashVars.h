@@ -30,6 +30,11 @@ typedef struct {
 	float Export;
 } ENERGY_DATA;
 
+typedef struct ARISTON_ENERGY_DATA {
+	float TotalWh;
+	uint32_t save_counter;
+} ARISTON_ENERGY_DATA;
+
 typedef enum {
 	ENERGY_CHANNEL_A = 0,
 	ENERGY_CHANNEL_B = 1,
@@ -68,6 +73,8 @@ int HAL_SetEnergyMeterStatus(ENERGY_METERING_DATA* data);
 void HAL_FlashVars_SaveTotalConsumption(float total_consumption);
 void HAL_FlashVars_SaveEnergyExport(float f);
 float HAL_FlashVars_GetEnergyExport();
+int HAL_GetAristonEnergyStatus(ARISTON_ENERGY_DATA* data);
+int HAL_SetAristonEnergyStatus(const ARISTON_ENERGY_DATA* data);
 
 #ifdef ENABLE_DRIVER_HLW8112SPI
 void HAL_FlashVars_SaveEnergy(ENERGY_DATA** data, int channel_count);
