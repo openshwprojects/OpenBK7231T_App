@@ -644,6 +644,53 @@ void Test_LEDDriver_RGBCW() {
 	SELFTEST_ASSERT_CHANNEL(5, 0);
 }
 
+void Test_LEDDriver_RGBWWhiteBlend() {
+	SIM_ClearOBK(0);
+
+	PIN_SetPinRoleForPinIndex(24, IOR_PWM);
+	PIN_SetPinChannelForPinIndex(24, 1);
+
+	PIN_SetPinRoleForPinIndex(26, IOR_PWM);
+	PIN_SetPinChannelForPinIndex(26, 2);
+
+	PIN_SetPinRoleForPinIndex(9, IOR_PWM);
+	PIN_SetPinChannelForPinIndex(9, 3);
+
+	PIN_SetPinRoleForPinIndex(6, IOR_PWM);
+	PIN_SetPinChannelForPinIndex(6, 4);
+
+	PIN_SetPinRoleForPinIndex(7, IOR_PWM);
+	PIN_SetPinChannelForPinIndex(7, 5);
+
+	CFG_SetFlag(OBK_FLAG_LED_USE_OLD_LINEAR_MODE, true);
+	CFG_SetFlag(OBK_FLAG_LED_WHITE_BLEND_MODE, true);
+	CMD_ExecuteCommand("led_enableAll 1", 0);
+	CMD_ExecuteCommand("led_dimmer 100", 0);
+
+	CMD_ExecuteCommand("led_basecolor_rgb FFFFFF", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 0);
+	SELFTEST_ASSERT_CHANNEL(2, 0);
+	SELFTEST_ASSERT_CHANNEL(3, 0);
+	SELFTEST_ASSERT_CHANNEL(4, 0);
+	SELFTEST_ASSERT_CHANNEL(5, 100);
+
+	CMD_ExecuteCommand("led_basecolor_rgb C0A080", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 25);
+	SELFTEST_ASSERT_CHANNEL(2, 12);
+	SELFTEST_ASSERT_CHANNEL(3, 0);
+	SELFTEST_ASSERT_CHANNEL(4, 0);
+	SELFTEST_ASSERT_CHANNEL(5, 50);
+
+	CFG_SetFlag(OBK_FLAG_LED_SMOOTH_TRANSITIONS, true);
+	CMD_ExecuteCommand("led_basecolor_rgb FFFFFF", 0);
+	Sim_RunSeconds(2.0f, false);
+	SELFTEST_ASSERT_CHANNEL(1, 0);
+	SELFTEST_ASSERT_CHANNEL(2, 0);
+	SELFTEST_ASSERT_CHANNEL(3, 0);
+	SELFTEST_ASSERT_CHANNEL(4, 0);
+	SELFTEST_ASSERT_CHANNEL(5, 100);
+}
+
 void Test_LEDDriver_SM2235_RGBCW() {
 	SIM_ClearOBK(0);
 
@@ -1028,6 +1075,7 @@ void Test_LEDDriver() {
 	Test_LEDDriver_RGB(0);
 	Test_LEDDriver_RGB(1);
 	Test_LEDDriver_RGBCW();
+	Test_LEDDriver_RGBWWhiteBlend();
 	Test_LEDDriver_Palette();
 	Test_LEDDriver_BP5758_RGBCW();
 	Test_LEDDriver_SM2235_RGBCW();

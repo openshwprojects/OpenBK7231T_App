@@ -611,8 +611,8 @@ void apply_smart_light() {
 			for (i = 0; i < 3; i++) {
 				whiteBlendBaseRGBCW[i] = led_baseColors[i] - white;
 			}
-			whiteBlendBaseRGBCW[3] = white;
-			whiteBlendBaseRGBCW[4] = 0;
+			whiteBlendBaseRGBCW[3] = 0;
+			whiteBlendBaseRGBCW[4] = white;
 		}
 
 		for(i = 0; i < maxPossibleIndexToSet; i++) {
@@ -633,7 +633,7 @@ void apply_smart_light() {
 			}
 			else if (g_lightMode == Light_RGB) {
 				// skip channels 3, 4
-				if (i >= (bWhiteBlendMode ? 4 : 3))
+				if ((!bWhiteBlendMode && i >= 3) || (bWhiteBlendMode && i == 3))
 				{
 					baseRGBCW[i] = 0;
 					final = 0;
