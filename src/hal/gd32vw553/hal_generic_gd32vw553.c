@@ -19,7 +19,7 @@ void HAL_Delay_us(int delay)
 
 void HAL_Configure_WDT()
 {
-	fwdgt_init(10000);
+	fwdgt_init(15000);
 	fwdgt_start();
 }
 

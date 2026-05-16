@@ -43,8 +43,17 @@ int HAL_UART_Init(int baud, int parity, bool hwflowc, int txOverride, int rxOver
 	{
 		uart = USART0;
 	}
-	uart_driver_init();
 	uart_config(uart, baud, hwflowc, false, false);
+	uint32_t parityb;
+	switch(parity)
+	{
+		case 1:  parityb = USART_PM_ODD; break;
+		case 2:  parityb = USART_PM_EVEN; break;
+		default: parityb = USART_PM_NONE; break;
+	}
+	usart_disable(uart);
+	usart_parity_config(uart, parityb);
+	usart_enable(uart);
 	uart_irq_callback_register(uart, uart_cb);
 	isInitialized = true;
 	return 1;

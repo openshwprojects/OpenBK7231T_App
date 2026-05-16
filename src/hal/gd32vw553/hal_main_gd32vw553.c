@@ -20,7 +20,10 @@
 #include "gd32vw55x_rcu.h"
 #include "FreeRTOS.h"
 #include "task.h"
+#include "rom_export.h"
 
+char reset_str[64] = "";
+uint8_t running_idx = IMAGE_0;
 uint8_t* g_mac = NULL;
 extern uint8_t* wifi_vif_mac_addr_get(int vif_idx);
 extern float g_wifi_temperature;
@@ -52,7 +55,9 @@ static void obk_task(void* pvParameters)
 			while(SET != adc_flag_get(ADC_FLAG_EOC));
 
 			uint16_t raw = adc_routine_data_read();
-			g_wifi_temperature = (1.43f - raw * 3.3f / 4096) * 1000 / 4.3f + 25;
+			adc_disable();
+
+			g_wifi_temperature = (1.42f - raw * 3.3f / 4096) * 1000 / 4.3f + 25;
 			temp_sec = 0;
 		}
 		temp_sec++;
@@ -90,11 +95,26 @@ int main(void)
 	rcu_periph_clock_enable(RCU_SYSCFG);
 
 	rcu_periph_clock_enable(RCU_ADC);
-	adc_clock_config(ADC_ADCCK_PCLK2_DIV6);
+	adc_clock_config(ADC_ADCCK_PCLK2_DIV4);
 
 	rcu_periph_clock_enable(RCU_GPIOA);
 	rcu_periph_clock_enable(RCU_GPIOB);
 	rcu_periph_clock_enable(RCU_GPIOC);
+
+	uint32_t flags = (RCU_RSTSCK >> 26U) & 0x3F;
+	rcu_all_reset_flag_clear();
+	if(flags & (1U << 0)) strcat(reset_str, "EPRST & ");
+	if(flags & (1U << 1)) strcat(reset_str, "PORRST & ");
+	if(flags & (1U << 2)) strcat(reset_str, "SWRST & ");
+	if(flags & (1U << 3)) strcat(reset_str, "FWDGT & ");
+	if(flags & (1U << 4)) strcat(reset_str, "WWDGT & ");
+	if(flags & (1U << 5)) strcat(reset_str, "LPRST & ");
+	uint32_t len = strlen(reset_str);
+	if(len >= 3)
+	{
+		reset_str[len - 3] = '\0';
+	}
+	rom_sys_status_get(SYS_RUNNING_IMG, LEN_SYS_RUNNING_IMG, &running_idx);
 
 	xTaskCreate(
 		obk_task,

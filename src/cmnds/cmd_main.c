@@ -76,6 +76,10 @@ int g_sleepfactor = 1;
 #endif
 #elif PLATFORM_ECR6600
 #include "psm_system.h"
+#elif PLATFORM_GD32VW553
+#include "gd32vw55x.h"
+#include "gd32vw55x_platform.h"
+#include "log_uart.h"
 #endif
 
 #define HASH_SIZE 128
@@ -374,6 +378,7 @@ static commandResult_t CMD_DeepSleep(const void* context, const char* cmd, const
 	}
 
 	timeMS = Tokenizer_GetArgInteger(0);
+
 	HAL_DisconnectFromWifi();
 #if defined(PLATFORM_BEKEN) && !defined(PLATFORM_BEKEN_NEW)
 	// It requires a define in SDK file:
@@ -431,6 +436,34 @@ static commandResult_t CMD_DeepSleep(const void* context, const char* cmd, const
 	// this works fine, but wifi will not receive anything after waking up, and only full power cycle will fix it up.
 	drv_rtc_set_alarm_relative(timeMS * 1000 * 33);
 	psm_enter_deep_sleep();
+#elif PLATFORM_GD32VW553
+	wifi_netlink_wifi_close();
+	rcu_periph_clock_disable(RCU_ADC);
+	rcu_periph_clock_disable(RCU_GPIOA);
+	rcu_periph_clock_disable(RCU_GPIOB);
+	rcu_periph_clock_disable(RCU_GPIOC);
+	rcu_periph_clock_disable(RCU_PKCAU);
+	rcu_periph_clock_disable(RCU_CAU);
+	rcu_periph_clock_disable(RCU_HAU);
+	trng_close(0);
+	uint32_t remaining = timeMS;
+	while(remaining > 0)
+	{
+		uint32_t chunk = remaining > 10 ? 10 : remaining;
+		uint32_t ticks = chunk * 430;
+		FWDGT_CTL = FWDGT_KEY_RELOAD;
+		HAL_Delay_us(75);
+		exti_init(RTC_WAKEUP_EXTI_LINE, EXTI_INTERRUPT, EXTI_TRIG_RISING);
+		rtc_flag_clear(RTC_STAT_WTF);
+		rtc_wakeup_disable();
+		rtc_wakeup_timer_set(ticks * 5);
+		rtc_wakeup_enable();
+		while(RESET == usart_flag_get(LOG_UART, USART_FLAG_TC));
+		pmu_to_deepsleepmode(PMU_LDO_LOWPOWER, PMU_LOWDRIVER_ENABLE, WFI_CMD);
+
+		remaining -= chunk;
+	}
+	HAL_RebootModule();
 #endif
 
 	return CMD_RES_OK;

@@ -96,6 +96,17 @@ void HAL_ConnectToWiFi(const char* ssid, const char* pwd, obkStaticIP_t* ip)
 		eloop_event_register(WIFI_MGMT_EVENT_DISCONNECT, sta_cb_conn_disc, NULL, NULL);
 		g_events_registered = true;
 	}
+	if(ip->localIPAddr[0] != 0)
+	{
+		struct wifi_ip_addr_cfg ip_cfg = { 0 };
+		ip_cfg.mode = IP_ADDR_STATIC_IPV4;
+		ip_cfg.ipv4.addr = *(uint32_t*)ip->localIPAddr;
+		ip_cfg.ipv4.gw = *(uint32_t*)ip->gatewayIPAddr;
+		ip_cfg.ipv4.mask = *(uint32_t*)ip->netMask;
+		ip_cfg.ipv4.dns = *(uint32_t*)ip->dnsServerIpAddr;
+		net_if_use_static_ip(1);
+		wifi_set_vif_ip(0, &ip_cfg);
+	}
 	if(g_wifiStatusCallback != 0)
 	{
 		g_wifiStatusCallback(WIFI_STA_CONNECTING);
