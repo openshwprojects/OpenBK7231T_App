@@ -460,10 +460,58 @@ void HAL_PIN_Setup_Output(int index)
 static int esp8266_pwm_pin_index[ESP8266_PWM_MAX_CH];
 static uint32_t esp8266_pwm_gpio[ESP8266_PWM_MAX_CH];
 static uint32_t esp8266_pwm_duty[ESP8266_PWM_MAX_CH];
-static float esp8266_pwm_value[ESP8266_PWM_MAX_CH];
+static bool esp8266_pwm_initial_value_set[ESP8266_PWM_MAX_CH];
 static int esp8266_pwm_count = 0;
 static bool esp8266_pwm_started = false;
-static bool esp8266_pwm_finalized = false;
+
+static bool ESP8266_IsPWMRole(int role)
+{
+	return role == IOR_PWM
+		|| role == IOR_PWM_n
+		|| role == IOR_PWM_ScriptOnly
+		|| role == IOR_PWM_ScriptOnly_n;
+}
+
+static int ESP8266_CountConfiguredPWMPins(void)
+{
+	int count = 0;
+
+	for(int i = 0; i < g_numPins; i++)
+	{
+		if(!ESP8266_IsPWMRole(g_cfg.pins.roles[i]))
+		{
+			continue;
+		}
+
+		espPinMapping_t* pin = g_pins + i;
+		if(pin->pin == GPIO_NUM_NC || pin->pin == GPIO_NUM_0)
+		{
+			continue;
+		}
+
+		bool duplicate = false;
+		for(int j = 0; j < i; j++)
+		{
+			if(ESP8266_IsPWMRole(g_cfg.pins.roles[j]) && g_pins[j].pin == pin->pin)
+			{
+				duplicate = true;
+				break;
+			}
+		}
+		if(duplicate)
+		{
+			continue;
+		}
+
+		count++;
+		if(count >= ESP8266_PWM_MAX_CH)
+		{
+			return ESP8266_PWM_MAX_CH;
+		}
+	}
+
+	return count;
+}
 
 static int ESP8266_GetPWMChannelForPinIndex(int index)
 {
@@ -522,6 +570,18 @@ static bool ESP8266_PWM_Rebuild(void)
 		return false;
 	}
 
+	float phase[ESP8266_PWM_MAX_CH];
+	for(int i = 0; i < esp8266_pwm_count; i++)
+	{
+		phase[i] = 0.0f;
+	}
+	err = pwm_set_phases(phase);
+	if(err != ESP_OK)
+	{
+		ADDLOG_ERROR(LOG_FEATURE_PINS, "ESP8266 PWM phase init failed: %i", err);
+		return false;
+	}
+
 	err = pwm_start();
 	if(err != ESP_OK)
 	{
@@ -534,14 +594,38 @@ static bool ESP8266_PWM_Rebuild(void)
 	return true;
 }
 
-void HAL_PIN_PWM_Finalize(void)
+static bool ESP8266_PWM_HasInitialValues(void)
 {
-	esp8266_pwm_finalized = true;
-
-	if(!esp8266_pwm_started)
+	for(int i = 0; i < esp8266_pwm_count; i++)
 	{
-		ESP8266_PWM_Rebuild();
+		if(!esp8266_pwm_initial_value_set[i])
+		{
+			return false;
+		}
 	}
+
+	return true;
+}
+
+static void ESP8266_PWM_TryStartQueuedGroup(void)
+{
+	if(esp8266_pwm_started)
+	{
+		return;
+	}
+
+	int expected_count = ESP8266_CountConfiguredPWMPins();
+	if(expected_count <= 0 || esp8266_pwm_count < expected_count)
+	{
+		return;
+	}
+
+	if(!ESP8266_PWM_HasInitialValues())
+	{
+		return;
+	}
+
+	ESP8266_PWM_Rebuild();
 }
 
 int PIN_GetPWMIndexForPinIndex(int index)
@@ -592,16 +676,20 @@ void HAL_PIN_PWM_Stop(int index)
 		esp8266_pwm_pin_index[i] = esp8266_pwm_pin_index[i + 1];
 		esp8266_pwm_gpio[i] = esp8266_pwm_gpio[i + 1];
 		esp8266_pwm_duty[i] = esp8266_pwm_duty[i + 1];
-		esp8266_pwm_value[i] = esp8266_pwm_value[i + 1];
+		esp8266_pwm_initial_value_set[i] = esp8266_pwm_initial_value_set[i + 1];
 	}
 	esp8266_pwm_count--;
 
 	gpio_set_level(pin->pin, 0);
 	pin->isConfigured = false;
 
-	if(esp8266_pwm_finalized)
+	if(esp8266_pwm_started)
 	{
 		ESP8266_PWM_Rebuild();
+	}
+	else
+	{
+		ESP8266_PWM_TryStartQueuedGroup();
 	}
 }
 
@@ -639,18 +727,20 @@ void HAL_PIN_PWM_Start(int index, int freq)
 	esp8266_pwm_pin_index[ch] = index;
 	esp8266_pwm_gpio[ch] = (uint32_t)pin->pin;
 	esp8266_pwm_duty[ch] = 0;
-	esp8266_pwm_value[ch] = -1.0f;
+	esp8266_pwm_initial_value_set[ch] = false;
 	esp8266_pwm_count++;
 
 	pin->isConfigured = true;
 	ESP_ConfigurePin(pin->pin, GPIO_MODE_OUTPUT, false, false, GPIO_INTR_DISABLE);
 	ADDLOG_INFO(LOG_FEATURE_PINS, "ESP8266 PWM queued ch %i pin %i", ch, pin->pin);
 
-	// PIN_SetupPins finalises the ESP8266 PWM group after all configured PWM pins are queued.
-	// If a user changes pin roles after initial setup, rebuild immediately so the new channel exists.
-	if(esp8266_pwm_finalized)
+	if(esp8266_pwm_started)
 	{
 		ESP8266_PWM_Rebuild();
+	}
+	else
+	{
+		ESP8266_PWM_TryStartQueuedGroup();
 	}
 }
 
@@ -678,22 +768,18 @@ void HAL_PIN_PWM_Update(int index, float value)
 
 	uint32_t duty = ESP8266_PWMValueToDuty(value);
 	esp8266_pwm_duty[ch] = duty;
+	esp8266_pwm_initial_value_set[ch] = true;
 
 	if(!esp8266_pwm_started)
 	{
-		if(!esp8266_pwm_finalized)
-		{
-			return;
-		}
-		if(!ESP8266_PWM_Rebuild())
+		ESP8266_PWM_TryStartQueuedGroup();
+		if(!esp8266_pwm_started)
 		{
 			return;
 		}
 	}
 
-	// ESP8266 PWM can lose sync with this cache after grouped pwm_init/pwm_start.
 	// Always push requested duty so RGB/CW mode switches turn old channels off.
-	esp8266_pwm_value[ch] = value;
 	esp_err_t err = pwm_set_duty((uint8_t)ch, duty);
 	if(err != ESP_OK)
 	{
