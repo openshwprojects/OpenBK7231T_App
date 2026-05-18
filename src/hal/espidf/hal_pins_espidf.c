@@ -5,7 +5,11 @@
 #include "../../new_cfg.h"
 #include "../../new_pins.h"
 #include "hal_pinmap_espidf.h"
+#if PLATFORM_ESPIDF
 #include "driver/ledc.h"
+#elif PLATFORM_ESP8266
+#include "driver/pwm.h"
+#endif
 #include "../hal_pins.h"
 
 #ifdef CONFIG_IDF_TARGET_ESP32C3
@@ -337,11 +341,7 @@ espPinMapping_t g_pins[] = { };
 
 #endif
 
-#if PLATFORM_ESP8266
-#include "driver/pwm.h"
-#define gpio_reset_pin(x) //ESP_ConfigurePin(x, GPIO_MODE_INPUT, false, false, GPIO_INTR_DISABLE)
-#define LEDC_MAX_CH 8
-#else
+#if PLATFORM_ESPIDF
 #define LEDC_MAX_CH 6
 #endif
 
@@ -448,7 +448,352 @@ void HAL_PIN_Setup_Output(int index)
 	gpio_set_level(pin->pin, 0);
 }
 
-#if PLATFORM_ESPIDF || PLATFORM_ESP8266
+#if PLATFORM_ESP8266
+
+// ESP8266 RTOS SDK LEDC is a compatibility wrapper around the grouped software PWM driver.
+// OpenBeken configures PWM pins one at a time, but ESP8266 PWM must be initialised
+// as one channel group. Keep ESP32 on real LEDC and use native PWM here.
+
+#define ESP8266_PWM_MAX_CH 8
+#define ESP8266_PWM_PERIOD_US 1000
+
+static int esp8266_pwm_pin_index[ESP8266_PWM_MAX_CH];
+static uint32_t esp8266_pwm_gpio[ESP8266_PWM_MAX_CH];
+static uint32_t esp8266_pwm_duty[ESP8266_PWM_MAX_CH];
+static bool esp8266_pwm_initial_value_set[ESP8266_PWM_MAX_CH];
+static int esp8266_pwm_count = 0;
+static bool esp8266_pwm_started = false;
+
+static bool ESP8266_IsPWMRole(int role)
+{
+	return role == IOR_PWM
+		|| role == IOR_PWM_n
+		|| role == IOR_PWM_ScriptOnly
+		|| role == IOR_PWM_ScriptOnly_n;
+}
+
+static int ESP8266_CountConfiguredPWMPins(void)
+{
+	int count = 0;
+
+	for(int i = 0; i < g_numPins; i++)
+	{
+		if(!ESP8266_IsPWMRole(g_cfg.pins.roles[i]))
+		{
+			continue;
+		}
+
+		espPinMapping_t* pin = g_pins + i;
+		if(pin->pin == GPIO_NUM_NC || pin->pin == GPIO_NUM_0)
+		{
+			continue;
+		}
+
+		bool duplicate = false;
+		for(int j = 0; j < i; j++)
+		{
+			if(ESP8266_IsPWMRole(g_cfg.pins.roles[j]) && g_pins[j].pin == pin->pin)
+			{
+				duplicate = true;
+				break;
+			}
+		}
+		if(duplicate)
+		{
+			continue;
+		}
+
+		count++;
+		if(count >= ESP8266_PWM_MAX_CH)
+		{
+			return ESP8266_PWM_MAX_CH;
+		}
+	}
+
+	return count;
+}
+
+static int ESP8266_GetPWMChannelForPinIndex(int index)
+{
+	for(int i = 0; i < esp8266_pwm_count; i++)
+	{
+		if(esp8266_pwm_pin_index[i] == index)
+		{
+			return i;
+		}
+	}
+	return -1;
+}
+
+static int ESP8266_GetPWMChannelForGPIO(gpio_num_t gpio)
+{
+	for(int i = 0; i < esp8266_pwm_count; i++)
+	{
+		if(esp8266_pwm_gpio[i] == (uint32_t)gpio)
+		{
+			return i;
+		}
+	}
+	return -1;
+}
+
+static uint32_t ESP8266_PWMValueToDuty(float value)
+{
+	if(value <= 0.0f)
+	{
+		return 0;
+	}
+	if(value >= 100.0f)
+	{
+		return ESP8266_PWM_PERIOD_US;
+	}
+	return (uint32_t)((value * (float)ESP8266_PWM_PERIOD_US / 100.0f) + 0.5f);
+}
+
+static bool ESP8266_PWM_Rebuild(void)
+{
+	if(esp8266_pwm_started)
+	{
+		pwm_deinit();
+		esp8266_pwm_started = false;
+	}
+
+	if(esp8266_pwm_count <= 0)
+	{
+		return false;
+	}
+
+	esp_err_t err = pwm_init(ESP8266_PWM_PERIOD_US, esp8266_pwm_duty, (uint8_t)esp8266_pwm_count, esp8266_pwm_gpio);
+	if(err != ESP_OK)
+	{
+		ADDLOG_ERROR(LOG_FEATURE_PINS, "ESP8266 PWM init failed: %i", err);
+		return false;
+	}
+
+	float phase[ESP8266_PWM_MAX_CH];
+	for(int i = 0; i < esp8266_pwm_count; i++)
+	{
+		phase[i] = 0.0f;
+	}
+	err = pwm_set_phases(phase);
+	if(err != ESP_OK)
+	{
+		ADDLOG_ERROR(LOG_FEATURE_PINS, "ESP8266 PWM phase init failed: %i", err);
+		return false;
+	}
+
+	err = pwm_start();
+	if(err != ESP_OK)
+	{
+		ADDLOG_ERROR(LOG_FEATURE_PINS, "ESP8266 PWM start failed: %i", err);
+		return false;
+	}
+
+	esp8266_pwm_started = true;
+	ADDLOG_INFO(LOG_FEATURE_PINS, "ESP8266 PWM started with %i channels", esp8266_pwm_count);
+	return true;
+}
+
+static bool ESP8266_PWM_HasInitialValues(void)
+{
+	for(int i = 0; i < esp8266_pwm_count; i++)
+	{
+		if(!esp8266_pwm_initial_value_set[i])
+		{
+			return false;
+		}
+	}
+
+	return true;
+}
+
+static void ESP8266_PWM_TryStartQueuedGroup(void)
+{
+	if(esp8266_pwm_started)
+	{
+		return;
+	}
+
+	int expected_count = ESP8266_CountConfiguredPWMPins();
+	if(expected_count <= 0 || esp8266_pwm_count < expected_count)
+	{
+		return;
+	}
+
+	if(!ESP8266_PWM_HasInitialValues())
+	{
+		return;
+	}
+
+	ESP8266_PWM_Rebuild();
+}
+
+int PIN_GetPWMIndexForPinIndex(int index)
+{
+	if(index >= g_numPins)
+	{
+		return -1;
+	}
+	return ESP8266_GetPWMChannelForPinIndex(index);
+}
+
+int HAL_PIN_CanThisPinBePWM(int index)
+{
+	if(index >= g_numPins)
+	{
+		return 0;
+	}
+	espPinMapping_t* pin = g_pins + index;
+	// GPIO0 can be used as GPIO after boot, but assigning PWM there can leave the module in a boot loop after reset.
+	if(pin->pin == GPIO_NUM_0)
+	{
+		return 0;
+	}
+	if(pin->pin != GPIO_NUM_NC)
+	{
+		return 1;
+	}
+	return 0;
+}
+
+void HAL_PIN_PWM_Stop(int index)
+{
+	if(index >= g_numPins)
+	{
+		return;
+	}
+
+	int ch = ESP8266_GetPWMChannelForPinIndex(index);
+	if(ch < 0)
+	{
+		return;
+	}
+
+	espPinMapping_t* pin = g_pins + index;
+
+	for(int i = ch; i < esp8266_pwm_count - 1; i++)
+	{
+		esp8266_pwm_pin_index[i] = esp8266_pwm_pin_index[i + 1];
+		esp8266_pwm_gpio[i] = esp8266_pwm_gpio[i + 1];
+		esp8266_pwm_duty[i] = esp8266_pwm_duty[i + 1];
+		esp8266_pwm_initial_value_set[i] = esp8266_pwm_initial_value_set[i + 1];
+	}
+	esp8266_pwm_count--;
+
+	gpio_set_level(pin->pin, 0);
+	pin->isConfigured = false;
+
+	if(esp8266_pwm_started)
+	{
+		ESP8266_PWM_Rebuild();
+	}
+	else
+	{
+		ESP8266_PWM_TryStartQueuedGroup();
+	}
+}
+
+void HAL_PIN_PWM_Start(int index, int freq)
+{
+	if(index >= g_numPins)
+	{
+		return;
+	}
+
+	espPinMapping_t* pin = g_pins + index;
+	if(pin->pin == GPIO_NUM_NC)
+	{
+		return;
+	}
+
+	if(pin->pin == GPIO_NUM_0)
+	{
+		ADDLOG_ERROR(LOG_FEATURE_PINS, "ESP8266 PWM rejected on GPIO0");
+		return;
+	}
+
+	if(ESP8266_GetPWMChannelForGPIO(pin->pin) >= 0)
+	{
+		return;
+	}
+
+	if(esp8266_pwm_count >= ESP8266_PWM_MAX_CH)
+	{
+		ADDLOG_ERROR(LOG_FEATURE_PINS, "ESP8266 PWM_Start: no free channels for pin %i", pin->pin);
+		return;
+	}
+
+	int ch = esp8266_pwm_count;
+	esp8266_pwm_pin_index[ch] = index;
+	esp8266_pwm_gpio[ch] = (uint32_t)pin->pin;
+	esp8266_pwm_duty[ch] = 0;
+	esp8266_pwm_initial_value_set[ch] = false;
+	esp8266_pwm_count++;
+
+	pin->isConfigured = true;
+	ESP_ConfigurePin(pin->pin, GPIO_MODE_OUTPUT, false, false, GPIO_INTR_DISABLE);
+	ADDLOG_INFO(LOG_FEATURE_PINS, "ESP8266 PWM queued ch %i pin %i", ch, pin->pin);
+
+	if(esp8266_pwm_started)
+	{
+		ESP8266_PWM_Rebuild();
+	}
+	else
+	{
+		ESP8266_PWM_TryStartQueuedGroup();
+	}
+}
+
+void HAL_PIN_PWM_Update(int index, float value)
+{
+	if(index >= g_numPins)
+	{
+		return;
+	}
+
+	int ch = ESP8266_GetPWMChannelForPinIndex(index);
+	if(ch < 0)
+	{
+		return;
+	}
+
+	if(value < 0.0f)
+	{
+		value = 0.0f;
+	}
+	else if(value > 100.0f)
+	{
+		value = 100.0f;
+	}
+
+	uint32_t duty = ESP8266_PWMValueToDuty(value);
+	esp8266_pwm_duty[ch] = duty;
+	esp8266_pwm_initial_value_set[ch] = true;
+
+	if(!esp8266_pwm_started)
+	{
+		ESP8266_PWM_TryStartQueuedGroup();
+		if(!esp8266_pwm_started)
+		{
+			return;
+		}
+	}
+
+	// Always push requested duty so RGB/CW mode switches turn old channels off.
+	esp_err_t err = pwm_set_duty((uint8_t)ch, duty);
+	if(err != ESP_OK)
+	{
+		ADDLOG_ERROR(LOG_FEATURE_PINS, "ESP8266 PWM set duty failed: ch %i err %i", ch, err);
+		return;
+	}
+	err = pwm_start();
+	if(err != ESP_OK)
+	{
+		ADDLOG_ERROR(LOG_FEATURE_PINS, "ESP8266 PWM restart failed: ch %i err %i", ch, err);
+	}
+}
+
+#elif PLATFORM_ESPIDF
 
 static ledc_channel_config_t ledc_channel[LEDC_MAX_CH];
 static float obk_ch_value[LEDC_MAX_CH];
@@ -464,9 +809,7 @@ void InitLEDC()
 			.freq_hz = 1000,
 			.speed_mode = LEDC_LOW_SPEED_MODE,
 			.timer_num = LEDC_TIMER_0,
-#if PLATFORM_ESPIDF
 			.clk_cfg = SOC_MOD_CLK_RC_FAST,
-#endif
 		};
 		ledc_timer_config(&ledc_timer);
 		for(int i = 0; i < LEDC_MAX_CH; i++)
@@ -525,10 +868,6 @@ int HAL_PIN_CanThisPinBePWM(int index)
 	if(index >= g_numPins)
 		return 0;
 	espPinMapping_t* pin = g_pins + index;
-#if PLATFORM_ESP8266
-	// it can be used, but will result in bootloop on reset
-	if(pin->pin == GPIO_NUM_0) return 0;
-#endif
 	if(pin->pin != GPIO_NUM_NC) return 1;
 	else return 0;
 }
@@ -559,12 +898,6 @@ void HAL_PIN_PWM_Start(int index, int freq)
 	{
 		ledc_channel[freecha].gpio_num = pin->pin;
 		ledc_channel_config(&ledc_channel[freecha]);
-#if PLATFORM_ESP8266
-		// will bootloop without delay
-		delay_ms(100);
-		pwm_deinit();
-		ledc_fade_func_install(0);
-#endif
 		ADDLOG_INFO(LOG_FEATURE_PINS, "init ledc ch %i pin %i", freecha, pin->pin);
 	}
 	else
@@ -581,11 +914,7 @@ void HAL_PIN_PWM_Update(int index, float value)
 	int ch = GetLedcChannelForPin(pin->pin);
 	if(ch >= 0)
 	{
-#if PLATFORM_ESPIDF
 		uint32_t propduty = value * 81.91;
-#else
-		uint32_t propduty = value * 81.96;
-#endif
 		if(value != obk_ch_value[ch]) 
 		{ 
 			obk_ch_value[ch] = value;
