@@ -463,6 +463,8 @@ static uint32_t esp8266_pwm_duty[ESP8266_PWM_MAX_CH];
 static int esp8266_pwm_count = 0;
 static bool esp8266_pwm_started = false;
 static bool esp8266_pwm_setup_active = false;
+static int esp8266_pwm_update_depth = 0;
+static bool esp8266_pwm_update_dirty = false;
 
 static int ESP8266_GetPWMChannelForPinIndex(int index)
 {
@@ -545,6 +547,23 @@ static bool ESP8266_PWM_Rebuild(void)
 	return true;
 }
 
+static bool ESP8266_PWM_ApplyDuties(void)
+{
+	esp_err_t err = pwm_set_duties(esp8266_pwm_duty);
+	if(err != ESP_OK)
+	{
+		ADDLOG_ERROR(LOG_FEATURE_PINS, "ESP8266 PWM set duties failed: err %i", err);
+		return false;
+	}
+	err = pwm_start();
+	if(err != ESP_OK)
+	{
+		ADDLOG_ERROR(LOG_FEATURE_PINS, "ESP8266 PWM restart failed: err %i", err);
+		return false;
+	}
+	return true;
+}
+
 void HAL_PIN_PWM_BeginSetup(void)
 {
 	if(esp8266_pwm_started)
@@ -554,6 +573,8 @@ void HAL_PIN_PWM_BeginSetup(void)
 	}
 
 	esp8266_pwm_count = 0;
+	esp8266_pwm_update_depth = 0;
+	esp8266_pwm_update_dirty = false;
 	esp8266_pwm_setup_active = true;
 }
 
@@ -562,6 +583,29 @@ void HAL_PIN_PWM_Finalize(void)
 	esp8266_pwm_setup_active = false;
 
 	ESP8266_PWM_Rebuild();
+}
+
+void HAL_PIN_PWM_BeginUpdate(void)
+{
+	if(esp8266_pwm_started)
+	{
+		esp8266_pwm_update_depth++;
+	}
+}
+
+void HAL_PIN_PWM_EndUpdate(void)
+{
+	if(esp8266_pwm_update_depth <= 0)
+	{
+		return;
+	}
+
+	esp8266_pwm_update_depth--;
+	if(esp8266_pwm_update_depth == 0 && esp8266_pwm_update_dirty && esp8266_pwm_started)
+	{
+		ESP8266_PWM_ApplyDuties();
+		esp8266_pwm_update_dirty = false;
+	}
 }
 
 int PIN_GetPWMIndexForPinIndex(int index)
@@ -629,6 +673,8 @@ void HAL_PIN_PWM_Stop(int index)
 
 	if(esp8266_pwm_started)
 	{
+		esp8266_pwm_update_depth = 0;
+		esp8266_pwm_update_dirty = false;
 		ESP8266_PWM_Rebuild();
 	}
 }
@@ -675,6 +721,8 @@ void HAL_PIN_PWM_Start(int index, int freq)
 
 	if(esp8266_pwm_started)
 	{
+		esp8266_pwm_update_depth = 0;
+		esp8266_pwm_update_dirty = false;
 		ESP8266_PWM_Rebuild();
 	}
 }
@@ -712,18 +760,14 @@ void HAL_PIN_PWM_Update(int index, float value)
 		}
 	}
 
-	// Always push requested duty so RGB/CW mode switches turn old channels off.
-	esp_err_t err = pwm_set_duty((uint8_t)ch, duty);
-	if(err != ESP_OK)
+	if(esp8266_pwm_update_depth > 0)
 	{
-		ADDLOG_ERROR(LOG_FEATURE_PINS, "ESP8266 PWM set duty failed: ch %i err %i", ch, err);
+		esp8266_pwm_update_dirty = true;
 		return;
 	}
-	err = pwm_start();
-	if(err != ESP_OK)
-	{
-		ADDLOG_ERROR(LOG_FEATURE_PINS, "ESP8266 PWM restart failed: ch %i err %i", ch, err);
-	}
+
+	// Always push the whole cached duty group so RGB/CW mode switches turn old channels off.
+	ESP8266_PWM_ApplyDuties();
 }
 
 #elif PLATFORM_ESPIDF

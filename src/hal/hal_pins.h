@@ -13,6 +13,8 @@ void HAL_PIN_PWM_Start(int index, int freq);
 #if PLATFORM_ESP8266
 void HAL_PIN_PWM_BeginSetup(void);
 void HAL_PIN_PWM_Finalize(void);
+void HAL_PIN_PWM_BeginUpdate(void);
+void HAL_PIN_PWM_EndUpdate(void);
 #endif
 // Value range is 0 to 100, value is clamped
 void HAL_PIN_PWM_Update(int index, float value);
