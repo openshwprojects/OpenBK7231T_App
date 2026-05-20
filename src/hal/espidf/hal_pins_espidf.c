@@ -460,58 +460,9 @@ void HAL_PIN_Setup_Output(int index)
 static int esp8266_pwm_pin_index[ESP8266_PWM_MAX_CH];
 static uint32_t esp8266_pwm_gpio[ESP8266_PWM_MAX_CH];
 static uint32_t esp8266_pwm_duty[ESP8266_PWM_MAX_CH];
-static bool esp8266_pwm_initial_value_set[ESP8266_PWM_MAX_CH];
 static int esp8266_pwm_count = 0;
 static bool esp8266_pwm_started = false;
-
-static bool ESP8266_IsPWMRole(int role)
-{
-	return role == IOR_PWM
-		|| role == IOR_PWM_n
-		|| role == IOR_PWM_ScriptOnly
-		|| role == IOR_PWM_ScriptOnly_n;
-}
-
-static int ESP8266_CountConfiguredPWMPins(void)
-{
-	int count = 0;
-
-	for(int i = 0; i < g_numPins; i++)
-	{
-		if(!ESP8266_IsPWMRole(g_cfg.pins.roles[i]))
-		{
-			continue;
-		}
-
-		espPinMapping_t* pin = g_pins + i;
-		if(pin->pin == GPIO_NUM_NC || pin->pin == GPIO_NUM_0)
-		{
-			continue;
-		}
-
-		bool duplicate = false;
-		for(int j = 0; j < i; j++)
-		{
-			if(ESP8266_IsPWMRole(g_cfg.pins.roles[j]) && g_pins[j].pin == pin->pin)
-			{
-				duplicate = true;
-				break;
-			}
-		}
-		if(duplicate)
-		{
-			continue;
-		}
-
-		count++;
-		if(count >= ESP8266_PWM_MAX_CH)
-		{
-			return ESP8266_PWM_MAX_CH;
-		}
-	}
-
-	return count;
-}
+static bool esp8266_pwm_setup_active = false;
 
 static int ESP8266_GetPWMChannelForPinIndex(int index)
 {
@@ -594,36 +545,21 @@ static bool ESP8266_PWM_Rebuild(void)
 	return true;
 }
 
-static bool ESP8266_PWM_HasInitialValues(void)
-{
-	for(int i = 0; i < esp8266_pwm_count; i++)
-	{
-		if(!esp8266_pwm_initial_value_set[i])
-		{
-			return false;
-		}
-	}
-
-	return true;
-}
-
-static void ESP8266_PWM_TryStartQueuedGroup(void)
+void HAL_PIN_PWM_BeginSetup(void)
 {
 	if(esp8266_pwm_started)
 	{
-		return;
+		pwm_deinit();
+		esp8266_pwm_started = false;
 	}
 
-	int expected_count = ESP8266_CountConfiguredPWMPins();
-	if(expected_count <= 0 || esp8266_pwm_count < expected_count)
-	{
-		return;
-	}
+	esp8266_pwm_count = 0;
+	esp8266_pwm_setup_active = true;
+}
 
-	if(!ESP8266_PWM_HasInitialValues())
-	{
-		return;
-	}
+void HAL_PIN_PWM_Finalize(void)
+{
+	esp8266_pwm_setup_active = false;
 
 	ESP8266_PWM_Rebuild();
 }
@@ -666,6 +602,15 @@ void HAL_PIN_PWM_Stop(int index)
 	int ch = ESP8266_GetPWMChannelForPinIndex(index);
 	if(ch < 0)
 	{
+		if(esp8266_pwm_setup_active)
+		{
+			espPinMapping_t* pin = g_pins + index;
+			if(pin->pin != GPIO_NUM_NC)
+			{
+				gpio_set_level(pin->pin, 0);
+			}
+			pin->isConfigured = false;
+		}
 		return;
 	}
 
@@ -676,7 +621,6 @@ void HAL_PIN_PWM_Stop(int index)
 		esp8266_pwm_pin_index[i] = esp8266_pwm_pin_index[i + 1];
 		esp8266_pwm_gpio[i] = esp8266_pwm_gpio[i + 1];
 		esp8266_pwm_duty[i] = esp8266_pwm_duty[i + 1];
-		esp8266_pwm_initial_value_set[i] = esp8266_pwm_initial_value_set[i + 1];
 	}
 	esp8266_pwm_count--;
 
@@ -686,10 +630,6 @@ void HAL_PIN_PWM_Stop(int index)
 	if(esp8266_pwm_started)
 	{
 		ESP8266_PWM_Rebuild();
-	}
-	else
-	{
-		ESP8266_PWM_TryStartQueuedGroup();
 	}
 }
 
@@ -727,7 +667,6 @@ void HAL_PIN_PWM_Start(int index, int freq)
 	esp8266_pwm_pin_index[ch] = index;
 	esp8266_pwm_gpio[ch] = (uint32_t)pin->pin;
 	esp8266_pwm_duty[ch] = 0;
-	esp8266_pwm_initial_value_set[ch] = false;
 	esp8266_pwm_count++;
 
 	pin->isConfigured = true;
@@ -737,10 +676,6 @@ void HAL_PIN_PWM_Start(int index, int freq)
 	if(esp8266_pwm_started)
 	{
 		ESP8266_PWM_Rebuild();
-	}
-	else
-	{
-		ESP8266_PWM_TryStartQueuedGroup();
 	}
 }
 
@@ -768,12 +703,10 @@ void HAL_PIN_PWM_Update(int index, float value)
 
 	uint32_t duty = ESP8266_PWMValueToDuty(value);
 	esp8266_pwm_duty[ch] = duty;
-	esp8266_pwm_initial_value_set[ch] = true;
 
 	if(!esp8266_pwm_started)
 	{
-		ESP8266_PWM_TryStartQueuedGroup();
-		if(!esp8266_pwm_started)
+		if(esp8266_pwm_setup_active || !ESP8266_PWM_Rebuild())
 		{
 			return;
 		}
