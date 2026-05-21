@@ -1520,7 +1520,23 @@ static driver_t g_drivers[] = {
 	NULL,                                    // onChannelChanged
 	NULL,                                    // onHassDiscovery
 	false,                                   // loaded
-	}
+	},
+#endif
+#if ENABLE_DRIVER_DREO
+	//drvdetail:{"name":"Dreo",
+	//drvdetail:"title":"Dreo",
+	//drvdetail:"descr":"Driver for Dreo devices",
+	//drvdetail:"requires":""}
+	{ "Dreo",                                // Driver Name
+	Dreo_Init,                               // Init
+	Dreo_RunEverySecond,                     // onEverySecond
+	Dreo_AppendInformationToHTTPIndexPage,   // appendInformationToHTTPIndexPage
+	Dreo_RunFrame,                           // runQuickTick
+	Dreo_Shutdown,                           // stopFunction
+	Dreo_OnChannelChanged,                   // onChannelChanged
+	Dreo_OnHassDiscovery,                    // onHassDiscovery
+	false,                                   // loaded
+	},
 #endif
 	//{ "", NULL, NULL, NULL, NULL, NULL, NULL, NULL, false },
 };
