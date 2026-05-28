@@ -22,6 +22,7 @@ target_compile_options(${TARGET_EXE} PRIVATE
 
 target_sources(${TARGET_EXE} PRIVATE
 	${OBK_SRCS}hal/gd32vw553/hal_adc_gd32vw553.c
+	${OBK_SRCS}hal/gd32vw553/hal_bt_proxy_gd32vw553.c
 	${OBK_SRCS}hal/gd32vw553/hal_flashConfig_gd32vw553.c
 	${OBK_SRCS}hal/gd32vw553/hal_flashVars_gd32vw553.c
 	${OBK_SRCS}hal/gd32vw553/hal_generic_gd32vw553.c

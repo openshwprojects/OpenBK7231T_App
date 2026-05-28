@@ -356,7 +356,7 @@ void HAL_AttachInterrupt(int index, OBKInterruptType mode, OBKInterruptHandler f
 	handlers[exti_pin] = function;
 	irq_gpio_index[exti_pin] = index;
 
-	syscfg_exti_line_config(exti_port, BIT(exti_pin));
+	syscfg_exti_line_config(exti_port, exti_pin);
 
 	exti_init(
 		BIT(exti_pin),

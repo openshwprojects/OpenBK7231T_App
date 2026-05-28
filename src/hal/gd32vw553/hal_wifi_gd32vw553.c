@@ -4,6 +4,7 @@
 #include "wifi_init.h"
 #include "wifi_net_ip.h"
 #include "../hal_wifi.h"
+#include "../../logging/logging.h"
 
 extern uint8_t* g_mac;
 static void (*g_wifiStatusCallback)(int code);
@@ -127,6 +128,20 @@ int HAL_SetupWiFiOpenAccessPoint(const char* ssid)
 	wifi_management_ap_start((char*)ssid, NULL, 1, AUTH_MODE_OPEN, 0);
 
 	return 0;
+}
+
+void HAL_PrintNetworkInfo()
+{
+	uint8_t mac[6];
+	WiFI_GetMacAddress((char*)mac);
+	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "+--------------- net device info ------------+");
+	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "|netif type    : %-16s            |", g_bAccessPointMode == 0 ? "STA" : "AP");
+	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "|netif rssi    = %-16i            |", HAL_GetWifiStrength());
+	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "|netif ip      = %-16s            |", HAL_GetMyIPString());
+	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "|netif mask    = %-16s            |", HAL_GetMyMaskString());
+	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "|netif gateway = %-16s            |", HAL_GetMyGatewayString());
+	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "|netif mac     : "MACSTR" %-6s    |", MAC2STR(g_mac), "");
+	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "+--------------------------------------------+");
 }
 
 #endif

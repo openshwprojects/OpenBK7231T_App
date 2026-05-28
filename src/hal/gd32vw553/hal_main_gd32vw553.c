@@ -95,7 +95,7 @@ int main(void)
 	rcu_periph_clock_enable(RCU_SYSCFG);
 
 	rcu_periph_clock_enable(RCU_ADC);
-	adc_clock_config(ADC_ADCCK_PCLK2_DIV4);
+	adc_clock_config(ADC_ADCCK_PCLK2_DIV6);
 
 	rcu_periph_clock_enable(RCU_GPIOA);
 	rcu_periph_clock_enable(RCU_GPIOB);

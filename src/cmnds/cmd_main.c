@@ -437,6 +437,7 @@ static commandResult_t CMD_DeepSleep(const void* context, const char* cmd, const
 	drv_rtc_set_alarm_relative(timeMS * 1000 * 33);
 	psm_enter_deep_sleep();
 #elif PLATFORM_GD32VW553
+	delay_ms(50);
 	wifi_netlink_wifi_close();
 	rcu_periph_clock_disable(RCU_ADC);
 	rcu_periph_clock_disable(RCU_GPIOA);
@@ -458,7 +459,6 @@ static commandResult_t CMD_DeepSleep(const void* context, const char* cmd, const
 		rtc_wakeup_disable();
 		rtc_wakeup_timer_set(ticks * 5);
 		rtc_wakeup_enable();
-		while(RESET == usart_flag_get(LOG_UART, USART_FLAG_TC));
 		pmu_to_deepsleepmode(PMU_LDO_LOWPOWER, PMU_LOWDRIVER_ENABLE, WFI_CMD);
 
 		remaining -= chunk;
