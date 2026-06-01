@@ -40,6 +40,7 @@ https://developer.tuya.com/en/docs/iot/tuyacloudlowpoweruniversalserialaccesspro
 #define TUYA_CMD_QUERY_STATE   0x08
 #define TUYA_CMD_SET_TIME      0x1C
 #define TUYA_CMD_WEATHERDATA   0x21
+#define TUYA_CMD_C83_STATE     0x22
 #define TUYA_CMD_SET_RSSI      0x24
 #define TUYA_CMD_NETWORK_STATUS 0x2B
 #define TUYA_CMD_REPORT_STATUS_RECORD_TYPE		0x34 
@@ -131,6 +132,8 @@ const char* TuyaMCU_GetCommandTypeLabel(int t) {
 		return "SetTime";
 	if (t == TUYA_CMD_WEATHERDATA)
 		return "WeatherData";
+		if (t == TUYA_CMD_C83_STATE)
+		return "State";
 	if (t == TUYA_CMD_NETWORK_STATUS)
 		return "NetworkStatus";
 	if (t == TUYA_CMD_SET_RSSI)
@@ -2130,6 +2133,7 @@ void TuyaMCU_ProcessIncoming(const byte* data, int len) {
 
 		
 	case TUYA_CMD_STATE:
+	case TUYA_CMD_C83_STATE:
 		TuyaMCU_ParseStateMessage(data + 6, len - 6);
 		state_updated = true;
 		g_sendQueryStatePackets = 0;
