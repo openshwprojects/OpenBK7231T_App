@@ -116,6 +116,8 @@ int main(void)
 	}
 	rom_sys_status_get(SYS_RUNNING_IMG, LEN_SYS_RUNNING_IMG, &running_idx);
 
+	HAL_BTProxy_Init();
+
 	xTaskCreate(
 		obk_task,
 		"OpenBeken",

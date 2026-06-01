@@ -736,6 +736,8 @@
 #define ENABLE_DRIVER_TINYIR_NEC				1
 //#define ENABLE_DRIVER_IRREMOTEESP				1
 #define ENABLE_DRIVER_TUYAMCU					1
+//#define ENABLE_BT_PROXY							1
+//#define ENABLE_DRIVER_ESPHOME_API				1
 
 #else
 

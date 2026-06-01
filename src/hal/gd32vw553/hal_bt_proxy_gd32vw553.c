@@ -29,7 +29,7 @@ enum
 
 enum
 {
-	BLE_STACK_TASK_STACK_SIZE = 768,
+	BLE_STACK_TASK_STACK_SIZE = 1024,
 	BLE_APP_TASK_STACK_SIZE = 1024,
 };
 
@@ -56,62 +56,30 @@ static bool isFiltering = false;
 
 static void app_scan_mgr_evt_handler(ble_scan_evt_t event, ble_scan_data_u* p_data)
 {
-	printf("app_scan_mgr_evt_handler %i\r\n", event);
-	if(event != BLE_SCAN_EVT_ADV_RPT) return;
-	g_bt_proxy.scan_total_packets++;
-	uint8_t type = *(uint8_t*)(&p_data->p_adv_rpt->type);
-	if(!ESPHome_API_PassScanResult(p_data->p_adv_rpt->peer_addr.addr, p_data->p_adv_rpt->rssi, type, p_data->p_adv_rpt->data.p_data, p_data->p_adv_rpt->data.len))
+	switch(event)
 	{
-		g_bt_proxy.scan_dropped_packets++;
+		case BLE_SCAN_EVT_STATE_CHG:
+			if(p_data->scan_state.scan_state == BLE_SCAN_STATE_ENABLED)
+			{
+				ADDLOG_INFO(LOG_FEATURE_GENERAL, "Ble Scan enabled status 0x%x", p_data->scan_state.reason);
+			}
+			else if(p_data->scan_state.scan_state == BLE_SCAN_STATE_DISABLED)
+			{
+				ADDLOG_INFO(LOG_FEATURE_GENERAL, "Ble Scan disabled status 0x%x", p_data->scan_state.reason);
+			}
+			break;
+		case BLE_SCAN_EVT_ADV_RPT:
+			g_bt_proxy.scan_total_packets++;
+			uint8_t type = *(uint8_t*)(&p_data->p_adv_rpt->type);
+			if(!ESPHome_API_PassScanResult(p_data->p_adv_rpt->peer_addr.addr, p_data->p_adv_rpt->rssi, type, p_data->p_adv_rpt->data.p_data, p_data->p_adv_rpt->data.len))
+			{
+				g_bt_proxy.scan_dropped_packets++;
+			}
+			break;
+		default:
+			break;
 	}
 }
-
-//static void app_adp_evt_handler(ble_adp_evt_t event, ble_adp_data_u* p_data)
-//{
-//	uint8_t i = 0;
-//
-//	if(event == BLE_ADP_EVT_ENABLE_CMPL_INFO)
-//	{
-//		if(p_data->adapter_info.status == BLE_ERR_NO_ERROR)
-//		{
-//			printf("=== Adapter enable success ===\r\n");
-//			printf("hci_ver 0x%x, hci_subver 0x%x, lmp_ver 0x%x, lmp_subver 0x%x, manuf_name 0x%x\r\n",
-//				p_data->adapter_info.version.hci_ver, p_data->adapter_info.version.hci_subver,
-//				p_data->adapter_info.version.lmp_ver, p_data->adapter_info.version.lmp_subver,
-//				p_data->adapter_info.version.manuf_name);
-//
-//			printf("adv_set_num %u, min_tx_pwr %d, max_tx_pwr %d, max_adv_data_len %d \r\n",
-//				p_data->adapter_info.adv_set_num, p_data->adapter_info.tx_pwr_range.min_tx_pwr,
-//				p_data->adapter_info.tx_pwr_range.max_tx_pwr, p_data->adapter_info.max_adv_data_len);
-//			printf("sugg_max_tx_octets %u, sugg_max_tx_time %u \r\n",
-//				p_data->adapter_info.sugg_dft_data.sugg_max_tx_octets,
-//				p_data->adapter_info.sugg_dft_data.sugg_max_tx_time);
-//
-//			printf("loc irk:");
-//
-//			for(i = 0; i < BLE_GAP_KEY_LEN; i++)
-//			{
-//				printf(" %02x", p_data->adapter_info.loc_irk_info.irk[i]);
-//			}
-//
-//			printf("\r\n");
-//			printf("identity addr %02X:%02X:%02X:%02X:%02X:%02X \r\n ",
-//				p_data->adapter_info.loc_irk_info.identity.addr[5],
-//				p_data->adapter_info.loc_irk_info.identity.addr[4],
-//				p_data->adapter_info.loc_irk_info.identity.addr[3],
-//				p_data->adapter_info.loc_irk_info.identity.addr[2],
-//				p_data->adapter_info.loc_irk_info.identity.addr[1],
-//				p_data->adapter_info.loc_irk_info.identity.addr[0]);
-//
-//			printf("=== BLE Adapter enable complete ===\r\n");
-//		}
-//		else
-//		{
-//			printf("=== BLE Adapter enable fail ===\r\n");
-//		}
-//
-//	}
-//}
 
 static void HAL_BTScan_EnsureStackReady()
 {
@@ -144,27 +112,23 @@ static void HAL_BTScan_EnsureStackReady()
 
 	ble_power_on();
 
-	param.role = BLE_GAP_SCAN_TYPE_OBSERVER;
-	param.keys_user_mgr = app_sec_user_key_mgr_get();
+	param.role = BLE_GAP_ROLE_CENTRAL;
+	param.keys_user_mgr = false;
 	param.pairing_mode = 0;
-	param.privacy_cfg = BLE_GAP_PRIV_CFG_PRIV_EN_BIT;
+	//param.pairing_mode = BLE_GAP_PAIRING_SECURE_CONNECTION | BLE_GAP_PAIRING_LEGACY;
+	//param.privacy_cfg = BLE_GAP_PRIV_CFG_PRIV_EN_BIT;
 	param.ble_task_stack_size = BLE_STACK_TASK_STACK_SIZE;
 	param.ble_task_priority = BLE_STACK_TASK_PRIORITY;
 	param.ble_app_task_stack_size = BLE_APP_TASK_STACK_SIZE;
 	param.ble_app_task_priority = BLE_APP_TASK_PRIORITY;
 	param.en_cfg = 0;
 	param.p_os_api = &os_interface;
-	param.name_perm = BLE_GAP_WRITE_NOT_ENC;
-	param.appearance_perm = BLE_GAP_WRITE_NOT_ENC;
+	//param.name_perm = BLE_GAP_WRITE_NOT_ENC;
+	//param.appearance_perm = BLE_GAP_WRITE_NOT_ENC;
 	ble_sw_init(&param);
-	//ble_adp_callback_register(app_adp_evt_handler);
-	//app_adapter_init();
-	//ble_adp_init();
-	//ble_app_init();
-	//ble_scan_init(BLE_GAP_LOCAL_ADDR_STATIC);
+
 	ble_scan_callback_register(app_scan_mgr_evt_handler);
 	ble_irq_enable();
-	//ble_scan_reinit();
 	g_bleStackReady = 1;
 	ADDLOG_INFO(LOG_FEATURE_GENERAL, "BLE scan stack initialized");
 	extern void coex_ble_event_notify(uint32_t event_start, uint32_t event_window, uint32_t iso_event);
@@ -184,8 +148,8 @@ void HAL_BTProxy_StartScan()
 		HAL_BTScan_EnsureStackReady();
 		//ble_scan_disable();
 		ble_gap_scan_param_t scan_param = {
-			.type = BLE_GAP_SCAN_TYPE_OBSERVER,
-			.prop = BLE_GAP_SCAN_PROP_PHY_1M_BIT/* | BLE_GAP_SCAN_PROP_PHY_CODED_BIT | (scan_mode ? BLE_GAP_SCAN_PROP_ACTIVE_1M_BIT | BLE_GAP_SCAN_PROP_ACTIVE_CODED_BIT : 0)*/,
+			.type = /*BLE_GAP_SCAN_TYPE_GEN_DISC,*/BLE_GAP_SCAN_TYPE_OBSERVER,
+			.prop = BLE_GAP_SCAN_PROP_PHY_1M_BIT | BLE_GAP_SCAN_PROP_PHY_CODED_BIT | (scan_mode ? BLE_GAP_SCAN_PROP_ACTIVE_1M_BIT | BLE_GAP_SCAN_PROP_ACTIVE_CODED_BIT : 0),
 			.dup_filt_pol = isFiltering ? BLE_GAP_DUP_FILT_EN : BLE_GAP_DUP_FILT_DIS,
 			.scan_intv_1m = g_bleScanInterval,
 			.scan_win_1m = g_bleScanWindow,
