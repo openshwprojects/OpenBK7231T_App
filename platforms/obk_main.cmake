@@ -66,6 +66,7 @@ set(OBKM_SRC
 	${OBK_SRCS}driver/drv_bl0937.c
 	${OBK_SRCS}driver/drv_bl0942.c
 	${OBK_SRCS}driver/drv_bl_shared.c
+	${OBK_SRCS}driver/drv_bmp280.c
 	${OBK_SRCS}driver/drv_bmpi2c.c
 	${OBK_SRCS}driver/drv_bp1658cj.c
 	${OBK_SRCS}driver/drv_bp5758d.c
@@ -164,7 +165,6 @@ set(OBKM_SRC
 	${OBK_SRCS}i2c/drv_i2c_mcp23017.c
 	${OBK_SRCS}i2c/drv_i2c_tc74.c
 
-#	${OBK_SRCS}driver/drv_bmp280.c
 #	${OBK_SRCS}driver/drv_test_charts.c
 )
 

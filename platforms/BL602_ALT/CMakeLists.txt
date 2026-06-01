@@ -33,9 +33,11 @@ set(OBK_SRCS "../../src/")
 include($ENV{BL_SDK_BASE}/../../platforms/obk_main.cmake)
 
 sdk_add_include_directories(.)
+sdk_add_include_directories(../BL616)
 sdk_add_include_directories(${OBK_SRCS}../libraries/easyflash/inc)
 
 target_sources(app PRIVATE
+	../BL616/utils_sha256.c
 	${OBK_SRCS}hal/bl602/hal_flashConfig_bl602.c
 	${OBK_SRCS}hal/bl602/hal_flashVars_bl602.c
 	${OBK_SRCS}hal/bl602/hal_generic_bl602.c

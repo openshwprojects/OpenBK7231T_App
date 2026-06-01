@@ -1,7 +1,7 @@
 #ifdef PLATFORM_TR6260
 
 #include "../hal_wifi.h"
-#include "../../new_common.h"
+#include "../../new_cfg.h"
 #include "../../logging/logging.h"
 #include <lwip/sockets.h>
 #include <stdbool.h>

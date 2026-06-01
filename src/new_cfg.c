@@ -15,7 +15,7 @@
 
 #define DEFAULT_BOOT_SUCCESS_TIME 5
 
-mainConfig_t g_cfg;
+mainConfig_t g_cfg = { 0 };
 int g_configInitialized = 0;
 int g_cfg_pendingChanges = 0;
 
@@ -132,38 +132,8 @@ void CFG_SetDefaultConfig() {
 
 	// group topic will be unique for each platform, so it's easy
 	// to do group OTA without worrying about feeding wrong RBL for wrong platform
-#if PLATFORM_BK7231T
-	strcpy_safe(g_cfg.mqtt_group, "bekens_t", sizeof(g_cfg.mqtt_group));
-#elif PLATFORM_BK7231N
-	strcpy_safe(g_cfg.mqtt_group, "bekens_n", sizeof(g_cfg.mqtt_group));
-#elif PLATFORM_W600
-	strcpy_safe(g_cfg.mqtt_group, "w600s", sizeof(g_cfg.mqtt_group));
-#elif PLATFORM_W800
-	strcpy_safe(g_cfg.mqtt_group, "w800s", sizeof(g_cfg.mqtt_group));
-#elif PLATFORM_XR809
-	strcpy_safe(g_cfg.mqtt_group, "xr809s", sizeof(g_cfg.mqtt_group));
-#elif PLATFORM_XR872
-	strcpy_safe(g_cfg.mqtt_group, "xr872s", sizeof(g_cfg.mqtt_group));
-#elif PLATFORM_XR806
-	strcpy_safe(g_cfg.mqtt_group, "xr806s", sizeof(g_cfg.mqtt_group));
-#elif PLATFORM_BL602
-	strcpy_safe(g_cfg.mqtt_group, "bl602s", sizeof(g_cfg.mqtt_group));
-#elif PLATFORM_ESPIDF
-	strcpy_safe(g_cfg.mqtt_group, "esp", sizeof(g_cfg.mqtt_group));
-#elif PLATFORM_TR6260
-	strcpy_safe(g_cfg.mqtt_group, "tr6260", sizeof(g_cfg.mqtt_group));
-#elif PLATFORM_ECR6600
-	strcpy_safe(g_cfg.mqtt_group, "ecr6600", sizeof(g_cfg.mqtt_group));
-#elif PLATFORM_RTL87X0C
-	strcpy_safe(g_cfg.mqtt_group, "rtl87x0c", sizeof(g_cfg.mqtt_group));
-#elif PLATFORM_RTL8710A
-	strcpy_safe(g_cfg.mqtt_group, "rtl8711am", sizeof(g_cfg.mqtt_group));
-#elif PLATFORM_RTL8710B
-	strcpy_safe(g_cfg.mqtt_group, "rtl8710b", sizeof(g_cfg.mqtt_group));
-#elif PLATFORM_RTL8720D
-	strcpy_safe(g_cfg.mqtt_group, "rtl8720d", sizeof(g_cfg.mqtt_group));
-#elif WINDOWS
-	strcpy_safe(g_cfg.mqtt_group, "bekens", sizeof(g_cfg.mqtt_group));
+#ifdef DEF_MQTT_GROUP
+	strcpy_safe(g_cfg.mqtt_group, DEF_MQTT_GROUP, sizeof(g_cfg.mqtt_group));
 #else
 	strcpy_safe(g_cfg.mqtt_group, "obks", sizeof(g_cfg.mqtt_group));
 #endif
