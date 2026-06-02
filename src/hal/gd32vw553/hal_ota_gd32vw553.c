@@ -20,15 +20,16 @@ int http_rest_post_flash(http_request_t* request, int startaddr, int maxaddr)
 	int towrite = request->bodylen;
 	char* writebuf = request->bodystart;
 	int writelen = request->bodylen;
-
-	ADDLOG_DEBUG(LOG_FEATURE_OTA, "OTA post len %d", request->contentLength);
-
 	int ret = -1;
 	int32_t res;
 	mbedtls_md_context_t ctx;
 	uint8_t running_idx = IMAGE_0;
 	unsigned char appended_checksum[16] = { 0 };
 	unsigned char image_checksum[16] = { 0 };
+	uint32_t image_start;
+	uint32_t image_size;
+
+	ADDLOG_DEBUG(LOG_FEATURE_OTA, "OTA post len %d", request->contentLength);
 
 	if (request->contentLength <= 0)
 	{
@@ -37,12 +38,8 @@ int http_rest_post_flash(http_request_t* request, int startaddr, int maxaddr)
 	}
 	else
 	{
-		towrite = request->contentLength - 16; // appended md5
+		towrite = image_size = request->contentLength - 16; // appended md5
 	}
-
-	mbedtls_md_init(&ctx);
-	mbedtls_md_setup(&ctx, mbedtls_md_info_from_type(MBEDTLS_MD_MD5), 0);
-	mbedtls_md_starts(&ctx);
 
 	res = rom_sys_status_get(SYS_RUNNING_IMG, LEN_SYS_RUNNING_IMG, &running_idx);
 	if(res < 0)
@@ -53,12 +50,12 @@ int http_rest_post_flash(http_request_t* request, int startaddr, int maxaddr)
 
 	if(running_idx == IMAGE_0)
 	{
-		startaddr = RE_IMG_1_OFFSET;
+		image_start = startaddr = RE_IMG_1_OFFSET;
 		maxaddr = RE_IMG_1_END - RE_IMG_1_OFFSET;
 	}
 	else
 	{
-		startaddr = RE_IMG_0_OFFSET;
+		image_start = startaddr = RE_IMG_0_OFFSET;
 		maxaddr = RE_IMG_1_OFFSET - RE_IMG_0_OFFSET;
 	}
 
@@ -89,7 +86,6 @@ int http_rest_post_flash(http_request_t* request, int startaddr, int maxaddr)
 			erase_upto = erase_end;
 		}
 
-		mbedtls_md_update(&ctx, (const unsigned char*)writebuf, writelen);
 		ADDLOG_DEBUG(LOG_FEATURE_OTA, "Writelen %i at 0x%06X", writelen, startaddr);
 		HAL_FlashWrite(writebuf, writelen, startaddr);
 		rtos_delay_milliseconds(10);
@@ -107,6 +103,22 @@ int http_rest_post_flash(http_request_t* request, int startaddr, int maxaddr)
 			}
 		}
 	} while ((towrite > 0) && (writelen >= 0));
+
+
+	mbedtls_md_init(&ctx);
+	mbedtls_md_setup(&ctx, mbedtls_md_info_from_type(MBEDTLS_MD_MD5), 0);
+	mbedtls_md_starts(&ctx);
+
+	uint32_t addr = image_start;
+	uint32_t remaining = image_size;
+	while(remaining > 0)
+	{
+		uint32_t chunk = remaining > request->receivedLenmax ? request->receivedLenmax : remaining;
+		HAL_FlashRead(request->received, chunk, addr);
+		mbedtls_md_update(&ctx, (const unsigned char*)request->received, chunk);
+		addr += chunk;
+		remaining -= chunk;
+	}
 
 	mbedtls_md_finish(&ctx, image_checksum);
 	writelen = 0;
@@ -136,13 +148,13 @@ update_ota_exit:
 		res |= rom_sys_set_img_flag(!running_idx, (IMG_FLAG_IA_MASK | IMG_FLAG_VERIFY_MASK | IMG_FLAG_NEWER_MASK), IMG_FLAG_NEWER | IMG_FLAG_VERIFY_NONE | IMG_FLAG_IA_NONE);
 		if(res != 0)
 		{
-			ADDLOG_ERROR(LOG_FEATURE_OTA, "Set sys image status failed! (res = %d)\r\n", res);
+			ADDLOG_ERROR(LOG_FEATURE_OTA, "Set sys image status failed! (res = %d)", res);
 			goto update_ota_exit;
 		}
 	}
 	else
 	{
-		ADDLOG_ERROR(LOG_FEATURE_OTA, "OTA failed. Reboot to retry");
+		ADDLOG_ERROR(LOG_FEATURE_OTA, "OTA failed!");
 		return http_rest_error(request, ret, "error");
 	}
 
