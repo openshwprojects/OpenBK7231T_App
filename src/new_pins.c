@@ -2282,6 +2282,7 @@ void PIN_ticks(void* param)
 		else
 #endif
 			if (g_cfg.pins.roles[i] == IOR_Button || g_cfg.pins.roles[i] == IOR_Button_n
+				|| g_cfg.pins.roles[i] == IOR_Button_pd || g_cfg.pins.roles[i] == IOR_Button_pd_n
 				|| g_cfg.pins.roles[i] == IOR_Button_ToggleAll || g_cfg.pins.roles[i] == IOR_Button_ToggleAll_n
 				|| g_cfg.pins.roles[i] == IOR_Button_NextColor || g_cfg.pins.roles[i] == IOR_Button_NextColor_n
 				|| g_cfg.pins.roles[i] == IOR_Button_NextDimmer || g_cfg.pins.roles[i] == IOR_Button_NextDimmer_n
