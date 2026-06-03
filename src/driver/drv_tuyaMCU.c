@@ -41,6 +41,7 @@ https://developer.tuya.com/en/docs/iot/tuyacloudlowpoweruniversalserialaccesspro
 #define TUYA_CMD_SET_TIME      0x1C
 #define TUYA_CMD_WEATHERDATA   0x21
 #define TUYA_CMD_C83_STATE     0x22
+#define TUYA_CMD_0x23          0x23
 #define TUYA_CMD_SET_RSSI      0x24
 #define TUYA_CMD_NETWORK_STATUS 0x2B
 #define TUYA_CMD_REPORT_STATUS_RECORD_TYPE		0x34 
@@ -2120,7 +2121,7 @@ void TuyaMCU_ProcessIncoming(const byte* data, int len) {
 		// added for https://www.elektroda.com/rtvforum/viewtopic.php?p=21095905#21095905
 		TuyaMCU_SendCommandWithData(0x04, 0, 0);
 		break;
-	case 0x22:
+	case TUYA_CMD_0x23:
 		{
 			TuyaMCU_ParseStateMessage(data + 6, len - 6);
 
