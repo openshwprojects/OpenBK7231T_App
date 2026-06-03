@@ -472,14 +472,14 @@ int PIN_GetPinChannel2ForPinIndex(int index) {
 // taken from code in http_fnc.c
 int PIN_IOR_NofChan(int test){
 	// For button, is relay index to toggle on double click
-	if (test == IOR_Button || test == IOR_Button_n || IS_PIN_DHT_ROLE(test) || IS_PIN_TEMP_HUM_SENSOR_ROLE(test) || IS_PIN_AIR_SENSOR_ROLE(test)){
+	if (test == IOR_Button || test == IOR_Button_n || test == IOR_Button_pd || test == IOR_Button_pd_n || IS_PIN_DHT_ROLE(test) || IS_PIN_TEMP_HUM_SENSOR_ROLE(test) || IS_PIN_AIR_SENSOR_ROLE(test)){
 			return 2;
 	}
 	// Some roles don't need any channels
 	if (test == IOR_SGP_CLK || test == IOR_SHT3X_CLK || test == IOR_CHT83XX_CLK || test == IOR_Button_ToggleAll || test == IOR_Button_ToggleAll_n
 			|| test == IOR_BL0937_CF || test == IOR_BL0937_CF1 || test == IOR_BL0937_SEL
 			|| test == IOR_LED_WIFI || test == IOR_LED_WIFI_n || test == IOR_BL0937_SEL_n
-			|| test == IOR_RCRecv || test == IOR_RCRecv_nPup
+			|| test == IOR_RCRecv || test == IOR_RCRecv_nPup || test == IOR_IRRecv_nPup
 			|| (test >= IOR_IRRecv && test <= IOR_DHT11)
 			|| (test >= IOR_SM2135_DAT && test <= IOR_BP1658CJ_CLK)
 			|| (test == IOR_HLW8112_SCSN)) {
@@ -635,7 +635,8 @@ void Button_OnDoubleClick(int index)
 	// fire event - button on pin <index> was dbclicked
 	EventHandlers_FireEvent(CMD_EVENT_PIN_ONDBLCLICK, index);
 
-	if (g_cfg.pins.roles[index] == IOR_Button || g_cfg.pins.roles[index] == IOR_Button_n)
+	if (g_cfg.pins.roles[index] == IOR_Button || g_cfg.pins.roles[index] == IOR_Button_n
+		|| g_cfg.pins.roles[index] == IOR_Button_pd || g_cfg.pins.roles[index] == IOR_Button_pd_n)
 	{
 		// double click toggles SECOND CHANNEL linked to this button
 		CHANNEL_Toggle(g_cfg.pins.channels2[index]);
