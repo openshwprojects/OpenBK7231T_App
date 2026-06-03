@@ -13,6 +13,7 @@
 #define OBK_VARIANT_HLW8112						6
 #define OBK_VARIANT_BATTERY						7
 #define OBK_VARIANT_BTPROXY						8
+#define OBK_VARIANT_XR806_DCDC					9
 #define OBK_VARIANT_ESP2M						1
 #define OBK_VARIANT_ESP4M						2
 #define OBK_VARIANT_ESP2M_BERRY					3
@@ -33,6 +34,12 @@
 #define ENABLE_HTTP_STARTUP						1
 #define ENABLE_HTTP_PING						1
 #define ENABLE_LED_BASIC						1
+
+// for debugging: Enable logging startup to LFS (only if LFS is present)
+#if ENABLE_LITTLEFS
+//#define ENABLE_LOG2LFS						1
+#endif
+
 
 #if PLATFORM_XRADIO
 
@@ -765,6 +772,13 @@
 #if ENABLE_DRIVER_IRREMOTEESP
 #undef ENABLE_DRIVER_IR
 #endif
+
+
+// ensure no log2lfs without LFS present
+#if ! ENABLE_LITTLEFS
+#undef ENABLE_LOG2LFS						1
+#endif
+
 
 // closing OBK_CONFIG_H
 #endif
