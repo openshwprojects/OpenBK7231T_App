@@ -2120,7 +2120,6 @@ void TuyaMCU_ProcessIncoming(const byte* data, int len) {
 		// added for https://www.elektroda.com/rtvforum/viewtopic.php?p=21095905#21095905
 		TuyaMCU_SendCommandWithData(0x04, 0, 0);
 		break;
-	case 0x22:
 	case TUYA_CMD_C83_STATE:
 		// 4.6.2026: in Wifi/Zigbee TH-sensors the state states are sent from tuyamcu via command 0x22 
 		{
