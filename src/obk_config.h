@@ -754,7 +754,7 @@
 
 // ensure no log2lfs without LFS present
 #if ! ENABLE_LITTLEFS
-#undef ENABLE_LOG2LFS						1
+#undef ENABLE_LOG2LFS
 #endif
 
 
