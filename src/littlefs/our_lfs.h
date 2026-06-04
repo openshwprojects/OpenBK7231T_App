@@ -52,6 +52,13 @@
 // end of OTA flash
 #define LFS_BLOCKS_END 0x1D0000
 
+#elif PLATFORM_BK7238
+// start 0x1000 after OTA addr (OTA start 0x132000)
+#define LFS_BLOCKS_START 0x133000
+#define LFS_BLOCKS_START_MIN 0x133000
+// end of OTA flash / before RF firmware (OTA end 0x1E0000)
+#define LFS_BLOCKS_END 0x1E0000
+
 #elif PLATFORM_BL602 || PLATFORM_BL_NEW
 
 #define LFS_BLOCKS_START 0x0
