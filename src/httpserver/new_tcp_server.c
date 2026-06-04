@@ -284,10 +284,14 @@ static void tcp_server_thread(beken_thread_arg_t arg)
 		{
 			sock[new_idx].fd = accept(listen_sock, (struct sockaddr*)&source_addr, &addr_len);
 
-#if LWIP_SO_RCVTIMEO && !PLATFORM_ECR6600 && !PLATFORM_TR6260
+#if LWIP_SO_RCVTIMEO
+#if LWIP_SO_SNDRCVTIMEO_NONSTANDARD
+			int tv = 30 * 1000;
+#else
 			struct timeval tv;
 			tv.tv_sec = 30;
 			tv.tv_usec = 0;
+#endif
 			setsockopt(sock[new_idx].fd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof(tv));
 #endif
 

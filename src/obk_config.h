@@ -13,6 +13,7 @@
 #define OBK_VARIANT_HLW8112						6
 #define OBK_VARIANT_BATTERY						7
 #define OBK_VARIANT_BTPROXY						8
+#define OBK_VARIANT_XR806_DCDC					9
 #define OBK_VARIANT_ESP2M						1
 #define OBK_VARIANT_ESP4M						2
 #define OBK_VARIANT_ESP2M_BERRY					3
@@ -34,11 +35,16 @@
 #define ENABLE_HTTP_PING						1
 #define ENABLE_LED_BASIC						1
 
+// for debugging: Enable logging startup to LFS (only if LFS is present)
+#if ENABLE_LITTLEFS
+//#define ENABLE_LOG2LFS						1
+#endif
+
+
 #if PLATFORM_XRADIO
 
 // #define ENABLE_SEND_POSTANDGET				1
 #define ENABLE_MQTT								1
-#define NO_CHIP_TEMPERATURE						1
 #define ENABLE_HA_DISCOVERY						1
 #define ENABLE_EXPAND_CONSTANT					1
 #define ENABLE_OBK_SCRIPTING					1
@@ -57,6 +63,7 @@
 #define ENABLE_DRIVER_BATTERY					1
 #define ENABLE_OBK_BERRY						1
 #define ENABLE_DRIVER_TUYAMCU					1
+#define NO_CHIP_TEMPERATURE						1
 #endif
 
 #if PLATFORM_XR806
@@ -65,7 +72,12 @@
 #define ENABLE_DRIVER_DHT						1
 #define ENABLE_DRIVER_AHT2X						1
 #define ENABLE_DRIVER_SSDP						1
+#define ENABLE_DRIVER_SM16703P					1
+#define ENABLE_DRIVER_PIXELANIM					1
 #define ENABLE_OBK_BERRY						1
+#define ENABLE_DRIVER_MDNS						1
+#define ENABLE_DRIVER_IR						1
+//#define ENABLE_DRIVER_IRREMOTEESP				1
 #endif
 
 #elif PLATFORM_W600
@@ -738,6 +750,13 @@
 #if ENABLE_DRIVER_IRREMOTEESP
 #undef ENABLE_DRIVER_IR
 #endif
+
+
+// ensure no log2lfs without LFS present
+#if ! ENABLE_LITTLEFS
+#undef ENABLE_LOG2LFS						1
+#endif
+
 
 // closing OBK_CONFIG_H
 #endif

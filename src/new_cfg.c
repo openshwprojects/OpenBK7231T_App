@@ -145,7 +145,11 @@ void CFG_SetDefaultConfig() {
 #elif PLATFORM_XR872
 	strcpy_safe(g_cfg.mqtt_group, "xr872s", sizeof(g_cfg.mqtt_group));
 #elif PLATFORM_XR806
+#if (OBK_VARIANT == OBK_VARIANT_XR806_DCDC)
+	strcpy_safe(g_cfg.mqtt_group, "xr806_dcdcs", sizeof(g_cfg.mqtt_group));
+#else
 	strcpy_safe(g_cfg.mqtt_group, "xr806s", sizeof(g_cfg.mqtt_group));
+#endif
 #elif PLATFORM_BL602
 	strcpy_safe(g_cfg.mqtt_group, "bl602s", sizeof(g_cfg.mqtt_group));
 #elif PLATFORM_ESPIDF
@@ -788,6 +792,16 @@ uint32_t CFG_GetLFS_Size() {
 		size = LFS_BLOCKS_DEFAULT_LEN;
 	}
 	return size;
+}
+// time to write log messages to lfs (0=disabled)
+uint8_t CFG_Get_log2lfs() {
+	return g_cfg.log2lfs;
+}
+void CFG_Set_log2lfs(uint8_t value) {
+	if(g_cfg.log2lfs != value) {
+		g_cfg.log2lfs = value;
+		g_cfg_pendingChanges++;
+	}
 }
 #endif
 

@@ -16,6 +16,9 @@ sdk_add_compile_options(
 	-Wno-return-type
 	-g0
 )
+sdk_add_link_options(
+	-Wl,--wrap=bflb_gpio_pad_check
+)
 
 if(DEFINED ENV{APP_VERSION})
 	sdk_add_compile_definitions(-DUSER_SW_VER="$ENV{APP_VERSION}")

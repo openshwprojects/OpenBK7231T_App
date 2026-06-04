@@ -10,13 +10,11 @@
 #if PLATFORM_BL616
 #include "bl616_glb_gpio.h"
 #include "bflb_pwm_v2.h"
-#define CHECK_PAD(x) if(GLB_GPIO_Pad_LeadOut_Sts((uint8_t)x) == RESET) return
 #define PWM_NAME "pwm_v2_0"
 static uint32_t pwmfreq = 0;
 #else
 #include "bflb_pwm_v1.h"
 #define PWM_NAME "pwm_v1"
-#define CHECK_PAD(x)
 static uint32_t pwm_periods[5];
 #endif
 
@@ -38,7 +36,6 @@ int BL_FindPWMForPin(int index)
 
 void HAL_PIN_SetOutputValue(int index, int iVal)
 {
-	CHECK_PAD(index);
 	ensure_gpio();
 	if(iVal) bflb_gpio_set(gpio, index);
 	else bflb_gpio_reset(gpio, (uint8_t)index);
@@ -51,43 +48,32 @@ const char* HAL_PIN_GetPinNameAlias(int index)
 
 int HAL_PIN_CanThisPinBePWM(int index)
 {
-#if PLATFORM_BL616
-	if(GLB_GPIO_Pad_LeadOut_Sts((uint8_t)index) == RESET) return 0;
-#endif
-	ensure_gpio();
 	return 1;
 }
 
 int HAL_PIN_ReadDigitalInput(int index)
 {
-#if PLATFORM_BL616
-	if(GLB_GPIO_Pad_LeadOut_Sts((uint8_t)index) == RESET) return 0;
-#endif
 	ensure_gpio();
 	return bflb_gpio_read(gpio, (uint8_t)index);
 }
 
 void HAL_PIN_Setup_Input_Pulldown(int index)
 {
-	CHECK_PAD(index);
 	ensure_gpio();
 	bflb_gpio_init(gpio, (uint8_t)index, GPIO_INPUT | GPIO_PULLDOWN | GPIO_SMT_EN | GPIO_DRV_0);
 }
 void HAL_PIN_Setup_Input_Pullup(int index)
 {
-	CHECK_PAD(index);
 	ensure_gpio();
 	bflb_gpio_init(gpio, (uint8_t)index, GPIO_INPUT | GPIO_PULLUP | GPIO_SMT_EN | GPIO_DRV_0);
 }
 void HAL_PIN_Setup_Input(int index)
 {
-	CHECK_PAD(index);
 	ensure_gpio();
 	bflb_gpio_init(gpio, (uint8_t)index, GPIO_INPUT | GPIO_SMT_EN | GPIO_DRV_0);
 }
 void HAL_PIN_Setup_Output(int index)
 {
-	CHECK_PAD(index);
 	ensure_gpio();
 	bflb_gpio_init(gpio, (uint8_t)index, GPIO_OUTPUT | GPIO_PULLUP | GPIO_SMT_EN | GPIO_DRV_1);
 	bflb_gpio_reset(gpio, (uint8_t)index);
@@ -95,7 +81,6 @@ void HAL_PIN_Setup_Output(int index)
 
 void HAL_PIN_PWM_Stop(int index)
 {
-	CHECK_PAD(index);
 	if(!dpwm) dpwm = bflb_device_get_by_name(PWM_NAME);
 	int pwm;
 
@@ -110,7 +95,6 @@ void HAL_PIN_PWM_Stop(int index)
 
 void HAL_PIN_PWM_Start(int index, int freq)
 {
-	CHECK_PAD(index);
 	ensure_gpio();
 	if(!dpwm) dpwm = bflb_device_get_by_name(PWM_NAME);
 	int pwm;
@@ -154,7 +138,6 @@ void HAL_PIN_PWM_Start(int index, int freq)
 
 void HAL_PIN_PWM_Update(int index, float value)
 {
-	CHECK_PAD(index);
 	if(!dpwm) dpwm = bflb_device_get_by_name(PWM_NAME);
 	int pwm;
 
@@ -196,7 +179,6 @@ void BL_NEW_Interrupt(uint8_t pin)
 void HAL_AttachInterrupt(int pinIndex, OBKInterruptType mode, OBKInterruptHandler function)
 {
 	if(pinIndex >= PLATFORM_GPIO_MAX) return;
-	CHECK_PAD(pinIndex);
 	ensure_gpio();
 	g_handlers[pinIndex] = function;
 	uint8_t bl_mode;

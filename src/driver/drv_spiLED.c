@@ -102,6 +102,10 @@ void SPILED_InitDMA(int numBytes) {
 	orig_ptr = (byte*)os_malloc((sizeof(byte) * (buffer_size)) + 32 - 1);
 	uint32_t misalignment = (uint32_t)orig_ptr % 32;
 	spiLED.buf = (orig_ptr + 32 - misalignment);
+#elif PLATFORM_XRADIO
+	spiLED.buf = (byte*)os_malloc(sizeof(byte) * (buffer_size) + 8);
+	memset(spiLED.buf, 0, 8);
+	spiLED.buf += 8;
 #else
 	spiLED.buf = (byte *)os_malloc(sizeof(byte) * (buffer_size)); //18LEDs x RGB x 4Bytes
 #endif
@@ -160,6 +164,8 @@ void SPILED_Shutdown() {
 #if PLATFORM_REALTEK
 		os_free(orig_ptr);
 		orig_ptr = NULL;
+#elif PLATFORM_XRADIO
+		os_free(spiLED.buf - 8);
 #else
 		os_free(spiLED.buf);
 #endif

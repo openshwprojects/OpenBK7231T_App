@@ -1,6 +1,6 @@
 OBK_SRCS = ../shared/src/
 CC_FLAGS += -DPLATFORM_XRADIO
-CC_FLAGS += -DENABLE_DRIVER_MDNS=PLATFORM_XR806+PLATFORM_XR809
+CXX_FLAGS += -DPLATFORM_XRADIO
 
 SRCS += $(OBK_SRCS)hal/xradio/hal_adc_xradio
 SRCS += $(OBK_SRCS)hal/xradio/hal_wifi_xradio
@@ -13,14 +13,18 @@ SRCS += $(OBK_SRCS)hal/xradio/hal_flashVars_xradio
 SRCS += $(OBK_SRCS)hal/xradio/hal_uart_xradio
 SRCS += $(OBK_SRCS)hal/xradio/hal_ota_xradio
 SRCS += $(OBK_SRCS)hal/xradio/xr809/hal_pins_xr809
+#SRCS += $(OBK_SRCS)hal/xradio/xr806/hal_bt_proxy_xr806
 SRCS += $(OBK_SRCS)hal/xradio/xr806/hal_pins_xr806
 SRCS += $(OBK_SRCS)hal/xradio/xr872/hal_pins_xr872
 
 include ../shared/platforms/obk_main.mk
 SRCS += $(OBKM_SRC:.c=)
 #needs sdk changes
+ifeq ($(OPLATFORM),3)
 #__CONFIG_CPLUSPLUS = y
-#SRCS += $(OBKM_SRC_CXX:.cpp=)
+SRCS += $(OBKM_SRC_CXX:.cpp=)
+CXX_FLAGS += $(OBK_CFLAGS)
+endif
 CC_FLAGS += $(OBK_CFLAGS)
 
 INCLUDE_PATHS += -I../shared/libraries/easyflash/inc

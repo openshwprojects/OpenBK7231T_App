@@ -8,6 +8,13 @@
 // Commands register, execution API and cmd tokenizer
 #include "../cmnds/cmd_public.h"
 
+#if ENABLE_LITTLEFS && ENABLE_LOG2LFS
+#include "../littlefs/our_lfs.h"
+#include "../new_cfg.h"	// we will use CFG_Set_log2lfs();
+// uptime counter - seconds since boot to know how long to logg to LFS
+extern int g_secondsElapsed;
+#endif
+
 #if PLATFORM_BEKEN_NEW
 #include "uart.h"
 #include "arm_arch.h"
@@ -15,6 +22,7 @@
 #endif
 
 extern uint8_t g_StartupDelayOver;
+
 
 int g_loglevel = LOG_INFO; // default to info
 unsigned int logfeatures = (
@@ -128,6 +136,9 @@ static struct tag_logMemory {
 	int tailserial;
 	int tailtcp;
 	int tailhttp;
+#if ENABLE_LITTLEFS && ENABLE_LOG2LFS
+	int taillfs;
+#endif
 	SemaphoreHandle_t mutex;
 } logMemory;
 
@@ -224,10 +235,45 @@ SetFlag 31 1
 logPort 1 
 */
 
+#if ENABLE_LITTLEFS && ENABLE_LOG2LFS
+// forward declaration - we'll need function here
+static void LOG_LFS_StartThread(const char *prefix);
+
+static commandResult_t CMD_logStartup2lfs(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	Tokenizer_TokenizeString(args, 0);
+	uint8_t secs = (uint8_t)Tokenizer_GetArgIntegerDefault(0,10);
+	if (secs > LOG2LFS_MAX_SECONDS) {
+		ADDLOG_ERROR(LOG_FEATURE_CMD, "log2lfs: Seconds out of range. Set seconds to maximum value %i",LOG2LFS_MAX_SECONDS);
+		secs = LOG2LFS_MAX_SECONDS;
+	}
+	uint8_t repeats = (uint8_t)Tokenizer_GetArgIntegerDefault(1,1);
+	if (repeats > LOG2LFS_MAX_REPEATS) {
+		ADDLOG_ERROR(LOG_FEATURE_CMD, "log2lfs: Repeats out of range. Set repeats to maximum value %i",LOG2LFS_MAX_REPEATS);
+		repeats = LOG2LFS_MAX_REPEATS;
+	}
+	CFG_Set_log2lfs(LOG2LFS_ENCODE(secs,repeats));
+	CFG_Save_IfThereArePendingChanges();
+	return CMD_RES_OK;
+}
+
+void initLog2LFS(void){
+	// since logging will be called beforeflash config is initialized, we can get
+	// information, if we should log startup to LFS, not at init
+	// so we need a separate function to set this up if logStartup2lfs is configureded
+	// if so, g_log2lfs will hold the numbers of seconds to log to LFS
+	if (g_log2lfs >0 && g_secondsElapsed < g_log2lfs) {
+		LOG_LFS_StartThread("startupLog");
+	}
+}
+#endif
 static void initLog(void)
 {
 	bk_printf("Entering initLog()...\r\n");
+#if ENABLE_LITTLEFS && ENABLE_LOG2LFS
+	logMemory.head = logMemory.tailserial = logMemory.tailtcp = logMemory.tailhttp = logMemory.taillfs = 0;
+#else
 	logMemory.head = logMemory.tailserial = logMemory.tailtcp = logMemory.tailhttp = 0;
+#endif
 	logMemory.mutex = xSemaphoreCreateMutex();
 	initialised = 1;
 	startSerialLog();
@@ -254,6 +300,13 @@ static void initLog(void)
 	//cmddetail:"fn":"log_command","file":"logging/logging.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("logdelay", log_command, NULL);
+#if ENABLE_LITTLEFS && ENABLE_LOG2LFS
+	//cmddetail:{"name":"logStartup2lfs","args":"[Seconds - default: 10s] [repetitions - default 1]",
+	//cmddetail:"descr":"Enable startup logging to LittleFS. Value is the number of seconds from boot during which log lines are appended to startupLog_N.txt on LFS. Set to 0 to disable.\nIf you want to log severals startups, use optional repeats argument",
+	//cmddetail:"fn":"log_command","file":"logging/logging.c","requires":"",
+	//cmddetail:"examples":"logStartup2lfs 15"}
+	CMD_RegisterCommand("logStartup2lfs", CMD_logStartup2lfs, NULL);
+#endif
 #if PLATFORM_BEKEN || PLATFORM_LN882H
 	//cmddetail:{"name":"logport","args":"[Index]",
 	//cmddetail:"descr":"Allows you to change log output port. On Beken, the UART1 is used for flashing and for TuyaMCU/BL0942, while UART2 is for log. Sometimes it might be easier for you to have log on UART1, so now you can just use this command like backlog uartInit 115200; logport 1 to enable logging on UART1..",
@@ -432,6 +485,12 @@ void addLogAdv(int level, int feature, const char* fmt, ...)
 		{
 			logMemory.tailhttp = (logMemory.tailhttp + 1) % LOGSIZE;
 		}
+#if ENABLE_LITTLEFS && ENABLE_LOG2LFS
+		if (logMemory.taillfs == logMemory.head)
+		{
+			logMemory.taillfs = (logMemory.taillfs + 1) % LOGSIZE;
+		}
+#endif
 	}
 
 	if (taken == pdTRUE) {
@@ -552,6 +611,134 @@ static int getHttp(char* buff, int buffsize) {
 	//printf("got tcp: %d:%s\r\n", len,buff);
 	return len;
 }
+#if ENABLE_LITTLEFS && ENABLE_LOG2LFS
+
+// Startup log filename, chosen when the thread first opens the file.
+static char g_lfsLogName[48] = {0};
+static const char *g_lfsLogPrefix = "startupLog"; // default name
+
+// Continuous-drain thread: mirrors log_serial_thread / log_client_thread.
+// Waits for LFS to mount, then drains logMemory.taillfs into the file in
+// small chunks until the capture window closes. Writing in a thread means
+// flash erase/program never blocks the main system or IRQ watchdog.
+// lfs_file_t is in a local struct on the heap to keep the thread stack lean.
+
+// how much to write in one chunk
+#define LOG2LFS_WRITE_CHUNK             128
+
+// after sucesfull logging, set new value for the next start:
+// set to 0, if this was the only/last logging configured
+// else set new value for next start (decrease repeat count by 1)
+void log2lfs_set_next_startup(){
+	uint8_t act = CFG_Get_log2lfs();
+	// shall we repeat logging?
+	// then set value for next startup
+	if (LOG2LFS_REPEATS(act) > 1) {
+		CFG_Set_log2lfs(LOG2LFS_DECREASE_REPEAT(act));
+	} else {
+	// not repeating? Set to 0 for next startup
+		CFG_Set_log2lfs(0);
+	}
+	ADDLOG_INFO(LOG_FEATURE_RAW, "log2lfs: Remaining logs to LFS: %i",LOG2LFS_REPEATS(act)-1);
+}
+
+// Just write to LFS until we finished writing ---
+// or writing returns an error if we filled up the whole remaining LFS
+static void log2lfs_thread(beken_thread_arg_t arg)
+{
+    char chunk[LOG2LFS_WRITE_CHUNK];
+    lfs_file_t *lf = os_malloc(sizeof(lfs_file_t));
+    int file_open = 0;
+    int n;
+
+    if (!lf) {
+        ADDLOG_ERROR(LOG_FEATURE_RAW, "log2lfs: could not allocate lfs_file_t");
+        goto done;
+    }
+
+    // Wait for LFS to become available before opening the file.
+    while (!lfs_present()) {
+// not needed if logging only on startup
+//        if (g_secondsElapsed > log2lfs_end)
+        if (g_secondsElapsed > g_log2lfs)
+                    goto done; // logging window closed before LFS ever mounted
+        rtos_delay_milliseconds(100);
+    }
+
+    int highest = -1;
+    unsigned int cnt;
+    // caution: we made cnt an unsigned int, so it won't accept "negative numbers" in sscanf (using %u instead of %d)
+    // to compare them, make sure to cast cnt to int
+    // else highest will be casted as unsigned, resulting in a huge number if it was negative!!!
+    char t = '0';
+    lfs_dir_t dir;
+    struct lfs_info info;
+    char scanfmt[32];
+    // since we might have some "timestamp" files, dont use date as number - check after the number there's the '.' from ".txt"
+    snprintf(scanfmt, sizeof(scanfmt), "%s_%%u%%ctxt", g_lfsLogPrefix);
+    if (lfs_dir_open(&lfs, &dir, "/") >= 0) {
+        while (lfs_dir_read(&lfs, &dir, &info) > 0) {
+            t = '0';
+            if (info.type == LFS_TYPE_REG &&
+                sscanf(info.name, scanfmt, &cnt, &t) == 2 &&
+                t == '.' &&
+                (int)cnt > highest) {
+                    highest = (int)cnt;
+                }
+        }
+        lfs_dir_close(&lfs, &dir);
+    }
+    snprintf(g_lfsLogName, sizeof(g_lfsLogName), "%s_%d.txt", g_lfsLogPrefix, highest + 1);
+
+    if (lfs_file_open(&lfs, lf, g_lfsLogName, LFS_O_RDWR | LFS_O_CREAT) < 0) {
+        ADDLOG_ERROR(LOG_FEATURE_RAW, "log2lfs: could not open %s", g_lfsLogName);
+        goto done;
+    }
+    file_open = 1;
+    lfs_file_seek(&lfs, lf, 0, LFS_SEEK_END);
+    ADDLOG_INFO(LOG_FEATURE_RAW, "log2lfs: writing to %s", g_lfsLogName);
+
+    // Drain taillfs continuously until the capture window closes.
+    while (g_secondsElapsed <= g_log2lfs) {
+        while ((n = getData(chunk, sizeof(chunk), &logMemory.taillfs)) > 0) {
+            if (lfs_file_write(&lfs, lf, chunk, n) < 0) {
+                ADDLOG_ERROR(LOG_FEATURE_RAW, "log2lfs: write error, stopping");
+                goto done;
+            }
+        }
+        rtos_delay_milliseconds(200);
+    }
+
+    // Final drain: capture any lines logged in the last poll interval.
+    while ((n = getData(chunk, sizeof(chunk), &logMemory.taillfs)) > 0)
+        if (lfs_file_write(&lfs, lf, chunk, n) < 0)
+            break;
+
+done:
+    if (file_open) {
+        lfs_file_close(&lfs, lf);
+        ADDLOG_INFO(LOG_FEATURE_RAW, "log2lfs: done, file closed");
+    }
+    os_free(lf);
+    log2lfs_set_next_startup();
+    g_log2lfs = 0;
+    rtos_delete_thread(NULL);
+}
+
+static void LOG_LFS_StartThread(const char *prefix)
+{
+    if (rtos_create_thread(NULL, BEKEN_APPLICATION_PRIORITY,
+            "log2lfs",
+            (beken_thread_function_t)log2lfs_thread,
+            0x800,
+            (beken_thread_arg_t)0) != kNoErr) {
+        ADDLOG_ERROR(LOG_FEATURE_RAW, "log2lfs: could not create thread");
+    } else {
+        ADDLOG_DEBUG(LOG_FEATURE_RAW, "log2lfs: created thread");
+    }
+}
+
+#endif // ENABLE_LITTLEFS && ENABLE_LOG2LFS
 
 void startLogServer() {
 #if WINDOWS
@@ -860,7 +1047,6 @@ commandResult_t log_command(const void* context, const char* cmd, const char* ar
 			result = CMD_RES_OK;
 			break;
 		}
-
 	} while (0);
 
 	return result;

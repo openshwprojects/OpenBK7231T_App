@@ -139,7 +139,7 @@ sdk/OpenLN8825/project/OpenBeken/app:
 	ln -s "$(shell pwd)/" "sdk/OpenLN8825/project/OpenBeken/app"
 
 .PHONY: prebuild_OpenBK7231N prebuild_OpenBK7231T prebuild_OpenBL602 prebuild_OpenLN882H prebuild_OpenLN8825 
-.PHONY: prebuild_OpenW600 prebuild_OpenW800 prebuild_OpenXR809 prebuild_OpenXR806 prebuild_OpenXR872 prebuild_ESPIDF prebuild_OpenTR6260
+.PHONY: prebuild_OpenW600 prebuild_OpenW800 prebuild_OpenXR809 prebuild_OpenXR806 prebuild_OpenXR806_DCDC prebuild_OpenXR872 prebuild_ESPIDF prebuild_OpenTR6260
 .PHONY: prebuild_OpenRTL87X0C prebuild_OpenBK7238 prebuild_OpenBK7231N_ALT prebuild_OpenBK7231U
 .PHONY: prebuild_OpenBK7231N_ALT prebuild_OpenBK7231T_ALT prebuild_OpenBK7252
 
@@ -218,6 +218,8 @@ prebuild_OpenXR806: berry
 	else echo "prebuild for OpenXR806 not found ... "; \
 	fi
 	
+prebuild_OpenXR806_DCDC: prebuild_OpenXR806
+
 prebuild_OpenXR872: berry
 	git submodule update --init --recursive --depth=1 sdk/OpenXR872
 	@if [ -e platforms/XR872/pre_build.sh ]; then \
@@ -450,17 +452,41 @@ OpenXR872: prebuild_OpenXR872 sdk/OpenXR872/project/demo/hello_demo/shared
 	cp sdk/OpenXR872/project/demo/hello_demo/image/xr872/xr_system.img output/$(APP_VERSION)/OpenXR872_$(APP_VERSION).img
 	cp sdk/OpenXR872/project/demo/hello_demo/image/xr872/xr_system_img_xz.img output/$(APP_VERSION)/OpenXR872_$(APP_VERSION)_ota.img
 
-.PHONY: OpenXR806
-OpenXR806: prebuild_OpenXR806 sdk/OpenXR806/project/demo/sharedApp/shared
-	$(MAKE) -C sdk/OpenXR806/src CC_DIR=$(ARM_NONE_EABI_GCC_PATH) APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT) -j $(shell nproc) --no-print-directory
-	$(MAKE) -C sdk/OpenXR806/src install CC_DIR=$(ARM_NONE_EABI_GCC_PATH) APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT) -j $(shell nproc) --no-print-directory
-	$(MAKE) -C sdk/OpenXR806/project/demo/sharedApp/gcc CC_DIR=$(ARM_NONE_EABI_GCC_PATH) APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT) -j $(shell nproc) --no-print-directory
-	$(MAKE) -C sdk/OpenXR806/project/demo/sharedApp/gcc image CC_DIR=$(ARM_NONE_EABI_GCC_PATH) APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT) -j $(shell nproc) --no-print-directory
-	$(MAKE) -C sdk/OpenXR806/project/demo/sharedApp/gcc image_xz CC_DIR=$(ARM_NONE_EABI_GCC_PATH) APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT) -j $(shell nproc) --no-print-directory
+XR806_SDK_DIR := sdk/OpenXR806
+XR806_BOOTLOADER_PRJ := bootloader
+XR806_SHAREDAPP_PRJ := demo/sharedApp
+XR806_BOOTLOADER_DEFCONFIG := project/bootloader/gcc/defconfig
+XR806_SHAREDAPP_DEFCONFIG := project/demo/sharedApp/gcc/defconfig
+XR806_BOOTLOADER_DCDC_DEFCONFIG := project/bootloader/gcc/defconfig_dcdc
+XR806_SHAREDAPP_DCDC_DEFCONFIG := project/demo/sharedApp/gcc/defconfig_dcdc
+XR806_BUILD_ARGS := CC_DIR=$(ARM_NONE_EABI_GCC_PATH) APP_VERSION=$(APP_VERSION) OPLATFORM=3 OBK_VARIANT=$(OBK_VARIANT) -j $(shell nproc) --no-print-directory
+XR806_DCDC_BUILD_ARGS := CC_DIR=$(ARM_NONE_EABI_GCC_PATH) APP_VERSION=$(APP_VERSION)_DCDC OPLATFORM=3 OBK_VARIANT=9 -j $(shell nproc) --no-print-directory
+
+.PHONY: OpenXR806 OpenXR806_DCDC
+OpenXR806: prebuild_OpenXR806 $(XR806_SDK_DIR)/project/demo/sharedApp/shared
+	$(MAKE) -C $(XR806_SDK_DIR) PRJ=$(XR806_BOOTLOADER_PRJ) KCONFIG_DEFCONFIG=$(XR806_BOOTLOADER_DEFCONFIG) defconfig --no-print-directory
+	$(MAKE) -C $(XR806_SDK_DIR) PRJ=$(XR806_BOOTLOADER_PRJ) build_clean --no-print-directory
+	$(MAKE) -C $(XR806_SDK_DIR) PRJ=$(XR806_BOOTLOADER_PRJ) $(XR806_BUILD_ARGS) build
+	$(MAKE) -C $(XR806_SDK_DIR) PRJ=$(XR806_SHAREDAPP_PRJ) KCONFIG_DEFCONFIG=$(XR806_SHAREDAPP_DEFCONFIG) defconfig --no-print-directory
+	$(MAKE) -C $(XR806_SDK_DIR) PRJ=$(XR806_SHAREDAPP_PRJ) build_clean --no-print-directory
+	$(MAKE) -C $(XR806_SDK_DIR) PRJ=$(XR806_SHAREDAPP_PRJ) $(XR806_BUILD_ARGS) build
+	$(MAKE) -C $(XR806_SDK_DIR) PRJ=$(XR806_SHAREDAPP_PRJ) $(XR806_BUILD_ARGS) image_xz
 	mkdir -p output/$(APP_VERSION)
-	cp sdk/OpenXR806/project/demo/sharedApp/image/xr806/xr_system.img output/$(APP_VERSION)/OpenXR806_$(APP_VERSION).img
-	cp sdk/OpenXR806/project/demo/sharedApp/image/xr806/xr_system_img_xz.img output/$(APP_VERSION)/OpenXR806_$(APP_VERSION)_ota.img
-	
+	cp $(XR806_SDK_DIR)/project/demo/sharedApp/image/xr806/xr_system.img output/$(APP_VERSION)/OpenXR806_$(APP_VERSION).img
+	cp $(XR806_SDK_DIR)/project/demo/sharedApp/image/xr806/xr_system_img_xz.img output/$(APP_VERSION)/OpenXR806_$(APP_VERSION)_ota.img
+
+OpenXR806_DCDC: prebuild_OpenXR806_DCDC $(XR806_SDK_DIR)/project/demo/sharedApp/shared
+	$(MAKE) -C $(XR806_SDK_DIR) PRJ=$(XR806_BOOTLOADER_PRJ) KCONFIG_DEFCONFIG=$(XR806_BOOTLOADER_DCDC_DEFCONFIG) defconfig --no-print-directory
+	$(MAKE) -C $(XR806_SDK_DIR) PRJ=$(XR806_BOOTLOADER_PRJ) build_clean --no-print-directory
+	$(MAKE) -C $(XR806_SDK_DIR) PRJ=$(XR806_BOOTLOADER_PRJ) $(XR806_DCDC_BUILD_ARGS) build
+	$(MAKE) -C $(XR806_SDK_DIR) PRJ=$(XR806_SHAREDAPP_PRJ) KCONFIG_DEFCONFIG=$(XR806_SHAREDAPP_DCDC_DEFCONFIG) defconfig --no-print-directory
+	$(MAKE) -C $(XR806_SDK_DIR) PRJ=$(XR806_SHAREDAPP_PRJ) build_clean --no-print-directory
+	$(MAKE) -C $(XR806_SDK_DIR) PRJ=$(XR806_SHAREDAPP_PRJ) $(XR806_DCDC_BUILD_ARGS) build
+	$(MAKE) -C $(XR806_SDK_DIR) PRJ=$(XR806_SHAREDAPP_PRJ) $(XR806_DCDC_BUILD_ARGS) image_xz
+	mkdir -p output/$(APP_VERSION)
+	cp $(XR806_SDK_DIR)/project/demo/sharedApp/image/xr806/xr_system.img output/$(APP_VERSION)/OpenXR806_DCDC_$(APP_VERSION).img
+	cp $(XR806_SDK_DIR)/project/demo/sharedApp/image/xr806/xr_system_img_xz.img output/$(APP_VERSION)/OpenXR806_DCDC_$(APP_VERSION)_ota.img
+
 .PHONY: OpenXR809
 OpenXR809: prebuild_OpenXR809 sdk/OpenXR809/project/oxr_sharedApp/shared
 	$(MAKE) -C sdk/OpenXR809/src CC_DIR=$(ARM_NONE_EABI_GCC_PATH) APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT) --no-print-directory  -j $(shell nproc)
@@ -794,6 +820,7 @@ clean:
 	-test -d ./sdk/OpenXR809 && $(MAKE) -C sdk/OpenXR809/src clean
 	-test -d ./sdk/OpenXR809 && $(MAKE) -C sdk/OpenXR809/project/oxr_sharedApp/gcc clean
 	-test -d ./sdk/OpenXR806 && $(MAKE) -C sdk/OpenXR806/src clean
+	-test -d ./sdk/OpenXR806 && $(MAKE) -C sdk/OpenXR806/project/bootloader/gcc clean
 	-test -d ./sdk/OpenXR806 && $(MAKE) -C sdk/OpenXR806/project/demo/sharedApp/gcc clean
 	-test -d ./sdk/OpenXR872 && $(MAKE) -C sdk/OpenXR872/src clean
 	-test -d ./sdk/OpenXR872 && $(MAKE) -C sdk/OpenXR872/project/demo/hello_demo/gcc clean
