@@ -340,15 +340,21 @@ void expandQuotes(char* str) {
 }
 
 // search index of a string (e.g. check a "flag")
-// like "-single" or "-multi" - return -1 else
+// like "-single" or "-multi"
 // you can us it to check "presence" of a string or
 // get the next arg to implement named arguments
 //
-// e.g. "startdriver aht2x -SDA 3 -SCL 5 ..."
-// you can get the SDA pin with Tokenizer_GetPin(Tokenizer_GetStringIndex("-SDA")+1)
+// will return INDEX_NOTFOUND_VALUE if string is not found
+//	I'd prefere to return "-1" if string is not found, but not all tokenizer functions check for a negative index...
+///	... but they do check, if index is smaller than g_numArgs, so we return "INDEX_NOTFOUND_VALUE" (= (32767 - 2), a value "almost" MAX_INT for 16 bit
+//	and this will be sure be larger than g_numArgs in any case
 //
-// we'll have some defines for that in cmd_public.h
-// "defining"
+// Example for usage: 
+// commend: "startdriver aht2x -SDA 3 -SCL 5 ..."
+// 	you can get the "SDA pin" (the number "after" the token "-SDA") with Tokenizer_GetPin(Tokenizer_GetStringIndex("-SDA")+1)
+//
+// we'll have some defines for that in cmd_public.h 
+// "defining" some easy usage for this as own commands
 //
 // 	Tokenizer_GetPinEqual(STR,DEF) 		// as in example above, use "Tokenizer_GetPinEqual("-SDA", 8)" 			to get the Pin after "-SDA" (or default)
 //	Tokenizer_GetArgEqualInteger(STR,DEF)	// same for an integer value e.g. Tokenizer_GetArgEqualInteger("-chan_t", 2)	to get the integer after "-chan_t" (or default)
@@ -365,11 +371,14 @@ int Tokenizer_GetStringIndex(const char *search) {
 }
 #if DEFINED_AND_NOT_ZERO(TOKENIZER_PARAM_EXTENSION)
 // if used multiple times, function will need less memory than macros...
-// 	Macros defined in cmd_public.h:
+// 	In case TOKENIZER_PARAM_EXTENSION is not defined, instead macros are defined in cmd_public.h to ease usage even without functions:
 // 	Tokenizer_GetPinEqual(STR,DEF) 		// as in example above, use "Tokenizer_GetPinEqual("-SDA", 8)" 			to get the Pin after "-SDA" (or default)
 //	Tokenizer_GetArgEqualInteger(STR,DEF)	// same for an integer value e.g. Tokenizer_GetArgEqualInteger("-chan_t", 2)	to get the integer after "-chan_t" (or default)
 //	Tokenizer_GetArgEqualDefault(STR,DEF) 	// same for a string, "Tokenizer_GetArgEqualDefault("type", "sht3x")"		to get the "-type" value (or default)
 //	Tokenizer_IsStringPresent(STR)		// test for presenc of a string, "Tokenizer_IsStringPresent("default")		to test, if "default" is present
+
+// we will rely on Tokenizer_GetStringIndex(search) return INDEX_NOTFOUND_VALUE (32767 - 2) if string is not found
+// and simply return the value +1 (that'w why we defined it (32767 - 2), so (32767 - 2) + 1 is still a valid int!
 int Tokenizer_GetPinEqual(const char *search, int def){
 	return Tokenizer_GetPin(Tokenizer_GetStringIndex(search) + 1, def);
 }
