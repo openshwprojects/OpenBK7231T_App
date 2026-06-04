@@ -1528,35 +1528,127 @@ typedef struct mainConfig_s {
 	//pins at offs 0x0000033E
 	// 160 bytes
 	pinsState_t pins;
-	// startChannelValues at offs 0x000003DE
-	// 64 * 2
+	// pinsState_t size is PLATFORM-DEPENDENT:
+	//   D  else / default / ESP8266:               roles[32]+channels[32]+channels2[32]+channelTypes[64] = 160 bytes (0xA0)
+	//   A  W800 / BK7252 / BK7252N / XR872 / BL616: roles[48]+channels[48]+channels2[48]+channelTypes[64] = 208 bytes (0xD0)
+	//   B  ESPIDF:                                  roles[50]+channels[50]+channels2[50]+channelTypes[64] = 214 bytes (0xD6)
+	//   C  RTL8720D / RTL8721DA / RTL8720E / TXW81X: roles[64]+channels[64]+channels2[64]+channelTypes[64] = 256 bytes (0x100)
+	// All offsets AFTER this field therefore differ by platform group.
+	//
+	// startChannelValues at offset:
+	//   0x000003DE (D: else/default/ESP8266)
+	//   0x0000040E (A: W800/BK7252/BK7252N/XR872/BL616)
+	//   0x00000414 (B: ESPIDF)
+	//   0x0000043E (C: RTL8720D/RTL8721DA/RTL8720E/TXW81X)
 	short startChannelValues[CHANNEL_MAX];
-	// unused_fill at offs 0x0000045E 
-	short unused_fill; // correct alignment
-	// dgr_sendFlags at offs 0x00000460 
+	// log2lfs at offset:
+	//   0x0000045E (D: else/default/ESP8266)
+	//   0x0000048E (A: W800/BK7252/BK7252N/XR872/BL616)
+	//   0x00000494 (B: ESPIDF)
+	//   0x000004BE (C: RTL8720D/RTL8721DA/RTL8720E/TXW81X)
+	//
+	// log2lfs usage / meaning:
+	// 0: disabled  - else: combined number of seconds to log (for logging at startup) + number of repetitions
+	// use log2lf % LOG2LFS_BASE for "seconds to log", log2lfs / LOG2LFS_BASE for the number of startups to folow (reduce by 31 for every start, if < LOG2LFS_BASE, set to 0)
+	// for LOG2LFS_BASE 31 it's
+	// 0 : don't log
+	// 1 - 30: log (once) for 1 to 30 seconds, set to 0 afterwards
+	// 31 / 62 93 ... invalid / don't log
+	// 32 - 61 : log for (log2lfs - 31) seconds during two starts --> set to (log2lfs - 31) after logging, so one log to follow
+	// ...
+	// after logging : log2lfs =  (log2lfs >= 31) ? (log2lfs - 31) : 0
+	uint8_t log2lfs;
+	// for two byte alignment:
+	byte unused_fill; // correct alignment
+#if PLATFORM_ESPIDF
+	//   0x00000496 (for ESPIDF)
+	//		--> NOT aligned for 4 byte int
+	//		--> will be padded to 0x00000498
+	// 	so add short to make this visible !!!
+	short unused_espidf;
+#endif
+	// dgr_sendFlags at offset:
+	//   0x00000460 (D: else/default/ESP8266)
+	//   0x00000490 (A: W800/BK7252/BK7252N/XR872/BL616)
+	//   0x00000498 (B: ESPIDF) - now 4 byte aligned
+	//   0x000004C0 (C: RTL8720D/RTL8721DA/RTL8720E/TXW81X)
 	int dgr_sendFlags;
-	// dgr_recvFlags at offs 0x00000464 
+	// dgr_recvFlags at offset:
+	//   0x00000464 (D: else/default/ESP8266)
+	//   0x00000494 (A: W800/BK7252/BK7252N/XR872/BL616)
+	//   0x0000049C (B: ESPIDF)
+	//   0x000004C4 (C: RTL8720D/RTL8721DA/RTL8720E/TXW81X)
 	int dgr_recvFlags;
-	// dgr_name at offs 0x00000468
+	// dgr_name at offset:
+	//   0x00000468 (D: else/default/ESP8266)
+	//   0x00000498 (A: W800/BK7252/BK7252N/XR872/BL616)
+	//   0x000004A0 (B: ESPIDF)
+	//   0x000004C8 (C: RTL8720D/RTL8721DA/RTL8720E/TXW81X)
 	char dgr_name[16];
-	// at offs 0x478
+	// ntpServer at offset:
+	//   0x00000478 (D: else/default/ESP8266)
+	//   0x000004A8 (A: W800/BK7252/BK7252N/XR872/BL616)
+	//   0x000004B0 (B: ESPIDF)
+	//   0x000004D8 (C: RTL8720D/RTL8721DA/RTL8720E/TXW81X)
 	char ntpServer[32];
+	// cal at offset:
+	//   0x00000498 (D: else/default/ESP8266)
+	//   0x000004C8 (A: W800/BK7252/BK7252N/XR872/BL616)
+	//   0x000004D0 (B: ESPIDF)
+	//   0x000004F8 (C: RTL8720D/RTL8721DA/RTL8720E/TXW81X)
 	// 8 * 4 = 32 bytes
 	cfgPowerMeasurementCalibration_t cal;
-	// offs 0x000004B8
+	// buttonShortPress at offset:
+	//   0x000004B8 (D: else/default/ESP8266)
+	//   0x000004E8 (A: W800/BK7252/BK7252N/XR872/BL616)
+	//   0x000004F0 (B: ESPIDF)
+	//   0x00000518 (C: RTL8720D/RTL8721DA/RTL8720E/TXW81X)
 	// short press 1 means 100 ms short press time
 	// So basically unit is 0.1 second
 	byte buttonShortPress;
-	// offs 0x000004B9
+	// buttonLongPress at offset:
+	//   0x000004B9 (D: else/default/ESP8266)
+	//   0x000004E9 (A: W800/BK7252/BK7252N/XR872/BL616)
+	//   0x000004F1 (B: ESPIDF)
+	//   0x00000519 (C: RTL8720D/RTL8721DA/RTL8720E/TXW81X)
 	byte buttonLongPress;
-	// offs 0x000004BA
+	// buttonHoldRepeat at offset:
+	//   0x000004BA (D: else/default/ESP8266)
+	//   0x000004EA (A: W800/BK7252/BK7252N/XR872/BL616)
+	//   0x000004F2 (B: ESPIDF)
+	//   0x0000051A (C: RTL8720D/RTL8721DA/RTL8720E/TXW81X)
 	byte buttonHoldRepeat;
-	// offs 0x000004BB
+	// unused_fill1 at offset:
+	//   0x000004BB (D: else/default/ESP8266)
+	//   0x000004EB (A: W800/BK7252/BK7252N/XR872/BL616)
+	//   0x000004F3 (B: ESPIDF)
+	//   0x000004F1 (B: ESPIDF)
+	//   0x0000051B (C: RTL8720D/RTL8721DA/RTL8720E/TXW81X)
 	byte unused_fill1;
 
-	// offset 0x000004BC
-	unsigned long LFS_Size; // szie of LFS volume.  it's aligned against the end of OTA
+	// LFS_Size at offset:
+	//   0x000004BC (D: else/default/ESP8266)
+	//   0x000004EC (A: W800/BK7252/BK7252N/XR872/BL616)
+	//   0x000004F4 (B: ESPIDF)
+	//   0x0000051C (C: RTL8720D/RTL8721DA/RTL8720E/TXW81X)
+	// NOTE: 'unsigned long' is 4 bytes on all supported 32-bit platforms.
+	// Caution: On 64 bit platforms (like Linux simulator) compiler will use
+	// alignment to reach 0x4C0 ('unsigned long' is 8 bytes (LP64/64-bit))
+	// so the following is only valid for 32 bit targets!
+	unsigned long LFS_Size; // size of LFS volume, aligned against the end of OTA
+	// loggerFlags at offset:
+	//   0x000004C0 (D: else/default/ESP8266)
+	//   0x000004F0 (A: W800/BK7252/BK7252N/XR872/BL616)
+	//   0x000004F8 (B: ESPIDF)
+	//   0x00000520 (C: RTL8720D/RTL8721DA/RTL8720E/TXW81X)
 	int loggerFlags;
+// unusedSectorAB: sized per platform to keep obkStaticIP_t
+// and the fields following them aligned "identically".
+//
+// Sadly this (by incident, I suppose) doesn't align all eqal, but builds two groups:
+//	groups A, B and D:	they "land" at 0x0527 after this
+// 	group C (RTL...):	they "land" 2 bytes earlier (staticIP at 0x0525 instead of 0x0527).
+//		this is later "fixed" with the 4 byte alignment/padding for "led_corr"
 #if PLATFORM_W800 || PLATFORM_BK7252 || PLATFORM_BK7252N || PLATFORM_XR872 || PLATFORM_BL616
 	byte unusedSectorAB[51];
 #elif PLATFORM_ESPIDF
@@ -1566,42 +1658,83 @@ typedef struct mainConfig_s {
 #else    
 	byte unusedSectorAB[99];
 #endif    
+	// staticIP at offset:
+	//   0x00000527 (D: else/default/ESP8266)
+	//   0x00000527 (A: W800/BK7252/BK7252N/XR872/BL616)
+	//   0x00000527 (B: ESPIDF)
+	//   0x00000525 (C: RTL8720D/RTL8721DA/RTL8720E/TXW81X)
 	obkStaticIP_t staticIP;
+	// ledRemap_t (5 bytes) at offset:
+	//   0x00000537 (D: else/default/ESP8266)
+	//   0x00000537 (A: W800/BK7252/BK7252N/XR872/BL616)
+	//   0x00000537 (B: ESPIDF)
+	//   0x00000535 (C: RTL8720D/RTL8721DA/RTL8720E/TXW81X)
 	ledRemap_t ledRemap;
+	// actual offset:
+	//   0x0000053C (D: else/default/ESP8266)
+	//   0x0000053C (A: W800/BK7252/BK7252N/XR872/BL616)
+	//   0x0000053C (B: ESPIDF)
+	//   0x0000053A (C: RTL8720D/RTL8721DA/RTL8720E/TXW81X) NOT 4 byte aligend for led_corr using floats!
+	// 	--> make padding to start at 0x0000053C visible with a short
+#if PLATFORM_RTL8720D || PLATFORM_RTL8721DA || PLATFORM_RTL8720E || PLATFORM_TXW81X
+	short unused_RTL;
+#endif
+	// so from now on, all platforms are "aligned" to the same adresses
+	// led_corr_t (24 bytes) at offset:
+	//   0x0000053C
+	//
 	led_corr_t led_corr;
+	// mqtt_group at offset:
+	//   0x00000554
 	// alternate topic name for receiving MQTT commands
-	// offset 0x00000554
 	char mqtt_group[64];
-	// offs 0x00000594
+	// unused_bytefill at offset:
+	//   0x00000594
 	byte unused_bytefill[3];
-	// offs 0x00000597
+	// timeRequiredToMarkBootSuccessfull at offset:
+	//   0x00000597
 	byte timeRequiredToMarkBootSuccessfull;
-	//offs 0x00000598
+	// ping_interval at offset:
+	//   0x00000598
 	int ping_interval;
+	// ping_seconds at offset:
+	//   0x0000059C
 	int ping_seconds;
-	// 0x000005A0
+	// ping_host at offset:
+	//   0x000005A0
 	char ping_host[64];
-	// ofs 0x000005E0 (dec 1504)
-	//char initCommandLine[512];
 #define ALLOW_SSID2 1
 #define ALLOW_WEB_PASSWORD 1
+	// initCommandLine at offset:
+	//   0x000005E0 (dec 1504)
+	//char initCommandLine[512];
 	char initCommandLine[1568];
-	// offset 0x00000C00 (3072 decimal)
+	// wifi_ssid2 at offset:
+	//   0x00000C00 (3072 decimal)
 	char wifi_ssid2[64];
-	// offset 0x00000C40 (3136 decimal)
+	// wifi_pass2 at offset:
+	//   0x00000C40 (3136 decimal)
 	char wifi_pass2[68];
-	// offset 0x00000C84 (3204 decimal)
+	// webPassword at offset:
+	//   0x00000C84 (3204 decimal)
 	char webPassword[33];
-	// offset 0x00000CA5 (3237 decimal)
+	// mqtt_use_tls at offset:
+	//   0x00000CA5 (3237 decimal)
 	byte mqtt_use_tls;
-	// offset 0x00000CA6 (3238 decimal)
+	// mqtt_verify_tls_cert at offset:
+	//   0x00000CA6 (3238 decimal)
 	byte mqtt_verify_tls_cert;
-	// offset 0x00000CA7 (3239 decimal)
+	// mqtt_cert_file at offset:
+	//   0x00000CA7 (3239 decimal)
 	char mqtt_cert_file[20];
-	// offset 0x00000CBB (3259 decimal)
+	// disable_web_server at offset:
+	//   0x00000CBB (3259 decimal)
 	byte disable_web_server;
-	// offset 0x00000CBC (3260 decimal)
+	// unused at offset:
+	//   0x00000CBC (3260 decimal)
 	char unused[324];
+	// total struct size:
+	//   0x0E00 (= 3584 bytes)
 } mainConfig_t;
 
 // one sector is 4096 so it we still have some expand possibility
