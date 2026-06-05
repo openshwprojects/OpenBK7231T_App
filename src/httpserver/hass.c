@@ -490,7 +490,7 @@ HassDeviceInfo* hass_createHVAC(float min, float max, float step, const char **f
 HassDeviceInfo* hass_createShutter(int index) {
 	HassDeviceInfo* info = hass_init_device_info(HASS_GARAGE, index, NULL, NULL, 0, 0);
 
-	char buffer[64];
+	char buffer[96];
 
 	//cJSON_AddStringToObject(info->root, "name", title);
 	//cJSON_AddStringToObject(info->root, "unique_id", title);

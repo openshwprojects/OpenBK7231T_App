@@ -34,13 +34,20 @@ void __wrap_bflb_gpio_pad_check(uint8_t pin) {}
 
 static void obk_task(void* pvParameters)
 {
+	uint8_t temp_sec = 10;
+
 	Main_Init();
 
 	while(1)
 	{
+		if(temp_sec >= 10)
+		{
+			g_wifi_temperature = bflb_adc_tsen_get_temp(adc);
+			temp_sec = 0;
+		}
+		temp_sec++;
 		vTaskDelay(1000 / portTICK_PERIOD_MS);
 		Main_OnEverySecond();
-		g_wifi_temperature = bflb_adc_tsen_get_temp(adc);
 	}
 	vTaskDelete(NULL);
 }
@@ -57,12 +64,10 @@ int main(void)
 	}
 	tcpip_init(NULL, NULL);
 
-	board_adc_gpio_init();
-
 	adc = bflb_device_get_by_name("adc");
 
 	/* adc clock = XCLK / 2 / 32 */
-	struct bflb_adc_config_s cfg;
+	struct bflb_adc_config_s cfg = { 0 };
 	cfg.clk_div = ADC_CLK_DIV_32;
 	cfg.scan_conv_mode = false;
 	cfg.continuous_conv_mode = true;
@@ -70,7 +75,7 @@ int main(void)
 	cfg.resolution = ADC_RESOLUTION_16B;
 	cfg.vref = ADC_VREF_2P0V;
 
-	struct bflb_adc_channel_s chan;
+	struct bflb_adc_channel_s chan = { 0 };
 
 	chan.pos_chan = ADC_CHANNEL_TSEN_P;
 	chan.neg_chan = ADC_CHANNEL_GND;
@@ -88,5 +93,5 @@ int main(void)
 		NULL);
 
 	vTaskStartScheduler();
-	while(1) { }
+	while(1);
 }
