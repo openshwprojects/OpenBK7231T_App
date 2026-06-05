@@ -41,18 +41,6 @@
  *----------------------------------------------------------*/
 #include "stdio.h"
 
-#if defined(BL602) || defined(BL702) || defined(BL702L)
-#define configMTIME_BASE_ADDRESS    (0x02000000UL + 0xBFF8UL)
-#define configMTIMECMP_BASE_ADDRESS (0x02000000UL + 0x4000UL)
-#else
-#if __riscv_xlen == 64
-#define configMTIME_BASE_ADDRESS    (0)
-#define configMTIMECMP_BASE_ADDRESS ((0xE4000000UL) + 0x4000UL)
-#else
-#define configMTIME_BASE_ADDRESS    ((0xE0000000UL) + 0xBFF8UL)
-#define configMTIMECMP_BASE_ADDRESS ((0xE0000000UL) + 0x4000UL)
-#endif
-#endif
 #define configSUPPORT_STATIC_ALLOCATION         1
 #define configUSE_PREEMPTION                    1
 #define configUSE_IDLE_HOOK                     1

@@ -52,7 +52,7 @@
 
 #define BMP280_SOFT_RESET       0xB6
 
-int32_t adc_T, adc_P, adc_H, t_fine;
+static int32_t adc_T, adc_P, adc_H, t_fine;
 
 // BMP280 sensor modes, register ctrl_meas mode[1:0]
 typedef enum

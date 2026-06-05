@@ -1236,6 +1236,8 @@ typedef enum channelType_e {
 #define PLATFORM_GPIO_MAX 29
 #elif PLATFORM_BL616
 #define PLATFORM_GPIO_MAX 35
+#elif PLATFORM_GD32VW553
+#define PLATFORM_GPIO_MAX 48
 #else
 #define PLATFORM_GPIO_MAX 29
 #endif
@@ -1266,7 +1268,7 @@ typedef enum channelType_e {
 #define SPECIAL_CHANNEL_FLASHVARS_LAST	264
 
 
-#if PLATFORM_W800 || PLATFORM_BK7252 || PLATFORM_BK7252N || PLATFORM_XR872 || PLATFORM_BL616
+#if PLATFORM_W800 || PLATFORM_BK7252 || PLATFORM_BK7252N || PLATFORM_XR872 || PLATFORM_BL616 || PLATFORM_GD32VW553
 
 #define MAX_PIN_ROLES 48
 
@@ -1649,7 +1651,7 @@ typedef struct mainConfig_s {
 //	groups A, B and D:	they "land" at 0x0527 after this
 // 	group C (RTL...):	they "land" 2 bytes earlier (staticIP at 0x0525 instead of 0x0527).
 //		this is later "fixed" with the 4 byte alignment/padding for "led_corr"
-#if PLATFORM_W800 || PLATFORM_BK7252 || PLATFORM_BK7252N || PLATFORM_XR872 || PLATFORM_BL616
+#if PLATFORM_W800 || PLATFORM_BK7252 || PLATFORM_BK7252N || PLATFORM_XR872 || PLATFORM_BL616 || PLATFORM_GD32VW553
 	byte unusedSectorAB[51];
 #elif PLATFORM_ESPIDF
 	byte unusedSectorAB[43];

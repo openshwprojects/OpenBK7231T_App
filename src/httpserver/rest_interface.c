@@ -16,7 +16,7 @@
 
 #define DEFAULT_FLASH_LEN 0x200000
 
-#if PLATFORM_RTL8710A
+#if PLATFORM_RTL8710A || PLATFORM_GD32VW553
 #undef DEFAULT_FLASH_LEN
 #define DEFAULT_FLASH_LEN 0x400000
 #elif PLATFORM_RTL8720D || PLATFORM_REALTEK_NEW
@@ -224,6 +224,8 @@ static int http_rest_post(http_request_t* request) {
 #elif PLATFORM_TXW81X
 		r = http_rest_post_flash(request, 0, -1);
 #elif PLATFORM_RDA5981
+		r = http_rest_post_flash(request, 0, -1);
+#elif PLATFORM_GD32VW553
 		r = http_rest_post_flash(request, 0, -1);
 #else
 		// TODO

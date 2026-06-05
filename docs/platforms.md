@@ -27,6 +27,7 @@
 | RDA5981                                                 | RDA            | ✅   | ❌   | ✅     | ✅       | ✅   | ✅  | ❌  | ❌         | ✅  | ➖     | ❌  | ➖  |
 | LN8825B                                                 | Lightning Semi | ✅   | ❌   | ✅     | ✅       | ❌   | ✅  | ✅  | ❌         | ✅  | ❌     | ✅  | ➖  |
 | BL616                                                   | Bouffalo Lab   | ✅   | ✅   | ✅⁴    | ✅       | ❌   | ✅  | ❌  | ❌         | ✅  | ✅     | ✅  | ❌  |
+| GD32VW553                                               | GigaDevice     | ✅   | ✅   | ✅⁴    | ✅³      | ✅   | ✅⁸ | ✅  | ✅¹⁰       | ✅  | ✅     | ✅  | ✅⁶ |
 
 
 ✅ - Works<br>
@@ -38,7 +39,7 @@
 
 ¹ Success dependant on partition layout set in bootloader. SPI flash QIO firmware for guaranteed OTA success<br>
 ² Excluding 1MB variation<br>
-³ Implemented, but no tool to generate the file<br>
+³ Be careful with assignments (only one interrupt per pin, something A00 and B00 together is not supported)<br>
 ⁴ No HTTP OTA, only in Web App<br>
 ⁵ OTA attempt leads to device crash<br>
 ⁶ Disabled in obk_config <br>

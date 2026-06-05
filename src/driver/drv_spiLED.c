@@ -85,7 +85,7 @@ void SPILED_InitDMA(int numBytes) {
 	if (spiLED.ready) {
 		SPILED_Shutdown();
 	}
-#if PLATFORM_BEKEN
+#if PLATFORM_BEKEN || PLATFORM_GD32VW553
 	spiLED.padding = 64;
 #elif PLATFORM_REALTEK
 	// size for dma must be multiple of 32

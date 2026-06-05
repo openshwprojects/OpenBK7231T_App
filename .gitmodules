@@ -89,3 +89,7 @@
 	path = sdk/bouffalo_sdk
 	url = https://github.com/bouffalolab/bouffalo_sdk
 	branch = master
+[submodule "sdk/OpenGD32VW553"]
+	path = sdk/OpenGD32VW553
+	url = https://github.com/NonPIayerCharacter/OpenGD32VW553
+	branch = main

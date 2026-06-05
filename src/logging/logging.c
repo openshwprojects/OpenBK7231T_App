@@ -7,7 +7,6 @@
 #include "../logging/logging.h"
 // Commands register, execution API and cmd tokenizer
 #include "../cmnds/cmd_public.h"
-
 #if ENABLE_LITTLEFS && ENABLE_LOG2LFS
 #include "../littlefs/our_lfs.h"
 #include "../new_cfg.h"	// we will use CFG_Set_log2lfs();
@@ -15,10 +14,25 @@
 extern int g_secondsElapsed;
 #endif
 
+#if PLATFORM_BEKEN
+// to get uart.h
+#include "command_line.h"
+int UART_PORT = UART2_PORT;
+int UART_PORT_INDEX = 1;
+#endif
 #if PLATFORM_BEKEN_NEW
 #include "uart.h"
 #include "arm_arch.h"
 #undef PLATFORM_BEKEN
+#elif PLATFORM_LN882H
+#include "serial_hw.h"
+#include "ln_kv_api.h"
+#define KV_LOG_PORT "logport"
+#elif PLATFORM_GD32VW553
+#include "gd32vw55x.h"
+#include "gd32vw55x_it.h"
+#include "rom_export.h"
+#include "uart_config.h"
 #endif
 
 extern uint8_t g_StartupDelayOver;
@@ -148,44 +162,8 @@ static int tcpLogStarted = 0;
 
 commandResult_t log_command(const void* context, const char* cmd, const char* args, int cmdFlags);
 
-#if PLATFORM_BEKEN
-// to get uart.h
-#include "command_line.h"
+#if PLATFORM_BEKEN || PLATFORM_LN882H || PLATFORM_GD32VW553
 
-int UART_PORT = UART2_PORT;
-int UART_PORT_INDEX = 1;
-
-
-commandResult_t log_port(const void* context, const char* cmd, const char* args, int cmdFlags) {
-	int idx;
-
-	Tokenizer_TokenizeString(args, 0);
-
-	// following check must be done after 'Tokenizer_TokenizeString',
-	// so we know arguments count in Tokenizer. 'cmd' argument is
-	// only for warning display
-	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
-		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
-	}
-
-	idx = Tokenizer_GetArgInteger(0);
-	switch (idx) {
-	case 1:
-		UART_PORT = UART1_PORT;
-		UART_PORT_INDEX = 0;
-		break;
-	case 2:
-		UART_PORT = UART2_PORT;
-		UART_PORT_INDEX = 1;
-		break;
-	}
-
-	return CMD_RES_OK;
-}
-#elif PLATFORM_LN882H
-#include "serial_hw.h"
-#include "ln_kv_api.h"
-#define KV_LOG_PORT "logport"
 commandResult_t log_port(const void* context, const char* cmd, const char* args, int cmdFlags)
 {
 	int idx;
@@ -200,8 +178,21 @@ commandResult_t log_port(const void* context, const char* cmd, const char* args,
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 
-	serial_port_id_t port;
 	idx = Tokenizer_GetArgInteger(0);
+#if PLATFORM_BEKEN
+	switch (idx)
+	{
+		case 1:
+			UART_PORT = UART1_PORT;
+			UART_PORT_INDEX = 0;
+			break;
+		case 2:
+			UART_PORT = UART2_PORT;
+			UART_PORT_INDEX = 1;
+			break;
+	}
+#elif PLATFORM_LN882H
+	serial_port_id_t port;
 	switch(idx)
 	{
 		case 0:
@@ -220,6 +211,27 @@ commandResult_t log_port(const void* context, const char* cmd, const char* args,
 	ln_kv_set(KV_LOG_PORT, &port, sizeof(serial_port_id_t));
 	log_deinit();
 	log_init();
+#elif PLATFORM_GD32VW553
+	uint32_t usart_periph = LOG_UART;
+	int baud = Tokenizer_GetArgIntegerDefault(1, 1500000);
+	switch(idx)
+	{
+		case -1:
+			usart_periph = LOG_UART;
+			break;
+		case 0:
+			usart_periph = USART0;
+			break;
+		case 1:
+			usart_periph = UART1;
+			break;
+		case 2:
+			usart_periph = UART2;
+			break;
+	}
+	uart_config(usart_periph, baud > 0 ? baud : 1500000, false, false, false);
+	log_uart_change(usart_periph);
+#endif
 
 	return CMD_RES_OK;
 }
@@ -307,7 +319,7 @@ static void initLog(void)
 	//cmddetail:"examples":"logStartup2lfs 15"}
 	CMD_RegisterCommand("logStartup2lfs", CMD_logStartup2lfs, NULL);
 #endif
-#if PLATFORM_BEKEN || PLATFORM_LN882H
+#if PLATFORM_BEKEN || PLATFORM_LN882H || PLATFORM_GD32VW553
 	//cmddetail:{"name":"logport","args":"[Index]",
 	//cmddetail:"descr":"Allows you to change log output port. On Beken, the UART1 is used for flashing and for TuyaMCU/BL0942, while UART2 is for log. Sometimes it might be easier for you to have log on UART1, so now you can just use this command like backlog uartInit 115200; logport 1 to enable logging on UART1..",
 	//cmddetail:"fn":"log_port","file":"logging/logging.c","requires":"",
