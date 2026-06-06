@@ -107,7 +107,7 @@ generateNotes:
         - TXW81X (eg TXW817-810)
         - RDA5981 (eg RDA5981AM, RDA5981BM, WRD2L, TYWRD3S, HLK-M50)
         - LN8825B (eg SCW-T503)
-        - GD32VW553 (eg GD32VW553HMQ6, GD32VW553HMQ7)
+        - GD32VW553 (eg GD32VW553-MINI, GD32VW553-UNIFI)
 
       footerPartial: |
         {{#if noteGroups}}
