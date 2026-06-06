@@ -104,10 +104,10 @@ generateNotes:
         - RTL87x1DA (AmebaDplus family) (eg BW20, WR11-U, WR11-2S)
         - RTL87x0E (AmebaLite family) (eg PKM8710ECF)
         - ECR6600 (eg AXYU, AXY2S, WG236, DSM-036, CDI-WX56600A-00, BL-M6600XT1, HF-LPT6200)
-        - GD32VW553 (eg GD32VW553HMQ6, GD32VW553HMQ7)
         - TXW81X (eg TXW817-810)
         - RDA5981 (eg RDA5981AM, RDA5981BM, WRD2L, TYWRD3S, HLK-M50)
         - LN8825B (eg SCW-T503)
+        - GD32VW553 (eg GD32VW553HMQ6, GD32VW553HMQ7)
 
       footerPartial: |
         {{#if noteGroups}}
@@ -172,8 +172,6 @@ generateNotes:
         | RTL8720E       | OTA Update | [OpenRTL8720E_{{version}}_ota.img]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenRTL8720E_{{version}}_ota.img)               |
         | ECR6600        | UART Flash | [OpenECR6600_{{version}}.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenECR6600_{{version}}.bin)                         |
         | ECR6600        | OTA Update | [OpenECR6600_{{version}}_ota.img]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenECR6600_{{version}}_ota.img)                 |
-        | GD32VW553      | UART Flash | [OpenGD32VW553_{{version}}.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenGD32VW553_{{version}}.bin)                       |
-        | GD32VW553      | OTA Update | [OpenGD32VW553_{{version}}_ota.img]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenGD32VW553_{{version}}_ota.img)               |
         | ESP32 4MB      | UART Flash | [OpenESP32_{{version}}_4M.factory.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenESP32_{{version}}_4M.factory.bin)       |
         | ESP32 4MB      | OTA Update | [OpenESP32_{{version}}_4M.img]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenESP32_{{version}}_4M.img)                       |
         | ESP32-S2 4MB   | UART Flash | [OpenESP32S2_{{version}}_4M.factory.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenESP32S2_{{version}}_4M.factory.bin)   |
@@ -202,6 +200,8 @@ generateNotes:
         | TXW81X         |            | [OpenTXW81X_{{version}}.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenTXW81X_{{version}}.bin)                           |
         | LN8825B        | UART Flash | [OpenLN8825_{{version}}.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenLN8825_{{version}}.bin)                           |
         | LN8825B        | OTA Update | [OpenLN8825_{{version}}_ota.img]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenLN8825_{{version}}_ota.img)                   |
+        | GD32VW553      | UART Flash | [OpenGD32VW553_{{version}}.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenGD32VW553_{{version}}.bin)                       |
+        | GD32VW553      | OTA Update | [OpenGD32VW553_{{version}}_ota.img]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenGD32VW553_{{version}}_ota.img)               |
         | Win32          |            | [obkSimulator_{{version}}.zip]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/obkSimulator_{{version}}.zip)                       |
 
 
