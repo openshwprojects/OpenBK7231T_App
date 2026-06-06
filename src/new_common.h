@@ -1111,6 +1111,8 @@ OSStatus rtos_create_thread(beken_thread_t* thread,
 	uint32_t stack_size, beken_thread_arg_t arg);
 OSStatus rtos_suspend_thread(beken_thread_t* thread);
 
+#define OBK_OTA_EXTENSION ".img"
+
 #else
 
 #include "gw_intf.h"
