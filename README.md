@@ -20,7 +20,7 @@ Although this repository is named `OpenBK7231T_App`, it has evolved into a multi
 -   [T6605](https://www.elektroda.com/rtvforum/viewtopic.php?p=21721681#21721681) Flash as WinnerMicro W600
 -   [LN882H](https://www.elektroda.com/rtvforum/topic4027545.html) by Lightning Semi - [datasheet](https://www.elektroda.com/rtvforum/topic4027545.html), see [flashing how-to](https://www.elektroda.com/rtvforum/topic4028087.html), see [sample device teardown and flashing](https://www.elektroda.com/rtvforum/topic4032240.html), see [new flash tool](https://www.elektroda.com/rtvforum/topic4045532.html), see [dev board](https://www.elektroda.com/rtvforum/topic4050274.html)
 -   Windows, via [simulator](https://www.elektroda.com/rtvforum/topic4046056.html)
--   ESP32 (original), ESP32-S2, ESP32-S3, ESP32-C2, ESP32-C3, ESP32-C6 (working well - guide to be released soon, [development topic](https://www.elektroda.com/rtvforum/topic4074860.html))
+-   ESP32 (original), ESP32-S2, ESP32-S3, ESP32-C2, ESP32-C3, ESP32-C5, ESP32-C6, ESP32-C61 [development topic](https://www.elektroda.com/rtvforum/topic4074860.html))
 -   ESP8266/ESP8285 (1MB variant without OTA, 2MB or more with OTA)
 -   RTL8711AM (Ameba1 family, with SDRAM only. Can't be flashed via UART, only JTAG or SPI) (eg [WRG1](https://developer.tuya.com/en/docs/iot/wrg1-datasheet?id=K97rig6mscj8e), see [development thread](https://www.elektroda.com/rtvforum/viewtopic.php?p=21452754#21452754))
 -   RTL8710B (AmebaZ family) (eg [T102_V1.0](https://fccid.io/2ASKS-T102), [W302/T102_V1.0](https://fcc.report/FCC-ID/2AU7O-T102V11), [T112_V1.1](https://fccid.io/2AU7O-T102V11), [WR2](https://developer.tuya.com/en/docs/iot/wifiwr2module?id=K9605tko0juc3), [WR3E](https://developer.tuya.com/en/docs/iot/wr3e-module-datasheet?id=K9elwlqbfosbc), BW14)
@@ -35,7 +35,7 @@ Although this repository is named `OpenBK7231T_App`, it has evolved into a multi
 -   RDA5981 (eg RDA5981AM, RDA5981BM, WRD2L, TYWRD3S, HLK-M50, see [development thread](https://www.elektroda.com/rtvforum/topic4105474.html), see [guide](https://www.elektroda.com/rtvforum/topic4148573.html))
 -   LN8825B (eg SCW-T503)
 -   BL616/BL618 (eg Ai-M62-12F, Ai-M61-32S)
--   GD32VW553
+-   GD32VW553 (eg GD32VW553-MINI, GD32VW553-UNIFI)
 
 Please use automatically compiled binaries from the Releases tab. To build OpenBeken yourself for any supported platform, fork our version of the submodule SDK first, and then check out this app repository alongside it. Details further down. Alternatively consider using the easier [override method.](https://www.elektroda.com/rtvforum/topic4082682.html)
 
