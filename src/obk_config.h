@@ -779,8 +779,6 @@
 #undef ENABLE_LOG2LFS
 #endif
 
-  //enable DTS for all
-#define ENABLE_TIME_DST						1
 
 // closing OBK_CONFIG_H
 #endif
