@@ -373,7 +373,7 @@ uint32_t setDST() {
 //	                       |         |-- 2nd_rule: last_week October sunday 3_o_clock 0_minutes_DST_after_this_time 
 commandResult_t TIME_SetDST(const int *args) {
     // d1/d2 for day and DST values, needed more than once, so store values to avoid multiple "GetArg" calls
-    uint8_t d1,d2,dsum;
+    uint8_t d1,d2;
 
     // DST1 must be before DST2
     int add = (args[1] < args[6])? 0 : 5;		// check if first entry is "before" second (compare month number)
@@ -392,16 +392,18 @@ commandResult_t TIME_SetDST(const int *args) {
 
     if (!((!d1) ^ (!d2))) return CMD_RES_BAD_ARGUMENT; // neither two times 0 nor two times != 0 is valid --> XOR them!
     
-    // if dstoffset != 1, assume minutes, if dstoffest 1, assume "1 hour", so multiply with another 60
-    dsum = d1+d2;
-    if ( dsum == 1 ) {
-        dst_config.DSToffset = 3600;
-    } else {
-        dst_config.DSToffset = 60*(dsum);
-    }
-
     dst_config.isDST1 = (d1 != 0);
     dst_config.isDST2 = (d2 != 0);
+
+    // we know for sure now, one of d1 and d2 is 0. So store the "sum" in d1, resulting d1 being the actual dst offset
+    d1 += d2;
+    // if dstoffset != 1, assume minutes, if dstoffest == 1, assume "1 hour" (3600 seconds)
+    if ( d1 == 1 ) {
+        dst_config.DSToffset = 3600;
+    } else {
+        dst_config.DSToffset = 60*(d1);
+    }
+
 
     if (TIME_IsTimeSynced()) setDST();
     
