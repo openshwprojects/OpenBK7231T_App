@@ -368,12 +368,12 @@ uint32_t setDST() {
 
 
 //
-//	             |         |-- 1st rule: last_week March sunday 2_o_clock 60_minutes_DST_after_this_time  
+//	            |         |-- 1st rule: last_week March sunday 2_o_clock 60_minutes_DST_after_this_time
 //	TIME_setDST 0 3 1 2 60 0 10 1 3 0	
 //	                       |         |-- 2nd_rule: last_week October sunday 3_o_clock 0_minutes_DST_after_this_time 
 commandResult_t TIME_SetDST(const int *args) {
     // d1/d2 for day and DST values, needed more than once, so store values to avoid multiple "GetArg" calls
-    uint8_t d1,d2;
+    uint8_t d1,d2,dsum;
 
     // DST1 must be before DST2
     int add = (args[1] < args[6])? 0 : 5;		// check if first entry is "before" second (compare month number)
@@ -390,10 +390,15 @@ commandResult_t TIME_SetDST(const int *args) {
     dst_config.hour2 = args[8+add];
     d2 = args[9+add];	// second DST offset
 
-    // no case needed for "DSToffset": one entry must be 0, one != 0, so if valid, the sum is the DST offset 
-    dst_config.DSToffset = 60*(d1+d2)*(d1*d2 == 0);
-    if ( dst_config.DSToffset == 0 )  return CMD_RES_BAD_ARGUMENT;		// neither two times 0 nor two times != 0 is valid !
+    if (!((!d1) ^ (!d2))) return CMD_RES_BAD_ARGUMENT; // neither two times 0 nor two times != 0 is valid --> XOR them!
     
+    // if dstoffset != 1, assume minutes, if dstoffest 1, assume "1 hour", so multiply with another 60
+    dsum = d1+d2;
+    if ( dsum == 1 ) {
+        dst_config.DSToffset = 3600;
+    } else {
+        dst_config.DSToffset = 60*(dsum);
+    }
 
     dst_config.isDST1 = (d1 != 0);
     dst_config.isDST2 = (d2 != 0);
@@ -450,13 +455,12 @@ commandResult_t CMD_TIME_CalcDST(const void *context, const char *cmd, const cha
 	
 	int clkargs[10];
 	clkargs[4]=0;	// starts with "DST-End", so after this DST offset is 0
-	for (int i=0; i<4; i++){
-		clkargs[i]=Tokenizer_GetArgInteger(i);
+	clkargs[9]=Tokenizer_GetArgIntegerDefault(8, 1);
+	for (int i=0; i<4; i++) {
+	    clkargs[i] = Tokenizer_GetArgInteger(i);
+	    clkargs[i+5] = Tokenizer_GetArgInteger(i+4);
 	}
-	for (int i=4; i<8; i++){
-		clkargs[i+1]=Tokenizer_GetArgInteger(i);
-	}
-	clkargs[9]=Tokenizer_GetArgIntegerDefault(8, 1)*60;	// we'll use minutes with TIME_SetDST
+
 	return TIME_SetDST(clkargs);
 }
 
