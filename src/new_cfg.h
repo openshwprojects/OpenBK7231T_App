@@ -96,6 +96,8 @@ void CFG_SetWebPassword(const char *s);
 #if ENABLE_LITTLEFS
 void CFG_SetLFS_Size(uint32_t value);
 uint32_t CFG_GetLFS_Size();
+uint8_t CFG_Get_log2lfs();
+void CFG_Set_log2lfs(uint8_t value);
 #endif 
 
 #if MQTT_USE_TLS

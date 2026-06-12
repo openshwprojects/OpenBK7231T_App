@@ -36,6 +36,9 @@
 #if ENABLE_LITTLEFS
 #include "littlefs/our_lfs.h"
 #endif
+#if ENABLE_LITTLEFS && ENABLE_LOG2LFS
+uint8_t g_log2lfs;
+#endif
 
 
 #include "driver/drv_ntp.h"
@@ -119,7 +122,7 @@ void Main_ForceUnsafeInit();
 #if PLATFORM_BEKEN
 #define WFI_FUNC WFI
 #elif PLATFORM_BL602 || PLATFORM_REALTEK || PLATFORM_XRADIO || PLATFORM_W600 || PLATFORM_RDA5981 || PLATFORM_LN8825 \
-	|| PLATFORM_LN882H || PLATFORM_BL_NEW
+	|| PLATFORM_LN882H || PLATFORM_BL_NEW || PLATFORM_GD32VW553
 #define WFI_FUNC() __asm volatile("wfi")
 #elif PLATFORM_W800
 #define WFI_FUNC __WFI
@@ -262,7 +265,7 @@ int LWIP_GetActiveSockets() {
 
 #if PLATFORM_BL602 || PLATFORM_W800 || PLATFORM_W600 || PLATFORM_LN882H || PLATFORM_LN8825 \
 	|| PLATFORM_ESPIDF || PLATFORM_TR6260 || PLATFORM_REALTEK || PLATFORM_ECR6600 \
-	|| PLATFORM_XRADIO || PLATFORM_ESP8266 || PLATFORM_BL_NEW
+	|| PLATFORM_XRADIO || PLATFORM_ESP8266 || PLATFORM_BL_NEW || PLATFORM_GD32VW553
 
 OSStatus rtos_create_thread(beken_thread_t* thread,
 	uint8_t priority, const char* name,
@@ -713,7 +716,8 @@ bool Main_HasFastConnect() {
 		return true;
 	}
 	if ((PIN_FindPinIndexForRole(IOR_DoorSensorWithDeepSleep, -1) != -1) ||
-		(PIN_FindPinIndexForRole(IOR_DoorSensorWithDeepSleep_NoPup, -1) != -1))
+		(PIN_FindPinIndexForRole(IOR_DoorSensorWithDeepSleep_NoPup, -1) != -1) ||
+		(PIN_FindPinIndexForRole(IOR_DoorSensorWithDeepSleep_pd, -1) != -1))
 	{
 		return true;
 	}
@@ -1210,7 +1214,7 @@ void QuickTick(void* param)
 
 #elif PLATFORM_BL602 || PLATFORM_W600 || PLATFORM_W800 || PLATFORM_TR6260 || defined(PLATFORM_REALTEK) || PLATFORM_ECR6600 \
 	|| PLATFORM_ESP8266 || PLATFORM_ESPIDF || PLATFORM_XRADIO || PLATFORM_LN882H || PLATFORM_TXW81X || PLATFORM_RDA5981 || PLATFORM_LN8825 \
-	|| PLATFORM_BL_NEW
+	|| PLATFORM_BL_NEW || PLATFORM_GD32VW553
 void quick_timer_thread(void* param)
 {
 	while (1) {
@@ -1226,7 +1230,7 @@ void QuickTick_StartThread(void)
 #if WINDOWS
 
 #elif PLATFORM_BL602 || PLATFORM_W600 || PLATFORM_W800 || PLATFORM_TR6260 || defined(PLATFORM_REALTEK) || PLATFORM_ECR6600 \
-	|| PLATFORM_ESP8266 || PLATFORM_ESPIDF || PLATFORM_XRADIO || PLATFORM_LN882H || PLATFORM_LN8825 || PLATFORM_BL_NEW
+	|| PLATFORM_ESP8266 || PLATFORM_ESPIDF || PLATFORM_XRADIO || PLATFORM_LN882H || PLATFORM_LN8825 || PLATFORM_BL_NEW || PLATFORM_GD32VW553
 	xTaskCreate(quick_timer_thread, "quick", QT_STACK_SIZE, NULL, 15, NULL);
 #elif PLATFORM_TXW81X
 	os_task_create("quick", quick_timer_thread, NULL, 15, 0, NULL, QT_STACK_SIZE);
@@ -1299,8 +1303,13 @@ void Main_Init_AfterDelay_Unsafe(bool bStartAutoRunScripts) {
 			// start IR driver 5 seconds after boot.  It may affect wifi connect?
 			// yet we also want it to start if no wifi for IR control...
 #ifndef OBK_DISABLE_ALL_DRIVERS
+#if ENABLE_DRIVER_IR || ENABLE_DRIVER_IRREMOTEESP
 			DRV_StartDriver("IR");
 			//ScheduleDriverStart("IR",5);
+#elif ENABLE_DRIVER_TINYIR_NEC
+			if(PIN_FindPinIndexForRole(IOR_IRSend, -1) == -1) 
+				DRV_StartDriver("TinyIR_NEC");
+#endif
 #endif
 		}
 
@@ -1613,6 +1622,28 @@ void Main_Init_After_Delay()
 		}
 #endif
 		Main_Init_AfterDelay_Unsafe(true);
+#if ENABLE_LITTLEFS && ENABLE_LOG2LFS
+	// we have to wait until berry was run - it will else somewhow reinit/remount lfs and
+	// log2lfs will crash when its already writing ...
+	// defines/macros (LOG2LFS_SECONDS) included from logging.h
+	void initLog2LFS(void);	// implemented in logging.c
+	// Now CFG flash is ininitialized, immediatley check
+	// if we want startup log to be saved to LFS
+	g_log2lfs = LOG2LFS_SECONDS(CFG_Get_log2lfs());
+#if WINDOWS
+	// don't run log2lfs in selfTestMode  - it will kill LFS while
+	// log2lfs uses LFS
+	extern int g_selfTestsMode;
+	if ( g_selfTestsMode != 0) g_log2lfs = 0;
+	// uncomment for testing on Simulator: set to log first 20 seconds
+/*
+	else
+		if (g_log2lfs == 0) g_log2lfs = 20;
+*/
+#endif
+	if (g_log2lfs > 0) initLog2LFS();
+//	bk_printf("g_log2lfs=%i\r\n", g_log2lfs);
+#endif
 	}
 
 	ADDLOGF_INFO("%s done", __func__);

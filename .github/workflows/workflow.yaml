@@ -165,6 +165,9 @@ jobs:
           - platform: OpenXR806
             variant: default
             gcc: 8-2019-q3
+          - platform: OpenXR806_DCDC
+            variant: default
+            gcc: 8-2019-q3
           - platform: OpenXR872
             variant: default
             gcc: 8-2019-q3
@@ -206,6 +209,8 @@ jobs:
           #  variant: default
           #- platform: OpenBL602_ALT
           #  variant: default
+          - platform: OpenGD32VW553
+            variant: default
 
           # extras for BK7231T
           - platform: OpenBK7231T
@@ -281,10 +286,10 @@ jobs:
           cache: 'pip'
 
       - name: Install dependencies
-        if: ${{ matrix.platform == 'OpenLN882H' || matrix.platform == 'OpenLN8825' }}
+        if: ${{ matrix.platform == 'OpenLN882H' || matrix.platform == 'OpenLN8825' || matrix.platform == 'OpenGD32VW553' }}
         uses: awalsh128/cache-apt-pkgs-action@latest
         with:
-          packages: cmake
+          packages: cmake srecord
           version: 1.0
 
       - name: Install arm-none-eabi-gcc
