@@ -722,14 +722,14 @@ static commandResult_t CMD_GoTo(const void *context, const char *cmd, const char
 	if(Tokenizer_GetArgsCount() == 1) {
 		label = Tokenizer_GetArg(0);
 
-		ADDLOG_EXTRADEBUG(LOG_FEATURE_CMD, "CMD_GoTo: goto local %s\n",label);
+		ADDLOG_EXTRADEBUG(LOG_FEATURE_CMD, "CMD_GoTo: goto local %s",label);
 
 		SVM_GoToLocal(g_activeThread,label);
 	} else {
 
 		fname = Tokenizer_GetArg(0);
 		label = Tokenizer_GetArg(1);
-		ADDLOG_EXTRADEBUG(LOG_FEATURE_CMD, "CMD_GoTo: goto global %s %s\n",fname,label);
+		ADDLOG_EXTRADEBUG(LOG_FEATURE_CMD, "CMD_GoTo: goto global %s %s",fname,label);
 		SVM_GoTo(g_activeThread,fname,label);
 	}
 
@@ -777,7 +777,7 @@ static commandResult_t CMD_Delay_s(const void *context, const char *cmd, const c
 
 	del = Tokenizer_GetArgFloat(0);
 	delMS = del * 1000;
-	ADDLOG_EXTRADEBUG(LOG_FEATURE_CMD, "CMD_Delay_s: thread will delay %i extra ms\n",delMS);
+	ADDLOG_EXTRADEBUG(LOG_FEATURE_CMD, "CMD_Delay_s: thread will delay %i extra ms",delMS);
 	g_activeThread->currentDelayMS += delMS;
 
 
@@ -800,7 +800,7 @@ static commandResult_t CMD_Delay_ms(const void *context, const char *cmd, const 
 
 	del = Tokenizer_GetArgInteger(0);
 
-	ADDLOG_EXTRADEBUG(LOG_FEATURE_CMD, "CMD_Delay_ms: thread will delay %i\n",del);
+	ADDLOG_EXTRADEBUG(LOG_FEATURE_CMD, "CMD_Delay_ms: thread will delay %i",del);
 	g_activeThread->currentDelayMS += del;
 
 
@@ -813,7 +813,7 @@ static commandResult_t CMD_Return(const void *context, const char *cmd, const ch
 		return CMD_RES_ERROR;
 	}
 
-	ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_Return: thread will return\n");
+	ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_Return: thread will return");
 	g_activeThread->curFile = 0;
 	g_activeThread->curLine = 0;
 

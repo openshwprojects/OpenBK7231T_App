@@ -47,72 +47,86 @@ void OTA_RequestDownloadFromHTTP(const char *s);
 #define DEVICENAME_PREFIX_SHORT "WT"
 #define PLATFORM_MCU_NAME "WIN32"
 #define MANUFACTURER "Microsoft"
+#define DEF_MQTT_GROUP "bekens"
 #else
 #define DEVICENAME_PREFIX_FULL "LinuxSim"
 #define DEVICENAME_PREFIX_SHORT "LS"
 #define PLATFORM_MCU_NAME "LIN"
 #define MANUFACTURER "Linux"
+#define DEF_MQTT_GROUP "bekens"
 #endif
 #elif PLATFORM_XR806
 #define DEVICENAME_PREFIX_FULL "OpenXR806"
 #define DEVICENAME_PREFIX_SHORT "oxr"
 #define PLATFORM_MCU_NAME "XR806"
 #define MANUFACTURER "Xradio Technology"
+#define DEF_MQTT_GROUP "xr806s"
 #elif PLATFORM_XR809
 #define DEVICENAME_PREFIX_FULL "OpenXR809"
 #define DEVICENAME_PREFIX_SHORT "oxr"
 #define PLATFORM_MCU_NAME "XR809"
 #define MANUFACTURER "Xradio Technology"
+#define DEF_MQTT_GROUP "xr809s"
 #elif PLATFORM_XR872
 #define DEVICENAME_PREFIX_FULL "OpenXR872"
 #define DEVICENAME_PREFIX_SHORT "oxr"
 #define PLATFORM_MCU_NAME "XR872"
 #define MANUFACTURER "Xradio Technology"
+#define DEF_MQTT_GROUP "xr872s"
 #elif PLATFORM_BK7231N
 #define DEVICENAME_PREFIX_FULL "OpenBK7231N"
 #define DEVICENAME_PREFIX_SHORT "obk"
 #define PLATFORM_MCU_NAME "BK7231N"
 #define MANUFACTURER "Beken Corporation"
+#define DEF_MQTT_GROUP "bekens_n"
 #elif PLATFORM_BK7231T
 #define DEVICENAME_PREFIX_FULL "OpenBK7231T"
 #define DEVICENAME_PREFIX_SHORT "obk"
 #define PLATFORM_MCU_NAME "BK7231T"
 #define MANUFACTURER "Beken Corporation"
+#define DEF_MQTT_GROUP "bekens_t"
 #elif PLATFORM_BK7238
 #define DEVICENAME_PREFIX_FULL "OpenBK7238"
 #define DEVICENAME_PREFIX_SHORT "obk"
 #define PLATFORM_MCU_NAME "BK7238"
 #define MANUFACTURER "Beken Corporation"
+#define DEF_MQTT_GROUP "bekens_8s"
 #elif PLATFORM_BK7231U
 #define DEVICENAME_PREFIX_FULL "OpenBK7231U"
 #define DEVICENAME_PREFIX_SHORT "obk"
 #define PLATFORM_MCU_NAME "BK7231U"
 #define MANUFACTURER "Beken Corporation"
+#define DEF_MQTT_GROUP "bekens_u"
 #elif PLATFORM_BK7252
 #define DEVICENAME_PREFIX_FULL "OpenBK7252"
 #define DEVICENAME_PREFIX_SHORT "obk"
 #define PLATFORM_MCU_NAME "BK7252"
 #define MANUFACTURER "Beken Corporation"
+#define DEF_MQTT_GROUP "bekens_52s"
 #elif PLATFORM_BK7252N
 #define DEVICENAME_PREFIX_FULL "OpenBK7252N"
 #define DEVICENAME_PREFIX_SHORT "obk"
 #define PLATFORM_MCU_NAME "BK7252N"
 #define MANUFACTURER "Beken Corporation"
+#define DEF_MQTT_GROUP "bekens_52n"
 #elif PLATFORM_BL602
 #define DEVICENAME_PREFIX_FULL "OpenBL602"
 #define DEVICENAME_PREFIX_SHORT "obl"
 #define PLATFORM_MCU_NAME "BL602"
 #define MANUFACTURER "BLAITEK"
+#define DEF_MQTT_GROUP "bl602s"
 #elif PLATFORM_W800
 #define DEVICENAME_PREFIX_FULL "OpenW800"
 #define DEVICENAME_PREFIX_SHORT "w800"
 #define PLATFORM_MCU_NAME "W800"
 #define MANUFACTURER "WinnerMicro"
+#define DEF_MQTT_GROUP "w800s"
 #elif PLATFORM_W600
 #define DEVICENAME_PREFIX_FULL "OpenW600"
 #define DEVICENAME_PREFIX_SHORT "w600"
 #define PLATFORM_MCU_NAME "W600"
 #define MANUFACTURER "WinnerMicro"
+#define DEF_MQTT_GROUP "w600s"
 
 typedef long BaseType_t;
 
@@ -121,11 +135,13 @@ typedef long BaseType_t;
 #define DEVICENAME_PREFIX_SHORT "ln882h"
 #define PLATFORM_MCU_NAME "LN882H"
 #define MANUFACTURER "LightningSemi"
+#define DEF_MQTT_GROUP "ln882h"
 #elif PLATFORM_LN8825
 #define DEVICENAME_PREFIX_FULL "OpenLN8825"
 #define DEVICENAME_PREFIX_SHORT "ln8825"
 #define PLATFORM_MCU_NAME "LN8825"
 #define MANUFACTURER "LightningSemi"
+#define DEF_MQTT_GROUP "ln8825s"
 #elif PLATFORM_ESPIDF
 #define MANUFACTURER "Espressif"
 #define DEVICENAME_PREFIX_SHORT "esp"
@@ -149,61 +165,85 @@ typedef long BaseType_t;
 #define PLATFORM_MCU_NAME MANUFACTURER
 #endif
 #define DEVICENAME_PREFIX_FULL "Open" PLATFORM_MCU_NAME
+#define DEF_MQTT_GROUP "esp"
 #elif PLATFORM_TR6260
 #define DEVICENAME_PREFIX_FULL "OpenTR6260"
 #define DEVICENAME_PREFIX_SHORT "tr6260"
 #define PLATFORM_MCU_NAME "TR6260"
 #define MANUFACTURER "Transa Semi"
+#define DEF_MQTT_GROUP "tr6260s"
 #elif PLATFORM_RTL87X0C
 #define DEVICENAME_PREFIX_FULL "OpenRTL87X0C"
 #define DEVICENAME_PREFIX_SHORT "rtl87x0C"
 #define PLATFORM_MCU_NAME "RTL87X0C"
 #define MANUFACTURER "Realtek"
+#define DEF_MQTT_GROUP "rtl87x0c"
 #elif PLATFORM_RTL8710B
 #define DEVICENAME_PREFIX_FULL "OpenRTL8710B"
 #define DEVICENAME_PREFIX_SHORT "rtl8710b"
 #define PLATFORM_MCU_NAME "RTL8710B"
 #define MANUFACTURER "Realtek"
+#define DEF_MQTT_GROUP "rtl8710b"
 #elif PLATFORM_RTL8710A
 #define DEVICENAME_PREFIX_FULL "OpenRTL8710A"
 #define DEVICENAME_PREFIX_SHORT "rtl8710a"
 #define PLATFORM_MCU_NAME "RTL8710A"
 #define MANUFACTURER "Realtek"
+#define DEF_MQTT_GROUP "rtl8711am"
 #elif PLATFORM_RTL8720D
 #define DEVICENAME_PREFIX_FULL "OpenRTL8720D"
 #define DEVICENAME_PREFIX_SHORT "rtl8720d"
 #define PLATFORM_MCU_NAME "RTL8720D"
 #define MANUFACTURER "Realtek"
+#define DEF_MQTT_GROUP "rtl8720d"
 #elif PLATFORM_ECR6600
 #define DEVICENAME_PREFIX_FULL "OpenECR6600"
 #define DEVICENAME_PREFIX_SHORT "ecr6600"
 #define PLATFORM_MCU_NAME "ECR6600"
 #define MANUFACTURER "ESWIN"
+#define DEF_MQTT_GROUP "ecr6600s"
 #elif PLATFORM_ESP8266
 #define DEVICENAME_PREFIX_FULL "OpenESP8266"
 #define DEVICENAME_PREFIX_SHORT "esp8266"
 #define PLATFORM_MCU_NAME "ESP8266"
 #define MANUFACTURER "Espressif"
+#define DEF_MQTT_GROUP "esp8266s"
 #elif PLATFORM_RTL8721DA
 #define DEVICENAME_PREFIX_FULL "OpenRTL8721DA"
 #define DEVICENAME_PREFIX_SHORT "rtl8721da"
 #define PLATFORM_MCU_NAME "RTL8721DA"
 #define MANUFACTURER "Realtek"
+#define DEF_MQTT_GROUP "rtl8721da"
 #elif PLATFORM_RTL8720E
 #define DEVICENAME_PREFIX_FULL "OpenRTL8720E"
 #define DEVICENAME_PREFIX_SHORT "rtl8720e"
 #define PLATFORM_MCU_NAME "RTL8720E"
 #define MANUFACTURER "Realtek"
+#define DEF_MQTT_GROUP "rtl8720e"
 #elif PLATFORM_TXW81X
 #define DEVICENAME_PREFIX_FULL "OpenTXW81X"
 #define DEVICENAME_PREFIX_SHORT "txw81x"
 #define PLATFORM_MCU_NAME "TXW81X"
 #define MANUFACTURER "Taixin"
+#define DEF_MQTT_GROUP "txw81x"
 #elif PLATFORM_RDA5981
 #define DEVICENAME_PREFIX_FULL "OpenRDA5981"
 #define DEVICENAME_PREFIX_SHORT "rda5981"
 #define PLATFORM_MCU_NAME "RDA5981"
 #define MANUFACTURER "RDA Microelectronics"
+#define DEF_MQTT_GROUP "rda5981s"
+#elif PLATFORM_BL616
+#define DEVICENAME_PREFIX_FULL "OpenBL616"
+#define DEVICENAME_PREFIX_SHORT "bl616"
+#define PLATFORM_MCU_NAME "BL616"
+#define MANUFACTURER "Bouffalo Lab Team"
+#define DEF_MQTT_GROUP "bl616s"
+#elif PLATFORM_GD32VW553
+#define DEVICENAME_PREFIX_FULL "OpenGD32VW553"
+#define DEVICENAME_PREFIX_SHORT "gd32vw553"
+#define PLATFORM_MCU_NAME "GD32VW553"
+#define MANUFACTURER "GigaDevices"
+#define DEF_MQTT_GROUP "gd32s"
 #else
 #error "You must define a platform.."
 This platform is not supported, error!
@@ -224,7 +264,11 @@ This platform is not supported, error!
 #elif PLATFORM_XR872
 #define USER_SW_VER "XR872_Test"
 #elif PLATFORM_XR806
+#if (OBK_VARIANT == OBK_VARIANT_XR806_DCDC)
+#define USER_SW_VER "XR806_Test_DCDC"
+#else
 #define USER_SW_VER "XR806_Test"
+#endif
 #elif defined(PLATFORM_BK7231N)
 #define USER_SW_VER "BK7231N_Test"
 #elif defined(PLATFORM_BK7231T)
@@ -271,6 +315,10 @@ This platform is not supported, error!
 #define USER_SW_VER "TXW81X_Test"
 #elif PLATFORM_RDA5981
 #define USER_SW_VER "RDA5981_Test"
+#elif PLATFORM_BL616
+#define USER_SW_VER "BL616_Test"
+#elif PLATFORM_GD32VW553
+#define USER_SW_VER "GD32VW553_Test"
 #else
 #warning "USER_SW_VER undefined"
 #define USER_SW_VER "unknown"
@@ -384,7 +432,7 @@ typedef void * beken_thread_arg_t;
 typedef int (*beken_thread_function_t)(void *p);
 #define BEKEN_APPLICATION_PRIORITY 1
 
-#elif PLATFORM_BL602
+#elif PLATFORM_BL602 && !PLATFORM_BL_NEW
 
 #include <FreeRTOS.h>
 #include <task.h>
@@ -956,6 +1004,114 @@ OSStatus rtos_suspend_thread(beken_thread_t thread);
 #define GLOBAL_INT_DISABLE()		;
 #define GLOBAL_INT_RESTORE()		;
 
+#elif PLATFORM_BL616 || PLATFORM_BL602
+
+#include "FreeRTOS.h"
+#include "task.h"
+#include "semphr.h"
+#include "queue.h"
+#include "event_groups.h"
+#include "mm.h"
+#if PLATFORM_BL616
+#include "utils/includes.h"
+
+#include "utils/common.h"
+#endif
+
+#include "lwip/err.h"
+#include "lwip/sockets.h"
+#include "lwip/sys.h"
+#include "lwip/netdb.h"
+#include "lwip/dns.h"
+
+typedef unsigned int UINT32;
+
+#define ASSERT
+#undef os_malloc
+#undef os_free
+//#define os_malloc	pvPortMalloc
+//#define os_free		vPortFree
+#define os_malloc(x)	kmalloc(x, MM_FLAG_ALIGN_32BYTE);
+#define os_free		kfree
+#define os_realloc krealloc
+#define malloc		os_malloc
+#define free		os_free
+#define calloc		os_calloc
+#define realloc		os_realloc
+#define xPortGetFreeHeapSize() kfree_size(0)
+#define bk_printf printf
+#undef vsnprintf
+#define vsnprintf vsnprintf3
+#define usleep usleepobk
+
+#define rtos_delay_milliseconds(x) vTaskDelay(x / portTICK_PERIOD_MS)
+#define delay_ms(x) vTaskDelay(x / portTICK_PERIOD_MS)
+
+#define lwip_close_force(x) lwip_close(x)
+#define kNoErr                      0       //! No error occurred.
+typedef void* beken_thread_arg_t;
+typedef xTaskHandle beken_thread_t;
+typedef void (*beken_thread_function_t)(beken_thread_arg_t arg);
+typedef int OSStatus;
+
+#define BEKEN_DEFAULT_WORKER_PRIORITY      (6)
+#define BEKEN_APPLICATION_PRIORITY         (7)
+
+OSStatus rtos_delete_thread(beken_thread_t* thread);
+OSStatus rtos_create_thread(beken_thread_t* thread,
+	uint8_t priority, const char* name,
+	beken_thread_function_t function,
+	uint32_t stack_size, beken_thread_arg_t arg);
+OSStatus rtos_suspend_thread(beken_thread_t* thread);
+//#undef GLOBAL_INT_DECLARATION
+//#undef GLOBAL_INT_DISABLE
+//#undef GLOBAL_INT_RESTORE
+//#define GLOBAL_INT_DECLARATION()	;
+//#define GLOBAL_INT_DISABLE()		;
+//#define GLOBAL_INT_RESTORE()		;
+
+#define OBK_OTA_EXTENSION ".bin.xz.ota"
+
+#elif PLATFORM_GD32VW553
+
+#include "stdint.h"
+#include "FreeRTOS.h"
+#include "task.h"
+#include "semphr.h"
+#include "queue.h"
+#include "event_groups.h"
+
+#if __cplusplus
+#define LWIP_TIMEVAL_PRIVATE 0
+#endif
+
+typedef unsigned int UINT32;
+
+#define bk_printf printf
+#define os_malloc malloc
+#define os_free free
+#define os_realloc realloc
+#define rtos_delay_milliseconds(x) vTaskDelay(x / portTICK_PERIOD_MS)
+#define delay_ms(x) vTaskDelay(x / portTICK_PERIOD_MS)
+
+#define lwip_close_force(x) lwip_close(x)
+#define kNoErr                      0       //! No error occurred.
+typedef void* beken_thread_arg_t;
+typedef xTaskHandle beken_thread_t;
+typedef void (*beken_thread_function_t)(beken_thread_arg_t arg);
+typedef int OSStatus;
+
+#define BEKEN_DEFAULT_WORKER_PRIORITY      (6)
+#define BEKEN_APPLICATION_PRIORITY         (7)
+
+OSStatus rtos_delete_thread(beken_thread_t* thread);
+OSStatus rtos_create_thread(beken_thread_t* thread,
+	uint8_t priority, const char* name,
+	beken_thread_function_t function,
+	uint32_t stack_size, beken_thread_arg_t arg);
+OSStatus rtos_suspend_thread(beken_thread_t* thread);
+
+#define OBK_OTA_EXTENSION ".img"
 
 #else
 
@@ -1079,7 +1235,7 @@ int LWIP_GetMaxSockets();
 int LWIP_GetActiveSockets();
 
 #ifndef LINUX
-#if !PLATFORM_ESPIDF && !PLATFORM_ESP8266 && !PLATFORM_REALTEK_NEW && !PLATFORM_TXW81X
+#if !PLATFORM_ESPIDF && !PLATFORM_ESP8266 && !PLATFORM_REALTEK_NEW && !PLATFORM_TXW81X && !PLATFORM_BL616
 //delay function do 10*r nops, because rtos_delay_milliseconds is too much
 void usleep(int r);
 #endif
@@ -1106,7 +1262,7 @@ typedef enum
 } WIFI_RSSI_LEVEL;
 
 #if PLATFORM_LN882H || PLATFORM_REALTEK || PLATFORM_ECR6600 || PLATFORM_TR6260 || PLATFORM_XRADIO \
- || PLATFORM_TXW81X || PLATFORM_LN8825 || PLATFORM_ESP8266
+ || PLATFORM_TXW81X || PLATFORM_LN8825 || PLATFORM_ESP8266 || PLATFORM_GD32VW553
 #define IP_STRING_FORMAT	"%u.%u.%u.%u"
 #else
 #define IP_STRING_FORMAT	"%hhu.%hhu.%hhu.%hhu"

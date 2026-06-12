@@ -406,7 +406,7 @@ commandResult_t BL09XX_SetupEnergyStatistic(const void *context, const char *cmd
             energyCounterMinutes = NULL;
             energyCounterSampleCount = sample_count;
         }
-        addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "Sample Count:    %d", energyCounterSampleCount);
+        addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "Sample Count: %d", energyCounterSampleCount);
         if (energyCounterSampleInterval != sample_time)
         {
             /* change sample time */            
@@ -1011,7 +1011,7 @@ void BL_Shared_Init(void) {
         energyCounterMinutesIndex = 0;
       }
 
-      addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "Read ENERGYMETER values sz=%d\n", sizeof(ENERGY_METERING_DATA));
+      addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "Read ENERGYMETER values sz=%d", sizeof(ENERGY_METERING_DATA));
 
       HAL_GetEnergyMeterStatus(&data);
       sensdataset->sensors[OBK_CONSUMPTION_TOTAL].lastReading = data.TotalConsumption;

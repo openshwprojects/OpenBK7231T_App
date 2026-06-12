@@ -39,7 +39,7 @@ void DRV_DDP_CreateSocket_Receive() {
     g_ddp_socket_receive = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
     if (g_ddp_socket_receive < 0) {
 		g_ddp_socket_receive = -1;
-		addLogAdv(LOG_INFO, LOG_FEATURE_DDP,"failed to do socket\n");
+		addLogAdv(LOG_INFO, LOG_FEATURE_DDP,"failed to do socket");
         return ;
     }
 
@@ -49,7 +49,7 @@ void DRV_DDP_CreateSocket_Receive() {
 		iResult = setsockopt(g_ddp_socket_receive, SOL_SOCKET, SO_BROADCAST, (char *)&flag, sizeof(flag));
 		if (iResult != 0)
 		{
-			addLogAdv(LOG_INFO, LOG_FEATURE_DDP,"failed to do setsockopt SO_BROADCAST\n");
+			addLogAdv(LOG_INFO, LOG_FEATURE_DDP,"failed to do setsockopt SO_BROADCAST");
 			close(g_ddp_socket_receive);
 			g_ddp_socket_receive = -1;
 			return ;
@@ -63,7 +63,7 @@ void DRV_DDP_CreateSocket_Receive() {
 				g_ddp_socket_receive, SOL_SOCKET, SO_REUSEADDR, (char*) &flag, sizeof(flag)
 			) < 0
 		){
-			addLogAdv(LOG_INFO, LOG_FEATURE_DDP,"failed to do setsockopt SO_REUSEADDR\n");
+			addLogAdv(LOG_INFO, LOG_FEATURE_DDP,"failed to do setsockopt SO_REUSEADDR");
 			close(g_ddp_socket_receive);
 			g_ddp_socket_receive = -1;
 		  return ;
@@ -80,7 +80,7 @@ void DRV_DDP_CreateSocket_Receive() {
     // bind to receive address
     //
     if (bind(g_ddp_socket_receive, (struct sockaddr*) &addr, sizeof(addr)) < 0) {
-		addLogAdv(LOG_INFO, LOG_FEATURE_DDP,"failed to do bind\n");
+		addLogAdv(LOG_INFO, LOG_FEATURE_DDP,"failed to do bind");
 		close(g_ddp_socket_receive);
 		g_ddp_socket_receive = -1;
         return ;
@@ -109,7 +109,7 @@ void DRV_DDP_CreateSocket_Receive() {
 		if (
 			iResult < 0
 		){
-			addLogAdv(LOG_INFO, LOG_FEATURE_DDP,"failed to do setsockopt IP_ADD_MEMBERSHIP %i\n",iResult);
+			addLogAdv(LOG_INFO, LOG_FEATURE_DDP,"failed to do setsockopt IP_ADD_MEMBERSHIP %i",iResult);
 			close(g_ddp_socket_receive);
 			g_ddp_socket_receive = -1;
 			return ;
@@ -118,7 +118,7 @@ void DRV_DDP_CreateSocket_Receive() {
 
 	lwip_fcntl(g_ddp_socket_receive, F_SETFL,O_NONBLOCK);
 
-	addLogAdv(LOG_INFO, LOG_FEATURE_DDP,"Waiting for packets\n");
+	addLogAdv(LOG_INFO, LOG_FEATURE_DDP,"Waiting for packets");
 }
 void DDP_Parse(byte *data, int len) {
 	if(len > 12) {
@@ -167,7 +167,7 @@ void DRV_DDP_RunFrame() {
 			g_retry_delay = 15;
 			DRV_DDP_CreateSocket_Receive();
 		}
-		addLogAdv(LOG_INFO, LOG_FEATURE_DDP,"no sock\n");
+		addLogAdv(LOG_INFO, LOG_FEATURE_DDP,"no sock");
             return ;
         }
     // now just enter a read-print loop
@@ -183,10 +183,10 @@ void DRV_DDP_RunFrame() {
 			&addrlen
 		);
 		if (nbytes <= 0) {
-			//addLogAdv(LOG_INFO, LOG_FEATURE_DDP,"nothing\n");
+			//addLogAdv(LOG_INFO, LOG_FEATURE_DDP,"nothing");
 			return;
 		}
-		//addLogAdv(LOG_INFO, LOG_FEATURE_DDP,"Received %i bytes from %s\n",nbytes,inet_ntoa(((struct sockaddr_in *)&addr)->sin_addr));
+		//addLogAdv(LOG_INFO, LOG_FEATURE_DDP,"Received %i bytes from %s",nbytes,inet_ntoa(((struct sockaddr_in *)&addr)->sin_addr));
 
 		stat_ddpPacketsReceived++;
 		stat_ddpBytesReceived += nbytes;

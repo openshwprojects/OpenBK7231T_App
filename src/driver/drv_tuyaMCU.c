@@ -408,8 +408,8 @@ int UART_TryToGetNextTuyaPacket(byte* out, int maxSize) {
 		}
 	}
 	if (c_garbage_consumed > 0) {
-		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "Consumed %i unwanted non-header byte in Tuya MCU buffer\n", c_garbage_consumed);
-		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "Skipped data (part) %s\n", printfSkipDebug);
+		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "Consumed %i unwanted non-header byte in Tuya MCU buffer", c_garbage_consumed);
+		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "Skipped data (part) %s", printfSkipDebug);
 	}
 	if (cs < MIN_TUYAMCU_PACKET_SIZE) {
 		return 0;
@@ -436,7 +436,7 @@ int UART_TryToGetNextTuyaPacket(byte* out, int maxSize) {
 			ret = len;
 		}
 		else {
-			addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "TuyaMCU packet too large, %i > %i\n", len, maxSize);
+			addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "TuyaMCU packet too large, %i > %i", len, maxSize);
 			ret = 0;
 		}
 		// consume whole packet (but don't touch next one, if any)
@@ -682,7 +682,7 @@ void TuyaMCU_SendColor(int dpID, float fR, float fG, float fB, int tuyaRGB) {
 		//snprintf(str, sizeof(str), ("%sffff6464"), tolower(scolor, scolor));
 		break;
 	}
-	addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "Color is sent as %s\n", str);
+	addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "Color is sent as %s", str);
 	TuyaMCU_SendString(dpID, str);
 }
 // tuyaMCU_sendColor dpID red01 green01 blue01 tuyaRGB
@@ -785,11 +785,11 @@ struct tm* TuyaMCU_Get_NTP_Time() {
 	time_t ntpTime;
 
 	ntpTime=(time_t)TIME_GetCurrentTime();
-	addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "MCU time to set: %i\n", ntpTime);
+	addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "MCU time to set: %i", ntpTime);
 	ptm = gmtime(&ntpTime);
 	if (ptm != 0) {
-		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "ptime ->gmtime => tm_hour: %i\n", ptm->tm_hour);
-		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "ptime ->gmtime => tm_min: %i\n", ptm->tm_min);
+		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "ptime ->gmtime => tm_hour: %i", ptm->tm_hour);
+		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "ptime ->gmtime => tm_min: %i", ptm->tm_min);
 	}
 	return ptm;
 }
@@ -864,7 +864,7 @@ int TuyaMCU_ParseDPType(const char *dpTypeString) {
 			dpType = atoi(dpTypeString);
 		}
 		else {
-			addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "%s is not a valid var type\n", dpTypeString);
+			addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "%s is not a valid var type", dpTypeString);
 			return DP_TYPE_VALUE;
 		}
 	}
@@ -946,7 +946,7 @@ void TuyaMCU_Send(byte* data, int size) {
 	}
 	UART_SendByte(check_sum);
 
-	addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "\nWe sent %i bytes to Tuya MCU\n", size + 1);
+	addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "We sent %i bytes to Tuya MCU", size + 1);
 }
 
 commandResult_t TuyaMCU_SetDimmerRange(const void* context, const char* cmd, const char* args, int cmdFlags) {
@@ -1095,7 +1095,7 @@ void TuyaMCU_SendNetworkStatus()
 	if (state < g_defaultTuyaMCUWiFiState) {
 		state = g_defaultTuyaMCUWiFiState;
 	}
-	addLogAdv(LOG_DEBUG, LOG_FEATURE_TUYAMCU, "SendNetworkStatus: sending status 0x%X to MCU \n", state);
+	addLogAdv(LOG_DEBUG, LOG_FEATURE_TUYAMCU, "SendNetworkStatus: sending status 0x%X to MCU", state);
 	TuyaMCU_SendCommandWithData(0x2B, &state, 1);
 }
 void TuyaMCU_ForcePublishChannelValues() {
@@ -1139,7 +1139,7 @@ void TuyaMCU_ApplyMapping(tuyaMCUMapping_t* mapping, int dpID, int value) {
 #endif
 
 	if (mapping == 0) {
-		addLogAdv(LOG_DEBUG, LOG_FEATURE_TUYAMCU, "ApplyMapping: id %i (val %i) not mapped\n", dpID, value);
+		addLogAdv(LOG_DEBUG, LOG_FEATURE_TUYAMCU, "ApplyMapping: id %i (val %i) not mapped", dpID, value);
 		return;
 	}
 	if (mapping->channel < 0) {
@@ -1173,7 +1173,7 @@ void TuyaMCU_ApplyMapping(tuyaMCUMapping_t* mapping, int dpID, int value) {
 	}
 
 	if (value != mappedValue) {
-		addLogAdv(LOG_DEBUG, LOG_FEATURE_TUYAMCU, "ApplyMapping: mapped dp %i value %d to %d\n", dpID, value, mappedValue);
+		addLogAdv(LOG_DEBUG, LOG_FEATURE_TUYAMCU, "ApplyMapping: mapped dp %i value %d to %d", dpID, value, mappedValue);
 	}
 
 	mapping->prevValue = mappedValue;
@@ -1238,7 +1238,7 @@ void TuyaMCU_OnChannelChanged(int channel, int iVal) {
 	}
 
 	if (iVal != mappediVal) {
-		addLogAdv(LOG_DEBUG, LOG_FEATURE_TUYAMCU, "OnChannelChanged: mapped value %d (OpenBK7231T_App range) to %d (TuyaMCU range)\n", iVal, mappediVal);
+		addLogAdv(LOG_DEBUG, LOG_FEATURE_TUYAMCU, "OnChannelChanged: mapped value %d (OpenBK7231T_App range) to %d (TuyaMCU range)", iVal, mappediVal);
 	}
 	// send value to TuyaMCU
 	switch (mapping->dpType)
@@ -1256,7 +1256,7 @@ void TuyaMCU_OnChannelChanged(int channel, int iVal) {
 		break;
 
 	default:
-		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "OnChannelChanged: channel %d: unsupported data point type %d-%s\n", channel, mapping->dpType, TuyaMCU_GetDataTypeString(mapping->dpType));
+		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "OnChannelChanged: channel %d: unsupported data point type %d-%s", channel, mapping->dpType, TuyaMCU_GetDataTypeString(mapping->dpType));
 		break;
 	}
 	//mapping->prevValue = iVal;
@@ -1272,7 +1272,7 @@ void TuyaMCU_ParseQueryProductInformation(const byte* data, int len) {
 	memcpy(name, data, useLen);
 	name[useLen] = 0;
 
-	addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "ParseQueryProductInformation: received %s\n", name);
+	addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "ParseQueryProductInformation: received %s", name);
 
 	if (g_sensorMode) {
 		if (g_tuyaBatteryPoweredState == TM0_STATE_AWAITING_INFO) {
@@ -1322,11 +1322,11 @@ void TuyaMCU_ParseWeatherData(const byte* data, int len) {
 			else {
 				iValue = 0;
 			}
-			addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "ParseWeatherData: key %s, val integer %i\n", buffer, iValue);
+			addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "ParseWeatherData: key %s, val integer %i", buffer, iValue);
 		}
 		else {
 			// string
-			addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "ParseWeatherData: key %s, string not yet handled\n", buffer);
+			addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "ParseWeatherData: key %s, string not yet handled", buffer);
 		}
 		ofs += stringLen;
 	}
@@ -1449,7 +1449,7 @@ void TuyaMCU_V0_ParseRealTimeWithRecordStorage(const byte* data, int len, bool b
 			break;
 		}
 
-		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "V0_ParseRealTimeWithRecordStorage: processing id %i, dataType %i-%s and %i data bytes\n",
+		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "V0_ParseRealTimeWithRecordStorage: processing id %i, dataType %i-%s and %i data bytes",
 			dpId, dataType, TuyaMCU_GetDataTypeString(dataType), sectorLen);
 
 		// find mapping (where to save received data)
@@ -1457,13 +1457,13 @@ void TuyaMCU_V0_ParseRealTimeWithRecordStorage(const byte* data, int len, bool b
 
 		if (sectorLen == 1) {
 			int iVal = (int)data[ofs + 4];
-			addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "V0_ParseRealTimeWithRecordStorage: byte %i\n", iVal);
+			addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "V0_ParseRealTimeWithRecordStorage: byte %i", iVal);
 			// apply to channels
 			TuyaMCU_ApplyMapping(mapping, dpId, iVal);
 		}
 		if (sectorLen == 4) {
 			int iVal = data[ofs + 4] << 24 | data[ofs + 5] << 16 | data[ofs + 6] << 8 | data[ofs + 7];
-			addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "V0_ParseRealTimeWithRecordStorage: int32 %i\n", iVal);
+			addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "V0_ParseRealTimeWithRecordStorage: int32 %i", iVal);
 			// apply to channels
 			TuyaMCU_ApplyMapping(mapping, dpId, iVal);
 		}
@@ -1646,7 +1646,7 @@ void TuyaMCU_ParseStateMessage(const byte* data, int len) {
 			break;
 		}
 
-		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "ParseState: id %i type %i-%s len %i\n",
+		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "ParseState: id %i type %i-%s len %i",
 			dpId, dataType, TuyaMCU_GetDataTypeString(dataType), sectorLen);
 
 		mapping = TuyaMCU_FindDefForID(dpId);
@@ -1690,13 +1690,13 @@ void TuyaMCU_ParseStateMessage(const byte* data, int len) {
 
 		if (sectorLen == 1) {
 			iVal = (int)data[ofs + 4];
-			addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "ParseState: byte %i\n", iVal);
+			addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "ParseState: byte %i", iVal);
 			// apply to channels
 			TuyaMCU_ApplyMapping(mapping, dpId, iVal);
 		}
 		else if (sectorLen == 4) {
 			iVal = data[ofs + 4] << 24 | data[ofs + 5] << 16 | data[ofs + 6] << 8 | data[ofs + 7];
-			addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "ParseState: int32 %i\n", iVal);
+			addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "ParseState: int32 %i", iVal);
 			// apply to channels
 			TuyaMCU_ApplyMapping(mapping, dpId, iVal);
 		}
@@ -1714,7 +1714,7 @@ void TuyaMCU_ParseStateMessage(const byte* data, int len) {
 						day = data[ofs + 4 + 1];
 						// consumption
 						iVal = data[ofs + 6 + 4] << 8 | data[ofs + 7 + 4];
-						addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "TAC2121C_YESTERDAY: day %i, month %i, val %i\n",
+						addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "TAC2121C_YESTERDAY: day %i, month %i, val %i",
 							day, month, iVal);
 
 					}
@@ -1730,7 +1730,7 @@ void TuyaMCU_ParseStateMessage(const byte* data, int len) {
 						month = data[ofs + 4 + 1];
 						// consumption
 						iVal = data[ofs + 6 + 4] << 8 | data[ofs + 7 + 4];
-						addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "DP_TYPE_RAW_TAC2121C_LASTMONTH: month %i, year %i, val %i\n",
+						addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "DP_TYPE_RAW_TAC2121C_LASTMONTH: month %i, year %i, val %i",
 							month, year, iVal);
 
 					}
@@ -1977,7 +1977,7 @@ void TuyaMCU_V0_SendDPCacheReply() {
 }
 void TuyaMCU_ParseReportStatusType(const byte *value, int len) {
 	int subcommand = value[0];
-	addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "0x%X command, subcommand 0x%X\n", TUYA_CMD_REPORT_STATUS_RECORD_TYPE, subcommand);
+	addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "0x%X command, subcommand 0x%X", TUYA_CMD_REPORT_STATUS_RECORD_TYPE, subcommand);
 	byte reply[2] = { 0x00, 0x00 };
 	reply[0] = subcommand;
 	switch (subcommand)
@@ -2019,14 +2019,14 @@ void TuyaMCU_ProcessIncoming(const byte* data, int len) {
 	byte version;
 
 	if (data[0] != 0x55 || data[1] != 0xAA) {
-		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "ProcessIncoming: discarding packet with bad ident and len %i\n", len);
+		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "ProcessIncoming: discarding packet with bad ident and len %i", len);
 		return;
 	}
 	version = data[2];
 	checkLen = data[5] | data[4] >> 8;
 	checkLen = checkLen + 2 + 1 + 1 + 2 + 1;
 	if (checkLen != len) {
-		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "ProcessIncoming: discarding packet bad expected len, expected %i and got len %i\n", checkLen, len);
+		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "ProcessIncoming: discarding packet bad expected len, expected %i and got len %i", checkLen, len);
 		return;
 	}
 	checkCheckSum = 0;
@@ -2034,11 +2034,11 @@ void TuyaMCU_ProcessIncoming(const byte* data, int len) {
 		checkCheckSum += data[i];
 	}
 	if (checkCheckSum != data[len - 1]) {
-		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "ProcessIncoming: discarding packet bad expected checksum, expected %i and got checksum %i\n", (int)data[len - 1], (int)checkCheckSum);
+		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "ProcessIncoming: discarding packet bad expected checksum, expected %i and got checksum %i", (int)data[len - 1], (int)checkCheckSum);
 		return;
 	}
 	cmd = data[3];
-	addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "ProcessIncoming[v=%i]: cmd %i (%s) len %i\n", version, cmd, TuyaMCU_GetCommandTypeLabel(cmd), len);
+	addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "ProcessIncoming[v=%i]: cmd %i (%s) len %i", version, cmd, TuyaMCU_GetCommandTypeLabel(cmd), len);
 	switch (cmd)
 	{
 	case TUYA_CMD_HEARTBEAT:
@@ -2249,7 +2249,7 @@ commandResult_t TuyaMCU_FakePacket(const void* context, const char* cmd, const c
 	byte packet[256];
 	int c = 0;
 	if (!(*args)) {
-		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "FakePacket: requires 1 argument (hex string, like FFAABB00CCDD\n");
+		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "FakePacket: requires 1 argument (hex string, like FFAABB00CCDD");
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	while (*args) {
@@ -2275,17 +2275,17 @@ commandResult_t Cmd_TuyaMCU_SetBatteryAckDelay(const void* context, const char* 
 	delay = Tokenizer_GetArgInteger(0);
 
 	if (!Tokenizer_IsArgInteger(0)) {
-		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "SetBatteryAckDelay: requires 1 argument [delay in seconds]\n");
+		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "SetBatteryAckDelay: requires 1 argument [delay in seconds]");
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 
 	if (delay < 0) {
-		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "SetBatteryAckDelay: delay must be positive\n");
+		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "SetBatteryAckDelay: delay must be positive");
 		return CMD_RES_BAD_ARGUMENT;
 	}
 
 	if (delay > 60) {
-		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "SetBatteryAckDelay: delay too long, max 60 seconds\n");
+		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "SetBatteryAckDelay: delay too long, max 60 seconds");
 		return CMD_RES_BAD_ARGUMENT;
 	}
 
@@ -2303,17 +2303,17 @@ commandResult_t Cmd_TuyaMCU_EnableAutoSend(const void* context, const char* cmd,
 	enable = Tokenizer_GetArgInteger(0);
 
 	if (!Tokenizer_IsArgInteger(0)) {
-		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "EnableAutoSend: requires 1 argument [0/1]\n");
+		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "EnableAutoSend: requires 1 argument [0/1]");
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 
 	if (enable != 0 && enable != 1) {
-		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "EnableAutoSend: argument must be 0 or 1\n");
+		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "EnableAutoSend: argument must be 0 or 1");
 		return CMD_RES_BAD_ARGUMENT;
 	}
 
 	TuyaMCU_EnableAutomaticSending(enable != 0);
-	addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "TuyaMCU automatic sending %s\n", enable ? "enabled" : "disabled");
+	addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "TuyaMCU automatic sending %s", enable ? "enabled" : "disabled");
 
 	return CMD_RES_OK;
 }
@@ -2326,21 +2326,21 @@ commandResult_t Cmd_TuyaMCU_BatteryPoweredMode(const void* context, const char* 
 	if (Tokenizer_GetArgsCount() > 0) {
 		enable = Tokenizer_GetArgInteger(0);
 	}
-	addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "TuyaMCU power saving %s\n", enable ? "enabled" : "disabled");
+	addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "TuyaMCU power saving %s", enable ? "enabled" : "disabled");
 	TuyaMCU_BatteryPoweredMode(enable != 0);
 
 	return CMD_RES_OK;
 }
 
 void TuyaMCU_RunWiFiUpdateAndPackets() {
-	//addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"WifiCheck %d ", wifi_state_timer);
+	//addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"WifiCheck %d", wifi_state_timer);
 	/* Monitor WIFI and MQTT connection and apply Wifi state
 	 * State is updated when change is detected or after timeout */
 	if ((Main_HasWiFiConnected() != 0) && (Main_HasMQTTConnected() != 0))
 	{
 		if ((wifi_state == false) || (wifi_state_timer == 0))
 		{
-			addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_TUYAMCU, "Will send SetWiFiState 4.\n");
+			addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_TUYAMCU, "Will send SetWiFiState 4.");
 			Tuya_SetWifiState(4);
 			wifi_state = true;
 			wifi_state_timer++;
@@ -2349,7 +2349,7 @@ void TuyaMCU_RunWiFiUpdateAndPackets() {
 	else {
 		if ((wifi_state == true) || (wifi_state_timer == 0))
 		{
-			addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_TUYAMCU, "Will send SetWiFiState %i.\n", (int)g_defaultTuyaMCUWiFiState);
+			addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_TUYAMCU, "Will send SetWiFiState %i.", (int)g_defaultTuyaMCUWiFiState);
 
 			Tuya_SetWifiState(g_defaultTuyaMCUWiFiState);
 			wifi_state = false;
@@ -2376,7 +2376,7 @@ void TuyaMCU_PrintPacket(byte *data, int len) {
 				snprintf(buffer2, sizeof(buffer2), "%02X ", data[i]);
 				strcat_safe(buffer_for_log, buffer2, sizeof(buffer_for_log));
 			}
-			addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "Received: %s\n", buffer_for_log);
+			addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "Received: %s", buffer_for_log);
 #if 1
 			// redo sprintf without spaces
 			buffer_for_log[0] = 0;
@@ -2417,7 +2417,7 @@ void TuyaMCU_RunStateMachine_V3() {
 			heartbeat_valid = true;
 			if (product_information_valid == false)
 			{
-				addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_TUYAMCU, "Will send TUYA_CMD_QUERY_PRODUCT.\n");
+				addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_TUYAMCU, "Will send TUYA_CMD_QUERY_PRODUCT.");
 				/* Request production information */
 				TuyaMCU_SendCommandWithData(TUYA_CMD_QUERY_PRODUCT, NULL, 0);
 			}
@@ -2432,7 +2432,7 @@ void TuyaMCU_RunStateMachine_V3() {
 		return;
 	}
 
-	//addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"UART ring buffer state: %i %i\n",g_recvBufIn,g_recvBufOut);
+	//addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"UART ring buffer state: %i %i",g_recvBufIn,g_recvBufOut);
 
 	// extraDebug log level
 	addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_TUYAMCU, "TuyaMCU heartbeat_valid = %i, product_information_valid=%i,"
@@ -2474,13 +2474,13 @@ void TuyaMCU_RunStateMachine_V3() {
 			/* Connection Active */
 			if (product_information_valid == false)
 			{
-				addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_TUYAMCU, "Will send TUYA_CMD_QUERY_PRODUCT.\n");
+				addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_TUYAMCU, "Will send TUYA_CMD_QUERY_PRODUCT.");
 				/* Request production information */
 				TuyaMCU_SendCommandWithData(TUYA_CMD_QUERY_PRODUCT, NULL, 0);
 			}
 			else if (working_mode_valid == false)
 			{
-				addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_TUYAMCU, "Will send TUYA_CMD_MCU_CONF.\n");
+				addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_TUYAMCU, "Will send TUYA_CMD_MCU_CONF.");
 				/* Request working mode */
 				TuyaMCU_SendCommandWithData(TUYA_CMD_MCU_CONF, NULL, 0);
 			}
@@ -2488,7 +2488,7 @@ void TuyaMCU_RunStateMachine_V3() {
 			{
 				/* Reset wifi state -> Aquirring network connection */
 				Tuya_SetWifiState(g_defaultTuyaMCUWiFiState);
-				addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_TUYAMCU, "Will send TUYA_CMD_WIFI_STATE.\n");
+				addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_TUYAMCU, "Will send TUYA_CMD_WIFI_STATE.");
 				TuyaMCU_SendCommandWithData(TUYA_CMD_WIFI_STATE, NULL, 0);
 			}
 			else if (state_updated == false)
@@ -2500,7 +2500,7 @@ void TuyaMCU_RunStateMachine_V3() {
 				}
 				else {
 					/* Request first state of all DP - this should list all existing DP */
-					addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_TUYAMCU, "Will send TUYA_CMD_QUERY_STATE (state_updated==false, try %i).\n",
+					addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_TUYAMCU, "Will send TUYA_CMD_QUERY_STATE (state_updated==false, try %i).",
 						g_sendQueryStatePackets);
 					TuyaMCU_SendCommandWithData(TUYA_CMD_QUERY_STATE, NULL, 0);
 				}
@@ -2515,7 +2515,7 @@ void TuyaMCU_RunStateMachine_V3() {
 }
 void TuyaMCU_RunStateMachine_BatteryPowered() {
 	if (TuyaMCU_WiFiInReset()) {
-		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "User requested Reset - Operating Open AP\n");
+		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "User requested Reset - Operating Open AP");
 		/* Set current state to Setup */
 		Tuya_SetWifiState_V0(TUYA_NETWORK_STATUS_SMART_CONNECT_SETUP);
 

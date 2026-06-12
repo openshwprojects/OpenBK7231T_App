@@ -46,7 +46,7 @@ static int m_scanI2c(bvm* vm)
 			Soft_I2C_Stop(i2c);
 			if(bOk)
 			{
-				ADDLOG_INFO(LOG_FEATURE_BERRY, "Address 0x%x (dec %i)\n", a, a);
+				ADDLOG_INFO(LOG_FEATURE_BERRY, "Address 0x%x (dec %i)", a, a);
 			}
 			rtos_delay_milliseconds(5);
 		}

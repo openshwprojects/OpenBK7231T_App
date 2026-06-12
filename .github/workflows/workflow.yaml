@@ -165,6 +165,9 @@ jobs:
           - platform: OpenXR806
             variant: default
             gcc: 8-2019-q3
+          - platform: OpenXR806_DCDC
+            variant: default
+            gcc: 8-2019-q3
           - platform: OpenXR872
             variant: default
             gcc: 8-2019-q3
@@ -187,7 +190,6 @@ jobs:
             gcc: 8-2019-q3
           - platform: OpenRTL87X0C
             variant: default
-            gcc: apt
           - platform: OpenRTL8720D
             variant: default
             gcc: 10.3-2021.10
@@ -202,7 +204,13 @@ jobs:
             variant: default
           - platform: OpenLN8825
             variant: default
-            gcc: apt
+            gcc: 10.3-2021.10
+          #- platform: OpenBL616
+          #  variant: default
+          #- platform: OpenBL602_ALT
+          #  variant: default
+          - platform: OpenGD32VW553
+            variant: default
 
           # extras for BK7231T
           - platform: OpenBK7231T
@@ -238,43 +246,31 @@ jobs:
           # ALT firmware
           - platform: OpenBK7231N_ALT
             variant: default
-            gcc: apt
           - platform: OpenBK7231T_ALT
             variant: default
-            gcc: apt
           - platform: OpenBK7231U
             variant: default
-            gcc: apt
           - platform: OpenBK7238
             variant: default
-            gcc: apt
           - platform: OpenBK7252
             variant: default
-            gcc: apt
           - platform: OpenBK7252N
             variant: default
-            gcc: apt
           # extras for BK7238
           - platform: OpenBK7238
             variant: berry
-            gcc: apt
           - platform: OpenBK7238
             variant: irRemoteESP
-            gcc: apt
           - platform: OpenBK7238
             variant: battery
-            gcc: apt
 
           # bt proxy
           - platform: OpenBK7238
             variant: btproxy
-            gcc: apt
           - platform: OpenBK7231N_ALT
             variant: btproxy
-            gcc: apt
           - platform: OpenRTL87X0C
             variant: btproxy
-            gcc: apt
           - platform: OpenLN882H
             variant: btproxy
             gcc: 10.3-2021.10
@@ -290,10 +286,10 @@ jobs:
           cache: 'pip'
 
       - name: Install dependencies
-        if: ${{ matrix.platform == 'OpenLN882H' || matrix.platform == 'OpenLN8825' }}
+        if: ${{ matrix.platform == 'OpenLN882H' || matrix.platform == 'OpenLN8825' || matrix.platform == 'OpenGD32VW553' }}
         uses: awalsh128/cache-apt-pkgs-action@latest
         with:
-          packages: cmake
+          packages: cmake srecord
           version: 1.0
 
       - name: Install arm-none-eabi-gcc

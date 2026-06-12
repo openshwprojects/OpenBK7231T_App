@@ -490,7 +490,7 @@ HassDeviceInfo* hass_createHVAC(float min, float max, float step, const char **f
 HassDeviceInfo* hass_createShutter(int index) {
 	HassDeviceInfo* info = hass_init_device_info(HASS_GARAGE, index, NULL, NULL, 0, 0);
 
-	char buffer[64];
+	char buffer[96];
 
 	//cJSON_AddStringToObject(info->root, "name", title);
 	//cJSON_AddStringToObject(info->root, "unique_id", title);
@@ -672,7 +672,7 @@ HassDeviceInfo* hass_init_device_info(ENTITY_TYPE type, int index, const char* p
 	if (DRV_IsRunning("DoorSensor") == false && DRV_IsRunning("tmSensor") == false)
 #endif
 	{
-		if (!isSensor && !flagavty) {
+		if (!flagavty) {
 			cJSON_AddStringToObject(info->root, "avty_t", "~/connected");   //availability_topic, `online` value is broadcasted
 		}
 	}
@@ -1211,12 +1211,12 @@ HassDeviceInfo* hass_init_sensor_device_info(ENTITY_TYPE type, int channel, int 
 /// @return 
 const char* hass_build_discovery_json(HassDeviceInfo* info) {
 	if (info == NULL) {
-		addLogAdv(LOG_ERROR, LOG_FEATURE_HASS, "ERROR: someone passed NULL pointer to hass_build_discovery_json\r\n");
+		addLogAdv(LOG_ERROR, LOG_FEATURE_HASS, "ERROR: someone passed NULL pointer to hass_build_discovery_json");
 		return "";
 	}
 	int bOk = cJSON_PrintPreallocated(info->root, info->json, HASS_JSON_SIZE, 0);
 	if (bOk == false) {
-		addLogAdv(LOG_ERROR, LOG_FEATURE_HASS, "ERROR: too long JSON in hass_build_discovery_json\r\n");
+		addLogAdv(LOG_ERROR, LOG_FEATURE_HASS, "ERROR: too long JSON in hass_build_discovery_json");
 		return "";
 	}
 	return info->json;
@@ -1227,7 +1227,7 @@ const char* hass_build_discovery_json(HassDeviceInfo* info) {
 void hass_free_device_info(HassDeviceInfo* info) {
 	if (info == NULL)
 		return;
-	//addLogAdv(LOG_DEBUG, LOG_FEATURE_HASS, "hass_free_device_info \r\n");
+	//addLogAdv(LOG_DEBUG, LOG_FEATURE_HASS, "hass_free_device_info ");
 
 	if (info->root != NULL) {
 		cJSON_Delete(info->root);

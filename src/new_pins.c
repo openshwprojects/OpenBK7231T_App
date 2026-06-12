@@ -36,7 +36,7 @@
 #else
 #define DEEP_SLEEP PM_MODE_HIBERNATION
 #endif
-#elif PLATFORM_BL602
+#elif PLATFORM_BL602 && !PLATFORM_BL_NEW
 #include "bl_flash.h"
 #include "bl602_hbn.h"
 #endif
@@ -317,7 +317,7 @@ void PINS_BeginDeepSleepWithPinWakeUp(unsigned int wakeUpTime) {
 //	esp_sleep_enable_gpio_wakeup();
 //	esp_light_sleep_start();
 //#endif
-#elif PLATFORM_BL602
+#elif PLATFORM_BL602 && !PLATFORM_BL_NEW
 	uint8_t wkup = HBN_WAKEUP_GPIO_NONE;
 	HBN_GPIO_INT_Trigger_Type edge = HBN_GPIO_INT_TRIGGER_ASYNC_RISING_EDGE;
 	uint8_t g7 = (g_gpio_index_map[0] >> 7) & 1;
@@ -413,7 +413,7 @@ void PIN_SetupPins() {
 #if ENABLE_LED_BASIC
 	LED_SetStripStateOutputs();
 #endif
-	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "PIN_SetupPins pins have been set up.\r\n");
+	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "PIN_SetupPins pins have been set up.");
 }
 
 int PIN_GetPinRoleForPinIndex(int index) {
@@ -472,14 +472,14 @@ int PIN_GetPinChannel2ForPinIndex(int index) {
 // taken from code in http_fnc.c
 int PIN_IOR_NofChan(int test){
 	// For button, is relay index to toggle on double click
-	if (test == IOR_Button || test == IOR_Button_n || IS_PIN_DHT_ROLE(test) || IS_PIN_TEMP_HUM_SENSOR_ROLE(test) || IS_PIN_AIR_SENSOR_ROLE(test)){
+	if (test == IOR_Button || test == IOR_Button_n || test == IOR_Button_pd || test == IOR_Button_pd_n || IS_PIN_DHT_ROLE(test) || IS_PIN_TEMP_HUM_SENSOR_ROLE(test) || IS_PIN_AIR_SENSOR_ROLE(test)){
 			return 2;
 	}
 	// Some roles don't need any channels
 	if (test == IOR_SGP_CLK || test == IOR_SHT3X_CLK || test == IOR_CHT83XX_CLK || test == IOR_Button_ToggleAll || test == IOR_Button_ToggleAll_n
 			|| test == IOR_BL0937_CF || test == IOR_BL0937_CF1 || test == IOR_BL0937_SEL
 			|| test == IOR_LED_WIFI || test == IOR_LED_WIFI_n || test == IOR_BL0937_SEL_n
-			|| test == IOR_RCRecv || test == IOR_RCRecv_nPup
+			|| test == IOR_RCRecv || test == IOR_RCRecv_nPup || test == IOR_IRRecv_nPup
 			|| (test >= IOR_IRRecv && test <= IOR_DHT11)
 			|| (test >= IOR_SM2135_DAT && test <= IOR_BP1658CJ_CLK)
 			|| (test == IOR_HLW8112_SCSN)) {
@@ -508,7 +508,7 @@ void Button_OnPressRelease(int index) {
 }
 void Button_OnInitialPressDown(int index)
 {
-	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "%i Button_OnInitialPressDown\r\n", index);
+	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "%i Button_OnInitialPressDown", index);
 
 	if (CFG_HasFlag(OBK_FLAG_BUTTON_DISABLE_ALL)) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "Child lock!");
@@ -561,7 +561,7 @@ void Button_OnInitialPressDown(int index)
 }
 void Button_OnShortClick(int index)
 {
-	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "%i key_short_press\r\n", index);
+	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "%i key_short_press", index);
 	if (CFG_HasFlag(OBK_FLAG_BUTTON_DISABLE_ALL)) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "Child lock!");
 		return;
@@ -622,7 +622,7 @@ void Button_OnShortClick(int index)
 }
 void Button_OnDoubleClick(int index)
 {
-	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "%i key_double_press\r\n", index);
+	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "%i key_double_press", index);
 	if (CFG_HasFlag(OBK_FLAG_BUTTON_DISABLE_ALL)) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "Child lock!");
 		return;
@@ -635,7 +635,8 @@ void Button_OnDoubleClick(int index)
 	// fire event - button on pin <index> was dbclicked
 	EventHandlers_FireEvent(CMD_EVENT_PIN_ONDBLCLICK, index);
 
-	if (g_cfg.pins.roles[index] == IOR_Button || g_cfg.pins.roles[index] == IOR_Button_n)
+	if (g_cfg.pins.roles[index] == IOR_Button || g_cfg.pins.roles[index] == IOR_Button_n
+		|| g_cfg.pins.roles[index] == IOR_Button_pd || g_cfg.pins.roles[index] == IOR_Button_pd_n)
 	{
 		// double click toggles SECOND CHANNEL linked to this button
 		CHANNEL_Toggle(g_cfg.pins.channels2[index]);
@@ -667,7 +668,7 @@ void Button_OnDoubleClick(int index)
 }
 void Button_OnTripleClick(int index)
 {
-	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "%i key_triple_press\r\n", index);
+	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "%i key_triple_press", index);
 	if (CFG_HasFlag(OBK_FLAG_BUTTON_DISABLE_ALL)) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "Child lock!");
 		return;
@@ -684,7 +685,7 @@ void Button_OnTripleClick(int index)
 }
 void Button_OnQuadrupleClick(int index)
 {
-	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "%i key_quadruple_press\r\n", index);
+	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "%i key_quadruple_press", index);
 	if (CFG_HasFlag(OBK_FLAG_BUTTON_DISABLE_ALL)) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "Child lock!");
 		return;
@@ -694,7 +695,7 @@ void Button_OnQuadrupleClick(int index)
 }
 void Button_On5xClick(int index)
 {
-	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "%i key_5x_press\r\n", index);
+	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "%i key_5x_press", index);
 	if (CFG_HasFlag(OBK_FLAG_BUTTON_DISABLE_ALL)) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "Child lock!");
 		return;
@@ -703,7 +704,7 @@ void Button_On5xClick(int index)
 	EventHandlers_FireEvent(CMD_EVENT_PIN_ON5CLICK, index);
 }
 void Button_OnLongPressHold(int index) {
-	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "%i Button_OnLongPressHold\r\n", index);
+	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "%i Button_OnLongPressHold", index);
 	if (CFG_HasFlag(OBK_FLAG_BUTTON_DISABLE_ALL)) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "Child lock!");
 		return;
@@ -726,7 +727,7 @@ void Button_OnLongPressHold(int index) {
 #endif
 }
 void Button_OnLongPressHoldStart(int index) {
-	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "%i Button_OnLongPressHoldStart\r\n", index);
+	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "%i Button_OnLongPressHoldStart", index);
 	if (CFG_HasFlag(OBK_FLAG_BUTTON_DISABLE_ALL)) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "Child lock!");
 		return;
@@ -1391,7 +1392,7 @@ static void Channel_OnChanged(int ch, int prevValue, int iFlags) {
 	EventHandlers_FireEvent(CMD_EVENT_CHANNEL_ONCHANGE, ch);
 	// more advanced events - change FROM value TO value
 	EventHandlers_ProcessVariableChange_Integer(CMD_EVENT_CHANGE_CHANNEL0 + ch, prevValue, iVal);
-	//addLogAdv(LOG_ERROR, LOG_FEATURE_GENERAL,"CHANNEL_OnChanged: Channel index %i startChannelValues %i\n\r",ch,g_cfg.startChannelValues[ch]);
+	//addLogAdv(LOG_ERROR, LOG_FEATURE_GENERAL,"CHANNEL_OnChanged: Channel index %i startChannelValues %i",ch,g_cfg.startChannelValues[ch]);
 
 	Channel_SaveInFlashIfNeeded(ch);
 }
@@ -1603,7 +1604,7 @@ float CHANNEL_GetFinalValue(int channel) {
 }
 float CHANNEL_GetFloat(int ch) {
 	if (ch < 0 || ch >= CHANNEL_MAX) {
-		addLogAdv(LOG_ERROR, LOG_FEATURE_GENERAL, "CHANNEL_Get: Channel index %i is out of range <0,%i)\n\r", ch, CHANNEL_MAX);
+		addLogAdv(LOG_ERROR, LOG_FEATURE_GENERAL, "CHANNEL_Get: Channel index %i is out of range <0,%i)", ch, CHANNEL_MAX);
 		return 0;
 	}
 	return g_channelValuesFloats[ch];
@@ -1628,7 +1629,7 @@ int CHANNEL_Get(int ch) {
 		return HAL_FlashVars_GetChannelValue(ch - SPECIAL_CHANNEL_FLASHVARS_FIRST);
 	}
 	if (ch < 0 || ch >= CHANNEL_MAX) {
-		addLogAdv(LOG_ERROR, LOG_FEATURE_GENERAL, "CHANNEL_Get: Channel index %i is out of range <0,%i)\n\r", ch, CHANNEL_MAX);
+		addLogAdv(LOG_ERROR, LOG_FEATURE_GENERAL, "CHANNEL_Get: Channel index %i is out of range <0,%i)", ch, CHANNEL_MAX);
 		return 0;
 	}
 	return g_channelValues[ch];
@@ -1702,7 +1703,7 @@ void CHANNEL_Set_Ex(int ch, int iVal, int iFlags, int ausemovingaverage) {
 	}
 	if (ch < 0 || ch >= CHANNEL_MAX) {
 		//if(bMustBeSilent==0) {
-		addLogAdv(LOG_ERROR, LOG_FEATURE_GENERAL, "CHANNEL_Set: Channel index %i is out of range <0,%i)\n\r", ch, CHANNEL_MAX);
+		addLogAdv(LOG_ERROR, LOG_FEATURE_GENERAL, "CHANNEL_Set: Channel index %i is out of range <0,%i)", ch, CHANNEL_MAX);
 		//}
 		return;
 	}
@@ -1710,16 +1711,16 @@ void CHANNEL_Set_Ex(int ch, int iVal, int iFlags, int ausemovingaverage) {
 	if (bForce == 0) {
 		if (prevValue == iVal) {
 			if (bSilent == 0) {
-				addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "No change in channel %i (still set to %i) - ignoring\n\r", ch, prevValue);
+				addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "No change in channel %i (still set to %i) - ignoring", ch, prevValue);
 			}
 			return;
 		}
 	}
 	if (bSilent == 0) {
-		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "CHANNEL_Set channel %i has changed to %i (flags %i)\n\r", ch, iVal, iFlags);
+		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "CHANNEL_Set channel %i has changed to %i (flags %i)", ch, iVal, iFlags);
 	}
 	#ifdef ENABLE_BL_MOVINGAVG
-	//addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "CHANNEL_Set debug channel %i has changed to %i (flags %i)\n\r", ch, iVal, iFlags);
+	//addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "CHANNEL_Set debug channel %i has changed to %i (flags %i)", ch, iVal, iFlags);
 	if (ausemovingaverage) {
 		iVal=XJ_MovingAverage_int(prevValue, iVal);
 	}
@@ -1788,20 +1789,20 @@ void CHANNEL_Add(int ch, int iVal) {
 #if 0
 	int prevValue;
 	if (ch < 0 || ch >= CHANNEL_MAX) {
-		addLogAdv(LOG_ERROR, LOG_FEATURE_GENERAL, "CHANNEL_Add: Channel index %i is out of range <0,%i)\n\r", ch, CHANNEL_MAX);
+		addLogAdv(LOG_ERROR, LOG_FEATURE_GENERAL, "CHANNEL_Add: Channel index %i is out of range <0,%i)", ch, CHANNEL_MAX);
 		return;
 	}
 	prevValue = g_channelValues[ch];
 	g_channelValues[ch] = g_channelValues[ch] + iVal;
 
-	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "CHANNEL_Add channel %i has changed to %i\n\r", ch, g_channelValues[ch]);
+	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "CHANNEL_Add channel %i has changed to %i", ch, g_channelValues[ch]);
 
 	Channel_OnChanged(ch, prevValue, 0);
 #else
 	// we want to support special channel indexes, so it's better to use GET/SET interface
 	// Special channel indexes are used to access things like dimmer, led colors, etc
 	iVal = iVal + CHANNEL_Get(ch);
-	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "CHANNEL_Add channel %i has changed to %i\n\r", ch, iVal);
+	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "CHANNEL_Add channel %i has changed to %i", ch, iVal);
 	CHANNEL_Set(ch, iVal, 0);
 #endif
 }
@@ -1841,7 +1842,7 @@ void CHANNEL_Toggle(int ch) {
 	}
 #endif
 	if (ch < 0 || ch >= CHANNEL_MAX) {
-		addLogAdv(LOG_ERROR, LOG_FEATURE_GENERAL, "CHANNEL_Toggle: Channel index %i is out of range <0,%i)\n\r", ch, CHANNEL_MAX);
+		addLogAdv(LOG_ERROR, LOG_FEATURE_GENERAL, "CHANNEL_Toggle: Channel index %i is out of range <0,%i)", ch, CHANNEL_MAX);
 		return;
 	}
 	prev = g_channelValues[ch];
@@ -1856,7 +1857,7 @@ int CHANNEL_HasChannelPinWithRoleOrRole(int ch, int iorType, int iorType2) {
 	int i;
 
 	if (ch < 0 || ch >= CHANNEL_MAX) {
-		addLogAdv(LOG_ERROR, LOG_FEATURE_GENERAL, "CHANNEL_HasChannelPinWithRole: Channel index %i is out of range <0,%i)\n\r", ch, CHANNEL_MAX);
+		addLogAdv(LOG_ERROR, LOG_FEATURE_GENERAL, "CHANNEL_HasChannelPinWithRole: Channel index %i is out of range <0,%i)", ch, CHANNEL_MAX);
 		return 0;
 	}
 	for (i = 0; i < PLATFORM_GPIO_MAX; i++) {
@@ -1873,7 +1874,7 @@ int CHANNEL_HasChannelPinWithRole(int ch, int iorType) {
 	int i;
 
 	if (ch < 0 || ch >= CHANNEL_MAX) {
-		addLogAdv(LOG_ERROR, LOG_FEATURE_GENERAL, "CHANNEL_HasChannelPinWithRole: Channel index %i is out of range <0,%i)\n\r", ch, CHANNEL_MAX);
+		addLogAdv(LOG_ERROR, LOG_FEATURE_GENERAL, "CHANNEL_HasChannelPinWithRole: Channel index %i is out of range <0,%i)", ch, CHANNEL_MAX);
 		return 0;
 	}
 	for (i = 0; i < PLATFORM_GPIO_MAX; i++) {
@@ -1891,7 +1892,7 @@ bool CHANNEL_Check(int ch) {
 	}
 #endif
 	if (ch < 0 || ch >= CHANNEL_MAX) {
-		addLogAdv(LOG_ERROR, LOG_FEATURE_GENERAL, "CHANNEL_Check: Channel index %i is out of range <0,%i)\n\r", ch, CHANNEL_MAX);
+		addLogAdv(LOG_ERROR, LOG_FEATURE_GENERAL, "CHANNEL_Check: Channel index %i is out of range <0,%i)", ch, CHANNEL_MAX);
 		return 0;
 	}
 	if (g_channelValues[ch] > 0)
@@ -2282,6 +2283,7 @@ void PIN_ticks(void* param)
 		else
 #endif
 			if (g_cfg.pins.roles[i] == IOR_Button || g_cfg.pins.roles[i] == IOR_Button_n
+				|| g_cfg.pins.roles[i] == IOR_Button_pd || g_cfg.pins.roles[i] == IOR_Button_pd_n
 				|| g_cfg.pins.roles[i] == IOR_Button_ToggleAll || g_cfg.pins.roles[i] == IOR_Button_ToggleAll_n
 				|| g_cfg.pins.roles[i] == IOR_Button_NextColor || g_cfg.pins.roles[i] == IOR_Button_NextColor_n
 				|| g_cfg.pins.roles[i] == IOR_Button_NextDimmer || g_cfg.pins.roles[i] == IOR_Button_NextDimmer_n
@@ -2292,7 +2294,7 @@ void PIN_ticks(void* param)
 				|| g_cfg.pins.roles[i] == IOR_Button_ShutterUp || g_cfg.pins.roles[i] == IOR_Button_ShutterDown
 #endif
 				) {
-				//addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"Test hold %i\r\n",i);
+				//addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"Test hold %i",i);
 				PIN_Input_Handler(i, t_diff);
 			}
 			else if (g_cfg.pins.roles[i] == IOR_DigitalInput || g_cfg.pins.roles[i] == IOR_DigitalInput_n

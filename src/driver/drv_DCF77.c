@@ -162,7 +162,7 @@ static void raw_dcf77_decode_u64(const uint64_t bits, int *minute, int *hour, in
     *month = u64_to_bcd(bits,45, 5);
     // Year: bits 50-57 (8)
    *year = u64_to_bcd(bits,50, 8);
-    addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_RAW, "DCF77: (raw - no parity check)  dcf77_decode_u64 %02d.%02d.%02d %02d:%02d:00 (weekday=%d)",*day,*month,*year+2000,*hour,*minute, *weekday);    
+    addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_RAW, "DCF77: (raw - no parity check) dcf77_decode_u64 %02d.%02d.%02d %02d:%02d:00 (weekday=%d)",*day,*month,*year+2000,*hour,*minute, *weekday);    
 }
 
 static int dcf77_decode_u64(const uint64_t bits, time_t* epoch_out) {
@@ -216,11 +216,11 @@ void DCF77_QuickTick(){
 	if (last_t > done){
 #ifndef IRQ_raise_and_fall
 	    HAL_AttachInterrupt(GPIO_DCF77, toggle_IRQ(), DCF77_ISR_Common);
-	    addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_RAW, "DCF77: EXTRADEBUG: changed IRQ to  %i", act_IRQ );
+	    addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_RAW, "DCF77: EXTRADEBUG: changed IRQ to %i", act_IRQ );
 #endif
 	    uint32_t gap = last_t - done;
 	    done = last_t;
-	    addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_RAW, "DCF77: DEBUG: gap to prev. interrupt  %i", gap );
+	    addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_RAW, "DCF77: DEBUG: gap to prev. interrupt %i", gap );
 	    // handle detection of "long gap" == start of sync
 	    if (gap > DCF77_SYNC_THRESHOLD_MS){
 			dcf77_pulse_count = 0;
@@ -280,7 +280,7 @@ static time_t last_epoch;
 void DCF77_OnEverySecond() {
 
     if (GPIO_DCF77 < 0){
-	addLogAdv(LOG_DEBUG, LOG_FEATURE_RAW, "DCF77: No pin defined! \n");
+	addLogAdv(LOG_DEBUG, LOG_FEATURE_RAW, "DCF77: No pin defined! ");
     	return;
     }
 
@@ -295,12 +295,12 @@ void DCF77_OnEverySecond() {
 */
     		settime = dcf77_decode_u64(dcfbits, &act_epoch) ? 2 : 3;
     		dcfbits_last = dcfbits;
-    		addLogAdv(LOG_DEBUG, LOG_FEATURE_RAW, "DCF77: Summer time bits Z1 and Z2: %d (%s)\n",ST, ST==1? "summer time": ST==2 ? "winter time" : "illegal");
+    		addLogAdv(LOG_DEBUG, LOG_FEATURE_RAW, "DCF77: Summer time bits Z1 and Z2: %d (%s)",ST, ST==1? "summer time": ST==2 ? "winter time" : "illegal");
     		// DCF77 will allways broadcast local time in Germany. So to get UTC: if ST==1 (summer time) sub 2h, if ST==2 (winter time) sub 1h
     		act_epoch -=  3600 * (3-ST);
-//    		addLogAdv(LOG_DEBUG, LOG_FEATURE_RAW, "DCF77: UTC calculated: %llu (previous: %llu - diff=%llu seconds)\n",act_epoch, last_epoch, (act_epoch - last_epoch));
+//    		addLogAdv(LOG_DEBUG, LOG_FEATURE_RAW, "DCF77: UTC calculated: %llu (previous: %llu - diff=%llu seconds)",act_epoch, last_epoch, (act_epoch - last_epoch));
 		if (ST < 1 || ST > 2){
-			addLogAdv(LOG_ERROR, LOG_FEATURE_RAW, "DCF77: Illegal state of DST indcator (%d)! Not setting time \n",ST);
+			addLogAdv(LOG_ERROR, LOG_FEATURE_RAW, "DCF77: Illegal state of DST indcator (%d)! Not setting time",ST);
 			settime=4;
 		}
     	} else {
@@ -308,7 +308,7 @@ void DCF77_OnEverySecond() {
     		
     		if (settime==2){
     			// as an additonal sanity check: last time decoded must be one exactly minute (60 seconds) before! 
-    			addLogAdv(LOG_DEBUG, LOG_FEATURE_RAW, "DCF77: UTC calculated: %u (previous: %u - diff=%u seconds)\n",(uint32_t)act_epoch, (uint32_t)last_epoch, (uint32_t)(act_epoch - last_epoch));
+    			addLogAdv(LOG_DEBUG, LOG_FEATURE_RAW, "DCF77: UTC calculated: %u (previous: %u - diff=%u seconds)",(uint32_t)act_epoch, (uint32_t)last_epoch, (uint32_t)(act_epoch - last_epoch));
 //    			if ( (act_epoch - 60) == last_epoch ) TIME_setDeviceTime((uint32_t)act_epoch);
     			TIME_setDeviceTime((uint32_t)act_epoch);
     			last_epoch = act_epoch;
@@ -326,7 +326,7 @@ void DCF77_OnEverySecond() {
         // Print the bit at position i
         str[i]=((dcfbits >> i) & 1)?'1':'0';
     }
-    addLogAdv(LOG_DEBUG, LOG_FEATURE_RAW, "DCF77: %ssynced - state= %i - got %02i bits: %s \n",dcf77_synced?"":"not ",settime, i,str);
+    addLogAdv(LOG_DEBUG, LOG_FEATURE_RAW, "DCF77: %ssynced - state= %i - got %02i bits: %s",dcf77_synced?"":"not ",settime, i,str);
     	    	
 }
 
@@ -339,7 +339,7 @@ void DCF77_AppendInformationToHTTPIndexPage(http_request_t* request, int bPreSta
 	int minute, hour, day, weekday, month, year;
 	raw_dcf77_decode_u64(dcfbits_last, &minute, &hour, &day, &weekday, &month, &year);
 	
-//	    addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_RAW, "DCF77: (raw - no parity check)  dcf77_decode_u64 %02d.%02d.%02d %02d:%02d:00 (weekday=%d)",day,month,year+2000,hour,minute, weekday);    
+//	    addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_RAW, "DCF77: (raw - no parity check) dcf77_decode_u64 %02d.%02d.%02d %02d:%02d:00 (weekday=%d)",day,month,year+2000,hour,minute, weekday);    
 
 	
 	hprintf255(request, "<h5>DCF77: last raw info:  %02d.%02d.%02d %02d:%02d:00 (weekday=%d) - last time set %i secs ago</h5>",day,month,year+2000,hour,minute, weekday, g_secondsElapsed - lastset);
@@ -388,7 +388,7 @@ void DCF77_Init(void) {
 	}			
 
 
-    addLogAdv(LOG_INFO, LOG_FEATURE_RAW, "DCF77: DCF77_Init_Pin()\n");
+    addLogAdv(LOG_INFO, LOG_FEATURE_RAW, "DCF77: DCF77_Init_Pin()");
     DCF77_Init_Pin();
     dcf77_pulse_count = 0;
     dcf77_synced = false;

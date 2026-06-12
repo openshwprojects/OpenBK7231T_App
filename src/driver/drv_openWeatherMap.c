@@ -168,7 +168,7 @@ static void sendQueryThreadInternal() {
 		return;
 	}
 	addr_list = (struct in_addr **)he->h_addr_list;
-	ADDLOG_ERROR(LOG_FEATURE_HTTP, "Resolved IP address: %s\n", inet_ntoa(*addr_list[0]));
+	ADDLOG_ERROR(LOG_FEATURE_HTTP, "Resolved IP address: %s", inet_ntoa(*addr_list[0]));
 
 	if ((s = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
 		ADDLOG_ERROR(LOG_FEATURE_HTTP, "Could not create socket.");
@@ -217,7 +217,7 @@ void startWeatherThread() {
 		(beken_thread_arg_t)0);
 	if (err != kNoErr)
 	{
-		ADDLOG_ERROR(LOG_FEATURE_HTTP, "create \"OWM\" thread failed with %i!\r\n", err);
+		ADDLOG_ERROR(LOG_FEATURE_HTTP, "create \"OWM\" thread failed with %i!", err);
 	}
 }
 static commandResult_t CMD_OWM_Request(const void *context, const char *cmd, const char *args, int flags) {

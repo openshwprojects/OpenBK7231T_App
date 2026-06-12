@@ -58,7 +58,7 @@ void FastSPI_Setup(softSPI_t *spi) {
 	HAL_PIN_Setup_Output(spi->ss);
 	HAL_PIN_SetOutputValue(spi->ss, 1); // set SS_PIN to inactive
 
-	ADDLOG_INFO(LOG_FEATURE_CMD, "Fast SPI Path\n");
+	ADDLOG_INFO(LOG_FEATURE_CMD, "Fast SPI Path");
 
 	{
 		int id = spi->sck;
@@ -170,7 +170,7 @@ static void flash_wait_for(softSPI_t* spi, byte mask) {
 		rtos_delay_milliseconds(loops);
 	}
 
-	//ADDLOG_INFO(LOG_FEATURE_CMD, "flash_wait_for: done %i loops\n", loops);
+	//ADDLOG_INFO(LOG_FEATURE_CMD, "flash_wait_for: done %i loops", loops);
 
 }
 
@@ -221,7 +221,7 @@ void spi_flash_write2(softSPI_t* spi, int adr, const byte* data, int cnt) {
 
 	OBK_DISABLE_INTERRUPTS;
 
-	//ADDLOG_INFO(LOG_FEATURE_CMD, "spi_flash_write2 %i at %i\n", cnt, adr);
+	//ADDLOG_INFO(LOG_FEATURE_CMD, "spi_flash_write2 %i at %i", cnt, adr);
 
 	while (remaining > 0) {
 		int page_offset = adr % 256;
@@ -234,7 +234,7 @@ void spi_flash_write2(softSPI_t* spi, int adr, const byte* data, int cnt) {
 		SPI_Send(spi, WRITEENABLE_FLASH_CMD);
 		SPI_End(spi);
 
-		//ADDLOG_INFO(LOG_FEATURE_CMD, "Write fragmnent %i at %i\n", write_len, adr);
+		//ADDLOG_INFO(LOG_FEATURE_CMD, "Write fragmnent %i at %i", write_len, adr);
 		SPI_Begin(spi);
 		SPI_Send(spi, WRITE_FLASH_CMD);
 		SPI_Send(spi, (adr >> 16) & 0xFF);
