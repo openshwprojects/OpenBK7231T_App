@@ -18,6 +18,8 @@ set(PROJ_ALL_SRC
 	${OBKM_SRC_CXX}
 	${OBKM_SRC}
 	${BERRY_SRC_C}
+	${OBK_SRCS}driver/drv_rc.cpp
+	${OBK_SRCS}libraries/rc-switch/src/RCSwitch.cpp
 	${OBK_SRCS}hal/ln882h/hal_adc_ln882h.c
 	${OBK_SRCS}hal/ln882h/hal_flashConfig_ln882h.c
 	${OBK_SRCS}hal/ln882h/hal_flashVars_ln882h.c
