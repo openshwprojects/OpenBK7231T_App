@@ -7,6 +7,7 @@
 #define AHT2X_CRC_MODE_OFF 0
 #define AHT2X_CRC_MODE_AUTO 1
 #define AHT2X_CRC_MODE_REQUIRED 2
+#define AHT2X_MAX_MEASURE_FAILURES 3
 
 static byte max_retries = 20;
 static int g_aht_secondsUntilNextMeasurement = 1, g_aht_secondsBetweenMeasurements = 10, channel_temp = 0, channel_humid = 0;
@@ -16,6 +17,7 @@ static bool isWorking = false;
 static bool g_crcSupported = false;
 static byte g_crcMode = AHT2X_CRC_MODE_OFF;
 static uint8_t g_lastStatus = 0;
+static byte g_measureFailures = 0;
 
 static bool AHT2X_IsReadyAndCalibrated(uint8_t status)
 {
@@ -190,6 +192,7 @@ void AHT2X_Initialization()
 	isWorking = false;
 	g_crcSupported = false;
 	g_lastStatus = 0;
+	g_measureFailures = 0;
 
 	AHT2X_SoftReset();
 
@@ -220,6 +223,18 @@ void AHT2X_StopDriver()
 	AHT2X_SoftReset();
 }
 
+static void AHT2X_RecordMeasurementFailure(const char *caller, const char *reason)
+{
+	g_measureFailures++;
+	ADDLOG_INFO(LOG_FEATURE_SENSOR, "%s: %s Consecutive failures %u/%u.", caller, reason, (unsigned)g_measureFailures, AHT2X_MAX_MEASURE_FAILURES);
+
+	if(g_measureFailures >= AHT2X_MAX_MEASURE_FAILURES)
+	{
+		ADDLOG_INFO(LOG_FEATURE_SENSOR, "%s: Reinitializing sensor after %u consecutive communication failures.", caller, (unsigned)g_measureFailures);
+		AHT2X_Initialization();
+	}
+}
+
 void AHT2X_Measure()
 {
 	uint8_t data[AHT2X_READ_LEN_CRC] = { 0, };
@@ -229,8 +244,7 @@ void AHT2X_Measure()
 	/* AHT-family measurement trigger documented as 0xAC 0x33 0x00. */
 	if(!AHT2X_WriteCommand3(AHT2X_CMD_TMS, AHT2X_DAT_TMS1, AHT2X_DAT_TMS2))
 	{
-		ADDLOG_INFO(LOG_FEATURE_SENSOR, "%s: Sensor did not ACK measurement command.", __func__);
-		isWorking = false;
+		AHT2X_RecordMeasurementFailure(__func__, "Sensor did not ACK measurement command.");
 		return;
 	}
 
@@ -241,8 +255,7 @@ void AHT2X_Measure()
 	{
 		if(!AHT2X_ReadBytes(data, readLen))
 		{
-			ADDLOG_INFO(LOG_FEATURE_SENSOR, "%s: Sensor did not ACK measurement read.", __func__);
-			isWorking = false;
+			AHT2X_RecordMeasurementFailure(__func__, "Sensor did not ACK measurement read.");
 			return;
 		}
 
@@ -261,7 +274,7 @@ void AHT2X_Measure()
 
 	if(!ready)
 	{
-		ADDLOG_INFO(LOG_FEATURE_SENSOR, "%s: Measurements reading timed out.", __func__);
+		AHT2X_RecordMeasurementFailure(__func__, "Measurement read timed out.");
 		return;
 	}
 
@@ -292,6 +305,7 @@ void AHT2X_Measure()
 		CHANNEL_Set(channel_humid, (int)(g_humid), 0);
 	}
 
+	g_measureFailures = 0;
 	isWorking = true;
 	ADDLOG_INFO(LOG_FEATURE_SENSOR, "%s: Temperature:%fC Humidity:%f%%", __func__, g_temp, g_humid);
 }
