@@ -81,7 +81,7 @@ const char* HAL_GetMyIPString()
 {
 	uint32_t ip, gw, mask, dns1 = 0;
 
-	if(g_bAccessPointMode)
+	if(g_WifiMode != 0)
 	{
 #if PLATFORM_BL602
 		wifi_mgmr_ap_ip_get(&ip, &gw, &mask);
@@ -128,7 +128,7 @@ void WiFI_GetMacAddress(char* mac)
 const char* HAL_GetMACStr(char* macstr)
 {
 	uint8_t mac[6];
-	if(g_bAccessPointMode)
+	if(g_WifiMode !=0)
 		wifi_mgmr_ap_mac_get(mac);
 	else
 		wifi_mgmr_sta_mac_get(mac);
@@ -321,7 +321,17 @@ void HAL_ConnectToWiFi(const char* ssid, const char* psk, obkStaticIP_t* ip)
 		g_wifi_init = true;
 	}
 #endif
-
+#if ENABLE_WPA_AP
+	int state;
+	wifi_mgmr_state_get(&state);
+	if ( WIFI_STATE_AP_IS_ENABLED(state)) {
+#if PLATFORM_BL602
+		wifi_mgmr_ap_stop(NULL);
+#else
+		wifi_mgmr_ap_stop();
+#endif
+	}
+#endif
 	if(ip->localIPAddr[0] == 0)
 	{
 		MGMR_IP_SET(0, 0, 0, 0, 0);
@@ -346,7 +356,7 @@ void HAL_ConnectToWiFi(const char* ssid, const char* psk, obkStaticIP_t* ip)
 	wifi_sta_connect((char*)ssid, (char*)psk, NULL, NULL, 1, 0, 0, ip->localIPAddr[0] == 0 ? 1 : 0);
 #endif
 
-	g_bAccessPointMode = 0;
+//	g_bAccessPointMode = 0;
 }
 
 void HAL_DisconnectFromWifi()
@@ -358,9 +368,60 @@ void HAL_DisconnectFromWifi()
 #endif
 }
 
+#if ENABLE_WPA_AP
+int HAL_SetupWiFiAccessPoint(const char* ssid, const char *key)
+{
+#if PLATFORM_BL_NEW
+	if(!g_wifi_init)
+	{
+		wifi_start_firmware();
+		g_wifi_init = true;
+	}
+#endif
+
+#if PLATFORM_BL602
+
+	uint8_t hidden_ssid = 0;
+	//int channel;
+
+	if ( key && strlen(key) < 8){
+		printf("ERROR! key(%s) needs to be at least 8 characters!\r\n", key);
+		if (g_wifiStatusCallback != 0) {
+			g_wifiStatusCallback(WIFI_AP_FAILED);
+		}
+		return -1;
+	}
+	// disable all STA related config
+	wifi_mgmr_sta_disconnect();
+	wifi_interface_t wifi_interface={0};
+	wifi_mgmr_sta_autoconnect_disable();
+	wifi_mgmr_sta_disable(wifi_interface);		// needs interface, but won't use it, so we can use local var here ...
+
+	wifi_interface = wifi_mgmr_ap_enable();
+	wifi_mgmr_ap_start(wifi_interface, (char*)ssid, hidden_ssid, key, g_wifi_channel);
+#else
+	wifi_mgmr_ap_params_t config = { 0 };
+	config.ssid = (char*)ssid;
+	config.key = key;
+	//config.akm = NULL;
+	config.channel = g_wifi_channel;
+	config.ap_ipaddr = inet_addr("192.168.4.1");
+	config.ap_mask = inet_addr("255.255.255.0");
+	config.use_dhcpd = true;
+	config.use_ipcfg = true;
+	config.start = 100;
+	config.limit = 100;
+	wifi_mgmr_ap_start(&config);
+#endif
+	return 0;
+}
+#endif
 int HAL_SetupWiFiOpenAccessPoint(const char* ssid)
 {
-	g_bAccessPointMode = 1;
+#if ENABLE_WPA_AP
+	return HAL_SetupWiFiAccessPoint(ssid,NULL);
+#else
+//	g_bAccessPointMode = 1;
 
 #if PLATFORM_BL_NEW
 	if(!g_wifi_init)
@@ -388,6 +449,7 @@ int HAL_SetupWiFiOpenAccessPoint(const char* ssid)
 	wifi_mgmr_ap_start(&config);
 #endif
 	return 0;
+#endif // #if ENABLE_WPA_AP
 }
 
 #if PLATFORM_BL602
@@ -429,7 +491,7 @@ void HAL_FastConnectToWiFi(const char* oob_ssid, const char* connect_key, obkSta
 		wifi_interface_t wifi_interface;
 		wifi_interface = wifi_mgmr_sta_enable();
 		wifi_mgmr_sta_connect_ext(wifi_interface, (char*)oob_ssid, (char*)connect_key, &ext_param);
-		g_bAccessPointMode = 0;
+//		g_bAccessPointMode = 0;
 		return;
 	}
 	else if(len)
