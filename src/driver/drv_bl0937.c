@@ -22,19 +22,6 @@
 #define DEFAULT_CURRENT_CAL 0.0118577075f
 #define DEFAULT_POWER_CAL 1.5f
 
-/*
- * BL0937 CF/CF1 pulse inputs are counted on the falling edge.
- * Older LN882H/LN8825 HAL code mapped INTERRUPT_STUB to falling edge, but
- * the generic CHANGE interrupt support maps non-rising/non-falling modes to
- * both edges on LN882H. Use an explicit falling edge there to preserve
- * existing BL0937 pulse counting and calibration behaviour.
- */
-#if PLATFORM_LN882H || PLATFORM_LN8825
-#define BL0937_INTERRUPT_MODE INTERRUPT_FALLING
-#else
-#define BL0937_INTERRUPT_MODE INTERRUPT_STUB
-#endif
-
 // Those can be set by Web page pins configurator
 // The below are default values for Mycket smart socket
 int GPIO_HLW_SEL = 24; // pwm4
@@ -120,8 +107,8 @@ void BL0937_Init_Pins()
 	HAL_PIN_Setup_Input_Pullup(GPIO_HLW_CF1);
 	HAL_PIN_Setup_Input_Pullup(GPIO_HLW_CF);
 
-	HAL_AttachInterrupt(GPIO_HLW_CF, BL0937_INTERRUPT_MODE, HlwCfInterrupt);
-	HAL_AttachInterrupt(GPIO_HLW_CF1, BL0937_INTERRUPT_MODE, HlwCf1Interrupt);
+	HAL_AttachInterrupt(GPIO_HLW_CF, INTERRUPT_FALLING, HlwCfInterrupt);
+	HAL_AttachInterrupt(GPIO_HLW_CF1, INTERRUPT_FALLING, HlwCf1Interrupt);
 
 	g_vc_pulses = 0;
 	g_p_pulses = 0;
