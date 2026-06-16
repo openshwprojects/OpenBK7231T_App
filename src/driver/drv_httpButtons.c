@@ -7,6 +7,7 @@
 #include "../logging/logging.h"
 #include "../hal/hal_pins.h"
 #include "../httpserver/new_http.h"
+#include "../httpserver/hass.h"
 
 typedef struct {
 	bool bEnabled;
@@ -169,6 +170,42 @@ void DRV_HTTPButtons_AddToHtmlPage(http_request_t *request) {
 
 	}
 }
+
+#if ENABLE_HA_DISCOVERY
+void DRV_HTTPButtons_OnHassDiscovery(const char *topic) {
+	int i;
+	char buttonIndex[8];
+
+	for (i = 0; i < g_buttonCount; i++) {
+		httpButton_t *bt = g_buttons[i];
+		HassDeviceInfo *dev_info;
+		const char *label;
+
+		if (bt == 0)
+			continue;
+		if (bt->bEnabled == false)
+			continue;
+		if (bt->command == 0 || bt->command[0] == 0)
+			continue;
+		if (bt->command[0] == '*')
+			continue;
+
+		label = bt->label;
+		if (label == 0 || label[0] == 0) {
+			label = "HTTP Button";
+		}
+
+		snprintf(buttonIndex, sizeof(buttonIndex), "%i", i);
+		dev_info = hass_init_button_device_info(buttonIndex, "backlog", bt->command, HASS_CATEGORY_CONFIG);
+		if (dev_info == 0)
+			continue;
+
+		cJSON_ReplaceItemInObject(dev_info->root, "name", cJSON_CreateString(label));
+		MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
+		hass_free_device_info(dev_info);
+	}
+}
+#endif
 
 commandResult_t CMD_setButtonColor(const void *context, const char *cmd, const char *args, int cmdFlags) {
 	int buttonIndex;
