@@ -360,6 +360,78 @@
     "examples": ""
   },
   {
+    "name": "BTDeinit",
+    "args": "",
+    "descr": "BT deinit",
+    "fn": "CMD_BTDeinit",
+    "file": "hal/generic/hal_bt_proxy_generic.c",
+    "requires": "ENABLE_BT_PROXY",
+    "examples": ""
+  },
+  {
+    "name": "BTFilterDuplicates",
+    "args": "[isActive]",
+    "descr": "BT filter duplicates",
+    "fn": "CMD_BTFilterDuplicates",
+    "file": "hal/generic/hal_bt_proxy_generic.c",
+    "requires": "ENABLE_BT_PROXY",
+    "examples": ""
+  },
+  {
+    "name": "BTInit",
+    "args": "",
+    "descr": "BT init",
+    "fn": "CMD_BTInit",
+    "file": "hal/generic/hal_bt_proxy_generic.c",
+    "requires": "ENABLE_BT_PROXY",
+    "examples": ""
+  },
+  {
+    "name": "BTSetScanMode",
+    "args": "[isActive]",
+    "descr": "Set BT scan mode",
+    "fn": "CMD_SetBTScanMode",
+    "file": "hal/generic/hal_bt_proxy_generic.c",
+    "requires": "ENABLE_BT_PROXY",
+    "examples": ""
+  },
+  {
+    "name": "BTSetWindowInterval",
+    "args": "[window] [interval]",
+    "descr": "Set BT window and interval",
+    "fn": "CMD_SetWindowInterval",
+    "file": "hal/generic/hal_bt_proxy_generic.c",
+    "requires": "ENABLE_BT_PROXY",
+    "examples": ""
+  },
+  {
+    "name": "BTStartScan",
+    "args": "",
+    "descr": "BT start scan",
+    "fn": "CMD_StartScan",
+    "file": "hal/generic/hal_bt_proxy_generic.c",
+    "requires": "ENABLE_BT_PROXY",
+    "examples": ""
+  },
+  {
+    "name": "BTStartScan",
+    "args": "",
+    "descr": "BT start scan",
+    "fn": "CMD_StopScan",
+    "file": "hal/generic/hal_bt_proxy_generic.c",
+    "requires": "ENABLE_BT_PROXY",
+    "examples": ""
+  },
+  {
+    "name": "BTStopScan",
+    "args": "TODO",
+    "descr": "",
+    "fn": "CMD_StopScan",
+    "file": "hal/generic/hal_bt_proxy_generic.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
     "name": "Buzzer",
     "args": "CMD_Buzzer",
     "descr": "",
@@ -1674,6 +1746,15 @@
     "examples": ""
   },
   {
+    "name": "logStartup2lfs",
+    "args": "[Seconds - default: 10s] [repetitions - default 1]",
+    "descr": "Enable startup logging to LittleFS. Value is the number of seconds from boot during which log lines are appended to startupLog_N.txt on LFS. Set to 0 to disable.\nIf you want to log severals startups, use optional repeats argument",
+    "fn": "log_command",
+    "file": "logging/logging.c",
+    "requires": "",
+    "examples": "logStartup2lfs 15"
+  },
+  {
     "name": "logtype",
     "args": "[TypeStr]",
     "descr": "logtype direct|thread|none - type of serial logging - thread (in a thread; default), direct (logged directly to serial), none (no UART logging)",
@@ -2286,6 +2367,177 @@
     "examples": ""
   },
   {
+    "name": "RoombaOrder",
+    "args": "TODO",
+    "descr": "",
+    "fn": "CMD_RoombaOrder",
+    "file": "driver/drv_roomba.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "Roomba_Beep",
+    "args": "TODO",
+    "descr": "",
+    "fn": "CMD_Roomba_Beep",
+    "file": "driver/drv_roomba.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "Roomba_Clean",
+    "args": "TODO",
+    "descr": "",
+    "fn": "CMD_Roomba_Clean",
+    "file": "driver/drv_roomba.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "Roomba_DigitsASCII",
+    "args": "TODO",
+    "descr": "",
+    "fn": "CMD_Roomba_DigitsASCII",
+    "file": "driver/drv_roomba.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "Roomba_DigitsRaw",
+    "args": "TODO",
+    "descr": "",
+    "fn": "CMD_Roomba_DigitsRaw",
+    "file": "driver/drv_roomba.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "Roomba_Discovery",
+    "args": "TODO",
+    "descr": "",
+    "fn": "CMD_Roomba_Discovery",
+    "file": "driver/drv_roomba.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "Roomba_Dock",
+    "args": "TODO",
+    "descr": "",
+    "fn": "CMD_Roomba_Dock",
+    "file": "driver/drv_roomba.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "Roomba_Drive",
+    "args": "TODO",
+    "descr": "",
+    "fn": "CMD_Roomba_Drive",
+    "file": "driver/drv_roomba.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "Roomba_DriveDirect",
+    "args": "TODO",
+    "descr": "",
+    "fn": "CMD_Roomba_DriveDirect",
+    "file": "driver/drv_roomba.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "Roomba_LEDs",
+    "args": "TODO",
+    "descr": "",
+    "fn": "CMD_Roomba_LEDs",
+    "file": "driver/drv_roomba.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "Roomba_Max",
+    "args": "TODO",
+    "descr": "",
+    "fn": "CMD_Roomba_Max",
+    "file": "driver/drv_roomba.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "Roomba_Safe",
+    "args": "TODO",
+    "descr": "",
+    "fn": "CMD_Roomba_Safe",
+    "file": "driver/drv_roomba.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "Roomba_SendBytes",
+    "args": "TODO",
+    "descr": "",
+    "fn": "CMD_Roomba_SendBytes",
+    "file": "driver/drv_roomba.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "Roomba_SendCmd",
+    "args": "TODO",
+    "descr": "",
+    "fn": "CMD_Roomba_SendCmd",
+    "file": "driver/drv_roomba.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "Roomba_SetFull",
+    "args": "TODO",
+    "descr": "",
+    "fn": "CMD_Roomba_SetFull",
+    "file": "driver/drv_roomba.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "Roomba_SetPassive",
+    "args": "TODO",
+    "descr": "",
+    "fn": "CMD_Roomba_SetPassive",
+    "file": "driver/drv_roomba.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "Roomba_SetSafe",
+    "args": "TODO",
+    "descr": "",
+    "fn": "CMD_Roomba_SetSafe",
+    "file": "driver/drv_roomba.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "Roomba_Spot",
+    "args": "TODO",
+    "descr": "",
+    "fn": "CMD_Roomba_Spot",
+    "file": "driver/drv_roomba.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "Roomba_Stop",
+    "args": "TODO",
+    "descr": "",
+    "fn": "CMD_Roomba_Stop",
+    "file": "driver/drv_roomba.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
     "name": "SafeMode",
     "args": "[OptionalDelayBeforeRestart]",
     "descr": "Forces device reboot into safe mode (open ap with disabled drivers). Argument is a delay to restart in seconds, optional, minimal delay is 1",
@@ -2556,6 +2808,15 @@
     "examples": ""
   },
   {
+    "name": "SetUARTPins",
+    "args": "[rx pin] [tx pin] [rts pin] [cts pin]",
+    "descr": "Set UART pins",
+    "fn": "CMD_SetUARTPins",
+    "file": "hal/realtek/hal_generic_realtek.c",
+    "requires": "PLATFORM_REALTEK_NEW",
+    "examples": ""
+  },
+  {
     "name": "SetupEnergyStats",
     "args": "[Enable1or0][SampleTime][SampleCount][JSonEnable]",
     "descr": "Setup Energy Statistic Parameters: [enable 0 or 1] [sample_time[10..90]] [sample_count[10..180]] [JsonEnable 0 or 1]. JSONEnable is optional.",
@@ -2741,6 +3002,24 @@
     "descr": "Stop periodical capture for SHT Sensor",
     "fn": "SHT3X_StopPerCmd",
     "file": "driver/drv_sht3x.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "ShutterCalibrate",
+    "args": "TODO",
+    "descr": "",
+    "fn": "CMD_Shutter_Calibrate",
+    "file": "driver/drv_shutters.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "ShutterMove",
+    "args": "TODO",
+    "descr": "",
+    "fn": "CMD_Shutter_MoveTo",
+    "file": "driver/drv_shutters.c",
     "requires": "",
     "examples": ""
   },
@@ -3704,6 +3983,24 @@
     "descr": "",
     "fn": "UCS1912_Test",
     "file": "driver/drv_ucs1912.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "vacuum/command",
+    "args": "TODO",
+    "descr": "",
+    "fn": "CMD_RoombaOrder",
+    "file": "driver/drv_roomba.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "vacuum/send_command",
+    "args": "TODO",
+    "descr": "",
+    "fn": "CMD_RoombaOrder",
+    "file": "driver/drv_roomba.c",
     "requires": "",
     "examples": ""
   },
