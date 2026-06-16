@@ -201,6 +201,7 @@ void DRV_HTTPButtons_OnHassDiscovery(const char *topic) {
 			continue;
 
 		cJSON_ReplaceItemInObject(dev_info->root, "name", cJSON_CreateString(label));
+		cJSON_DeleteItemFromObject(dev_info->root, "entity_category");
 		MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
 		hass_free_device_info(dev_info);
 	}
