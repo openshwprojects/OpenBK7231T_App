@@ -77,6 +77,8 @@ void DRV_DGR_OnLedFinalColorsChange(byte rgbcw[5]);
 
 // OBK_POWER etc
 float DRV_GetReading(energySensor_t type);
+int BL_HasEnergySensorReadingEx(int asensdatasetix, energySensor_t type);
+int BL_HasEnergySensorReading(energySensor_t type);
 energySensorNames_t* DRV_GetEnergySensorNames(energySensor_t type);
 energySensorNames_t* DRV_GetEnergySensorNamesEx(int asensdatasetix, energySensor_t type);
 bool DRV_IsMeasuringPower();

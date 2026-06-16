@@ -2191,11 +2191,19 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 				hass_free_device_info(dev_info);
 				discoveryQueued = true;
 			}
-			if (i == OBK_VOLTAGE) {
+			if (i == OBK_VOLTAGE && BL_HasEnergySensorReading(OBK_FREQUENCY)) {
 				//20250319 XJIKKA to simplify and save space in flash frequency together with voltage
 				dev_info = hass_init_sensor_device_info(FREQUENCY_SENSOR, SPECIAL_CHANNEL_OBK_FREQUENCY, -1, -1, -1);
 				if (dev_info) {
 					MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
+					hass_free_device_info(dev_info);
+					discoveryQueued = true;
+				}
+			}
+			else if (i == OBK_VOLTAGE) {
+				dev_info = hass_init_sensor_device_info(FREQUENCY_SENSOR, SPECIAL_CHANNEL_OBK_FREQUENCY, -1, -1, -1);
+				if (dev_info) {
+					MQTT_QueuePublish(topic, dev_info->channel, "", OBK_PUBLISH_FLAG_RETAIN);
 					hass_free_device_info(dev_info);
 					discoveryQueued = true;
 				}
