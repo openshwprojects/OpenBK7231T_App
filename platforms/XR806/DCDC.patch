@@ -1,0 +1,15 @@
+diff --git a/.config b/.config
+index 1459d43..9095d82 100644
+--- a/.config
++++ b/.config
+@@ -29,8 +29,8 @@ CONFIG_MSP_STACK_SIZE=1024
+ # CONFIG_BOOTLOADER is not set
+ # end of Project settings
+ 
+-CONFIG_PWR_INTERNAL_LDO=y
+-# CONFIG_PWR_INTERNAL_DCDC is not set
++# CONFIG_PWR_INTERNAL_LDO is not set
++CONFIG_PWR_INTERNAL_DCDC=y
+ # CONFIG_PWR_EXTERNAL is not set
+ CONFIG_WLAN=y
+ 
