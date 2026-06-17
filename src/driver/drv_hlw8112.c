@@ -26,6 +26,7 @@
 
 #include "drv_public.h"
 #include "drv_spi.h"
+#include "drv_bl_shared.h"
 
 
 static const uint32_t RMS_I_RESOLUTION  = 8388608 ; // 1 << 23;
@@ -315,10 +316,18 @@ void HLW8112_Set_EnergyStat(HLW8112_Channel_t channel, float import, float expor
 		data = &energy_acc_b;
 		counter_reg = HLW8112_REG_PFCntPB;
 		CHANNEL_Set(HLW8112_Channel_export_B, export * 1000, 0);
+		HLW8112_lastSentValue[HLW8112_Channel_export_B] = export * 1000.0f;
+		HLW8112_noChangeFrame[HLW8112_Channel_export_B] = 0;
 		CHANNEL_Set(HLW8112_Channel_import_B, import * 1000, 0);
+		HLW8112_lastSentValue[HLW8112_Channel_import_B] = import * 1000.0f;
+		HLW8112_noChangeFrame[HLW8112_Channel_import_B] = 0;
 	}else {
 		CHANNEL_Set(HLW8112_Channel_export_A, export * 1000, 0);
+		HLW8112_lastSentValue[HLW8112_Channel_export_A] = export * 1000.0f;
+		HLW8112_noChangeFrame[HLW8112_Channel_export_A] = 0;
 		CHANNEL_Set(HLW8112_Channel_import_A, import * 1000, 0);
+		HLW8112_lastSentValue[HLW8112_Channel_import_A] = import * 1000.0f;
+		HLW8112_noChangeFrame[HLW8112_Channel_import_A] = 0;
 	}
 
 	HLW8112_WriteRegister16(counter_reg,0);
@@ -917,6 +926,47 @@ void HLW8112_ScalePowerFactor(uint32_t regValue, int16_t* value){
 	}
 }
 
+// Per-channel MQTT publish throttle state, reusing the shared VCPPublishIntervals
+// globals (changeDoNotSendMinFrames / changeSendAlwaysFrames) from drv_bl_shared.
+// Thresholds are in the same units as the float value passed to CHANNEL_Set below.
+static const float HLW8112_changeThreshold[12] = {
+	[HLW8112_Channel_Voltage]          = 0.25f,   // volts (v_rms / 10)
+	[HLW8112_Channel_Frequency]        = 0.02f,   // raw freq units
+	[HLW8112_Channel_PowerFactor]      = 0.01f,   // pf
+	[HLW8112_Channel_current_A]        = 0.002f,  // amps
+	[HLW8112_Channel_current_B]        = 0.002f,
+	[HLW8112_Channel_power_A]          = 0.25f,   // watts (pa / 10)
+	[HLW8112_Channel_power_B]          = 0.25f,
+	[HLW8112_Channel_apparent_power_A] = 0.25f,
+	[HLW8112_Channel_export_A]         = 0.1f,    // value passed * 1000
+	[HLW8112_Channel_export_B]         = 0.1f,
+	[HLW8112_Channel_import_A]         = 0.1f,
+	[HLW8112_Channel_import_B]         = 0.1f,
+};
+static float HLW8112_lastSentValue[12];
+static int   HLW8112_noChangeFrame[12];
+static bool  HLW8112_publishedOnce = false;
+
+// Publish predicate mirrors drv_bl_shared.c: publish on a force flag, OR when the
+// value moved more than its threshold and at least changeDoNotSendMinFrames have
+// elapsed, OR when changeSendAlwaysFrames have elapsed (forced heartbeat). Track
+// the float value pre-CHANNEL_Set because CHANNEL_Set_Ex compares integers and
+// would never see sub-integer drift; publish with CHANNEL_SET_FLAG_FORCE so the
+// integer-equality short-circuit cannot suppress a due heartbeat.
+static void HLW8112_PublishIfNeeded(int channel, float newValue, bool force) {
+	float diff = newValue - HLW8112_lastSentValue[channel];
+	if (force ||
+		((fabsf(diff) > HLW8112_changeThreshold[channel]) &&
+		 (HLW8112_noChangeFrame[channel] >= changeDoNotSendMinFrames)) ||
+		(HLW8112_noChangeFrame[channel] >= changeSendAlwaysFrames)) {
+		HLW8112_noChangeFrame[channel] = 0;
+		HLW8112_lastSentValue[channel] = newValue;
+		CHANNEL_Set(channel, (int)newValue, CHANNEL_SET_FLAG_FORCE);
+	} else {
+		HLW8112_noChangeFrame[channel]++;
+	}
+}
+
 static void HLW8112_ScaleAndUpdate(HLW8112_Data_t* data) {
 
 	int16_t power_factor;
@@ -984,18 +1034,24 @@ static void HLW8112_ScaleAndUpdate(HLW8112_Data_t* data) {
 
 	// update
 	
-	CHANNEL_Set(HLW8112_Channel_Voltage, last_update_data.v_rms / 10.0, 0);
-	CHANNEL_Set(HLW8112_Channel_Frequency,last_update_data.freq , 0);
-	CHANNEL_Set(HLW8112_Channel_PowerFactor, last_update_data.pf, 0);
-	CHANNEL_Set(HLW8112_Channel_current_B, last_update_data.ib_rms, 0);
-	CHANNEL_Set(HLW8112_Channel_current_A,last_update_data.ia_rms , 0);
-	CHANNEL_Set(HLW8112_Channel_power_B, last_update_data.pb / 10.0, 0);
-	CHANNEL_Set(HLW8112_Channel_power_A, last_update_data.pa / 10.0, 0);
-	CHANNEL_Set(HLW8112_Channel_apparent_power_A, last_update_data.ap / 10.0, 0);
-	CHANNEL_Set(HLW8112_Channel_export_B, last_update_data.eb->Export * 1000, 0);
-	CHANNEL_Set(HLW8112_Channel_export_A, last_update_data.ea->Export * 1000, 0);
-	CHANNEL_Set(HLW8112_Channel_import_B, last_update_data.eb->Import * 1000, 0);
-	CHANNEL_Set(HLW8112_Channel_import_A, last_update_data.ea->Import * 1000, 0);
+	// First frame after boot force-publishes every channel; later frames throttle.
+	// Using a one-shot flag (not lastSentValue seeding) avoids any dependency on
+	// when VCPPublishIntervals runs from autoexec.bat relative to driver init.
+	bool force = !HLW8112_publishedOnce;
+	HLW8112_publishedOnce = true;
+
+	HLW8112_PublishIfNeeded(HLW8112_Channel_Voltage,          last_update_data.v_rms / 10.0f,        force);
+	HLW8112_PublishIfNeeded(HLW8112_Channel_Frequency,        (float)last_update_data.freq,          force);
+	HLW8112_PublishIfNeeded(HLW8112_Channel_PowerFactor,      (float)last_update_data.pf,            force);
+	HLW8112_PublishIfNeeded(HLW8112_Channel_current_B,        (float)last_update_data.ib_rms,        force);
+	HLW8112_PublishIfNeeded(HLW8112_Channel_current_A,        (float)last_update_data.ia_rms,        force);
+	HLW8112_PublishIfNeeded(HLW8112_Channel_power_B,          last_update_data.pb / 10.0f,           force);
+	HLW8112_PublishIfNeeded(HLW8112_Channel_power_A,          last_update_data.pa / 10.0f,           force);
+	HLW8112_PublishIfNeeded(HLW8112_Channel_apparent_power_A, last_update_data.ap / 10.0f,           force);
+	HLW8112_PublishIfNeeded(HLW8112_Channel_export_B,         last_update_data.eb->Export * 1000.0f, force);
+	HLW8112_PublishIfNeeded(HLW8112_Channel_export_A,         last_update_data.ea->Export * 1000.0f, force);
+	HLW8112_PublishIfNeeded(HLW8112_Channel_import_B,         last_update_data.eb->Import * 1000.0f, force);
+	HLW8112_PublishIfNeeded(HLW8112_Channel_import_A,         last_update_data.ea->Import * 1000.0f, force);
 }
 
 #pragma endregion
