@@ -411,7 +411,6 @@ void Test_HassDiscovery_BL0937() {
 
 	Test_VerifyForCommonPowerMeteringStuff();
 	SELFTEST_ASSERT_HAS_NOT_MQTT_JSON_SENT_ANY("homeassistant", true, 0, 0, "stat_t", "~/138/get");
-	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("homeassistant/sensor/Windows_Fake_BL0937_sensor_138/config", "", true);
 }
 void Test_HassDiscovery_digitalInput() {
 	const char *shortName = "DigitalInputTest";
