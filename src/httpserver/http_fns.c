@@ -2200,14 +2200,6 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 					discoveryQueued = true;
 				}
 			}
-			else if (i == OBK_VOLTAGE) {
-				dev_info = hass_init_sensor_device_info(FREQUENCY_SENSOR, SPECIAL_CHANNEL_OBK_FREQUENCY, -1, -1, -1);
-				if (dev_info) {
-					MQTT_QueuePublish(topic, dev_info->channel, "", OBK_PUBLISH_FLAG_RETAIN);
-					hass_free_device_info(dev_info);
-					discoveryQueued = true;
-				}
-			}
 		}
 #if ENABLE_BL_TWIN
 		//BL_SENSORS_IX_1 - mqtt hass discovery using hass_uniq_id_suffix (_b) from drv_bl_shared.c
