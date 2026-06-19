@@ -428,7 +428,11 @@ static driver_t g_drivers[] = {
 	NULL,                                    // runQuickTick
 	NULL,                                    // stopFunction
 	NULL,                                    // onChannelChanged
+#if ENABLE_HA_DISCOVERY
+	DRV_HTTPButtons_OnHassDiscovery,        // onHassDiscovery
+#else
 	NULL,                                    // onHassDiscovery
+#endif
 	false,                                   // loaded
 	},
 #endif
