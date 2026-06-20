@@ -736,6 +736,38 @@
     "driver": ""
   },
   {
+    "name": "ShutterA",
+    "title": "ShutterA Pin",
+    "descr": "Shutter relay A.",
+    "enum": "IOR_ShutterA",
+    "file": "new_pins.h",
+    "driver": "RC"
+  },
+  {
+    "name": "ShutterB",
+    "title": "ShutterB Pin",
+    "descr": "Shutter relay B.",
+    "enum": "IOR_ShutterB",
+    "file": "new_pins.h",
+    "driver": "RC"
+  },
+  {
+    "name": "Button_ShutterUp",
+    "title": "Button_ShutterUp Pin",
+    "descr": "Pressing this button will start shutter up move. Double click will stop move.",
+    "enum": "IOR_Button_ShutterUp",
+    "file": "new_pins.h",
+    "driver": "RC"
+  },
+  {
+    "name": "Button_ShutterDown",
+    "title": "Button_ShutterDown Pin",
+    "descr": "Pressing this button will start shutter down move. Double click will stop move.",
+    "enum": "IOR_Button_ShutterDown",
+    "file": "new_pins.h",
+    "driver": "RC"
+  },
+  {
     "name": "Total_Options",
     "title": "TODO",
     "descr": "Current total number of available IOR roles",

@@ -77,6 +77,7 @@
 #define ENABLE_OBK_BERRY						1
 #define ENABLE_DRIVER_MDNS						1
 #define ENABLE_DRIVER_IR						1
+#define ENABLE_DRIVER_BATTERY					1
 //#define ENABLE_DRIVER_IRREMOTEESP				1
 #endif
 

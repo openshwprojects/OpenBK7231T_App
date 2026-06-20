@@ -14,6 +14,13 @@
     "define": "Enabled by defining \"<b>ENABLE_DRIVER_TUYAMCU</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
   },
   {
+    "name": "Roomba",
+    "title": "Roomba",
+    "descr": "Roomba OI Driver",
+    "requires": "",
+    "define": "Enabled by defining \"<b>ENABLE_DRIVER_ROOMBA</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
+  },
+  {
     "name": "GirierMCU",
     "title": "GirierMCU",
     "descr": "TODO",
@@ -40,6 +47,13 @@
     "descr": "Freeze is a test driver for watchdog. Enabling this will freeze device main loop.",
     "requires": "",
     "define": "Enabled by defining \"<b>ENABLE_DRIVER_FREEZE</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
+  },
+  {
+    "name": "ESPHomeAPI",
+    "title": "ESPHome Protocol Bridge",
+    "descr": "Native ESPHome API server (port 6053) for discovering and controlling BT Proxy and other entities seamlessly in Home Assistant.",
+    "requires": "BT Proxy",
+    "define": "Enabled by defining \"<b>ENABLE_DRIVER_ESPHOME_API</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
   },
   {
     "name": "TESTSPIFLASH",
@@ -138,6 +152,19 @@
     "descr": "Driver for DS3231 RTC.\nStart with \"startdriver DS3231 &lt;CLK-Pin&gt; &lt;DATA-Pin&gt; [&lt;optional sync&gt;]\".\nSync values: 0 - do nothing / 1: set device clock to RTC on driver start / 2: regulary (every minute) set device clock to RTC (so RTC is time source)",
     "requires": "",
     "define": "Enabled by defining \"<b>ENABLE_DRIVER_DS3231</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
+  },
+  {
+    "name": "DSCF77",
+    "title": "TODO",
+    "descr": "Decoding DCF77 signal (german radio time source sending near Frankfurt Main, Germany)",
+    "requires": "",
+    "define": "Enabled by defining \"<b>ENABLE_DRIVER_DCF77</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
+  },
+  {
+    "name": "DCF77",
+    "title": "DCF77",
+    "descr": "TODO",
+    "requires": ""
   },
   {
     "name": "HTTPButtons",
@@ -329,11 +356,25 @@
     "define": "Enabled by defining \"<b>ENABLE_DRIVER_DDPSEND</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
   },
   {
+    "name": "Shutters",
+    "title": "TODO",
+    "descr": "ShutterShutters",
+    "requires": "",
+    "define": "Enabled by defining \"<b>ENABLE_DRIVER_SHUTTERS</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
+  },
+  {
     "name": "DDP",
     "title": "TODO",
     "descr": "DDP is a LED control protocol that is using UDP. You can use xLights or any other app to control OBK LEDs that way. See [DDP topic](https://www.elektroda.com/rtvforum/topic4040325.html)",
     "requires": "",
     "define": "Enabled by defining \"<b>ENABLE_DRIVER_DDP</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
+  },
+  {
+    "name": "MDNS",
+    "title": "TODO",
+    "descr": "mDNS/DNS-SD discovery service. Publishes the device hostname and HTTP service on local network.",
+    "requires": "",
+    "define": "Enabled by defining \"<b>ENABLE_DRIVER_MDNS</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
   },
   {
     "name": "SSDP",
@@ -600,6 +641,13 @@
     "descr": "LTR-303/329 ambient light sensor driver.",
     "requires": "",
     "define": "Enabled by defining \"<b>ENABLE_DRIVER_LTR_ALS</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
+  },
+  {
+    "name": "TinyIR_NEC",
+    "title": "TODO",
+    "descr": "NEC-only IR receiver",
+    "requires": "",
+    "define": "Enabled by defining \"<b>ENABLE_DRIVER_TINYIR_NEC</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
   },
   {
     "name": "mqttServer",
