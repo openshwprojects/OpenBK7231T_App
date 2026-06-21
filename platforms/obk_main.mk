@@ -82,6 +82,7 @@ OBKM_SRC  += $(OBK_SRCS)driver/drv_aht2x.c
 OBKM_SRC  += $(OBK_SRCS)driver/drv_battery.c
 OBKM_SRC  += $(OBK_SRCS)driver/drv_bl0937.c
 OBKM_SRC  += $(OBK_SRCS)driver/drv_bl0942.c
+OBKM_SRC  += $(OBK_SRCS)driver/drv_bl0939.c
 OBKM_SRC  += $(OBK_SRCS)driver/drv_bl_shared.c
 OBKM_SRC  += $(OBK_SRCS)driver/drv_bmp280.c
 OBKM_SRC  += $(OBK_SRCS)driver/drv_bmpi2c.c

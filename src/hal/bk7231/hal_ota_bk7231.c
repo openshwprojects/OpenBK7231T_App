@@ -11,6 +11,7 @@
 #include "../../driver/drv_public.h"
 #include "../../driver/drv_bl_shared.h"
 #include "../../driver/drv_hlw8112.h"
+#include "../../driver/drv_bl0939.h"
 
 static unsigned char *sector = (void *)0;
 int sectorlen = 0;
@@ -158,6 +159,9 @@ int myhttpclientcallback(httprequest_t* request){
 #endif
 #if ENABLE_DRIVER_HLW8112SPI
 	  HLW8112_Save_Statistics();
+#endif
+#if ENABLE_DRIVER_BL0939SPI
+	  BL0939_Save_Statistics();
 #endif 
       rtos_delay_milliseconds(1000);
       bk_reboot();
