@@ -698,12 +698,45 @@ void BL0939_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreSt
         }
     }
 
+    poststr(request, "<hr><h3>BL0939SPI</h3>");
+
+    poststr(request, "<table style='width:100%'>");
+    hprintf255(request, "<tr><td><b>Voltage</b></td><td style='text-align:right;'>%.2fV</td></tr>", last_update.voltage);
+    hprintf255(request, "<tr><td><b>Total Import</b></td><td style='text-align:right;'>%.4fkWh</td></tr>", energy_acc_a.Import + energy_acc_b.Import);
+    hprintf255(request, "<tr><td><b>Total Export</b></td><td style='text-align:right;'>%.4fkWh</td></tr>", energy_acc_a.Export + energy_acc_b.Export);
+    hprintf255(request, "<tr><td><b>Checksum Errors</b></td><td style='text-align:right;'>%lu</td></tr>", (unsigned long)checksum_errors);
+    hprintf255(request, "<tr><td><b>Read Errors</b></td><td style='text-align:right;'>%lu</td></tr>", (unsigned long)read_errors);
+    poststr(request, "</table>");
+
+    poststr(request, "<hr><table style='width:100%'>");
+    poststr(request, "<tr><th></th><th>Channel A</th><th>Channel B</th></tr>");
+    hprintf255(request, "<tr><td><b>Current</b></td><td style='text-align:right;'>%.3fA</td><td style='text-align:right;'>%.3fA</td></tr>",
+               last_update.current_a, last_update.current_b);
+    hprintf255(request, "<tr><td><b>Power</b></td><td style='text-align:right;'>%.2fW</td><td style='text-align:right;'>%.2fW</td></tr>",
+               last_update.power_a, last_update.power_b);
+    hprintf255(request, "<tr><td><b>Apparent</b></td><td style='text-align:right;'>%.2fVA</td><td style='text-align:right;'>%.2fVA</td></tr>",
+               last_update.apparent_a, last_update.apparent_b);
+    hprintf255(request, "<tr><td><b>Power Factor</b></td><td style='text-align:right;'>%.3f</td><td style='text-align:right;'>%.3f</td></tr>",
+               last_update.pf_a, last_update.pf_b);
+    hprintf255(request, "<tr><td><b>Import</b></td><td style='text-align:right;'>%.4fkWh</td><td style='text-align:right;'>%.4fkWh</td></tr>",
+               energy_acc_a.Import, energy_acc_b.Import);
+    hprintf255(request, "<tr><td><b>Export</b></td><td style='text-align:right;'>%.4fkWh</td><td style='text-align:right;'>%.4fkWh</td></tr>",
+               energy_acc_a.Export, energy_acc_b.Export);
     poststr(request,
-            "<hr><table style='width:100%'>"
-            "<tr><td><b>BL0939 Actions</b></td>"
-            "<td style='text-align: right;'><button style='background-color:red;' onclick='location.href=\"?BL0939_ClearEnergy=1&channel=A\"'>Clear A</button></td>"
-            "<td style='text-align: right;'><button style='background-color:red;' onclick='location.href=\"?BL0939_ClearEnergy=1&channel=B\"'>Clear B</button></td>"
-            "</tr></table>");
+            "<tr><td><b>Actions</b></td>"
+            "<td style='text-align:right;'><button style='background-color:red;' onclick='location.href=\"?BL0939_ClearEnergy=1&channel=A\"'>Clear A</button></td>"
+            "<td style='text-align:right;'><button style='background-color:red;' onclick='location.href=\"?BL0939_ClearEnergy=1&channel=B\"'>Clear B</button></td></tr>");
+    poststr(request, "</table>");
+
+    poststr(request, "<hr><table style='width:100%'>");
+    hprintf255(request, "<tr><td><b>Raw V_RMS</b></td><td style='text-align:right;'>%06lX</td></tr>", (unsigned long)last_raw.v_rms);
+    hprintf255(request, "<tr><td><b>Raw IA_RMS</b></td><td style='text-align:right;'>%06lX</td></tr>", (unsigned long)last_raw.ia_rms);
+    hprintf255(request, "<tr><td><b>Raw IB_RMS</b></td><td style='text-align:right;'>%06lX</td></tr>", (unsigned long)last_raw.ib_rms);
+    hprintf255(request, "<tr><td><b>Raw A_WATT</b></td><td style='text-align:right;'>%ld</td></tr>", (long)last_raw.a_watt);
+    hprintf255(request, "<tr><td><b>Raw B_WATT</b></td><td style='text-align:right;'>%ld</td></tr>", (long)last_raw.b_watt);
+    hprintf255(request, "<tr><td><b>Raw CFA_CNT</b></td><td style='text-align:right;'>%06lX</td></tr>", (unsigned long)last_raw.cfa_cnt);
+    hprintf255(request, "<tr><td><b>Raw CFB_CNT</b></td><td style='text-align:right;'>%06lX</td></tr>", (unsigned long)last_raw.cfb_cnt);
+    poststr(request, "</table>");
 }
 
 void BL0939_OnHassDiscovery(const char *topic) {
