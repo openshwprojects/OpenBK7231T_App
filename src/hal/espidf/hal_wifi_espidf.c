@@ -235,11 +235,16 @@ void HAL_DisconnectFromWifi()
 int HAL_SetupWiFiOpenAccessPoint(const char* ssid)
 {
 	g_bOpenAccessPointMode = 1;
+	ADDLOG_INFO(LOG_FEATURE_MAIN, "WiFi AP init start");
 	ap_netif = esp_netif_create_default_wifi_ap();
-	sta_netif = esp_netif_create_default_wifi_sta();
 	wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
 	cfg.nvs_enable = false;
-	esp_wifi_init(&cfg);
+	esp_err_t err = esp_wifi_init(&cfg);
+	ADDLOG_INFO(LOG_FEATURE_MAIN, "WiFi AP esp_wifi_init: %s", esp_err_to_name(err));
+	if(err != ESP_OK)
+	{
+		return 0;
+	}
 
 	esp_event_handler_instance_register(WIFI_EVENT,
 		ESP_EVENT_ANY_ID,
@@ -264,18 +269,33 @@ int HAL_SetupWiFiOpenAccessPoint(const char* ssid)
 		},
 	};
 
-	wifi_config_t wifi_sta_config =
-	{
-		.sta = { },
-	};
 	strncpy((char*)wifi_ap_config.ap.ssid, (char*)ssid, 32);
 	esp_netif_set_hostname(ap_netif, CFG_GetDeviceName());
 
-	esp_wifi_set_config(WIFI_IF_AP, &wifi_ap_config);
-	esp_wifi_set_config(WIFI_IF_STA, &wifi_sta_config);
-	esp_wifi_set_mode(WIFI_MODE_APSTA);
-	esp_wifi_set_max_tx_power(10 * 4);
-	esp_wifi_start();
+	err = esp_wifi_set_mode(WIFI_MODE_AP);
+	ADDLOG_INFO(LOG_FEATURE_MAIN, "WiFi AP set_mode: %s", esp_err_to_name(err));
+	if(err != ESP_OK)
+	{
+		return 0;
+	}
+	err = esp_wifi_set_config(WIFI_IF_AP, &wifi_ap_config);
+	ADDLOG_INFO(LOG_FEATURE_MAIN, "WiFi AP set_config: %s", esp_err_to_name(err));
+	if(err != ESP_OK)
+	{
+		return 0;
+	}
+	err = esp_wifi_set_max_tx_power(4 * 4);
+	ADDLOG_INFO(LOG_FEATURE_MAIN, "WiFi AP set_tx_power: %s", esp_err_to_name(err));
+	if(err != ESP_OK)
+	{
+		return 0;
+	}
+	err = esp_wifi_start();
+	ADDLOG_INFO(LOG_FEATURE_MAIN, "WiFi AP start: %s", esp_err_to_name(err));
+	if(err != ESP_OK)
+	{
+		return 0;
+	}
 
 	//esp_netif_set_default_netif(ap_netif);
 

@@ -144,9 +144,10 @@ int HAL_UART_Init(int baud, int parity, bool hwflowc, int txOverride, int rxOver
 	uart_enable_rx_intr(uartnum);
 
 #if PLATFORM_ESPIDF
-	if (txOverride != -1) {
+	if (txOverride != -1 || rxOverride != -1) {
 		uart_set_pin(uartnum,
-			txOverride, 21,
+			txOverride != -1 ? txOverride : UART_PIN_NO_CHANGE,
+			rxOverride != -1 ? rxOverride : UART_PIN_NO_CHANGE,
 			UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE);
 	}
 #endif

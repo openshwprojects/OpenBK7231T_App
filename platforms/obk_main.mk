@@ -178,6 +178,7 @@ OBKM_SRC  += $(OBK_SRCS)driver/drv_uart_tcp.c
 OBKM_SRC  += $(OBK_SRCS)driver/drv_ucs1912.c
 OBKM_SRC  += $(OBK_SRCS)driver/drv_wemo.c
 OBKM_SRC  += $(OBK_SRCS)driver/drv_widget.c
+OBKM_SRC  += $(OBK_SRCS)driver/drv_xiaomi_compact4.c
 OBKM_SRC  += $(OBK_SRCS)i2c/drv_i2c_ads1115.c
 OBKM_SRC  += $(OBK_SRCS)i2c/drv_i2c_lcd_pcf8574t.c
 OBKM_SRC  += $(OBK_SRCS)i2c/drv_i2c_main.c

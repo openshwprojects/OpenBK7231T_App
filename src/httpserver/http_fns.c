@@ -2037,6 +2037,7 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 	HassDeviceInfo* dev_info = NULL;
 	bool measuringPower = false;
 	bool measuringBattery = false;
+	bool selfStateDiscoveryQueued = false;
 	struct cJSON_Hooks hooks;
 	bool discoveryQueued = false;
 	int type;
@@ -2597,10 +2598,11 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 		MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
 		hass_free_device_info(dev_info);
 		discoveryQueued = true;
+		selfStateDiscoveryQueued = true;
 
 	}
 	if (discoveryQueued) {
-		MQTT_InvokeCommandAtEnd(PublishChannels);
+		MQTT_InvokeCommandAtEnd(selfStateDiscoveryQueued ? PublishAll : PublishChannels);
 	}
 	else {
 		const char* msg = "No relay, PWM, sensor or power driver running.";
