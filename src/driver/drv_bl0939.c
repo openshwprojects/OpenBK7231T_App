@@ -52,6 +52,7 @@
 #define BL0939_INVALID_CF_CNT             0xFFFFFFFFu
 
 #define BL0939_MQTT_PUBLISH_INTERVAL      10
+#define BL0939_INT24_TO_INT32(v)          ((int32_t)((((uint32_t)(v) & 0x00FFFFFFu) ^ 0x00800000u) - 0x00800000u))
 
 typedef struct {
     uint32_t ia_rms;
@@ -149,14 +150,6 @@ static const BL0939_SensorDef_t g_bl0939_sensors[] = {
     { "bl0939_export_total", "BL0939 Energy Export Total", "energy",       "kWh", "total_increasing", 4 },
 };
 
-static int32_t BL0939_Int24ToInt32(uint32_t val) {
-    val &= 0x00FFFFFF;
-    if (val & 0x00800000) {
-        val |= 0xFF000000;
-    }
-    return (int32_t)val;
-}
-
 static int32_t BL0939_CalcSignedCounterDelta(uint32_t now, uint32_t previous) {
     int32_t diff = (int32_t)((now & 0x00FFFFFF) - (previous & 0x00FFFFFF));
     if (diff > 0x007FFFFF) {
@@ -172,6 +165,54 @@ static float BL0939_SafeDivide(float raw, float cal) {
         return 0.0f;
     }
     return raw / cal;
+}
+
+static inline void BL0939_HTTPTableStart(http_request_t *request) {
+    poststr(request, "<hr><table style='width:100%'>");
+}
+
+static inline void BL0939_HTTPRowStart(http_request_t *request, const char *name) {
+    hprintf255(request, "<tr><td><b>%s</b></td><td style='text-align:right;'>", name);
+}
+
+static inline void BL0939_HTTPRowNextCell(http_request_t *request) {
+    poststr(request, "</td><td style='text-align:right;'>");
+}
+
+static inline void BL0939_HTTPRowEnd(http_request_t *request) {
+    poststr(request, "</td></tr>");
+}
+
+static inline void BL0939_HTTPRowFloat(http_request_t *request, const char *name, float value, int precision, const char *unit) {
+    BL0939_HTTPRowStart(request, name);
+    hprintf255(request, "%.*f%s", precision, value, unit);
+    BL0939_HTTPRowEnd(request);
+}
+
+static inline void BL0939_HTTPRowFloat2(http_request_t *request, const char *name, float a, float b, int precision, const char *unit) {
+    BL0939_HTTPRowStart(request, name);
+    hprintf255(request, "%.*f%s", precision, a, unit);
+    BL0939_HTTPRowNextCell(request);
+    hprintf255(request, "%.*f%s", precision, b, unit);
+    BL0939_HTTPRowEnd(request);
+}
+
+static inline void BL0939_HTTPRowULongHex(http_request_t *request, const char *name, unsigned long value) {
+    BL0939_HTTPRowStart(request, name);
+    hprintf255(request, "%06lX", value);
+    BL0939_HTTPRowEnd(request);
+}
+
+static inline void BL0939_HTTPRowULong(http_request_t *request, const char *name, unsigned long value) {
+    BL0939_HTTPRowStart(request, name);
+    hprintf255(request, "%lu", value);
+    BL0939_HTTPRowEnd(request);
+}
+
+static inline void BL0939_HTTPRowLong(http_request_t *request, const char *name, long value) {
+    BL0939_HTTPRowStart(request, name);
+    hprintf255(request, "%ld", value);
+    BL0939_HTTPRowEnd(request);
 }
 
 static void BL0939_LoadCalibration(void) {
@@ -316,8 +357,8 @@ static int BL0939_ReadRaw(BL0939_RawData_t *data) {
     if (BL0939_SPI_ReadReg(BL0939_REG_V_RMS, &data->v_rms) < 0) errors++;
     if (BL0939_SPI_ReadReg(BL0939_REG_IA_RMS, &data->ia_rms) < 0) errors++;
     if (BL0939_SPI_ReadReg(BL0939_REG_IB_RMS, &data->ib_rms) < 0) errors++;
-    if (BL0939_SPI_ReadReg(BL0939_REG_A_WATT, &tmp) < 0) errors++; else data->a_watt = BL0939_Int24ToInt32(tmp);
-    if (BL0939_SPI_ReadReg(BL0939_REG_B_WATT, &tmp) < 0) errors++; else data->b_watt = BL0939_Int24ToInt32(tmp);
+    if (BL0939_SPI_ReadReg(BL0939_REG_A_WATT, &tmp) < 0) errors++; else data->a_watt = BL0939_INT24_TO_INT32(tmp);
+    if (BL0939_SPI_ReadReg(BL0939_REG_B_WATT, &tmp) < 0) errors++; else data->b_watt = BL0939_INT24_TO_INT32(tmp);
     if (BL0939_SPI_ReadReg(BL0939_REG_CFA_CNT, &data->cfa_cnt) < 0) errors++;
     if (BL0939_SPI_ReadReg(BL0939_REG_CFB_CNT, &data->cfb_cnt) < 0) errors++;
     if (BL0939_SPI_ReadReg(BL0939_REG_A_CORNER, &data->a_corner) < 0) errors++;
@@ -701,41 +742,35 @@ void BL0939_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreSt
     poststr(request, "<hr><h3>BL0939SPI</h3>");
 
     poststr(request, "<table style='width:100%'>");
-    hprintf255(request, "<tr><td><b>Voltage</b></td><td style='text-align:right;'>%.2fV</td></tr>", last_update.voltage);
-    hprintf255(request, "<tr><td><b>Total Import</b></td><td style='text-align:right;'>%.4fkWh</td></tr>", energy_acc_a.Import + energy_acc_b.Import);
-    hprintf255(request, "<tr><td><b>Total Export</b></td><td style='text-align:right;'>%.4fkWh</td></tr>", energy_acc_a.Export + energy_acc_b.Export);
-    hprintf255(request, "<tr><td><b>Checksum Errors</b></td><td style='text-align:right;'>%lu</td></tr>", (unsigned long)checksum_errors);
-    hprintf255(request, "<tr><td><b>Read Errors</b></td><td style='text-align:right;'>%lu</td></tr>", (unsigned long)read_errors);
+    BL0939_HTTPRowFloat(request, "Voltage", last_update.voltage, 2, "V");
+    BL0939_HTTPRowFloat(request, "Total Import", energy_acc_a.Import + energy_acc_b.Import, 4, "kWh");
+    BL0939_HTTPRowFloat(request, "Total Export", energy_acc_a.Export + energy_acc_b.Export, 4, "kWh");
+    BL0939_HTTPRowULong(request, "Checksum Errors", (unsigned long)checksum_errors);
+    BL0939_HTTPRowULong(request, "Read Errors", (unsigned long)read_errors);
     poststr(request, "</table>");
 
-    poststr(request, "<hr><table style='width:100%'>");
+    BL0939_HTTPTableStart(request);
     poststr(request, "<tr><th></th><th>Channel A</th><th>Channel B</th></tr>");
-    hprintf255(request, "<tr><td><b>Current</b></td><td style='text-align:right;'>%.3fA</td><td style='text-align:right;'>%.3fA</td></tr>",
-               last_update.current_a, last_update.current_b);
-    hprintf255(request, "<tr><td><b>Power</b></td><td style='text-align:right;'>%.2fW</td><td style='text-align:right;'>%.2fW</td></tr>",
-               last_update.power_a, last_update.power_b);
-    hprintf255(request, "<tr><td><b>Apparent</b></td><td style='text-align:right;'>%.2fVA</td><td style='text-align:right;'>%.2fVA</td></tr>",
-               last_update.apparent_a, last_update.apparent_b);
-    hprintf255(request, "<tr><td><b>Power Factor</b></td><td style='text-align:right;'>%.3f</td><td style='text-align:right;'>%.3f</td></tr>",
-               last_update.pf_a, last_update.pf_b);
-    hprintf255(request, "<tr><td><b>Import</b></td><td style='text-align:right;'>%.4fkWh</td><td style='text-align:right;'>%.4fkWh</td></tr>",
-               energy_acc_a.Import, energy_acc_b.Import);
-    hprintf255(request, "<tr><td><b>Export</b></td><td style='text-align:right;'>%.4fkWh</td><td style='text-align:right;'>%.4fkWh</td></tr>",
-               energy_acc_a.Export, energy_acc_b.Export);
+    BL0939_HTTPRowFloat2(request, "Current", last_update.current_a, last_update.current_b, 3, "A");
+    BL0939_HTTPRowFloat2(request, "Power", last_update.power_a, last_update.power_b, 2, "W");
+    BL0939_HTTPRowFloat2(request, "Apparent", last_update.apparent_a, last_update.apparent_b, 2, "VA");
+    BL0939_HTTPRowFloat2(request, "Power Factor", last_update.pf_a, last_update.pf_b, 3, "");
+    BL0939_HTTPRowFloat2(request, "Import", energy_acc_a.Import, energy_acc_b.Import, 4, "kWh");
+    BL0939_HTTPRowFloat2(request, "Export", energy_acc_a.Export, energy_acc_b.Export, 4, "kWh");
     poststr(request,
             "<tr><td><b>Actions</b></td>"
             "<td style='text-align:right;'><button style='background-color:red;' onclick='location.href=\"?BL0939_ClearEnergy=1&channel=A\"'>Clear A</button></td>"
             "<td style='text-align:right;'><button style='background-color:red;' onclick='location.href=\"?BL0939_ClearEnergy=1&channel=B\"'>Clear B</button></td></tr>");
     poststr(request, "</table>");
 
-    poststr(request, "<hr><table style='width:100%'>");
-    hprintf255(request, "<tr><td><b>Raw V_RMS</b></td><td style='text-align:right;'>%06lX</td></tr>", (unsigned long)last_raw.v_rms);
-    hprintf255(request, "<tr><td><b>Raw IA_RMS</b></td><td style='text-align:right;'>%06lX</td></tr>", (unsigned long)last_raw.ia_rms);
-    hprintf255(request, "<tr><td><b>Raw IB_RMS</b></td><td style='text-align:right;'>%06lX</td></tr>", (unsigned long)last_raw.ib_rms);
-    hprintf255(request, "<tr><td><b>Raw A_WATT</b></td><td style='text-align:right;'>%ld</td></tr>", (long)last_raw.a_watt);
-    hprintf255(request, "<tr><td><b>Raw B_WATT</b></td><td style='text-align:right;'>%ld</td></tr>", (long)last_raw.b_watt);
-    hprintf255(request, "<tr><td><b>Raw CFA_CNT</b></td><td style='text-align:right;'>%06lX</td></tr>", (unsigned long)last_raw.cfa_cnt);
-    hprintf255(request, "<tr><td><b>Raw CFB_CNT</b></td><td style='text-align:right;'>%06lX</td></tr>", (unsigned long)last_raw.cfb_cnt);
+    BL0939_HTTPTableStart(request);
+    BL0939_HTTPRowULongHex(request, "Raw V_RMS", (unsigned long)last_raw.v_rms);
+    BL0939_HTTPRowULongHex(request, "Raw IA_RMS", (unsigned long)last_raw.ia_rms);
+    BL0939_HTTPRowULongHex(request, "Raw IB_RMS", (unsigned long)last_raw.ib_rms);
+    BL0939_HTTPRowLong(request, "Raw A_WATT", (long)last_raw.a_watt);
+    BL0939_HTTPRowLong(request, "Raw B_WATT", (long)last_raw.b_watt);
+    BL0939_HTTPRowULongHex(request, "Raw CFA_CNT", (unsigned long)last_raw.cfa_cnt);
+    BL0939_HTTPRowULongHex(request, "Raw CFB_CNT", (unsigned long)last_raw.cfb_cnt);
     poststr(request, "</table>");
 }
 
