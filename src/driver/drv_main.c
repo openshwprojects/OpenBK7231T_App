@@ -1684,7 +1684,17 @@ void DRV_StartDriver(const char* name) {
 				break;
 			}
 #endif
-			if (g_drivers[i].bLoaded) {
+			// ShiftRegister supports multiple independent instances
+			if (g_drivers[i].bLoaded && !stricmp("ShiftRegister", name)) {
+				// Allow re-initialization for multiple instances
+				if (g_drivers[i].initFunc) {
+					g_drivers[i].initFunc();
+				}
+				addLogAdv(LOG_INFO, LOG_FEATURE_MAIN, "Initialized new ShiftRegister instance.\n");
+				bStarted = 1;
+				break;
+			}
+			else if (g_drivers[i].bLoaded) {
 				addLogAdv(LOG_INFO, LOG_FEATURE_MAIN, "Drv %s is already loaded.", name);
 				bStarted = 1;
 				break;
