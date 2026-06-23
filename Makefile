@@ -33,6 +33,9 @@ else ifeq ($(VARIANT),battery)
 OBK_VARIANT = 7
 else ifeq ($(VARIANT),btproxy)
 OBK_VARIANT = 8
+else ifeq ($(VARIANT),xiaomiCompact4)
+OBK_VARIANT = 10
+ESP_FSIZE = 4MB
 else ifeq ($(VARIANT),2M)
 OBK_VARIANT = 1
 ESP_FSIZE = 2MB
@@ -46,6 +49,11 @@ else
 OBK_VARIANT = 0
 endif
 $(info VARIANT is $(VARIANT), OBK_VARIANT is $(OBK_VARIANT))
+
+ESP32_BUILD_DIR = platforms/ESP-IDF/build-32
+ifeq ($(OBK_VARIANT), 10)
+ESP32_BUILD_DIR = platforms/ESP-IDF/build-32-xiaomi
+endif
 
 #TARGET_PLATFORM ?= bk7231t
 #APPS_BUILD_PATH ?= ../bk7231t_os
@@ -562,11 +570,11 @@ OpenLN8825: prebuild_OpenLN8825 sdk/OpenLN8825/project/OpenBeken/app
 
 .PHONY: OpenESP32
 OpenESP32: prebuild_ESPIDF
-	IDF_TARGET="esp32" APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT) cmake platforms/ESP-IDF -B platforms/ESP-IDF/build-32 
-	IDF_TARGET="esp32" APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT) cmake --build ./platforms/ESP-IDF/build-32 -j $(shell nproc)
+	IDF_TARGET="esp32" APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT) cmake platforms/ESP-IDF -B $(ESP32_BUILD_DIR)
+	IDF_TARGET="esp32" APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT) cmake --build ./$(ESP32_BUILD_DIR) -j $(shell nproc)
 	mkdir -p output/$(APP_VERSION)
-	python3 -m esptool -c esp32 merge_bin -o output/$(APP_VERSION)/OpenESP32_$(APP_VERSION).factory.bin --flash_mode dio --flash_size $(ESP_FSIZE) 0x1000 ./platforms/ESP-IDF/build-32/bootloader/bootloader.bin 0x8000 ./platforms/ESP-IDF/build-32/partition_table/partition-table.bin 0x10000 ./platforms/ESP-IDF/build-32/OpenBeken.bin
-	cp ./platforms/ESP-IDF/build-32/OpenBeken.bin output/$(APP_VERSION)/OpenESP32_$(APP_VERSION).img
+	python3 -m esptool -c esp32 merge_bin -o output/$(APP_VERSION)/OpenESP32_$(APP_VERSION).factory.bin --flash_mode dio --flash_size $(ESP_FSIZE) 0x1000 ./$(ESP32_BUILD_DIR)/bootloader/bootloader.bin 0x8000 ./$(ESP32_BUILD_DIR)/partition_table/partition-table.bin 0x10000 ./$(ESP32_BUILD_DIR)/OpenBeken.bin
+	cp ./$(ESP32_BUILD_DIR)/OpenBeken.bin output/$(APP_VERSION)/OpenESP32_$(APP_VERSION).img
 
 .PHONY: OpenESP32C3
 OpenESP32C3: prebuild_ESPIDF
