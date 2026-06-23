@@ -693,8 +693,8 @@ int http_fn_index(http_request_t* request) {
 			}
 			pwmValue = CHANNEL_Get(i);
 			poststr(request, "<tr><td>");
-			hprintf255(request, "Channel %s:<br><form action=\"index\" id=\"form%i\">", CHANNEL_GetLabel(i), i);
-			hprintf255(request, "<input type=\"range\" min=\"0\" max=\"%i\" name=\"%s\" id=\"slider%i\" value=\"%i\" onchange=\"this.form.submit()\">", maxValue, inputName, i, pwmValue);
+			hprintf255(request, "Channel %s: <span id=\"sliderValue%i\">%i</span><br><form action=\"index\" id=\"form%i\">", CHANNEL_GetLabel(i), i, pwmValue, i);
+			hprintf255(request, "<input type=\"range\" min=\"0\" max=\"%i\" name=\"%s\" id=\"slider%i\" value=\"%i\" data-value-id=\"sliderValue%i\" oninput=\"updateSliderValue(this)\" onchange=\"submitSlider(this)\">", maxValue, inputName, i, pwmValue, i);
 			hprintf255(request, "<input type=\"hidden\" name=\"%sIndex\" value=\"%i\">", inputName, i);
 			hprintf255(request, "<input type=\"submit\" class='disp-none' value=\"Toggle %s\"/></form>", CHANNEL_GetLabel(i));
 			poststr(request, "</td></tr>");
@@ -805,9 +805,9 @@ int http_fn_index(http_request_t* request) {
 			pwmValue = LED_GetDimmer();
 
 			poststr(request, "<tr><td>");
-			hprintf255(request, "<h5>LED Dimmer/Brightness</h5>");
+			hprintf255(request, "<h5>LED Dimmer/Brightness: <span id=\"sliderValue%i\">%i</span></h5>", SPECIAL_CHANNEL_BRIGHTNESS, pwmValue);
 			hprintf255(request, "<form action=\"index\" id=\"form%i\">", SPECIAL_CHANNEL_BRIGHTNESS);
-			hprintf255(request, "<input type=\"range\" min=\"0\" max=\"100\" name=\"%s\" id=\"slider%i\" value=\"%i\" onchange=\"this.form.submit()\">", inputName, SPECIAL_CHANNEL_BRIGHTNESS, pwmValue);
+			hprintf255(request, "<input type=\"range\" min=\"0\" max=\"100\" name=\"%s\" id=\"slider%i\" value=\"%i\" data-value-id=\"sliderValue%i\" oninput=\"updateSliderValue(this)\" onchange=\"submitSlider(this)\">", inputName, SPECIAL_CHANNEL_BRIGHTNESS, pwmValue, SPECIAL_CHANNEL_BRIGHTNESS);
 			hprintf255(request, "<input type=\"hidden\" name=\"%sIndex\" value=\"%i\">", inputName, SPECIAL_CHANNEL_BRIGHTNESS);
 			hprintf255(request, "<input  type=\"submit\" class='disp-none' value=\"Toggle %i\"/></form>", SPECIAL_CHANNEL_BRIGHTNESS);
 			poststr(request, "</td></tr>");
@@ -855,12 +855,12 @@ int http_fn_index(http_request_t* request) {
 			long pwmKelvinMin = HASS_TO_KELVIN(led_temperature_max);
 
 			poststr(request, "<tr><td>");
-			hprintf255(request, "<h5>LED Temperature Slider %s (%ld K) (Warm <--- ---> Cool)</h5>", activeStr, pwmKelvin);
+			hprintf255(request, "<h5>LED Temperature Slider %s (<span id=\"sliderValue%i\">%ld</span> K) (Warm <--- ---> Cool)</h5>", activeStr, SPECIAL_CHANNEL_TEMPERATURE, pwmKelvin);
 			hprintf255(request, "<form class='r' action=\"index\" id=\"form%i\">", SPECIAL_CHANNEL_TEMPERATURE);
 
 			//(KELVIN_TEMPERATURE_MAX - KELVIN_TEMPERATURE_MIN) / (HASS_TEMPERATURE_MAX - HASS_TEMPERATURE_MIN) = 13
 			hprintf255(request, "<input type=\"range\" step='13' min=\"%ld\" max=\"%ld\" ", pwmKelvinMin, pwmKelvinMax);
-			hprintf255(request, "value=\"%ld\" onchange=\"submitTemperature(this);\"/>", pwmKelvin);
+			hprintf255(request, "value=\"%ld\" data-value-id=\"sliderValue%i\" oninput=\"updateSliderValue(this)\" onchange=\"submitTemperature(this);\"/>", pwmKelvin, SPECIAL_CHANNEL_TEMPERATURE);
 
 			hprintf255(request, "<input type=\"hidden\" name=\"%sIndex\" value=\"%i\"/>", inputName, SPECIAL_CHANNEL_TEMPERATURE);
 			hprintf255(request, "<input id=\"kelvin%i\" type=\"hidden\" name=\"%s\" />", SPECIAL_CHANNEL_TEMPERATURE, inputName);
