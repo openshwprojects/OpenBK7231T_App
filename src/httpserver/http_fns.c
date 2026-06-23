@@ -2281,6 +2281,12 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 		if (BIT_CHECK(flagsChannelPublished, i)) {
 			continue;
 		}
+#if ENABLE_DRIVER_XIAOMI_COMPACT4
+		if (XiaomiCompact4_ShouldSkipGenericHassDiscovery(i)) {
+			BIT_SET(flagsChannelPublished, i);
+			continue;
+		}
+#endif
 		dev_info = 0;
 		switch (type)
 		{

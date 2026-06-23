@@ -188,7 +188,11 @@ static driver_t g_drivers[] = {
 	XiaomiCompact4_RunQuickTick,             // runQuickTick
 	XiaomiCompact4_Stop,                     // stopFunction
 	XiaomiCompact4_OnChannelChanged,         // onChannelChanged
+#if ENABLE_HA_DISCOVERY
+	XiaomiCompact4_OnHassDiscovery,          // onHassDiscovery
+#else
 	NULL,                                    // onHassDiscovery
+#endif
 	false,                                   // loaded
 	},
 #endif

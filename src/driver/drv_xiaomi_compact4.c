@@ -12,6 +12,9 @@
 #include "../hal/hal_pins.h"
 #include "../hal/hal_wifi.h"
 #include "../httpserver/new_http.h"
+#if ENABLE_HA_DISCOVERY
+#include "../httpserver/hass.h"
+#endif
 #include "drv_local.h"
 
 #include "driver/i2c.h"
@@ -92,7 +95,10 @@
 
 #define XIAOMI_C4_PM25_FRAME_LEN 20
 #define XIAOMI_C4_PM25_MAX_VALID 2000
-#define XIAOMI_C4_PM25_POLL_SECONDS 1
+#define XIAOMI_C4_PM25_POLL_SECONDS 5
+#define XIAOMI_C4_FILTER_LIFESPAN_MIN_DAYS 0
+#define XIAOMI_C4_FILTER_LIFESPAN_MAX_DAYS 365
+#define XIAOMI_C4_FILTER_LIFESPAN_DEFAULT_DAYS 365
 #define XIAOMI_C4_LONG_PRESS_MS 7000
 
 static int g_power;
@@ -300,8 +306,18 @@ static int XiaomiCompact4_IsWiFiConnected(void) {
 }
 
 static int XiaomiCompact4_ReplaceFilter(void) {
+	if (g_filterLifespanDays <= 0) {
+		return 1;
+	}
 	uint32_t limit = (uint32_t)g_filterLifespanDays * 24U * 3600U;
 	return g_filterUsageSeconds > limit;
+}
+
+static int XiaomiCompact4_FilterHealth(void) {
+	if (g_filterLifespanDays <= 0) {
+		return 0;
+	}
+	return XiaomiCompact4_ClampInt(100 - (int)((100U * g_filterUsageSeconds) / ((uint32_t)g_filterLifespanDays * 24U * 3600U)), 0, 100);
 }
 
 static void XiaomiCompact4_SetChannels(void) {
@@ -315,7 +331,7 @@ static void XiaomiCompact4_SetChannels(void) {
 	}
 	CHANNEL_Set(XIAOMI_C4_CH_MOTOR_RPM, g_lastMotorRpm, CHANNEL_SET_FLAG_SILENT);
 	CHANNEL_Set(XIAOMI_C4_CH_FILTER_USAGE, (int)g_filterUsageSeconds, CHANNEL_SET_FLAG_SILENT);
-	CHANNEL_Set(XIAOMI_C4_CH_FILTER_HEALTH, XiaomiCompact4_ClampInt(100 - (int)((100U * g_filterUsageSeconds) / ((uint32_t)g_filterLifespanDays * 24U * 3600U)), 0, 100), CHANNEL_SET_FLAG_SILENT);
+	CHANNEL_Set(XIAOMI_C4_CH_FILTER_HEALTH, XiaomiCompact4_FilterHealth(), CHANNEL_SET_FLAG_SILENT);
 	CHANNEL_Set(XIAOMI_C4_CH_REPLACE_FILTER, XiaomiCompact4_ReplaceFilter(), CHANNEL_SET_FLAG_SILENT);
 	CHANNEL_Set(XIAOMI_C4_CH_FAV_SPEED, g_favSpeed, CHANNEL_SET_FLAG_SILENT);
 	CHANNEL_Set(XIAOMI_C4_CH_NIGHT_SPEED, g_nightSpeed, CHANNEL_SET_FLAG_SILENT);
@@ -612,7 +628,7 @@ void XiaomiCompact4_OnChannelChanged(int ch, int value) {
 		XiaomiCompact4_ApplyState(1);
 		break;
 	case XIAOMI_C4_CH_FILTER_LIFESPAN:
-		g_filterLifespanDays = XiaomiCompact4_ClampInt(value, 30, 1000);
+		g_filterLifespanDays = XiaomiCompact4_ClampInt(value, XIAOMI_C4_FILTER_LIFESPAN_MIN_DAYS, XIAOMI_C4_FILTER_LIFESPAN_MAX_DAYS);
 		XiaomiCompact4_ApplyState(1);
 		break;
 	}
@@ -679,7 +695,7 @@ static commandResult_t CMD_XiaomiCompact4_SetPFactor(const void *context, const 
 static commandResult_t CMD_XiaomiCompact4_SetFilterLifespan(const void *context, const char *cmd, const char *args, int cmdFlags) {
 	Tokenizer_TokenizeString(args, 0);
 	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) return CMD_RES_NOT_ENOUGH_ARGUMENTS;
-	g_filterLifespanDays = XiaomiCompact4_ClampInt(Tokenizer_GetArgInteger(0), 30, 1000);
+	g_filterLifespanDays = XiaomiCompact4_ClampInt(Tokenizer_GetArgInteger(0), XIAOMI_C4_FILTER_LIFESPAN_MIN_DAYS, XIAOMI_C4_FILTER_LIFESPAN_MAX_DAYS);
 	XiaomiCompact4_ApplyState(1);
 	return CMD_RES_OK;
 }
@@ -697,14 +713,14 @@ static void XiaomiCompact4_SetupChannels(void) {
 	CHANNEL_SetLabel(XIAOMI_C4_CH_MODE, "Mode", 1);
 	CHANNEL_SetLabel(XIAOMI_C4_CH_BRIGHTNESS, "Brightness", 1);
 	CHANNEL_SetLabel(XIAOMI_C4_CH_CHILD_LOCK, "Child Lock", 1);
-	CHANNEL_SetLabel(XIAOMI_C4_CH_PM25, "PM 2.5", 1);
+	CHANNEL_SetLabel(XIAOMI_C4_CH_PM25, "PM2.5", 1);
 	CHANNEL_SetLabel(XIAOMI_C4_CH_MOTOR_RPM, "Motor Speed", 1);
 	CHANNEL_SetLabel(XIAOMI_C4_CH_FILTER_USAGE, "Filter Usage", 1);
 	CHANNEL_SetLabel(XIAOMI_C4_CH_FILTER_HEALTH, "Filter Health", 1);
 	CHANNEL_SetLabel(XIAOMI_C4_CH_REPLACE_FILTER, "Replace Filter", 1);
-	CHANNEL_SetLabel(XIAOMI_C4_CH_FAV_SPEED, "Motor Speed Favorite Mode", 1);
-	CHANNEL_SetLabel(XIAOMI_C4_CH_NIGHT_SPEED, "Motor Speed at Night Mode", 1);
-	CHANNEL_SetLabel(XIAOMI_C4_CH_P_FACTOR, "Motor Speed P Factor x100", 1);
+	CHANNEL_SetLabel(XIAOMI_C4_CH_FAV_SPEED, "Favorite Motor Speed", 1);
+	CHANNEL_SetLabel(XIAOMI_C4_CH_NIGHT_SPEED, "Night Motor Speed", 1);
+	CHANNEL_SetLabel(XIAOMI_C4_CH_P_FACTOR, "Auto Motor Speed x100", 1);
 	CHANNEL_SetLabel(XIAOMI_C4_CH_FILTER_LIFESPAN, "Filter Lifespan", 1);
 	CHANNEL_SetType(XIAOMI_C4_CH_POWER, ChType_Toggle);
 	CHANNEL_SetType(XIAOMI_C4_CH_MODE, ChType_Enum);
@@ -717,11 +733,125 @@ static void XiaomiCompact4_SetupChannels(void) {
 	CHANNEL_SetType(XIAOMI_C4_CH_REPLACE_FILTER, ChType_ReadOnly);
 	CHANNEL_SetType(XIAOMI_C4_CH_FAV_SPEED, ChType_Percent);
 	CHANNEL_SetType(XIAOMI_C4_CH_NIGHT_SPEED, ChType_Percent);
-	CHANNEL_SetType(XIAOMI_C4_CH_P_FACTOR, ChType_Default);
-	CHANNEL_SetType(XIAOMI_C4_CH_FILTER_LIFESPAN, ChType_Default);
+	CHANNEL_SetType(XIAOMI_C4_CH_P_FACTOR, ChType_ReadOnly);
+	CHANNEL_SetType(XIAOMI_C4_CH_FILTER_LIFESPAN, ChType_ReadOnly);
 	CMD_ExecuteCommand("SetChannelEnum 1 0:FAV 1:NIGHT 2:AUTO", 0);
 	CMD_ExecuteCommand("SetChannelEnum 2 0:FULL 1:MID 2:ZERO", 0);
 }
+
+#if ENABLE_HA_DISCOVERY
+static void XiaomiCompact4_HassSetName(HassDeviceInfo *dev_info, const char *name) {
+	cJSON_ReplaceItemInObject(dev_info->root, "name", cJSON_CreateString(name));
+}
+
+static void XiaomiCompact4_HassSetCommandTopic(HassDeviceInfo *dev_info, const char *command) {
+	char topic[96];
+	snprintf(topic, sizeof(topic), "cmnd/%s/%s", CFG_GetMQTTClientId(), command);
+	cJSON_ReplaceItemInObject(dev_info->root, "cmd_t", cJSON_CreateString(topic));
+}
+
+static void XiaomiCompact4_HassPublish(const char *topic, HassDeviceInfo *dev_info) {
+	if (dev_info == NULL) {
+		return;
+	}
+	MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
+	hass_free_device_info(dev_info);
+}
+
+static void XiaomiCompact4_HassClearOldSensor(const char *topic, int ch) {
+	HassDeviceInfo *dev_info = hass_init_sensor_device_info(CUSTOM_SENSOR, ch, -1, -1, 1);
+	if (dev_info == NULL) {
+		return;
+	}
+	MQTT_QueuePublish(topic, dev_info->channel, "", OBK_PUBLISH_FLAG_RETAIN);
+	hass_free_device_info(dev_info);
+}
+
+static void XiaomiCompact4_HassPublishSensor(const char *topic, int ch, const char *name, const char *unit, const char *deviceClass, const char *icon) {
+	HassDeviceInfo *dev_info = hass_init_sensor_device_info(CUSTOM_SENSOR, ch, -1, -1, 1);
+	if (dev_info == NULL) {
+		return;
+	}
+	XiaomiCompact4_HassSetName(dev_info, name);
+	cJSON_DeleteItemFromObject(dev_info->root, "pl_on");
+	cJSON_DeleteItemFromObject(dev_info->root, "pl_off");
+	if (unit) {
+		cJSON_AddStringToObject(dev_info->root, "unit_of_meas", unit);
+	}
+	if (deviceClass) {
+		cJSON_AddStringToObject(dev_info->root, "dev_cla", deviceClass);
+	}
+	if (icon) {
+		cJSON_AddStringToObject(dev_info->root, "icon", icon);
+	}
+	XiaomiCompact4_HassPublish(topic, dev_info);
+}
+
+static void XiaomiCompact4_HassPublishNumber(const char *topic, int ch, const char *name, const char *command, float min, float max, float step, const char *unit, const char *deviceClass, const char *valueTemplate) {
+	HassDeviceInfo *dev_info = hass_init_sensor_device_info(HASS_PERCENT, ch, -1, -1, 1);
+	if (dev_info == NULL) {
+		return;
+	}
+	XiaomiCompact4_HassSetName(dev_info, name);
+	XiaomiCompact4_HassSetCommandTopic(dev_info, command);
+	cJSON_DeleteItemFromObject(dev_info->root, "pl_on");
+	cJSON_DeleteItemFromObject(dev_info->root, "pl_off");
+	cJSON_ReplaceItemInObject(dev_info->root, "min", cJSON_CreateNumber(min));
+	cJSON_ReplaceItemInObject(dev_info->root, "max", cJSON_CreateNumber(max));
+	cJSON_ReplaceItemInObject(dev_info->root, "step", cJSON_CreateNumber(step));
+	cJSON_DeleteItemFromObject(dev_info->root, "stat_cla");
+	if (unit) {
+		cJSON_ReplaceItemInObject(dev_info->root, "unit_of_meas", cJSON_CreateString(unit));
+	} else {
+		cJSON_DeleteItemFromObject(dev_info->root, "unit_of_meas");
+	}
+	if (valueTemplate) {
+		cJSON_AddStringToObject(dev_info->root, "val_tpl", valueTemplate);
+	}
+	if (deviceClass) {
+		cJSON_AddStringToObject(dev_info->root, "dev_cla", deviceClass);
+	}
+	cJSON_DeleteItemFromObject(dev_info->root, "entity_category");
+	cJSON_AddStringToObject(dev_info->root, "entity_category", "config");
+	XiaomiCompact4_HassPublish(topic, dev_info);
+}
+
+void XiaomiCompact4_OnHassDiscovery(const char *topic) {
+	HassDeviceInfo *dev_info;
+
+	XiaomiCompact4_HassPublishSensor(topic, XIAOMI_C4_CH_PM25, "PM2.5", "ug/m3", NULL, "mdi:air-filter");
+	XiaomiCompact4_HassPublishSensor(topic, XIAOMI_C4_CH_MOTOR_RPM, "Motor Speed", "rpm", NULL, "mdi:fan");
+	XiaomiCompact4_HassPublishSensor(topic, XIAOMI_C4_CH_FILTER_USAGE, "Filter Usage", "s", "duration", "mdi:air-filter");
+	XiaomiCompact4_HassPublishSensor(topic, XIAOMI_C4_CH_FILTER_HEALTH, "Filter Health", "%", NULL, "mdi:air-filter");
+
+	XiaomiCompact4_HassClearOldSensor(topic, XIAOMI_C4_CH_REPLACE_FILTER);
+	dev_info = hass_init_binary_sensor_device_info(XIAOMI_C4_CH_REPLACE_FILTER, true);
+	if (dev_info) {
+		XiaomiCompact4_HassSetName(dev_info, "Replace Filter");
+		cJSON_AddStringToObject(dev_info->root, "dev_cla", "problem");
+		cJSON_AddStringToObject(dev_info->root, "icon", "mdi:air-filter");
+		XiaomiCompact4_HassPublish(topic, dev_info);
+	}
+
+	XiaomiCompact4_HassPublishNumber(topic, XIAOMI_C4_CH_FAV_SPEED, "Favorite Motor Speed", "XiaomiCompact4_SetFavSpeed", 0, 100, 1, NULL, NULL, NULL);
+	XiaomiCompact4_HassPublishNumber(topic, XIAOMI_C4_CH_NIGHT_SPEED, "Night Motor Speed", "XiaomiCompact4_SetNightSpeed", 0, 100, 1, NULL, NULL, NULL);
+	XiaomiCompact4_HassPublishNumber(topic, XIAOMI_C4_CH_P_FACTOR, "Auto Motor Speed", "XiaomiCompact4_SetPFactor", 0.01f, 10.0f, 0.01f, NULL, NULL, "{{ ((value | float(0)) / 100) | round(2) }}");
+	XiaomiCompact4_HassPublishNumber(topic, XIAOMI_C4_CH_FILTER_LIFESPAN, "Filter Lifespan", "XiaomiCompact4_SetFilterLifespan", XIAOMI_C4_FILTER_LIFESPAN_MIN_DAYS, XIAOMI_C4_FILTER_LIFESPAN_MAX_DAYS, 1, "d", "duration", NULL);
+
+	dev_info = hass_init_button_device_info("reset", "XiaomiCompact4_ResetFilter", "1", HASS_CATEGORY_CONFIG);
+	if (dev_info) {
+		XiaomiCompact4_HassSetName(dev_info, "Reset Filter");
+		XiaomiCompact4_HassPublish(topic, dev_info);
+	}
+}
+
+bool XiaomiCompact4_ShouldSkipGenericHassDiscovery(int ch) {
+	if (!g_initialized) {
+		return false;
+	}
+	return ch >= XIAOMI_C4_CH_PM25 && ch <= XIAOMI_C4_CH_FILTER_LIFESPAN;
+}
+#endif
 
 void XiaomiCompact4_Init(void) {
 	//cmddetail:{"name":"XiaomiCompact4_SetPower","args":"[0/1]","descr":"Set Xiaomi Compact 4 power","fn":"CMD_XiaomiCompact4_SetPower","file":"driver/drv_xiaomi_compact4.c","requires":"XiaomiCompact4","examples":"XiaomiCompact4_SetPower 1"}
@@ -742,7 +872,7 @@ void XiaomiCompact4_Init(void) {
 	g_favSpeed = XiaomiCompact4_LoadInt(XIAOMI_C4_VAR_FAV_SPEED, 30, 0, 100);
 	g_nightSpeed = XiaomiCompact4_LoadInt(XIAOMI_C4_VAR_NIGHT_SPEED, 10, 0, 100);
 	g_pFactorX100 = XiaomiCompact4_LoadInt(XIAOMI_C4_VAR_P_FACTOR_X100, 100, 1, 1000);
-	g_filterLifespanDays = XiaomiCompact4_LoadInt(XIAOMI_C4_VAR_FILTER_LIFESPAN, 365, 30, 1000);
+	g_filterLifespanDays = XiaomiCompact4_LoadInt(XIAOMI_C4_VAR_FILTER_LIFESPAN, XIAOMI_C4_FILTER_LIFESPAN_DEFAULT_DAYS, XIAOMI_C4_FILTER_LIFESPAN_MIN_DAYS, XIAOMI_C4_FILTER_LIFESPAN_MAX_DAYS);
 	g_filterUsageSeconds = (uint32_t)XiaomiCompact4_LoadInt(XIAOMI_C4_VAR_FILTER_USAGE, 0, 0, 0x7FFFFFFF);
 	g_pm25PollCountdown = 1;
 	g_filterCountdown = 60;
