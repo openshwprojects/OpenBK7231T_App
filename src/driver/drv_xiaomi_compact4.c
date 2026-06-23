@@ -446,7 +446,7 @@ static void XiaomiCompact4_SetChannels(void) {
 		CHANNEL_Set(XIAOMI_C4_CH_PM25, g_lastPm25, CHANNEL_SET_FLAG_SILENT);
 	}
 	CHANNEL_Set(XIAOMI_C4_CH_MOTOR_RPM, g_lastMotorRpm, CHANNEL_SET_FLAG_SILENT);
-	CHANNEL_Set(XIAOMI_C4_CH_FILTER_USAGE, XiaomiCompact4_FilterUsageDays(), CHANNEL_SET_FLAG_SILENT);
+	CHANNEL_Set(XIAOMI_C4_CH_FILTER_USAGE, (int)g_filterUsageSeconds, CHANNEL_SET_FLAG_SILENT);
 	CHANNEL_Set(XIAOMI_C4_CH_FILTER_HEALTH, XiaomiCompact4_FilterHealth(), CHANNEL_SET_FLAG_SILENT);
 	CHANNEL_Set(XIAOMI_C4_CH_REPLACE_FILTER, XiaomiCompact4_ReplaceFilter(), CHANNEL_SET_FLAG_SILENT);
 	CHANNEL_Set(XIAOMI_C4_CH_FAV_SPEED, g_favSpeed, CHANNEL_SET_FLAG_SILENT);
@@ -1052,7 +1052,7 @@ void XiaomiCompact4_OnHassDiscovery(const char *topic) {
 
 	XiaomiCompact4_HassPublishSensor(topic, XIAOMI_C4_CH_PM25, "PM2.5", "ug/m3", NULL, "mdi:air-filter");
 	XiaomiCompact4_HassPublishSensor(topic, XIAOMI_C4_CH_MOTOR_RPM, "Motor Speed", "rpm", NULL, "mdi:fan");
-	XiaomiCompact4_HassPublishSensor(topic, XIAOMI_C4_CH_FILTER_USAGE, "Filter Usage", "d", "duration", "mdi:air-filter");
+	XiaomiCompact4_HassPublishSensor(topic, XIAOMI_C4_CH_FILTER_USAGE, "Filter Usage", "s", "duration", "mdi:air-filter");
 	XiaomiCompact4_HassPublishSensor(topic, XIAOMI_C4_CH_FILTER_HEALTH, "Filter Health", "%", NULL, "mdi:air-filter");
 
 	XiaomiCompact4_HassClearOldSensor(topic, XIAOMI_C4_CH_REPLACE_FILTER);
