@@ -1258,7 +1258,7 @@ static int MQTT_do_connect(mqtt_client_t* client)
 	// set pointer, there are no buffers to strcpy
 	// empty field for us means "no password", etc,
 	// but LWIP (without mods) expects a NULL pointer in that case...
-	mqtt_client_info.client_id = mqtt_clientID;
+	mqtt_client_info.client_id = CFG_GetShortDeviceName();
 	if(mqtt_pass[0] != 0) {
 		mqtt_client_info.client_pass = mqtt_pass;
 	} else {
