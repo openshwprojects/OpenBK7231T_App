@@ -257,9 +257,9 @@ void XiaomiCompact4_RunQuickTick(void);
 void XiaomiCompact4_Stop(void);
 void XiaomiCompact4_OnChannelChanged(int ch, int value);
 void XiaomiCompact4_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState);
+bool XiaomiCompact4_ShouldSkipGenericHassDiscovery(int ch);
 #if ENABLE_HA_DISCOVERY
 void XiaomiCompact4_OnHassDiscovery(const char *topic);
-bool XiaomiCompact4_ShouldSkipGenericHassDiscovery(int ch);
 #endif
 
 void UART_TCP_Init(void);

@@ -845,13 +845,14 @@ void XiaomiCompact4_OnHassDiscovery(const char *topic) {
 	}
 }
 
+#endif
+
 bool XiaomiCompact4_ShouldSkipGenericHassDiscovery(int ch) {
 	if (!g_initialized) {
 		return false;
 	}
 	return ch >= XIAOMI_C4_CH_PM25 && ch <= XIAOMI_C4_CH_FILTER_LIFESPAN;
 }
-#endif
 
 void XiaomiCompact4_Init(void) {
 	//cmddetail:{"name":"XiaomiCompact4_SetPower","args":"[0/1]","descr":"Set Xiaomi Compact 4 power","fn":"CMD_XiaomiCompact4_SetPower","file":"driver/drv_xiaomi_compact4.c","requires":"XiaomiCompact4","examples":"XiaomiCompact4_SetPower 1"}
