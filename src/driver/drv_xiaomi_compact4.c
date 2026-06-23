@@ -16,7 +16,7 @@
 #endif
 #include "drv_local.h"
 
-#include "driver/i2c.h"
+#include "driver/i2c_master.h"
 #include "driver/ledc.h"
 #include "driver/uart.h"
 
@@ -128,6 +128,12 @@ static int g_ignoreChannelChange;
 static int g_initialized;
 static uint8_t g_pm25RxBuf[XIAOMI_C4_UART_BUF_SIZE];
 static int g_pm25RxLen;
+static i2c_master_bus_handle_t g_i2cBus;
+static i2c_master_dev_handle_t g_i2cBrightness;
+static i2c_master_dev_handle_t g_i2cStatusLeds;
+static i2c_master_dev_handle_t g_i2cButtonPower;
+static i2c_master_dev_handle_t g_i2cButtonBrightness;
+static i2c_master_dev_handle_t g_i2cButtonMode;
 
 static int XiaomiCompact4_ClampInt(int value, int min, int max) {
 	if (value < min) return min;
@@ -188,23 +194,62 @@ static int XiaomiCompact4_ParseBrightness(const char *s) {
 }
 
 static void XiaomiCompact4_I2CInit(void) {
-	i2c_config_t conf = {
-		.mode = I2C_MODE_MASTER,
+	i2c_master_bus_config_t busConfig = {
+		.clk_source = I2C_CLK_SRC_DEFAULT,
+		.i2c_port = XIAOMI_C4_I2C_PORT,
 		.sda_io_num = XIAOMI_C4_PIN_I2C_SDA,
 		.scl_io_num = XIAOMI_C4_PIN_I2C_SCL,
-		.sda_pullup_en = GPIO_PULLUP_ENABLE,
-		.scl_pullup_en = GPIO_PULLUP_ENABLE,
-		.master.clk_speed = XIAOMI_C4_I2C_FREQ_HZ,
+		.flags.enable_internal_pullup = true,
 	};
-	i2c_param_config(XIAOMI_C4_I2C_PORT, &conf);
-	if (i2c_driver_install(XIAOMI_C4_I2C_PORT, I2C_MODE_MASTER, 0, 0, 0) != ESP_OK) {
+	if (i2c_new_master_bus(&busConfig, &g_i2cBus) != ESP_OK) {
 		ADDLOG_WARN(LOG_FEATURE_DRV, "XiaomiCompact4 I2C driver install failed");
+		return;
 	}
+
+	i2c_device_config_t devConfig = {
+		.dev_addr_length = I2C_ADDR_BIT_LEN_7,
+		.scl_speed_hz = XIAOMI_C4_I2C_FREQ_HZ,
+	};
+
+	devConfig.device_address = XIAOMI_C4_I2C_BRIGHTNESS;
+	i2c_master_bus_add_device(g_i2cBus, &devConfig, &g_i2cBrightness);
+	devConfig.device_address = XIAOMI_C4_I2C_STATUS_LEDS;
+	i2c_master_bus_add_device(g_i2cBus, &devConfig, &g_i2cStatusLeds);
+	devConfig.device_address = XIAOMI_C4_I2C_BUTTON_POWER;
+	i2c_master_bus_add_device(g_i2cBus, &devConfig, &g_i2cButtonPower);
+	devConfig.device_address = XIAOMI_C4_I2C_BUTTON_BRIGHTNESS;
+	i2c_master_bus_add_device(g_i2cBus, &devConfig, &g_i2cButtonBrightness);
+	devConfig.device_address = XIAOMI_C4_I2C_BUTTON_MODE;
+	i2c_master_bus_add_device(g_i2cBus, &devConfig, &g_i2cButtonMode);
 }
 
 static void XiaomiCompact4_I2CWrite1(int addr7, int value) {
 	uint8_t data = (uint8_t)value;
-	esp_err_t err = i2c_master_write_to_device(XIAOMI_C4_I2C_PORT, addr7, &data, 1, 100 / portTICK_PERIOD_MS);
+	i2c_master_dev_handle_t dev;
+	switch (addr7) {
+	case XIAOMI_C4_I2C_BRIGHTNESS:
+		dev = g_i2cBrightness;
+		break;
+	case XIAOMI_C4_I2C_STATUS_LEDS:
+		dev = g_i2cStatusLeds;
+		break;
+	case XIAOMI_C4_I2C_BUTTON_POWER:
+		dev = g_i2cButtonPower;
+		break;
+	case XIAOMI_C4_I2C_BUTTON_BRIGHTNESS:
+		dev = g_i2cButtonBrightness;
+		break;
+	case XIAOMI_C4_I2C_BUTTON_MODE:
+		dev = g_i2cButtonMode;
+		break;
+	default:
+		dev = NULL;
+		break;
+	}
+	if (dev == NULL) {
+		return;
+	}
+	esp_err_t err = i2c_master_transmit(dev, &data, 1, 100);
 	if (err != ESP_OK) {
 		ADDLOG_DEBUG(LOG_FEATURE_DRV, "XiaomiCompact4 I2C write failed addr 0x%02X err %i", addr7, err);
 	}
