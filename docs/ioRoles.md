@@ -101,4 +101,7 @@ Do not add anything here, as it will overwritten with next rebuild.
 | ShutterB | Shutter relay B. |
 | Button_ShutterUp | Pressing this button will start shutter up move. Double click will stop move. |
 | Button_ShutterDown | Pressing this button will start shutter down move. Double click will stop move. |
+| BL0939_SCLK | Software SPI clock pin for BL0939 SPI energy measuring devices. |
+| BL0939_MOSI | Software SPI MOSI/SDI pin for BL0939 SPI energy measuring devices. |
+| BL0939_MISO | Software SPI MISO/SDO pin for BL0939 SPI energy measuring devices. |
 | Total_Options | Current total number of available IOR roles |

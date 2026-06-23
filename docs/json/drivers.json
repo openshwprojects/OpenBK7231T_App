@@ -258,6 +258,13 @@
     "define": "Enabled by defining \"<b>ENABLE_DRIVER_HLW8112SPI</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
   },
   {
+    "name": "BL0939SPI",
+    "title": "BL0939 SPI dual-channel bidirectional power meter",
+    "descr": "BL0939 SPI driver for dual CT clamp bidirectional power meters. Requires BL0939_SCLK, BL0939_MOSI and BL0939_MISO pin roles.",
+    "requires": "",
+    "define": "Enabled by defining \"<b>ENABLE_DRIVER_BL0939SPI</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
+  },
+  {
     "name": "ChargingLimit",
     "title": "TODO",
     "descr": "Mechanism to perform an action based on a max. delta value and max time. Used to control Electric Vehicle chargers. See [discussion](https://github.com/openshwprojects/OpenBK7231T_App/issues/892).",
