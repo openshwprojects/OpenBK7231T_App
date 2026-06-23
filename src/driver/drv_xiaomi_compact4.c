@@ -148,6 +148,8 @@ static i2c_master_dev_handle_t g_i2cButtonPower;
 static i2c_master_dev_handle_t g_i2cButtonBrightness;
 static i2c_master_dev_handle_t g_i2cButtonMode;
 
+static void XiaomiCompact4_ApplyState(int save);
+
 static int XiaomiCompact4_ClampInt(int value, int min, int max) {
 	if (value < min) return min;
 	if (value > max) return max;
@@ -426,6 +428,12 @@ static int XiaomiCompact4_FilterHealth(void) {
 
 static int XiaomiCompact4_FilterUsageDays(void) {
 	return (int)(g_filterUsageSeconds / (24U * 3600U));
+}
+
+static void XiaomiCompact4_ResetFilter(void) {
+	XiaomiCompact4_EnsureFilterLifespan();
+	g_filterUsageSeconds = 0;
+	XiaomiCompact4_ApplyState(1);
 }
 
 static void XiaomiCompact4_SetChannels(void) {
@@ -809,9 +817,7 @@ static commandResult_t CMD_XiaomiCompact4_SetChildLock(const void *context, cons
 }
 
 static commandResult_t CMD_XiaomiCompact4_ResetFilter(const void *context, const char *cmd, const char *args, int cmdFlags) {
-	XiaomiCompact4_EnsureFilterLifespan();
-	g_filterUsageSeconds = 0;
-	XiaomiCompact4_ApplyState(1);
+	XiaomiCompact4_ResetFilter();
 	return CMD_RES_OK;
 }
 
@@ -856,12 +862,21 @@ static commandResult_t CMD_XiaomiCompact4_PM25Stats(const void *context, const c
 }
 
 void XiaomiCompact4_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState) {
-	if (bPreState) return;
+	char tmpA[8];
+	if (bPreState) {
+		if (http_getArg(request->url, "x4resetfilter", tmpA, sizeof(tmpA))) {
+			XiaomiCompact4_ResetFilter();
+		}
+		return;
+	}
 	hprintf255(request, "<h3>Xiaomi Compact 4</h3>");
 	hprintf255(request, "PM2.5: %i ug/m3, Motor: %i rpm, Output/Target: %i%%/%i%%<br>",
 		g_lastPm25, g_lastMotorRpm, g_motorCurrentPercent, g_motorTargetPercent);
 	hprintf255(request, "Filter: %i%% health, %i/%i d used, Replace: %s<br>",
 		XiaomiCompact4_FilterHealth(), XiaomiCompact4_FilterUsageDays(), g_filterLifespanDays, XiaomiCompact4_ReplaceFilter() ? "yes" : "no");
+	poststr(request, "<table><tr><td><form action=\"index\">");
+	poststr(request, "<input type=\"hidden\" name=\"x4resetfilter\" value=\"1\">");
+	poststr(request, "<input type=\"submit\" value=\"Reset Filter\"/></form></td></tr></table>");
 }
 
 static void XiaomiCompact4_SetupChannels(void) {
