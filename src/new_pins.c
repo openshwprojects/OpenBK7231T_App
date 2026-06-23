@@ -378,6 +378,10 @@ void PIN_TriggerPoll() {
 
 void PIN_SetupPins() {
 	int i;
+#if PLATFORM_ESP8266
+	HAL_PIN_PWM_BeginSetup();
+#endif
+
 	for (i = 0; i < PLATFORM_GPIO_MAX; i++) {
 		PIN_SetPinRoleForPinIndex(i, g_cfg.pins.roles[i]);
 	}
@@ -412,6 +416,9 @@ void PIN_SetupPins() {
 #endif
 #if ENABLE_LED_BASIC
 	LED_SetStripStateOutputs();
+#endif
+#if PLATFORM_ESP8266
+	HAL_PIN_PWM_Finalize();
 #endif
 	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "PIN_SetupPins pins have been set up.");
 }
