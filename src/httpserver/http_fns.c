@@ -2098,6 +2098,12 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 				if (BIT_CHECK(flagsChannelPublished, i)) {
 					continue;
 				}
+#if ENABLE_DRIVER_XIAOMI_COMPACT4
+				if (XiaomiCompact4_ShouldSkipGenericHassDiscovery(i)) {
+					BIT_SET(flagsChannelPublished, i);
+					continue;
+				}
+#endif
 				if (type == ChType_Dimmer) {
 					brightness_scale = 100;
 					dimmer = i;
@@ -2121,6 +2127,12 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 				if (BIT_CHECK(flagsChannelPublished, i)) {
 					continue;
 				}
+#if ENABLE_DRIVER_XIAOMI_COMPACT4
+				if (XiaomiCompact4_ShouldSkipGenericHassDiscovery(i)) {
+					BIT_SET(flagsChannelPublished, i);
+					continue;
+				}
+#endif
 				if (type == ChType_Toggle) {
 					toggle = i;
 					break;

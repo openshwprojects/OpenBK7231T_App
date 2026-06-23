@@ -64,6 +64,7 @@
 #define XIAOMI_C4_CH_NIGHT_SPEED 10
 #define XIAOMI_C4_CH_P_FACTOR 11
 #define XIAOMI_C4_CH_FILTER_LIFESPAN 12
+#define XIAOMI_C4_CH_BUZZER 13
 
 #define XIAOMI_C4_FLASH_BASE 48
 #define XIAOMI_C4_VAR_POWER (XIAOMI_C4_FLASH_BASE + 0)
@@ -75,6 +76,7 @@
 #define XIAOMI_C4_VAR_P_FACTOR_X100 (XIAOMI_C4_FLASH_BASE + 6)
 #define XIAOMI_C4_VAR_FILTER_LIFESPAN (XIAOMI_C4_FLASH_BASE + 7)
 #define XIAOMI_C4_VAR_FILTER_USAGE (XIAOMI_C4_FLASH_BASE + 8)
+#define XIAOMI_C4_VAR_BUZZER (XIAOMI_C4_FLASH_BASE + 9)
 
 #define XIAOMI_C4_MODE_FAV 0
 #define XIAOMI_C4_MODE_NIGHT 1
@@ -94,7 +96,10 @@
 
 #define XIAOMI_C4_PM25_FRAME_LEN 20
 #define XIAOMI_C4_PM25_MAX_VALID 2000
+#define XIAOMI_C4_PM25_HIGH_LOG_THRESHOLD 300
 #define XIAOMI_C4_PM25_POLL_SECONDS 5
+#define XIAOMI_C4_MOTOR_RAMP_UP_PERCENT_PER_SEC 6
+#define XIAOMI_C4_MOTOR_RAMP_DOWN_PERCENT_PER_SEC 12
 #define XIAOMI_C4_FILTER_LIFESPAN_MIN_DAYS 0
 #define XIAOMI_C4_FILTER_LIFESPAN_MAX_DAYS 365
 #define XIAOMI_C4_FILTER_LIFESPAN_DEFAULT_DAYS 365
@@ -108,9 +113,12 @@ static int g_favSpeed;
 static int g_nightSpeed;
 static int g_pFactorX100;
 static int g_filterLifespanDays;
+static int g_buzzer;
 static uint32_t g_filterUsageSeconds;
 static int g_lastPm25 = -1;
 static int g_lastMotorRpm;
+static int g_motorTargetPercent;
+static int g_motorCurrentPercent;
 static int g_lastButtonPower;
 static int g_lastButtonLight;
 static int g_lastButtonMode;
@@ -128,6 +136,11 @@ static int g_ignoreChannelChange;
 static int g_initialized;
 static uint8_t g_pm25RxBuf[XIAOMI_C4_UART_BUF_SIZE];
 static int g_pm25RxLen;
+static uint8_t g_pm25LastFrame[XIAOMI_C4_PM25_FRAME_LEN];
+static int g_pm25LastRaw = -1;
+static int g_pm25AcceptedFrames;
+static int g_pm25RejectedChecksum;
+static int g_pm25RejectedRange;
 static i2c_master_bus_handle_t g_i2cBus;
 static i2c_master_dev_handle_t g_i2cBrightness;
 static i2c_master_dev_handle_t g_i2cStatusLeds;
@@ -305,6 +318,22 @@ static void XiaomiCompact4_UARTConsume(int count) {
 	g_pm25RxLen -= count;
 }
 
+static int XiaomiCompact4_PM25FrameChecksumValid(const uint8_t *frame) {
+	uint8_t sum = 0;
+	for (int i = 0; i < XIAOMI_C4_PM25_FRAME_LEN; i++) {
+		sum += frame[i];
+	}
+	return sum == 0;
+}
+
+static void XiaomiCompact4_PM25FrameToHex(const uint8_t *frame, char *out, int outLen) {
+	int pos = 0;
+	for (int i = 0; i < XIAOMI_C4_PM25_FRAME_LEN && pos < outLen - 1; i++) {
+		pos += snprintf(out + pos, outLen - pos, "%02X%s", frame[i], i == XIAOMI_C4_PM25_FRAME_LEN - 1 ? "" : " ");
+	}
+	out[outLen - 1] = '\0';
+}
+
 static void XiaomiCompact4_MotorPWMInit(void) {
 	ledc_timer_config_t timer = {
 		.speed_mode = LEDC_LOW_SPEED_MODE,
@@ -336,6 +365,30 @@ static void XiaomiCompact4_MotorPWMSet(int frequency) {
 	ledc_update_duty(LEDC_LOW_SPEED_MODE, XIAOMI_C4_MOTOR_LEDC_CHANNEL);
 }
 
+static int XiaomiCompact4_MotorPercentToFrequency(int percent) {
+	return (int)((float)percent * 4.12f + 100.0f);
+}
+
+static void XiaomiCompact4_ApplyMotorRamp(void) {
+	if (!g_power) {
+		g_motorCurrentPercent = 0;
+		XiaomiCompact4_MotorPWMSet(0);
+		return;
+	}
+	if (g_motorCurrentPercent < g_motorTargetPercent) {
+		g_motorCurrentPercent += XIAOMI_C4_MOTOR_RAMP_UP_PERCENT_PER_SEC;
+		if (g_motorCurrentPercent > g_motorTargetPercent) {
+			g_motorCurrentPercent = g_motorTargetPercent;
+		}
+	} else if (g_motorCurrentPercent > g_motorTargetPercent) {
+		g_motorCurrentPercent -= XIAOMI_C4_MOTOR_RAMP_DOWN_PERCENT_PER_SEC;
+		if (g_motorCurrentPercent < g_motorTargetPercent) {
+			g_motorCurrentPercent = g_motorTargetPercent;
+		}
+	}
+	XiaomiCompact4_MotorPWMSet(XiaomiCompact4_MotorPercentToFrequency(g_motorCurrentPercent));
+}
+
 static void XiaomiCompact4_SetLedPWM(int pin, float level) {
 	if (level <= 0.0f) {
 		HAL_PIN_PWM_Update(pin, 0);
@@ -364,6 +417,10 @@ static int XiaomiCompact4_FilterHealth(void) {
 	return XiaomiCompact4_ClampInt(100 - (int)((100U * g_filterUsageSeconds) / ((uint32_t)g_filterLifespanDays * 24U * 3600U)), 0, 100);
 }
 
+static int XiaomiCompact4_FilterUsageDays(void) {
+	return (int)(g_filterUsageSeconds / (24U * 3600U));
+}
+
 static void XiaomiCompact4_SetChannels(void) {
 	g_ignoreChannelChange = 1;
 	CHANNEL_Set(XIAOMI_C4_CH_POWER, g_power, CHANNEL_SET_FLAG_SILENT);
@@ -374,13 +431,14 @@ static void XiaomiCompact4_SetChannels(void) {
 		CHANNEL_Set(XIAOMI_C4_CH_PM25, g_lastPm25, CHANNEL_SET_FLAG_SILENT);
 	}
 	CHANNEL_Set(XIAOMI_C4_CH_MOTOR_RPM, g_lastMotorRpm, CHANNEL_SET_FLAG_SILENT);
-	CHANNEL_Set(XIAOMI_C4_CH_FILTER_USAGE, (int)g_filterUsageSeconds, CHANNEL_SET_FLAG_SILENT);
+	CHANNEL_Set(XIAOMI_C4_CH_FILTER_USAGE, XiaomiCompact4_FilterUsageDays(), CHANNEL_SET_FLAG_SILENT);
 	CHANNEL_Set(XIAOMI_C4_CH_FILTER_HEALTH, XiaomiCompact4_FilterHealth(), CHANNEL_SET_FLAG_SILENT);
 	CHANNEL_Set(XIAOMI_C4_CH_REPLACE_FILTER, XiaomiCompact4_ReplaceFilter(), CHANNEL_SET_FLAG_SILENT);
 	CHANNEL_Set(XIAOMI_C4_CH_FAV_SPEED, g_favSpeed, CHANNEL_SET_FLAG_SILENT);
 	CHANNEL_Set(XIAOMI_C4_CH_NIGHT_SPEED, g_nightSpeed, CHANNEL_SET_FLAG_SILENT);
 	CHANNEL_Set(XIAOMI_C4_CH_P_FACTOR, g_pFactorX100, CHANNEL_SET_FLAG_SILENT);
 	CHANNEL_Set(XIAOMI_C4_CH_FILTER_LIFESPAN, g_filterLifespanDays, CHANNEL_SET_FLAG_SILENT);
+	CHANNEL_Set(XIAOMI_C4_CH_BUZZER, g_buzzer, CHANNEL_SET_FLAG_SILENT);
 	g_ignoreChannelChange = 0;
 }
 
@@ -394,13 +452,14 @@ static void XiaomiCompact4_SaveState(void) {
 	XiaomiCompact4_SaveInt(XIAOMI_C4_VAR_P_FACTOR_X100, g_pFactorX100);
 	XiaomiCompact4_SaveInt(XIAOMI_C4_VAR_FILTER_LIFESPAN, g_filterLifespanDays);
 	XiaomiCompact4_SaveInt(XIAOMI_C4_VAR_FILTER_USAGE, (int)g_filterUsageSeconds);
+	XiaomiCompact4_SaveInt(XIAOMI_C4_VAR_BUZZER, g_buzzer);
 }
 
 static void XiaomiCompact4_StartChildLockNotification(void) {
 	g_childLockNotificationTicks = 1;
 	g_childLockNotificationFlips = 8;
 	g_childLockNotificationState = 0;
-	HAL_PIN_PWM_Update(XIAOMI_C4_PIN_BUZZER, 50);
+	HAL_PIN_PWM_Update(XIAOMI_C4_PIN_BUZZER, g_buzzer ? 50 : 0);
 }
 
 static void XiaomiCompact4_UpdateHID(void) {
@@ -461,6 +520,8 @@ static void XiaomiCompact4_UpdateHID(void) {
 
 static void XiaomiCompact4_UpdateMotor(void) {
 	if (!g_power) {
+		g_motorTargetPercent = 0;
+		g_motorCurrentPercent = 0;
 		XiaomiCompact4_MotorPWMSet(0);
 		return;
 	}
@@ -476,7 +537,7 @@ static void XiaomiCompact4_UpdateMotor(void) {
 	} else {
 		motorSetpoint = g_nightSpeed;
 	}
-	XiaomiCompact4_MotorPWMSet((int)(motorSetpoint * 4.12f + 100.0f));
+	g_motorTargetPercent = XiaomiCompact4_ClampInt((int)(motorSetpoint + 0.5f), 0, 100);
 }
 
 static void XiaomiCompact4_ApplyState(int save) {
@@ -579,14 +640,36 @@ static void XiaomiCompact4_ProcessPM25UART(void) {
 		if (g_pm25RxLen < XIAOMI_C4_PM25_FRAME_LEN) {
 			break;
 		}
-		int pm25 = (((int)XiaomiCompact4_UARTPeek(15)) << 8) | XiaomiCompact4_UARTPeek(16);
+		uint8_t frame[XIAOMI_C4_PM25_FRAME_LEN];
+		memcpy(frame, g_pm25RxBuf, XIAOMI_C4_PM25_FRAME_LEN);
 		XiaomiCompact4_UARTConsume(XIAOMI_C4_PM25_FRAME_LEN);
-		if (pm25 <= XIAOMI_C4_PM25_MAX_VALID) {
-			g_lastPm25 = pm25;
-			XiaomiCompact4_UpdateHID();
-			XiaomiCompact4_UpdateMotor();
-			XiaomiCompact4_SetChannels();
+		if (!XiaomiCompact4_PM25FrameChecksumValid(frame)) {
+			g_pm25RejectedChecksum++;
+			if ((g_pm25RejectedChecksum % 20) == 1) {
+				char hex[XIAOMI_C4_PM25_FRAME_LEN * 3];
+				XiaomiCompact4_PM25FrameToHex(frame, hex, sizeof(hex));
+				ADDLOG_WARN(LOG_FEATURE_DRV, "XiaomiCompact4 PM25 bad checksum frame: %s", hex);
+			}
+			continue;
 		}
+		int pm25 = (((int)frame[15]) << 8) | frame[16];
+		memcpy(g_pm25LastFrame, frame, sizeof(g_pm25LastFrame));
+		g_pm25LastRaw = pm25;
+		if (pm25 > XIAOMI_C4_PM25_MAX_VALID) {
+			g_pm25RejectedRange++;
+			ADDLOG_WARN(LOG_FEATURE_DRV, "XiaomiCompact4 PM25 out of range %i", pm25);
+			continue;
+		}
+		if (pm25 >= XIAOMI_C4_PM25_HIGH_LOG_THRESHOLD) {
+			char hex[XIAOMI_C4_PM25_FRAME_LEN * 3];
+			XiaomiCompact4_PM25FrameToHex(frame, hex, sizeof(hex));
+			ADDLOG_WARN(LOG_FEATURE_DRV, "XiaomiCompact4 PM25 high %i frame: %s", pm25, hex);
+		}
+		g_pm25AcceptedFrames++;
+		g_lastPm25 = pm25;
+		XiaomiCompact4_UpdateHID();
+		XiaomiCompact4_UpdateMotor();
+		XiaomiCompact4_SetChannels();
 	}
 }
 
@@ -602,6 +685,8 @@ static void XiaomiCompact4_ServiceNotification(void) {
 		g_childLockNotificationFlips--;
 		if (g_childLockNotificationFlips == 0) {
 			HAL_PIN_PWM_Update(XIAOMI_C4_PIN_BUZZER, 0);
+		} else {
+			HAL_PIN_PWM_Update(XIAOMI_C4_PIN_BUZZER, (g_buzzer && g_childLockNotificationState) ? 50 : 0);
 		}
 		XiaomiCompact4_UpdateHID();
 	}
@@ -633,11 +718,14 @@ void XiaomiCompact4_RunEverySecond(void) {
 	}
 	g_lastMotorRpm = (int)((g_tachPulses * 60U) / 15U);
 	g_tachPulses = 0;
+	XiaomiCompact4_ApplyMotorRamp();
 	XiaomiCompact4_UpdateHID();
 	XiaomiCompact4_SetChannels();
 }
 
 void XiaomiCompact4_Stop(void) {
+	g_motorTargetPercent = 0;
+	g_motorCurrentPercent = 0;
 	XiaomiCompact4_MotorPWMSet(0);
 	HAL_PIN_SetOutputValue(XIAOMI_C4_PIN_MOTOR_EN, 0);
 	HAL_DetachInterrupt(XIAOMI_C4_PIN_TACH);
@@ -673,6 +761,13 @@ void XiaomiCompact4_OnChannelChanged(int ch, int value) {
 		break;
 	case XIAOMI_C4_CH_FILTER_LIFESPAN:
 		g_filterLifespanDays = XiaomiCompact4_ClampInt(value, XIAOMI_C4_FILTER_LIFESPAN_MIN_DAYS, XIAOMI_C4_FILTER_LIFESPAN_MAX_DAYS);
+		XiaomiCompact4_ApplyState(1);
+		break;
+	case XIAOMI_C4_CH_BUZZER:
+		g_buzzer = value ? 1 : 0;
+		if (!g_buzzer) {
+			HAL_PIN_PWM_Update(XIAOMI_C4_PIN_BUZZER, 0);
+		}
 		XiaomiCompact4_ApplyState(1);
 		break;
 	}
@@ -744,12 +839,21 @@ static commandResult_t CMD_XiaomiCompact4_SetFilterLifespan(const void *context,
 	return CMD_RES_OK;
 }
 
+static commandResult_t CMD_XiaomiCompact4_PM25Stats(const void *context, const char *cmd, const char *args, int cmdFlags) {
+	char hex[XIAOMI_C4_PM25_FRAME_LEN * 3];
+	XiaomiCompact4_PM25FrameToHex(g_pm25LastFrame, hex, sizeof(hex));
+	ADDLOG_INFO(LOG_FEATURE_CMD, "PM25 raw=%i accepted=%i rejected_checksum=%i rejected_range=%i rx_len=%i last_frame=%s",
+		g_pm25LastRaw, g_pm25AcceptedFrames, g_pm25RejectedChecksum, g_pm25RejectedRange, g_pm25RxLen, hex);
+	return CMD_RES_OK;
+}
+
 void XiaomiCompact4_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState) {
 	if (bPreState) return;
 	hprintf255(request, "<h3>Xiaomi Compact 4</h3>");
-	hprintf255(request, "Power: %s, Mode: %s, Brightness: %s, PM2.5: %i ug/m3, RPM: %i<br>",
-		g_power ? "on" : "off", XiaomiCompact4_ModeToStr(g_mode),
-		XiaomiCompact4_BrightnessToStr(g_brightness), g_lastPm25, g_lastMotorRpm);
+	hprintf255(request, "PM2.5: %i ug/m3, Motor: %i rpm, Output/Target: %i%%/%i%%<br>",
+		g_lastPm25, g_lastMotorRpm, g_motorCurrentPercent, g_motorTargetPercent);
+	hprintf255(request, "Filter: %i%% health, %i/%i d used, Replace: %s<br>",
+		XiaomiCompact4_FilterHealth(), XiaomiCompact4_FilterUsageDays(), g_filterLifespanDays, XiaomiCompact4_ReplaceFilter() ? "yes" : "no");
 }
 
 static void XiaomiCompact4_SetupChannels(void) {
@@ -764,8 +868,9 @@ static void XiaomiCompact4_SetupChannels(void) {
 	CHANNEL_SetLabel(XIAOMI_C4_CH_REPLACE_FILTER, "Replace Filter", 1);
 	CHANNEL_SetLabel(XIAOMI_C4_CH_FAV_SPEED, "Favorite Motor Speed", 1);
 	CHANNEL_SetLabel(XIAOMI_C4_CH_NIGHT_SPEED, "Night Motor Speed", 1);
-	CHANNEL_SetLabel(XIAOMI_C4_CH_P_FACTOR, "Auto Motor Speed x100", 1);
+	CHANNEL_SetLabel(XIAOMI_C4_CH_P_FACTOR, "Auto Motor Speed", 1);
 	CHANNEL_SetLabel(XIAOMI_C4_CH_FILTER_LIFESPAN, "Filter Lifespan", 1);
+	CHANNEL_SetLabel(XIAOMI_C4_CH_BUZZER, "Buzzer", 1);
 	CHANNEL_SetType(XIAOMI_C4_CH_POWER, ChType_Toggle);
 	CHANNEL_SetType(XIAOMI_C4_CH_MODE, ChType_Enum);
 	CHANNEL_SetType(XIAOMI_C4_CH_BRIGHTNESS, ChType_Enum);
@@ -777,8 +882,9 @@ static void XiaomiCompact4_SetupChannels(void) {
 	CHANNEL_SetType(XIAOMI_C4_CH_REPLACE_FILTER, ChType_ReadOnly);
 	CHANNEL_SetType(XIAOMI_C4_CH_FAV_SPEED, ChType_Percent);
 	CHANNEL_SetType(XIAOMI_C4_CH_NIGHT_SPEED, ChType_Percent);
-	CHANNEL_SetType(XIAOMI_C4_CH_P_FACTOR, ChType_ReadOnly);
+	CHANNEL_SetType(XIAOMI_C4_CH_P_FACTOR, ChType_Dimmer1000);
 	CHANNEL_SetType(XIAOMI_C4_CH_FILTER_LIFESPAN, ChType_ReadOnly);
+	CHANNEL_SetType(XIAOMI_C4_CH_BUZZER, ChType_Toggle);
 	CMD_ExecuteCommand("SetChannelEnum 1 0:FAV 1:NIGHT 2:AUTO", 0);
 	CMD_ExecuteCommand("SetChannelEnum 2 0:FULL 1:MID 2:ZERO", 0);
 }
@@ -809,6 +915,52 @@ static void XiaomiCompact4_HassClearOldSensor(const char *topic, int ch) {
 	}
 	MQTT_QueuePublish(topic, dev_info->channel, "", OBK_PUBLISH_FLAG_RETAIN);
 	hass_free_device_info(dev_info);
+}
+
+static void XiaomiCompact4_HassClearOldRelay(const char *topic, int ch, ENTITY_TYPE type) {
+	HassDeviceInfo *dev_info = hass_init_relay_device_info(ch, type, false);
+	if (dev_info == NULL) {
+		return;
+	}
+	MQTT_QueuePublish(topic, dev_info->channel, "", OBK_PUBLISH_FLAG_RETAIN);
+	hass_free_device_info(dev_info);
+}
+
+static void XiaomiCompact4_HassPublishSwitch(const char *topic, int ch, const char *name) {
+	HassDeviceInfo *dev_info = hass_init_relay_device_info(ch, RELAY, false);
+	if (dev_info == NULL) {
+		return;
+	}
+	XiaomiCompact4_HassSetName(dev_info, name);
+	XiaomiCompact4_HassPublish(topic, dev_info);
+}
+
+static void XiaomiCompact4_HassQueueChannelState(int ch, int value) {
+	char channel[16];
+	char state[4];
+	snprintf(channel, sizeof(channel), "%i/get", ch);
+	snprintf(state, sizeof(state), "%i", value ? 1 : 0);
+	MQTT_QueuePublish(CFG_GetMQTTClientId(), channel, state, 0);
+}
+
+static void XiaomiCompact4_HassQueueChannelValue(int ch, int value) {
+	char channel[16];
+	char state[8];
+	snprintf(channel, sizeof(channel), "%i/get", ch);
+	snprintf(state, sizeof(state), "%i", value);
+	MQTT_QueuePublish(CFG_GetMQTTClientId(), channel, state, 0);
+}
+
+static void XiaomiCompact4_HassPublishSelect(const char *topic, int ch, const char *name, const char **options, int optionCount) {
+	char stateTopic[16];
+	char commandTopic[16];
+	snprintf(stateTopic, sizeof(stateTopic), "~/%i/get", ch);
+	snprintf(commandTopic, sizeof(commandTopic), "~/%i/set", ch);
+	HassDeviceInfo *dev_info = hass_createSelectEntityIndexed(stateTopic, commandTopic, optionCount, options, name);
+	if (dev_info == NULL) {
+		return;
+	}
+	XiaomiCompact4_HassPublish(topic, dev_info);
 }
 
 static void XiaomiCompact4_HassPublishSensor(const char *topic, int ch, const char *name, const char *unit, const char *deviceClass, const char *icon) {
@@ -862,10 +1014,22 @@ static void XiaomiCompact4_HassPublishNumber(const char *topic, int ch, const ch
 
 void XiaomiCompact4_OnHassDiscovery(const char *topic) {
 	HassDeviceInfo *dev_info;
+	static const char *modeOptions[] = { "FAV", "NIGHT", "AUTO" };
+	static const char *brightnessOptions[] = { "FULL", "MID", "ZERO" };
+
+	XiaomiCompact4_HassClearOldRelay(topic, XIAOMI_C4_CH_POWER, LIGHT_ON_OFF);
+	XiaomiCompact4_HassPublishSwitch(topic, XIAOMI_C4_CH_POWER, "Power");
+	XiaomiCompact4_HassPublishSwitch(topic, XIAOMI_C4_CH_BUZZER, "Buzzer");
+	XiaomiCompact4_HassPublishSelect(topic, XIAOMI_C4_CH_MODE, "Mode", modeOptions, 3);
+	XiaomiCompact4_HassPublishSelect(topic, XIAOMI_C4_CH_BRIGHTNESS, "Brightness", brightnessOptions, 3);
+	XiaomiCompact4_HassQueueChannelState(XIAOMI_C4_CH_POWER, g_power);
+	XiaomiCompact4_HassQueueChannelState(XIAOMI_C4_CH_BUZZER, g_buzzer);
+	XiaomiCompact4_HassQueueChannelValue(XIAOMI_C4_CH_MODE, g_mode);
+	XiaomiCompact4_HassQueueChannelValue(XIAOMI_C4_CH_BRIGHTNESS, g_brightness);
 
 	XiaomiCompact4_HassPublishSensor(topic, XIAOMI_C4_CH_PM25, "PM2.5", "ug/m3", NULL, "mdi:air-filter");
 	XiaomiCompact4_HassPublishSensor(topic, XIAOMI_C4_CH_MOTOR_RPM, "Motor Speed", "rpm", NULL, "mdi:fan");
-	XiaomiCompact4_HassPublishSensor(topic, XIAOMI_C4_CH_FILTER_USAGE, "Filter Usage", "s", "duration", "mdi:air-filter");
+	XiaomiCompact4_HassPublishSensor(topic, XIAOMI_C4_CH_FILTER_USAGE, "Filter Usage", "d", "duration", "mdi:air-filter");
 	XiaomiCompact4_HassPublishSensor(topic, XIAOMI_C4_CH_FILTER_HEALTH, "Filter Health", "%", NULL, "mdi:air-filter");
 
 	XiaomiCompact4_HassClearOldSensor(topic, XIAOMI_C4_CH_REPLACE_FILTER);
@@ -895,6 +1059,12 @@ bool XiaomiCompact4_ShouldSkipGenericHassDiscovery(int ch) {
 	if (!g_initialized) {
 		return false;
 	}
+	if (ch == XIAOMI_C4_CH_POWER || ch == XIAOMI_C4_CH_BUZZER) {
+		return true;
+	}
+	if (ch == XIAOMI_C4_CH_MODE || ch == XIAOMI_C4_CH_BRIGHTNESS) {
+		return true;
+	}
 	return ch >= XIAOMI_C4_CH_PM25 && ch <= XIAOMI_C4_CH_FILTER_LIFESPAN;
 }
 
@@ -909,6 +1079,7 @@ void XiaomiCompact4_Init(void) {
 	CMD_RegisterCommand("XiaomiCompact4_SetNightSpeed", CMD_XiaomiCompact4_SetNightSpeed, NULL);
 	CMD_RegisterCommand("XiaomiCompact4_SetPFactor", CMD_XiaomiCompact4_SetPFactor, NULL);
 	CMD_RegisterCommand("XiaomiCompact4_SetFilterLifespan", CMD_XiaomiCompact4_SetFilterLifespan, NULL);
+	CMD_RegisterCommand("XiaomiCompact4_PM25Stats", CMD_XiaomiCompact4_PM25Stats, NULL);
 
 	g_power = XiaomiCompact4_LoadInt(XIAOMI_C4_VAR_POWER, 0, 0, 1);
 	g_mode = XiaomiCompact4_LoadInt(XIAOMI_C4_VAR_MODE, XIAOMI_C4_MODE_AUTO, XIAOMI_C4_MODE_FAV, XIAOMI_C4_MODE_AUTO);
@@ -919,6 +1090,7 @@ void XiaomiCompact4_Init(void) {
 	g_pFactorX100 = XiaomiCompact4_LoadInt(XIAOMI_C4_VAR_P_FACTOR_X100, 100, 1, 1000);
 	g_filterLifespanDays = XiaomiCompact4_LoadInt(XIAOMI_C4_VAR_FILTER_LIFESPAN, XIAOMI_C4_FILTER_LIFESPAN_DEFAULT_DAYS, XIAOMI_C4_FILTER_LIFESPAN_MIN_DAYS, XIAOMI_C4_FILTER_LIFESPAN_MAX_DAYS);
 	g_filterUsageSeconds = (uint32_t)XiaomiCompact4_LoadInt(XIAOMI_C4_VAR_FILTER_USAGE, 0, 0, 0x7FFFFFFF);
+	g_buzzer = XiaomiCompact4_LoadInt(XIAOMI_C4_VAR_BUZZER, 1, 0, 1);
 	g_pm25PollCountdown = 1;
 	g_filterCountdown = 60;
 
