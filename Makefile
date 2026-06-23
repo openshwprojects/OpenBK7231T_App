@@ -246,6 +246,8 @@ else ifeq ($(OBK_VARIANT), 2)
 	cp platforms/ESP-IDF/partitions-4mb.csv platforms/ESP-IDF/partitions.csv
 else ifeq ($(OBK_VARIANT), 3)
 	cp platforms/ESP-IDF/partitions-2mb.csv platforms/ESP-IDF/partitions.csv
+else ifeq ($(OBK_VARIANT), 10)
+	cp platforms/ESP-IDF/partitions-4mb.csv platforms/ESP-IDF/partitions.csv
 endif
 	@if [ -e platforms/ESP-IDF/pre_build.sh ]; then \
 		echo "prebuild found for ESP-IDF"; \
