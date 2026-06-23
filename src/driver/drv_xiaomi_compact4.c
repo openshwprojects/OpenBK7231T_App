@@ -172,6 +172,13 @@ static void XiaomiCompact4_SaveInt(int index, int value) {
 	HAL_FlashVars_SaveChannel(index, value);
 }
 
+static void XiaomiCompact4_EnsureFilterLifespan(void) {
+	if (g_filterLifespanDays <= 0) {
+		g_filterLifespanDays = XIAOMI_C4_FILTER_LIFESPAN_DEFAULT_DAYS;
+		XiaomiCompact4_SaveInt(XIAOMI_C4_VAR_FILTER_LIFESPAN, g_filterLifespanDays);
+	}
+}
+
 static const char *XiaomiCompact4_ModeToStr(int mode) {
 	switch (mode) {
 	case XIAOMI_C4_MODE_FAV:
@@ -802,6 +809,7 @@ static commandResult_t CMD_XiaomiCompact4_SetChildLock(const void *context, cons
 }
 
 static commandResult_t CMD_XiaomiCompact4_ResetFilter(const void *context, const char *cmd, const char *args, int cmdFlags) {
+	XiaomiCompact4_EnsureFilterLifespan();
 	g_filterUsageSeconds = 0;
 	XiaomiCompact4_ApplyState(1);
 	return CMD_RES_OK;
@@ -1089,6 +1097,7 @@ void XiaomiCompact4_Init(void) {
 	g_nightSpeed = XiaomiCompact4_LoadInt(XIAOMI_C4_VAR_NIGHT_SPEED, 10, 0, 100);
 	g_pFactorX100 = XiaomiCompact4_LoadInt(XIAOMI_C4_VAR_P_FACTOR_X100, 100, 1, 1000);
 	g_filterLifespanDays = XiaomiCompact4_LoadInt(XIAOMI_C4_VAR_FILTER_LIFESPAN, XIAOMI_C4_FILTER_LIFESPAN_DEFAULT_DAYS, XIAOMI_C4_FILTER_LIFESPAN_MIN_DAYS, XIAOMI_C4_FILTER_LIFESPAN_MAX_DAYS);
+	XiaomiCompact4_EnsureFilterLifespan();
 	g_filterUsageSeconds = (uint32_t)XiaomiCompact4_LoadInt(XIAOMI_C4_VAR_FILTER_USAGE, 0, 0, 0x7FFFFFFF);
 	g_buzzer = XiaomiCompact4_LoadInt(XIAOMI_C4_VAR_BUZZER, 1, 0, 1);
 	g_pm25PollCountdown = 1;
