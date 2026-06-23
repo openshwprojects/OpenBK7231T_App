@@ -18,6 +18,7 @@
 #include "drv_tuyaMCU.h"
 #include "drv_girierMCU.h"
 #include "drv_uart.h"
+#include "drv_gaitekAC.h"
 #include "drv_ds1820_simple.h"
 #include "drv_ds1820_full.h"
 #include "drv_ds1820_common.h"
@@ -1461,6 +1462,18 @@ static driver_t g_drivers[] = {
 	NULL,                                    // onChannelChanged
 	NULL,                                    // onHassDiscovery
 	false,                                   // loaded
+	},
+#endif
+#if ENABLE_DRIVER_GAITEKAC
+	{ "GaitekAC",
+	GaitekAC_Init,
+	GaitekAC_RunEverySecond,
+	NULL,
+	GaitekAC_RunQuickTick,
+	GaitekAC_Shutdown,
+	GaitekAC_OnChannelChanged,
+	NULL,
+	false,
 	},
 #endif
 #if PLATFORM_TXW81X
