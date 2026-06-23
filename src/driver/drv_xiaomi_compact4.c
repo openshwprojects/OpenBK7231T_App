@@ -1,8 +1,7 @@
-#include "../obk_config.h"
+#include "../new_common.h"
 
 #if ENABLE_DRIVER_XIAOMI_COMPACT4
 
-#include "../new_common.h"
 #include "../new_cfg.h"
 #include "../new_pins.h"
 #include "../cmnds/cmd_public.h"
