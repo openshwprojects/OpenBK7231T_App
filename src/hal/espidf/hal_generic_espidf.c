@@ -8,7 +8,10 @@
 #include "freertos/FreeRTOS.h"
 #if PLATFORM_ESPIDF
 #include "hal/wdt_hal.h"
+#include "soc/rtc.h"
 #endif
+
+#define OBK_ESPIDF_RTC_WDT_TIMEOUT_MS 10000
 
 static int bFlashReady = 0;
 
@@ -35,6 +38,21 @@ void HAL_RebootModule()
 void HAL_Delay_us(int delay)
 {
 	usleep(delay);
+}
+
+void HAL_Configure_WDT()
+{
+#if PLATFORM_ESPIDF
+	wdt_hal_context_t rtc_wdt_ctx = RWDT_HAL_CONTEXT_DEFAULT();
+	uint32_t stage_timeout_ticks = (uint32_t)((uint64_t)OBK_ESPIDF_RTC_WDT_TIMEOUT_MS * rtc_clk_slow_freq_get_hz() / 1000ULL);
+
+	wdt_hal_init(&rtc_wdt_ctx, WDT_RWDT, 0, false);
+	wdt_hal_write_protect_disable(&rtc_wdt_ctx);
+	wdt_hal_config_stage(&rtc_wdt_ctx, WDT_STAGE0, stage_timeout_ticks, WDT_STAGE_ACTION_RESET_SYSTEM);
+	wdt_hal_config_stage(&rtc_wdt_ctx, WDT_STAGE1, stage_timeout_ticks, WDT_STAGE_ACTION_RESET_RTC);
+	wdt_hal_enable(&rtc_wdt_ctx);
+	wdt_hal_write_protect_enable(&rtc_wdt_ctx);
+#endif
 }
 
 void HAL_Run_WDT()
