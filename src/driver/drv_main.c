@@ -1575,6 +1575,15 @@ bool DRV_IsRunning(const char* name) {
 	return false;
 }
 
+void DRV_SavePowerMeterDriverStatistics(void) {
+#if ENABLE_DRIVER_HLW8112SPI
+	HLW8112_Save_Statistics();
+#endif
+#if ENABLE_DRIVER_BL0939SPI
+	BL0939_Save_Statistics();
+#endif
+}
+
 static SemaphoreHandle_t g_mutex = 0;
 
 bool DRV_Mutex_Take(int del) {
