@@ -98,8 +98,11 @@
 #define XIAOMI_C4_PM25_MAX_VALID 2000
 #define XIAOMI_C4_PM25_HIGH_LOG_THRESHOLD 300
 #define XIAOMI_C4_PM25_POLL_SECONDS 5
+// Keep normal fan changes smooth in both directions; power-off still stops immediately.
 #define XIAOMI_C4_MOTOR_RAMP_UP_PERCENT_PER_SEC 6
-#define XIAOMI_C4_MOTOR_RAMP_DOWN_PERCENT_PER_SEC 12
+#define XIAOMI_C4_MOTOR_RAMP_DOWN_PERCENT_PER_SEC 6
+// RPM is sampled every second for control, but reported less often to avoid MQTT churn.
+#define XIAOMI_C4_MOTOR_RPM_PUBLISH_SECONDS 3
 #define XIAOMI_C4_FILTER_LIFESPAN_MIN_DAYS 0
 #define XIAOMI_C4_FILTER_LIFESPAN_MAX_DAYS 365
 #define XIAOMI_C4_FILTER_LIFESPAN_DEFAULT_DAYS 365
@@ -436,7 +439,7 @@ static void XiaomiCompact4_ResetFilter(void) {
 	XiaomiCompact4_ApplyState(1);
 }
 
-static void XiaomiCompact4_SetChannels(void) {
+static void XiaomiCompact4_SetChannels(int publishMotorRpm) {
 	g_ignoreChannelChange = 1;
 	CHANNEL_Set(XIAOMI_C4_CH_POWER, g_power, CHANNEL_SET_FLAG_SILENT);
 	CHANNEL_Set(XIAOMI_C4_CH_MODE, g_mode, CHANNEL_SET_FLAG_SILENT);
@@ -445,7 +448,9 @@ static void XiaomiCompact4_SetChannels(void) {
 	if (g_lastPm25 >= 0) {
 		CHANNEL_Set(XIAOMI_C4_CH_PM25, g_lastPm25, CHANNEL_SET_FLAG_SILENT);
 	}
-	CHANNEL_Set(XIAOMI_C4_CH_MOTOR_RPM, g_lastMotorRpm, CHANNEL_SET_FLAG_SILENT);
+	if (publishMotorRpm) {
+		CHANNEL_Set(XIAOMI_C4_CH_MOTOR_RPM, g_lastMotorRpm, CHANNEL_SET_FLAG_SILENT);
+	}
 	CHANNEL_Set(XIAOMI_C4_CH_FILTER_USAGE, (int)g_filterUsageSeconds, CHANNEL_SET_FLAG_SILENT);
 	CHANNEL_Set(XIAOMI_C4_CH_FILTER_HEALTH, XiaomiCompact4_FilterHealth(), CHANNEL_SET_FLAG_SILENT);
 	CHANNEL_Set(XIAOMI_C4_CH_REPLACE_FILTER, XiaomiCompact4_ReplaceFilter(), CHANNEL_SET_FLAG_SILENT);
@@ -559,7 +564,7 @@ static void XiaomiCompact4_ApplyState(int save) {
 	HAL_PIN_SetOutputValue(XIAOMI_C4_PIN_MOTOR_EN, g_power ? 1 : 0);
 	XiaomiCompact4_UpdateHID();
 	XiaomiCompact4_UpdateMotor();
-	XiaomiCompact4_SetChannels();
+	XiaomiCompact4_SetChannels(1);
 	if (save) {
 		XiaomiCompact4_SaveState();
 	}
@@ -684,7 +689,7 @@ static void XiaomiCompact4_ProcessPM25UART(void) {
 		g_lastPm25 = pm25;
 		XiaomiCompact4_UpdateHID();
 		XiaomiCompact4_UpdateMotor();
-		XiaomiCompact4_SetChannels();
+		XiaomiCompact4_SetChannels(0);
 	}
 }
 
@@ -717,6 +722,9 @@ void XiaomiCompact4_RunQuickTick(void) {
 }
 
 void XiaomiCompact4_RunEverySecond(void) {
+	static int motorRpmPublishCountdown = 0;
+	int publishMotorRpm = 0;
+
 	if (!g_initialized) return;
 	g_pm25PollCountdown--;
 	if (g_pm25PollCountdown <= 0) {
@@ -733,9 +741,14 @@ void XiaomiCompact4_RunEverySecond(void) {
 	}
 	g_lastMotorRpm = (int)((g_tachPulses * 60U) / 15U);
 	g_tachPulses = 0;
+	motorRpmPublishCountdown--;
+	if (motorRpmPublishCountdown <= 0) {
+		motorRpmPublishCountdown = XIAOMI_C4_MOTOR_RPM_PUBLISH_SECONDS;
+		publishMotorRpm = 1;
+	}
 	XiaomiCompact4_ApplyMotorRamp();
 	XiaomiCompact4_UpdateHID();
-	XiaomiCompact4_SetChannels();
+	XiaomiCompact4_SetChannels(publishMotorRpm);
 }
 
 void XiaomiCompact4_Stop(void) {
