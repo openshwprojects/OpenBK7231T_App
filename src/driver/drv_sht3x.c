@@ -11,7 +11,9 @@
 #include "../hal/hal_pins.h"
 
 #include "drv_sht3x.h"
+#include "../obk_config.h"
 
+#if ENABLE_DRIVER_SHT3X
 
 #define SHT3X_I2C_ADDR (0x44 << 1)
 
@@ -444,57 +446,57 @@ void SHT3X_Init() {
 
 	//cmddetail:{"name":"SHT_cycle","args":"[int]",
 	//cmddetail:"descr":"This is the interval between measurements in seconds, by default 10. Max is 255.",
-	//cmddetail:"fn":"SHT_cycle","file":"driver/drv_sht3x.c","requires":"",
+	//cmddetail:"fn":"SHT_cycle","file":"driver/drv_sht3x.c","requires":"ENABLE_DRIVER_SHT3X",
 	//cmddetail:"examples":"SHT_Cycle 60"}
 	CMD_RegisterCommand("SHT_cycle", SHT_cycle, NULL);
 	//cmddetail:{"name":"SHT_Calibrate","args":"[DeltaTemp][DeltaHumidity]",
 	//cmddetail:"descr":"Calibrate the SHT Sensor as Tolerance is +/-2 degrees C.",
-	//cmddetail:"fn":"SHT3X_Calibrate","file":"driver/drv_sht3x.c","requires":"",
+	//cmddetail:"fn":"SHT3X_Calibrate","file":"driver/drv_sht3x.c","requires":"ENABLE_DRIVER_SHT3X",
 	//cmddetail:"examples":"SHT_Calibrate -4 10"}
 	CMD_RegisterCommand("SHT_Calibrate", SHT3X_Calibrate, NULL);
 	//cmddetail:{"name":"SHT_MeasurePer","args":"",
 	//cmddetail:"descr":"Retrieve Periodical measurement for SHT",
-	//cmddetail:"fn":"SHT3X_MeasurePer","file":"driver/drv_sht3x.c","requires":"",
+	//cmddetail:"fn":"SHT3X_MeasurePer","file":"driver/drv_sht3x.c","requires":"ENABLE_DRIVER_SHT3X",
 	//cmddetail:"examples":"SHT_Measure"}
 	CMD_RegisterCommand("SHT_MeasurePer", SHT3X_MeasurePer, NULL);
 	//cmddetail:{"name":"SHT_LaunchPer","args":"[msb][lsb]",
 	//cmddetail:"descr":"Launch/Change periodical capture for SHT Sensor",
-	//cmddetail:"fn":"SHT3X_ChangePer","file":"driver/drv_sht3x.c","requires":"",
+	//cmddetail:"fn":"SHT3X_ChangePer","file":"driver/drv_sht3x.c","requires":"ENABLE_DRIVER_SHT3X",
 	//cmddetail:"examples":"SHT_LaunchPer 0x23 0x22"}
 	CMD_RegisterCommand("SHT_LaunchPer", SHT3X_ChangePer, NULL);
 	//cmddetail:{"name":"SHT_StopPer","args":"",
 	//cmddetail:"descr":"Stop periodical capture for SHT Sensor",
-	//cmddetail:"fn":"SHT3X_StopPerCmd","file":"driver/drv_sht3x.c","requires":"",
+	//cmddetail:"fn":"SHT3X_StopPerCmd","file":"driver/drv_sht3x.c","requires":"ENABLE_DRIVER_SHT3X",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("SHT_StopPer", SHT3X_StopPerCmd, NULL);
 	//cmddetail:{"name":"SHT_Measure","args":"",
 	//cmddetail:"descr":"Retrieve OneShot measurement for SHT",
-	//cmddetail:"fn":"SHT3X_Measure","file":"driver/drv_sht3x.c","requires":"",
+	//cmddetail:"fn":"SHT3X_Measure","file":"driver/drv_sht3x.c","requires":"ENABLE_DRIVER_SHT3X",
 	//cmddetail:"examples":"SHT_Measure"}
 	CMD_RegisterCommand("SHT_Measure", SHT3X_Measure, NULL);
 	//cmddetail:{"name":"SHT_Heater","args":"[1or0]",
 	//cmddetail:"descr":"Activate or Deactivate Heater (0 / 1)",
-	//cmddetail:"fn":"SHT3X_Heater","file":"driver/drv_sht3x.c","requires":"",
+	//cmddetail:"fn":"SHT3X_Heater","file":"driver/drv_sht3x.c","requires":"ENABLE_DRIVER_SHT3X",
 	//cmddetail:"examples":"SHT_Heater 1"}
 	CMD_RegisterCommand("SHT_Heater", SHT3X_Heater, NULL);
 	//cmddetail:{"name":"SHT_GetStatus","args":"",
 	//cmddetail:"descr":"Get Sensor Status",
-	//cmddetail:"fn":"SHT3X_GetStatusCmd","file":"driver/drv_sht3x.c","requires":"",
+	//cmddetail:"fn":"SHT3X_GetStatusCmd","file":"driver/drv_sht3x.c","requires":"ENABLE_DRIVER_SHT3X",
 	//cmddetail:"examples":"SHT_GetStatusCmd"}
 	CMD_RegisterCommand("SHT_GetStatus", SHT3X_GetStatusCmd, NULL);
 	//cmddetail:{"name":"SHT_ClearStatus","args":"",
 	//cmddetail:"descr":"Clear Sensor Status",
-	//cmddetail:"fn":"SHT3X_ClearStatusCmd","file":"driver/drv_sht3x.c","requires":"",
+	//cmddetail:"fn":"SHT3X_ClearStatusCmd","file":"driver/drv_sht3x.c","requires":"ENABLE_DRIVER_SHT3X",
 	//cmddetail:"examples":"SHT_ClearStatusCmd"}
 	CMD_RegisterCommand("SHT_ClearStatus", SHT3X_ClearStatusCmd, NULL);
 	//cmddetail:{"name":"SHT_ReadAlert","args":"",
 	//cmddetail:"descr":"Get Sensor alert configuration",
-	//cmddetail:"fn":"SHT3X_ReadAlertCmd","file":"driver/drv_sht3x.c","requires":"",
+	//cmddetail:"fn":"SHT3X_ReadAlertCmd","file":"driver/drv_sht3x.c","requires":"ENABLE_DRIVER_SHT3X",
 	//cmddetail:"examples":"SHT_ReadAlertCmd"}
 	CMD_RegisterCommand("SHT_ReadAlert", SHT3X_ReadAlertCmd, NULL);
 	//cmddetail:{"name":"SHT_SetAlert","args":"[temp_high, temp_low, hum_high, hum_low]",
 	//cmddetail:"descr":"Set Sensor alert configuration",
-	//cmddetail:"fn":"SHT3X_SetAlertCmd","file":"driver/drv_sht3x.c","requires":"all",
+	//cmddetail:"fn":"SHT3X_SetAlertCmd","file":"driver/drv_sht3x.c","requires":"ENABLE_DRIVER_SHT3X",
 	//cmddetail:"examples":"SHT_SetAlertCmd"}
 	CMD_RegisterCommand("SHT_SetAlert", SHT3X_SetAlertCmd, NULL);
 }
@@ -526,3 +528,4 @@ void SHT3X_AppendInformationToHTTPIndexPage(http_request_t* request, int bPreSta
 		hprintf255(request, "WARNING: You don't have configured target channels for temp and humid results, set the first and second channel index in Pins!");
 	}
 }
+#endif // #if ENABLE_DRIVER_SHT3X
