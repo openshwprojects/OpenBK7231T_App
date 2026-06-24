@@ -769,6 +769,10 @@
 // #define ENABLE_BL_MOVINGAVG					1
 #endif
 
+#if (PLATFORM_BK7231N || PLATFORM_BK7231T) && (OBK_VARIANT == OBK_VARIANT_POWERMETERING)
+#define ENABLE_BL_POWER_LIMIT					1
+#endif
+
 // ensure that there would be no conflicts
 #if ENABLE_DRIVER_IRREMOTEESP
 #undef ENABLE_DRIVER_IR

@@ -656,7 +656,11 @@ static driver_t g_drivers[] = {
 	NULL,                                    // runQuickTick
 	NULL,                                    // stopFunction
 	NULL,                                    // onChannelChanged
+#if ENABLE_BL_POWER_LIMIT && ENABLE_HA_DISCOVERY
+	BL_PowerLimit_OnHassDiscovery,          // onHassDiscovery
+#else
 	NULL,                                    // onHassDiscovery
+#endif
 	false,                                   // loaded
 	},
 #endif
