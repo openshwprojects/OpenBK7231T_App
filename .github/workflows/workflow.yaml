@@ -333,123 +333,6 @@ jobs:
             output/${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}/${{ matrix.platform }}_${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}_OTA.bin.xz.ota
           if-no-files-found: warn
 
-  build_idf:
-    name: Build IDF
-    needs: refs
-    runs-on: ubuntu-24.04
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - platform: OpenESP32C2
-            variant: 2M
-            version: v5.5.2
-            sdk: esp-idf
-          - platform: OpenESP32C3
-            variant: 2M
-            version: v5.5.2
-            sdk: esp-idf
-
-          - platform: OpenESP32
-            variant: 4M
-            version: v5.5.2
-            sdk: esp-idf
-          - platform: OpenESP32C2
-            variant: 4M
-            version: v5.5.2
-            sdk: esp-idf
-          - platform: OpenESP32C3
-            variant: 4M
-            version: v5.5.2
-            sdk: esp-idf
-          - platform: OpenESP32C6
-            variant: 4M
-            version: v5.5.2
-            sdk: esp-idf
-          - platform: OpenESP32S3
-            variant: 4M
-            version: v5.5.2
-            sdk: esp-idf
-          - platform: OpenESP32S2
-            variant: 4M
-            version: v5.5.2
-            sdk: esp-idf
-          - platform: OpenESP32C5
-            variant: 4M
-            version: v5.5.2
-            sdk: esp-idf
-          - platform: OpenESP32C61
-            variant: 4M
-            version: v5.5.2
-            sdk: esp-idf
-
-          - platform: OpenESP8266
-            variant: default
-            version: v3.4
-            sdk: OpenESP8266
-    steps:
-      - name: Source checkout
-        uses: actions/checkout@v4
-      - name: ESP-IDF checkout
-        if: ${{ matrix.platform != 'OpenESP8266' }}
-        uses: actions/checkout@v4
-        with:
-          repository: espressif/esp-idf
-          path: sdk/esp-idf
-          ref: ${{ matrix.version }}
-          submodules: recursive
-
-      - name: OpenESP8266 checkout
-        if: ${{ matrix.platform == 'OpenESP8266' }}
-        uses: actions/checkout@v4
-        with:
-          repository: NonPIayerCharacter/OpenESP8266
-          path: sdk/OpenESP8266
-          ref: obk
-          fetch-tags: true
-          fetch-depth: '10'
-          submodules: recursive
-
-      - uses: actions/setup-python@v5
-        id: pysetup
-        with:
-          python-version: '3.10'
-          architecture: 'x64'
-          cache: 'pip'
-      - name: Install dependencies
-        uses: awalsh128/cache-apt-pkgs-action@latest
-        with:
-          packages: cmake
-          version: 1.0
-      - name: Cache toolchain
-        id: cache-toolchain
-        uses: actions/cache@v4
-        with:
-          path: ~/.espressif # cache whole folder, not just dist
-          key: ${{ matrix.sdk }}_toolchain_${{ matrix.version }}_${{ steps.pysetup.outputs.python-version }}
-      - name: Get toolchain
-        if: steps.cache-toolchain.outputs.cache-hit != 'true'
-        run: |
-          cd sdk/${{ matrix.sdk }}
-          ./install.sh
-      - name: Run make
-        run: |
-          cd sdk/${{ matrix.sdk }}
-          . ./export.sh
-          . ./add_path.sh
-          cd ../..
-          make APP_VERSION=${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }} APP_NAME=${{ matrix.platform }} VARIANT="${{ matrix.variant }}" ${{ matrix.platform }}
-      - name: Save build assets
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ env.APP_NAME }}_${{ needs.refs.outputs.version }}_${{ matrix.platform }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}
-          path: |
-            output/${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}/${{ matrix.platform }}_${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}.img
-            output/${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}/${{ matrix.platform }}_${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}.factory.bin
-            output/${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}/${{ matrix.platform }}_2MB_${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}.factory.bin
-            output/${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}/${{ matrix.platform }}_1MB_${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}.factory.bin
-          if-no-files-found: warn
-
   build_txw81x:
     name: Build TXW81X
     needs: refs
@@ -486,7 +369,7 @@ jobs:
   merge:
     name: Merge Artifacts
     runs-on: ubuntu-22.04
-    needs: [refs, build, build2, build_idf, build_txw81x]
+    needs: [refs, build, build2, build_txw81x]
     #if: always() && needs.refs.outputs.new_release == 'true' && (github.ref == 'refs/heads/main' || github.ref_name == 'alpha')
     steps:
       - name: Merge Artifacts
