@@ -107,6 +107,8 @@
 #define XIAOMI_C4_FILTER_LIFESPAN_MAX_DAYS 365
 #define XIAOMI_C4_FILTER_LIFESPAN_DEFAULT_DAYS 365
 #define XIAOMI_C4_LONG_PRESS_MS 7000
+#define XIAOMI_C4_QUICKTICK_STALE_FAILSAFE_SECONDS 3
+#define XIAOMI_C4_FAILSAFE_REASON_QUICKTICK_STALE 1
 
 static int g_power;
 static int g_mode;
@@ -144,6 +146,12 @@ static int g_pm25LastRaw = -1;
 static int g_pm25AcceptedFrames;
 static int g_pm25RejectedChecksum;
 static int g_pm25RejectedRange;
+static int g_failsafeActive;
+static int g_failsafeReason;
+static int g_quickTickStaleSeconds;
+static uint32_t g_diagQuickTicks;
+static uint32_t g_diagEverySeconds;
+static uint32_t g_diagPm25RxBytes;
 static i2c_master_bus_handle_t g_i2cBus;
 static i2c_master_dev_handle_t g_i2cBrightness;
 static i2c_master_dev_handle_t g_i2cStatusLeds;
@@ -304,6 +312,7 @@ static void XiaomiCompact4_UARTReadAvailable(void) {
 	if (len <= 0) {
 		return;
 	}
+	g_diagPm25RxBytes += len;
 	if (g_pm25RxLen + len > (int)sizeof(g_pm25RxBuf)) {
 		g_pm25RxLen = 0;
 	}
@@ -377,12 +386,24 @@ static void XiaomiCompact4_MotorPWMSet(int frequency) {
 	ledc_update_duty(LEDC_LOW_SPEED_MODE, XIAOMI_C4_MOTOR_LEDC_CHANNEL);
 }
 
+static void XiaomiCompact4_ForceMotorFailsafe(int reason) {
+	if (!g_failsafeActive || g_failsafeReason != reason) {
+		ADDLOG_WARN(LOG_FEATURE_DRV, "XiaomiCompact4 motor failsafe active, reason %i", reason);
+	}
+	g_failsafeActive = 1;
+	g_failsafeReason = reason;
+	g_motorTargetPercent = 0;
+	g_motorCurrentPercent = 0;
+	XiaomiCompact4_MotorPWMSet(0);
+	HAL_PIN_SetOutputValue(XIAOMI_C4_PIN_MOTOR_EN, 0);
+}
+
 static int XiaomiCompact4_MotorPercentToFrequency(int percent) {
 	return (int)((float)percent * 4.12f + 100.0f);
 }
 
 static void XiaomiCompact4_ApplyMotorRamp(void) {
-	if (!g_power) {
+	if (!g_power || g_failsafeActive) {
 		g_motorCurrentPercent = 0;
 		XiaomiCompact4_MotorPWMSet(0);
 		return;
@@ -539,7 +560,7 @@ static void XiaomiCompact4_UpdateHID(void) {
 }
 
 static void XiaomiCompact4_UpdateMotor(void) {
-	if (!g_power) {
+	if (!g_power || g_failsafeActive) {
 		g_motorTargetPercent = 0;
 		g_motorCurrentPercent = 0;
 		XiaomiCompact4_MotorPWMSet(0);
@@ -561,7 +582,7 @@ static void XiaomiCompact4_UpdateMotor(void) {
 }
 
 static void XiaomiCompact4_ApplyState(int save) {
-	HAL_PIN_SetOutputValue(XIAOMI_C4_PIN_MOTOR_EN, g_power ? 1 : 0);
+	HAL_PIN_SetOutputValue(XIAOMI_C4_PIN_MOTOR_EN, (g_power && !g_failsafeActive) ? 1 : 0);
 	XiaomiCompact4_UpdateHID();
 	XiaomiCompact4_UpdateMotor();
 	XiaomiCompact4_SetChannels(1);
@@ -572,6 +593,9 @@ static void XiaomiCompact4_ApplyState(int save) {
 
 static void XiaomiCompact4_SetPower(int value) {
 	g_power = value ? 1 : 0;
+	g_failsafeActive = 0;
+	g_failsafeReason = 0;
+	g_quickTickStaleSeconds = 0;
 	XiaomiCompact4_ApplyState(1);
 }
 
@@ -719,13 +743,25 @@ void XiaomiCompact4_RunQuickTick(void) {
 	XiaomiCompact4_ServiceButton(XIAOMI_C4_PIN_BUTTON_LIGHT, &g_lastButtonLight, &g_lightPressTicks, NULL);
 	XiaomiCompact4_ServiceButton(XIAOMI_C4_PIN_BUTTON_MODE, &g_lastButtonMode, &g_modePressTicks, &g_modeLongHandled);
 	XiaomiCompact4_ServiceNotification();
+	g_diagQuickTicks++;
 }
 
 void XiaomiCompact4_RunEverySecond(void) {
 	static int motorRpmPublishCountdown = 0;
+	static uint32_t lastQuickTicks = 0;
 	int publishMotorRpm = 0;
 
 	if (!g_initialized) return;
+	g_diagEverySeconds++;
+	if (g_diagQuickTicks == lastQuickTicks) {
+		g_quickTickStaleSeconds++;
+		if (g_power && g_quickTickStaleSeconds >= XIAOMI_C4_QUICKTICK_STALE_FAILSAFE_SECONDS) {
+			XiaomiCompact4_ForceMotorFailsafe(XIAOMI_C4_FAILSAFE_REASON_QUICKTICK_STALE);
+		}
+	} else {
+		lastQuickTicks = g_diagQuickTicks;
+		g_quickTickStaleSeconds = 0;
+	}
 	g_pm25PollCountdown--;
 	if (g_pm25PollCountdown <= 0) {
 		g_pm25PollCountdown = XIAOMI_C4_PM25_POLL_SECONDS;
@@ -749,6 +785,19 @@ void XiaomiCompact4_RunEverySecond(void) {
 	XiaomiCompact4_ApplyMotorRamp();
 	XiaomiCompact4_UpdateHID();
 	XiaomiCompact4_SetChannels(publishMotorRpm);
+}
+
+int XiaomiCompact4_ShouldFeedWDT(void) {
+	if (!g_initialized) {
+		return 1;
+	}
+	if (g_quickTickStaleSeconds <= XIAOMI_C4_QUICKTICK_STALE_FAILSAFE_SECONDS) {
+		return 1;
+	}
+	if ((g_quickTickStaleSeconds % 5) == 4) {
+		ADDLOG_WARN(LOG_FEATURE_DRV, "XiaomiCompact4 QuickTick stalled for %i seconds; withholding WDT feed", g_quickTickStaleSeconds);
+	}
+	return 0;
 }
 
 void XiaomiCompact4_Stop(void) {
@@ -869,8 +918,10 @@ static commandResult_t CMD_XiaomiCompact4_SetFilterLifespan(const void *context,
 static commandResult_t CMD_XiaomiCompact4_PM25Stats(const void *context, const char *cmd, const char *args, int cmdFlags) {
 	char hex[XIAOMI_C4_PM25_FRAME_LEN * 3];
 	XiaomiCompact4_PM25FrameToHex(g_pm25LastFrame, hex, sizeof(hex));
-	ADDLOG_INFO(LOG_FEATURE_CMD, "PM25 raw=%i accepted=%i rejected_checksum=%i rejected_range=%i rx_len=%i last_frame=%s",
-		g_pm25LastRaw, g_pm25AcceptedFrames, g_pm25RejectedChecksum, g_pm25RejectedRange, g_pm25RxLen, hex);
+	ADDLOG_INFO(LOG_FEATURE_CMD, "PM25 raw=%i accepted=%i rejected_checksum=%i rejected_range=%i rx_len=%i rx_bytes=%u qt=%u sec=%u qt_stale=%i failsafe=%i reason=%i last_frame=%s",
+		g_pm25LastRaw, g_pm25AcceptedFrames, g_pm25RejectedChecksum, g_pm25RejectedRange, g_pm25RxLen,
+		(unsigned int)g_diagPm25RxBytes, (unsigned int)g_diagQuickTicks, (unsigned int)g_diagEverySeconds,
+		g_quickTickStaleSeconds, g_failsafeActive, g_failsafeReason, hex);
 	return CMD_RES_OK;
 }
 
@@ -885,6 +936,10 @@ void XiaomiCompact4_AppendInformationToHTTPIndexPage(http_request_t *request, in
 	hprintf255(request, "<h3>Xiaomi Compact 4</h3>");
 	hprintf255(request, "PM2.5: %i ug/m3, Motor: %i rpm, Output/Target: %i%%/%i%%<br>",
 		g_lastPm25, g_lastMotorRpm, g_motorCurrentPercent, g_motorTargetPercent);
+	if (g_failsafeActive) {
+		hprintf255(request, "Motor failsafe: active, reason %i, quick tick stale %i s<br>",
+			g_failsafeReason, g_quickTickStaleSeconds);
+	}
 	hprintf255(request, "Filter: %i%% health, %i/%i d used, Replace: %s<br>",
 		XiaomiCompact4_FilterHealth(), XiaomiCompact4_FilterUsageDays(), g_filterLifespanDays, XiaomiCompact4_ReplaceFilter() ? "yes" : "no");
 	poststr(request, "<table><tr><td><form action=\"index\">");
