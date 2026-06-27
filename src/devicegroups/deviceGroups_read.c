@@ -39,18 +39,45 @@ int DGR_Parse(const byte *data, int len, dgrDevice_t *dev, struct sockaddr *addr
 	sequence = MSG_ReadU16(&msg);
 	flags = MSG_ReadU16(&msg);
 
-	// ack, not supported yet
-	if(flags == 8) {
-		return 1;
+	addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"DGR_Parse: [%s] seq 0x%04X, flags 0x%02X",inet_ntoa(((struct sockaddr_in *)addr)->sin_addr),sequence, flags);
+
+	// Handle ACK message - just validate sequence and return (the checkSequence callback will track the member)
+	if(flags == 8) {  // DGR_FLAG_ACK
+		// Just accept ACK messages after sequence check
+		// The checkSequence callback will update member tracking
+		if(dev && dev->cbs.checkSequence(sequence)) {
+			addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_DGR, "DGR_Parse: Rejected old ACK with sequence %u", sequence);
+			return 1;
+		}
+		addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_DGR, "DGR_Parse: Received ACK for sequence %u", sequence);
+		return 0;
 	}
 
-	if(dev->cbs.checkSequence(sequence)) {
+	// Handle ANNOUNCEMENT message - just a heartbeat, update member but don't process
+	if(flags == 64) {  // DGR_FLAG_ANNOUNCEMENT
+		addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_DGR, "DGR_Parse: Received ANNOUNCEMENT from device");
+		// Member is tracked via checkSequence call
+		if(dev && dev->cbs.checkSequence(sequence)) {
+			return 1;  // Reject if old sequence
+		}
+		return 0;  // Accept announcement as valid (member was found/updated)
+	}
+
+	// Handle STATUS_REQUEST - we should respond with our full status
+	if(flags == 2) {  // DGR_FLAG_STATUS_REQUEST
+		addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_DGR, "DGR_Parse: Received STATUS_REQUEST from device");
+		// For now, just track the member via sequence check
+		// In the future, we can add a callback to send full status
+		if(dev && dev->cbs.checkSequence(sequence)) {
+			return 1;  // Reject if old sequence
+		}
+		return 0;
+	}
+
+	if(dev && dev->cbs.checkSequence(sequence)) {
 		addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_DGR,"DGR ignoring message from duplicate or older sequence %i",sequence);
 		return 1;
 	}
-
-
-	addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"DGR_Parse: [%s] seq 0x%04X, flags 0x%02X",inet_ntoa(((struct sockaddr_in *)addr)->sin_addr),sequence, flags);
 
 	while(MSG_EOF(&msg)==0) {
 		type = MSG_ReadByte(&msg);
