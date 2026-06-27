@@ -17,8 +17,8 @@ void DGR_ProcessIncomingPacket(char *msgbuf, int nbytes) {
     // Parse header to extract group name, sequence, and flags
     DGR_Parse((byte*)msgbuf, nbytes, &def, (struct sockaddr *)&addr);
     
-    // Send ACK for NORMAL DATA MESSAGES (not ACK, not ANNOUNCEMENT, not STATUS_REQUEST)
-    if(flags != 8 && flags != 64 && flags != 2) {
+    // Send ACK for NORMAL DATA MESSAGES (not ACK, not ANNOUNCEMENT, not STATUS_REQUEST, not MORE_TO_COME)
+    if(!(flags & DGR_FLAG_ACK) && !(flags & DGR_FLAG_ANNOUNCEMENT) && !(flags & DGR_FLAG_STATUS_REQUEST) && !(flags & DGR_FLAG_MORE_TO_COME)) {
         byte ackBuffer[64];
         int ackLen = DGR_Quick_FormatACK(ackBuffer, sizeof(ackBuffer), groupName, sequence);
         if(ackLen > 0) {
@@ -34,14 +34,14 @@ void DGR_ProcessIncomingPacket(char *msgbuf, int nbytes) {
 **ACK is sent when:**
 - ✅ Flags == 0 (normal power/brightness/color message)
 - ✅ Flags contain DGR_FLAG_DIRECT (0x20) - direct unicast messages
-- ✅ Flags contain DGR_FLAG_MORE_TO_COME (0x10) - partial updates (multi-part message)
 - ✅ Flags contain DGR_FLAG_FULL_STATUS (0x04) - status updates
-- ✅ Any other data-carrying message flags
+- ✅ Any other data-carrying message flags not listed below
 
 **ACK is NOT sent when:**
-- ❌ Flags == 8 (DGR_FLAG_ACK) - don't ACK an ACK
-- ❌ Flags == 64 (DGR_FLAG_ANNOUNCEMENT) - don't ACK heartbeats
-- ❌ Flags == 2 (DGR_FLAG_STATUS_REQUEST) - don't ACK discovery requests
+- ❌ Flags & 8 (DGR_FLAG_ACK) - don't ACK an ACK
+- ❌ Flags & 64 (DGR_FLAG_ANNOUNCEMENT) - don't ACK heartbeats
+- ❌ Flags & 2 (DGR_FLAG_STATUS_REQUEST) - don't ACK discovery requests (including combined RESET|STATUS_REQUEST = 3)
+- ❌ Flags & 16 (DGR_FLAG_MORE_TO_COME) - don't ACK partial multi-part messages; wait for final part
 
 ### 3. ACK Message Format
 
@@ -170,7 +170,7 @@ OpenBK will produce these debug logs when processing data messages:
 | Brightness Update | 0x0000 | YES | YES | ✓ |
 | Color Update | 0x0000 | YES | YES | ✓ |
 | Full Status | 0x0004 | YES | YES | ✓ |
-| Partial Update (more to come) | 0x0010 | YES | YES | ✓ |
+| Partial Update (more to come) | 0x0010 | NO | NO | ✓ |
 | Direct Unicast Resend | 0x0020 | YES | YES | ✓ |
 | Status Request (discovery) | 0x0002 | NO | NO | ✓ |
 | Announcement (heartbeat) | 0x0040 | NO | NO | ✓ |
@@ -190,7 +190,7 @@ OpenBK will produce these debug logs when processing data messages:
 - [x] ACK doesn't send ACK to ACK messages
 - [x] ACK doesn't send ACK to announcements
 - [x] ACK doesn't send ACK to status requests
-- [x] ACK respects DGR_FLAG_MORE_TO_COME (still sends ACK when present)
+- [x] ACK respects DGR_FLAG_MORE_TO_COME (does NOT send ACK when this flag is present)
 - [x] Member sequence tracking updated on ACK reception
 - [x] ACK messages added to send queue (DGR_AddToSendQueue)
 - [x] Debug logging shows "Sent ACK for sequence X"

@@ -31,7 +31,7 @@ int DGR_Parse(const byte *data, int len, dgrDevice_t *dev, struct sockaddr *addr
 
 	if(dev != 0) {
 		// right now, only single group support
-		if(strcmp(dev->gr.groupName,groupName)) {
+		if(strcasecmp(dev->gr.groupName,groupName)) {
 			addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_DGR,"DGR ignoring message from group %s - device is in %s",groupName,dev->gr.groupName);
 			return -1;
 		}

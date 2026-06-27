@@ -595,8 +595,15 @@ void DGR_ProcessIncomingPacket(char *msgbuf, int nbytes) {
 #endif
 	DGR_Parse((byte*)msgbuf, nbytes, &def, (struct sockaddr *)&addr);
 	
-	// Send ACK for normal messages (not ACK, not ANNOUNCEMENT, not STATUS_REQUEST)
-	if(flags != 8 && flags != 64 && flags != 2) {  // Not DGR_FLAG_ACK, ANNOUNCEMENT, or STATUS_REQUEST
+	// Only ACK messages for our configured group - ignore other groups on the multicast bus
+	if(strcasecmp(groupName, CFG_DeviceGroups_GetName()) != 0) {
+		addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_DGR, "DGR_ProcessIncomingPacket: Ignoring packet for group '%s' (ours is '%s')", groupName, CFG_DeviceGroups_GetName());
+		g_inCmdProcessing = 0;
+		return;
+	}
+
+	// Send ACK for normal messages (not ACK, not ANNOUNCEMENT, not STATUS_REQUEST, not MORE_TO_COME)
+	if(!(flags & DGR_FLAG_ACK) && !(flags & DGR_FLAG_ANNOUNCEMENT) && !(flags & DGR_FLAG_STATUS_REQUEST) && !(flags & DGR_FLAG_MORE_TO_COME)) {
 		byte ackBuffer[64];
 		int ackLen = DGR_Quick_FormatACK(ackBuffer, sizeof(ackBuffer), groupName, sequence);
 		if(ackLen > 0) {
