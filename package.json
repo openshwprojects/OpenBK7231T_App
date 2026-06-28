@@ -5,7 +5,9 @@
 	"main": "gulpfile.js",
 	"scripts": {
 	  "test": "echo \"Error: no test specified\" && exit 1",
-	  "getcommands": "node scripts/getcommands.js"
+	  "getcommands": "node scripts/getcommands.js",
+	  "enabled-features": "node scripts/generate_enabled_features_doc.js",
+	  "enabled-features:check": "node scripts/generate_enabled_features_doc.js --check"
 	},
 	"repository": {
 	  "type": "git",
