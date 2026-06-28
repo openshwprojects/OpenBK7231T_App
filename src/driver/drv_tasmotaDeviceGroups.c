@@ -14,26 +14,6 @@
 #include "lwip/inet.h"
 #include "../httpserver/new_http.h"
 
-// Portable FreeRTOS tick-to-milliseconds conversion
-// Works across different FreeRTOS variants (some don't define portTICK_PERIOD_MS)
-#ifndef pdTICKS_TO_MS
-  #if defined(configTICK_RATE_HZ) && (configTICK_RATE_HZ > 0)
-    #define pdTICKS_TO_MS(ticks) ((uint32_t)(((uint64_t)(ticks) * 1000ULL) / (uint64_t)configTICK_RATE_HZ))
-  #else
-    // Conservative fallback if tick rate is unknown
-    #define pdTICKS_TO_MS(ticks) ((uint32_t)(ticks))
-  #endif
-#endif
-
-/* FreeRTOS compatibility for portTICK_PERIOD_MS across ports/toolchains */
-#ifndef portTICK_PERIOD_MS
-  #ifdef portTICK_RATE_MS
-    #define portTICK_PERIOD_MS portTICK_RATE_MS
-  #else
-    #define portTICK_PERIOD_MS (1000 / configTICK_RATE_HZ)
-  #endif
-#endif
-
 static const char* dgr_group = "239.255.250.250";
 static int dgr_port = 4447;
 static int dgr_retry_time_left = 5;
@@ -119,6 +99,7 @@ void DGR_AddToSendQueue(byte *data, int len) {
 void DGR_FlushSendQueue() {
 	dgrPacket_t *p;
     struct sockaddr_in addr;
+	int nbytes;
 	bool taken;
 
     memset(&addr, 0, sizeof(addr));
@@ -138,7 +119,7 @@ void DGR_FlushSendQueue() {
 	while(p) {
 		if(p->length != 0) {
 			g_dgr_stat_sent++;
-			(void)sendto(
+			nbytes = sendto(
 				g_dgr_socket_send,
 			   (const char*) p->buffer,
 				p->length,
@@ -464,7 +445,7 @@ dgrMember_t *findMember() {
 	g_dgrMembers[i].ip = ip;
 	g_dgrMembers[i].lastSeq = 0;
 	g_dgrMembers[i].acked_sequence = 0;
-	g_dgrMembers[i].last_heard_time = pdTICKS_TO_MS(xTaskGetTickCount());  // Current time in ms
+	g_dgrMembers[i].last_heard_time = xTaskGetTickCount() / portTICK_PERIOD_MS;  // Current time in ms
 	return &g_dgrMembers[i];
 }
 
@@ -480,7 +461,7 @@ int DGR_CheckSequence(uint16_t seq) {
 	addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_DGR, "DGR_CheckSequence: argument %i, last %i",(int)seq, (int)m->lastSeq);
 	
 	// Update last heard time - this member is alive
-	m->last_heard_time = pdTICKS_TO_MS(xTaskGetTickCount());
+	m->last_heard_time = xTaskGetTickCount() / portTICK_PERIOD_MS;
 	
 	// make it work past wrap at
 	if((seq > m->lastSeq) || (seq+10 > m->lastSeq+10)) {
@@ -533,7 +514,7 @@ void DRV_DGR_RunEverySecond() {
 		return;
 	}
 
-	now = pdTICKS_TO_MS(xTaskGetTickCount());  // Current time in milliseconds
+	now = xTaskGetTickCount() / portTICK_PERIOD_MS;  // Current time in milliseconds
 	groupName = CFG_DeviceGroups_GetName();
 	if(!groupName || !groupName[0]) {
 		return;  // No group configured
@@ -887,7 +868,6 @@ commandResult_t CMD_DGR_SendRGBCW(const void *context, const char *cmd, const ch
 			tmp[1] = *(c++);
 			tmp[2] = '\0';
 			r = sscanf(tmp, "%x", &val);
-			(void)r; /* r intentionally unused - just consuming sscanf result */
 			rgbcw[i] = val;
 			i++;
 		}
