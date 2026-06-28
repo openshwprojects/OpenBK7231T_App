@@ -146,6 +146,24 @@ jobs:
         export UBSAN_OPTIONS=halt_on_error=1:print_stacktrace=1:suppressions=platforms/linux/ubsan.suppressions
         ./build/win_main -runUnitTests 2
 
+  build_features:
+    name: Generate Enabled Feature Docs
+    needs: refs
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Source checkout
+        uses: actions/checkout@v4
+
+      - name: Generate enabled features doc
+        run: npm run enabled-features
+
+      - name: Upload enabled features doc
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.APP_NAME }}_${{ needs.refs.outputs.version }}_enabledFeatures
+          path: docs/enabledFeatures.md
+
   build:
     name: Build
     needs: refs
@@ -488,7 +506,7 @@ jobs:
   merge:
     name: Merge Artifacts
     runs-on: ubuntu-22.04
-    needs: [refs, build, build2, build_idf, build_txw81x]
+    needs: [refs, build, build2, build_idf, build_txw81x, build_features]
     #if: always() && needs.refs.outputs.new_release == 'true' && (github.ref == 'refs/heads/main' || github.ref_name == 'alpha')
     steps:
       - name: Merge Artifacts
