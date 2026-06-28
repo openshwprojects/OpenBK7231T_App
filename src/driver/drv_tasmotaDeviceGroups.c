@@ -7,10 +7,20 @@
 #include "../cmnds/cmd_public.h"
 #include "../logging/logging.h"
 #include "../devicegroups/deviceGroups_public.h"
+#include "../devicegroups/deviceGroups_local.h"
+#include "../bitmessage/bitmessage_public.h"
 #include "lwip/sockets.h"
 #include "lwip/ip_addr.h"
 #include "lwip/inet.h"
 #include "../httpserver/new_http.h"
+
+/* FreeRTOS compatibility: portTICK_PERIOD_MS fallback
+   TXW81X and OpenRDA5981 don't define portTICK_PERIOD_MS.
+   Other builds already have it defined, so the #ifndef guard protects them.
+*/
+#ifndef portTICK_PERIOD_MS
+  #define portTICK_PERIOD_MS 2
+#endif
 
 static const char* dgr_group = "239.255.250.250";
 static int dgr_port = 4447;
@@ -24,6 +34,8 @@ static int g_dgr_stat_received = 0;
 struct sockaddr_in g_mySockAddr;
 
 static uint16_t g_dgr_send_seq = 0;
+static uint32_t g_dgr_next_announcement_time = 0;  // Time to send next announcement
+static uint32_t g_dgr_initial_discovery_remaining = 0;  // Count of initial discovery messages to send
 
 const char *HAL_GetMyIPString();
 
@@ -241,6 +253,34 @@ void DRV_DGR_Send_FixedColor(const char *groupName, int colorIndex) {
 
 	DRV_DGR_Send_Generic(message, len);
 }
+
+// Send announcement message (heartbeat)
+void DRV_DGR_SendAnnouncement(const char *groupName) {
+	int len;
+	byte message[64];
+	
+	// Announcements are always sent, even during command processing
+	len = DGR_Quick_FormatAnnouncement(message, sizeof(message), groupName, g_dgr_send_seq);
+	
+	// Don't increment sequence for announcements (they use current sequence)
+	// But we still queue them
+	DGR_AddToSendQueue(message, len);
+	g_dgr_send_seq++;  // Increment after announcement
+	addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_DGR, "DRV_DGR_SendAnnouncement: Sent announcement for group %s", groupName);
+}
+
+// Send status request (discovery/rediscovery)
+void DRV_DGR_SendStatusRequest(const char *groupName) {
+	int len;
+	byte message[64];
+	
+	len = DGR_Quick_FormatStatusRequest(message, sizeof(message), groupName, g_dgr_send_seq);
+	
+	DGR_AddToSendQueue(message, len);
+	g_dgr_send_seq++;
+	addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_DGR, "DRV_DGR_SendStatusRequest: Sent status request for group %s", groupName);
+}
+
 void DRV_DGR_CreateSocket_Receive() {
 
     struct sockaddr_in addr;
@@ -387,6 +427,8 @@ void DRV_DGR_processLightBrightness(byte brightness) {
 typedef struct dgrMmember_s {
 	int ip;
 	uint16_t lastSeq;
+	uint16_t acked_sequence;			// Last sequence we received ACK for
+	uint32_t last_heard_time;			// Timestamp of last message from this member (for timeout)
 } dgrMember_t;
 
 #define MAX_DGR_MEMBERS 32
@@ -410,6 +452,8 @@ dgrMember_t *findMember() {
 	g_curDGRMembers ++;
 	g_dgrMembers[i].ip = ip;
 	g_dgrMembers[i].lastSeq = 0;
+	g_dgrMembers[i].acked_sequence = 0;
+	g_dgrMembers[i].last_heard_time = xTaskGetTickCount() / portTICK_PERIOD_MS;  // Current time in ms
 	return &g_dgrMembers[i];
 }
 
@@ -423,6 +467,9 @@ int DGR_CheckSequence(uint16_t seq) {
 		return 1;
 	}
 	addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_DGR, "DGR_CheckSequence: argument %i, last %i",(int)seq, (int)m->lastSeq);
+	
+	// Update last heard time - this member is alive
+	m->last_heard_time = xTaskGetTickCount() / portTICK_PERIOD_MS;
 	
 	// make it work past wrap at
 	if((seq > m->lastSeq) || (seq+10 > m->lastSeq+10)) {
@@ -445,6 +492,9 @@ int DGR_CheckSequence(uint16_t seq) {
 
 void DRV_DGR_RunEverySecond() {
 	const char *myip;
+	uint32_t now;
+	int i;
+	const char *groupName;
 
 	// TODO: do it only on IP change?
 	myip = HAL_GetMyIPString();
@@ -458,11 +508,54 @@ void DRV_DGR_RunEverySecond() {
 			dgr_retry_time_left = 5;
 			if(g_dgr_socket_receive <= 0){
 				DRV_DGR_CreateSocket_Receive();
+				// On socket creation, send initial discovery messages
+				groupName = CFG_DeviceGroups_GetName();
+				if(groupName && groupName[0]) {
+					g_dgr_initial_discovery_remaining = 10;  // Send 10 discovery requests
+					g_dgr_next_announcement_time = 0;  // Send first one immediately
+				}
 			}
 			if(g_dgr_socket_send <= 0){
 				DRV_DGR_CreateSocket_Send();
 			}
 		}
+		return;
+	}
+
+	now = xTaskGetTickCount() / portTICK_PERIOD_MS;  // Current time in milliseconds
+	groupName = CFG_DeviceGroups_GetName();
+	if(!groupName || !groupName[0]) {
+		return;  // No group configured
+	}
+
+	// Send initial status request messages for discovery
+	if(g_dgr_initial_discovery_remaining > 0) {
+		DRV_DGR_SendStatusRequest(groupName);
+		g_dgr_initial_discovery_remaining--;
+		return;  // Only send one per second during discovery phase
+	}
+
+	// Check for member timeouts
+	for(i = 0; i < g_curDGRMembers; i++) {
+		uint32_t elapsed = now - g_dgrMembers[i].last_heard_time;
+		if(elapsed > DGR_MEMBER_TIMEOUT) {
+			// Member has timed out - remove it
+			addLogAdv(LOG_INFO, LOG_FEATURE_DGR, "Member at index %i timed out after %lu ms", i, elapsed);
+			// Shift remaining members down
+			if(i < g_curDGRMembers - 1) {
+				memmove(&g_dgrMembers[i], &g_dgrMembers[i+1], (g_curDGRMembers - i - 1) * sizeof(dgrMember_t));
+			}
+			g_curDGRMembers--;
+			i--;  // Recheck this position
+		}
+	}
+
+	// Send periodic announcements (heartbeat every DGR_ANNOUNCEMENT_INTERVAL ms)
+	if(now >= g_dgr_next_announcement_time) {
+		DRV_DGR_SendAnnouncement(groupName);
+		// Schedule next announcement with random jitter (60-70 seconds)
+		g_dgr_next_announcement_time = now + DGR_ANNOUNCEMENT_INTERVAL + (rand() % 10000);
+		addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_DGR, "Scheduled next announcement in %lu ms", DGR_ANNOUNCEMENT_INTERVAL);
 	}
 }
 void DGR_SpoofNextDGRPacketSource(const char *ipStrs) {
@@ -473,8 +566,23 @@ void DGR_SpoofNextDGRPacketSource(const char *ipStrs) {
 }
 void DGR_ProcessIncomingPacket(char *msgbuf, int nbytes) {
 	dgrDevice_t def;
+	bitMessage_t msg;
+	char groupName[32];
+	uint16_t sequence;
+	uint16_t flags;
 
 	msgbuf[nbytes] = '\0';
+
+	// Parse the header to get group name, sequence, and flags
+	MSG_BeginReading(&msg, (byte*)msgbuf, nbytes);
+	if(MSG_CheckAndSkip(&msg, TASMOTA_DEVICEGROUPS_HEADER, strlen(TASMOTA_DEVICEGROUPS_HEADER)) == 0) {
+		return;  // Bad header
+	}
+	if(MSG_ReadString(&msg, groupName, sizeof(groupName)) <= 0) {
+		return;  // Failed to read group name
+	}
+	sequence = MSG_ReadU16(&msg);
+	flags = MSG_ReadU16(&msg);
 
 	strcpy(def.gr.groupName, CFG_DeviceGroups_GetName());
 	def.gr.devGroupShare_In = CFG_DeviceGroups_GetRecvFlags();
@@ -494,6 +602,24 @@ void DGR_ProcessIncomingPacket(char *msgbuf, int nbytes) {
 	DRV_DGR_Dump((byte*)msgbuf, nbytes);
 #endif
 	DGR_Parse((byte*)msgbuf, nbytes, &def, (struct sockaddr *)&addr);
+	
+	// Only ACK messages for our configured group - ignore other groups on the multicast bus
+	if(strcasecmp(groupName, CFG_DeviceGroups_GetName()) != 0) {
+		addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_DGR, "DGR_ProcessIncomingPacket: Ignoring packet for group '%s' (ours is '%s')", groupName, CFG_DeviceGroups_GetName());
+		g_inCmdProcessing = 0;
+		return;
+	}
+
+	// Send ACK for normal messages (not ACK, not ANNOUNCEMENT, not STATUS_REQUEST, not MORE_TO_COME)
+	if(!(flags & DGR_FLAG_ACK) && !(flags & DGR_FLAG_ANNOUNCEMENT) && !(flags & DGR_FLAG_STATUS_REQUEST) && !(flags & DGR_FLAG_MORE_TO_COME)) {
+		byte ackBuffer[64];
+		int ackLen = DGR_Quick_FormatACK(ackBuffer, sizeof(ackBuffer), groupName, sequence);
+		if(ackLen > 0) {
+			DGR_AddToSendQueue(ackBuffer, ackLen);
+			addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_DGR, "DGR_ProcessIncomingPacket: Sent ACK for sequence %u", sequence);
+		}
+	}
+	
 	g_inCmdProcessing = 0;
 
 }
@@ -560,6 +686,8 @@ void DRV_DGR_Shutdown()
 	dgr_retry_time_left = 5;
 	g_inCmdProcessing = 0;
 	g_dgr_send_seq = 0;
+	g_dgr_next_announcement_time = 0;
+	g_dgr_initial_discovery_remaining = 0;
 }
 
 void DRV_DGR_AppendInformationToHTTPIndexPage(http_request_t* request, int bPreState) {
@@ -789,6 +917,8 @@ void DRV_DGR_Init()
 {
 	memset(&g_dgrMembers[0],0,sizeof(g_dgrMembers));
 	g_curDGRMembers = 0;
+	g_dgr_next_announcement_time = 0;
+	g_dgr_initial_discovery_remaining = 0;
 
 	DRV_DGR_CreateSocket_Receive();
 	DRV_DGR_CreateSocket_Send();

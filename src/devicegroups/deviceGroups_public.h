@@ -39,6 +39,9 @@ int DGR_Quick_FormatBrightness(byte *buffer, int maxSize, const char *groupName,
 int DGR_Quick_FormatRGBCW(byte *buffer, int maxSize, const char *groupName, uint16_t sequence, int flags, byte r, byte g, byte b, byte c, byte w);
 int DGR_Quick_FormatFixedColor(byte *buffer, int maxSize, const char *groupName, uint16_t sequence, int flags, int color);
 
-
+// New functions for handshake protocol
+int DGR_Quick_FormatACK(byte *buffer, int maxSize, const char *groupName, uint16_t sequence);
+int DGR_Quick_FormatAnnouncement(byte *buffer, int maxSize, const char *groupName, uint16_t sequence);
+int DGR_Quick_FormatStatusRequest(byte *buffer, int maxSize, const char *groupName, uint16_t sequence);
 
 #endif
