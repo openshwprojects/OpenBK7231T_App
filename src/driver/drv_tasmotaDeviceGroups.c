@@ -14,6 +14,17 @@
 #include "lwip/inet.h"
 #include "../httpserver/new_http.h"
 
+/* FreeRTOS compatibility: portTICK_PERIOD_MS for TXW81X and OpenRDA5981 builds
+   These platforms don't define portTICK_PERIOD_MS in their FreeRTOS configs.
+   Default is 2 ms per tick (standard for 500 Hz tick rate on these platforms).
+   Other builds (BK7231N, BK7231T) already have this defined, so this won't affect them.
+*/
+#if defined(OPENTXW81X) || defined(OPENRDA5981)
+  #ifndef portTICK_PERIOD_MS
+    #define portTICK_PERIOD_MS 2
+  #endif
+#endif
+
 static const char* dgr_group = "239.255.250.250";
 static int dgr_port = 4447;
 static int dgr_retry_time_left = 5;
