@@ -4,6 +4,7 @@ const path = require('path');
 const ROOT = path.resolve(__dirname, '..');
 const WORKFLOW = path.join(ROOT, '.github', 'workflows', 'workflow.yaml');
 const CONFIG = path.join(ROOT, 'src', 'obk_config.h');
+const DRIVER_MAIN = path.join(ROOT, 'src', 'driver', 'drv_main.c');
 const OUT = path.join(ROOT, 'docs', 'enabledFeatures.md');
 
 const VARIANTS = {
@@ -114,72 +115,52 @@ const FEATURE_COLUMNS = [
   ['LFS', 'ENABLE_LITTLEFS'],
   ['Script', 'ENABLE_OBK_SCRIPTING'],
   ['Berry', 'ENABLE_OBK_BERRY'],
-  ['BT proxy', 'ENABLE_BT_PROXY'],
 ];
 
+// Some platform build files add driver defines outside src/obk_config.h.
+const PLATFORM_EXTRA_DEFINES = {
+  OpenBK7231U: ['ENABLE_DRIVER_MDNS'],
+  OpenBK7252: ['ENABLE_DRIVER_MDNS'],
+  OpenBK7252N: ['ENABLE_DRIVER_MDNS'],
+  OpenTR6260: ['ENABLE_DRIVER_MDNS'],
+  OpenRTL87X0C: ['ENABLE_DRIVER_MDNS', 'ENABLE_DRIVER_GAITEKAC'],
+  OpenECR6600: ['ENABLE_DRIVER_MDNS'],
+  OpenESP32: ['ENABLE_DRIVER_MDNS'],
+  OpenESP32C2: ['ENABLE_DRIVER_MDNS'],
+  OpenESP32C3: ['ENABLE_DRIVER_MDNS'],
+  OpenESP32C5: ['ENABLE_DRIVER_MDNS'],
+  OpenESP32C6: ['ENABLE_DRIVER_MDNS'],
+  OpenESP32C61: ['ENABLE_DRIVER_MDNS'],
+  OpenESP32S2: ['ENABLE_DRIVER_MDNS'],
+  OpenESP32S3: ['ENABLE_DRIVER_MDNS'],
+  OpenESP8266: ['ENABLE_DRIVER_MDNS'],
+};
+
 const DRIVER_GROUPS = [
-  ['Power', [
-    'ENABLE_DRIVER_BL0937',
-    'ENABLE_DRIVER_BL0942',
-    'ENABLE_DRIVER_BL0942SPI',
-    'ENABLE_DRIVER_CSE7766',
-    'ENABLE_DRIVER_CSE7761',
-    'ENABLE_DRIVER_HLW8112SPI',
-    'ENABLE_DRIVER_RN8209',
-  ]],
-  ['Light/LED', [
-    'ENABLE_LED_BASIC',
-    'ENABLE_DRIVER_LED',
-    'ENABLE_DRIVER_SM16703P',
-    'ENABLE_DRIVER_PIXELANIM',
-    'ENABLE_DRIVER_SM15155E',
-    'ENABLE_DRIVER_DDP',
-    'ENABLE_DRIVER_DDPSEND',
-    'ENABLE_DRIVER_PWM_GROUP',
-  ]],
-  ['Sensors', [
-    'ENABLE_DRIVER_DS1820',
-    'ENABLE_DRIVER_DS1820_FULL',
-    'ENABLE_DRIVER_DHT',
-    'ENABLE_DRIVER_AHT2X',
-    'ENABLE_DRIVER_BMPI2C',
-    'ENABLE_DRIVER_BMP280',
-    'ENABLE_DRIVER_SHT3X',
-    'ENABLE_DRIVER_CHT83XX',
-    'ENABLE_DRIVER_KP18058',
-    'ENABLE_DRIVER_ADCSMOOTHER',
-    'ENABLE_DRIVER_BATTERY',
-    'ENABLE_DRIVER_LTR_ALS',
-    'ENABLE_DRIVER_SGP',
-  ]],
-  ['IR/RF', [
-    'ENABLE_DRIVER_IR',
-    'ENABLE_DRIVER_IRREMOTEESP',
-    'ENABLE_DRIVER_IR2',
-    'ENABLE_DRIVER_TINYIR_NEC',
-    'ENABLE_DRIVER_RC',
-  ]],
-  ['Integrations', [
-    'ENABLE_DRIVER_TUYAMCU',
-    'ENABLE_DRIVER_ESPHOME_API',
-    'ENABLE_DRIVER_WEMO',
-    'ENABLE_DRIVER_HUE',
-    'ENABLE_DRIVER_MDNS',
-    'ENABLE_DRIVER_SSDP',
-    'ENABLE_DRIVER_MQTTSERVER',
-    'ENABLE_DRIVER_UART_TCP',
-  ]],
-  ['Other', [
-    'ENABLE_DRIVER_BRIDGE',
-    'ENABLE_DRIVER_HTTPBUTTONS',
-    'ENABLE_DRIVER_SHUTTERS',
-    'ENABLE_DRIVER_TCL',
-    'ENABLE_DRIVER_CHARTS',
-    'ENABLE_DRIVER_OPENWEATHERMAP',
-    'ENABLE_DRIVER_WIDGET',
-    'ENABLE_DRIVER_DMX',
-    'ENABLE_DRIVER_TCA9554',
-  ]],
+  ['Power', new Set([
+    'TESTPOWER', 'RN8209', 'BL0942', 'BL0942SPI', 'HLW8112SPI',
+    'ChargingLimit', 'BL0937', 'CSE7761', 'CSE7766',
+  ])],
+  ['Light/LED', new Set([
+    'PixelAnim', 'Drawers', 'PWMG', 'PT6523', 'TextScroller',
+    'SM16703P', 'SM15155E', 'DDPSend', 'DDP', 'PWMToggler',
+    'MAX72XX_Clock', 'SM2135', 'BP5758D', 'BP1658CJ', 'SM2235',
+    'SSD1306', 'MAX72XX', 'HT16K33', 'TM1637', 'GN6932',
+    'TM1638', 'HD2015', 'KP18058',
+  ])],
+  ['Sensors', new Set([
+    'PIR', 'DS3231', 'ADCButton', 'BMP280', 'BMPI2C', 'CHT83XX',
+    'MCP9808', 'ADCSmoother', 'SHT3X', 'SGP', 'AHT2X', 'DS1820',
+    'DS1820_FULL', 'Battery', 'NEO6M', 'LTR_ALS', 'DoorSensor',
+    'MAX6675', 'MAX31855',
+  ])],
+  ['IR/RF', new Set(['IR', 'RC', 'IR2', 'TinyIR_NEC'])],
+  ['Network/Integrations', new Set([
+    'TuyaMCU', 'tmSensor', 'Roomba', 'GirierMCU', 'ESPHomeAPI',
+    'TCL', 'OpenWeatherMap', 'Widget', 'NTP', 'MDNS', 'SSDP',
+    'DGR', 'Wemo', 'Hue', 'Bridge', 'UartTCP', 'GaitekAC',
+    'mqttServer', 'TXWCAM',
+  ])],
 ];
 
 function read(file) {
@@ -269,16 +250,9 @@ function parseDefine(line) {
   return { name: match[1], value };
 }
 
-function resolveDefines(build) {
-  const defines = new Map();
-  for (const name of PLATFORM_DEFINES[build.platform]) {
-    defines.set(name, 1);
-  }
-  const variant = build.platform === 'OpenXR806_DCDC' ? 9 : VARIANTS[build.variant] || 0;
-  defines.set('OBK_VARIANT', variant);
-
+function walkPreprocessorFile(file, defines, onActiveLine) {
   const stack = [{ parentActive: true, active: true, branchTaken: false }];
-  const lines = read(CONFIG).split('\n');
+  const lines = read(file).split('\n');
 
   function active() {
     return stack[stack.length - 1].active;
@@ -287,6 +261,9 @@ function resolveDefines(build) {
   for (const raw of lines) {
     const line = raw.trim();
     if (!line.startsWith('#')) {
+      if (active()) {
+        onActiveLine(raw, line);
+      }
       continue;
     }
 
@@ -343,20 +320,37 @@ function resolveDefines(build) {
       continue;
     }
 
-    const define = parseDefine(line);
-    if (define) {
-      defines.set(define.name, define.value);
-      continue;
-    }
-
-    match = line.match(/^#\s*undef\s+([A-Za-z_][A-Za-z0-9_]*)/);
-    if (match) {
-      defines.delete(match[1]);
-    }
+    onActiveLine(raw, line);
   }
 
   if (stack.length !== 1) {
-    throw new Error('Unbalanced preprocessor conditions in obk_config.h');
+    throw new Error(`Unbalanced preprocessor conditions in ${path.relative(ROOT, file)}`);
+  }
+}
+
+function resolveDefines(build) {
+  const defines = new Map();
+  for (const name of PLATFORM_DEFINES[build.platform]) {
+    defines.set(name, 1);
+  }
+  const variant = build.platform === 'OpenXR806_DCDC' ? 9 : VARIANTS[build.variant] || 0;
+  defines.set('OBK_VARIANT', variant);
+
+  walkPreprocessorFile(CONFIG, defines, (raw, line) => {
+    const define = parseDefine(line);
+    if (define) {
+      defines.set(define.name, define.value);
+      return;
+    }
+
+    const match = line.match(/^#\s*undef\s+([A-Za-z_][A-Za-z0-9_]*)/);
+    if (match) {
+      defines.delete(match[1]);
+    }
+  });
+
+  for (const name of PLATFORM_EXTRA_DEFINES[build.platform] || []) {
+    defines.set(name, 1);
   }
 
   return defines;
@@ -378,21 +372,45 @@ function prettyName(name) {
 }
 
 function yes(defines, name) {
-  return isEnabled(defines, name) ? 'yes' : '-';
+  return isEnabled(defines, name) ? '✅' : '-';
+}
+
+function parseRegisteredDrivers(defines) {
+  const drivers = [];
+  walkPreprocessorFile(DRIVER_MAIN, defines, (raw) => {
+    const match = raw.match(/^\s*\{\s*"([^"]+)"/);
+    if (match) {
+      drivers.push(match[1]);
+    }
+  });
+  return drivers;
+}
+
+function groupRegisteredDrivers(drivers) {
+  const remaining = new Set(drivers);
+  const groups = [];
+
+  for (const [group, knownDrivers] of DRIVER_GROUPS) {
+    const enabled = drivers.filter((driver) => knownDrivers.has(driver));
+    for (const driver of enabled) {
+      remaining.delete(driver);
+    }
+    if (enabled.length) {
+      groups.push(`${group}: ${enabled.join(', ')}`);
+    }
+  }
+
+  if (remaining.size) {
+    groups.push(`Other: ${Array.from(remaining).join(', ')}`);
+  }
+
+  return groups.join('<br>') || '-';
 }
 
 function buildRow(build) {
   const defines = resolveDefines(build);
-  const driverSummary = DRIVER_GROUPS
-    .map(([group, names]) => {
-      const enabled = enabledNames(defines, names);
-      return enabled.length ? `${group}: ${enabled.join(', ')}` : null;
-    })
-    .filter(Boolean)
-    .join('<br>');
-  const enabledDrivers = Array.from(defines.keys())
-    .filter((name) => name.startsWith('ENABLE_DRIVER_') && isEnabled(defines, name))
-    .sort();
+  const registeredDrivers = parseRegisteredDrivers(defines);
+  const driverSummary = groupRegisteredDrivers(registeredDrivers);
 
   return {
     build: build.platform,
@@ -400,7 +418,7 @@ function buildRow(build) {
     mcu: MCU_NAMES[build.platform] || build.platform.replace(/^Open/, ''),
     defines,
     driverSummary: driverSummary || '-',
-    enabledDrivers,
+    registeredDrivers,
   };
 }
 
@@ -418,9 +436,9 @@ function render(rows) {
   const lines = [];
   lines.push('# Enabled Features by Build');
   lines.push('');
-  lines.push("This file is autogenerated from `.github/workflows/workflow.yaml` and `src/obk_config.h`.");
-  lines.push("It shows what the active GitHub Actions firmware build matrix asks each platform/variant to compile in.");
-  lines.push("Platform SDK makefiles may still add extra defines outside this shared config.");
+  lines.push("This file is autogenerated from `.github/workflows/workflow.yaml`, `src/obk_config.h`, platform build defines, and `src/driver/drv_main.c`.");
+  lines.push("It shows what the active GitHub Actions firmware build matrix asks each platform/variant to compile in, and which drivers are registered for that build.");
+  lines.push("Platform SDK makefiles may still add extra defines outside the shared config; known platform driver defines are folded in here.");
   lines.push('');
   lines.push('Regenerate with:');
   lines.push('');
@@ -447,20 +465,20 @@ function render(rows) {
     rows.map((row) => [row.build, row.variant, row.driverSummary])
   ));
   lines.push('');
-  lines.push('## Full Enabled Driver Defines');
+  lines.push('## Registered Drivers');
   lines.push('');
-  lines.push('These are the `ENABLE_DRIVER_*` switches left enabled after platform and variant logic is applied.');
+  lines.push('These are the driver names present in the compiled `drv_main.c` driver table after platform, variant, and known platform makefile defines are applied.');
   lines.push('');
 
   for (const row of rows) {
     lines.push(`<details><summary>${row.build} (${row.variant})</summary>`);
     lines.push('');
-    if (row.enabledDrivers.length) {
-      for (const name of row.enabledDrivers) {
+    if (row.registeredDrivers.length) {
+      for (const name of row.registeredDrivers) {
         lines.push(`- \`${name}\``);
       }
     } else {
-      lines.push('- No `ENABLE_DRIVER_*` switches enabled.');
+      lines.push('- No registered drivers.');
     }
     lines.push('');
     lines.push('</details>');
