@@ -11,7 +11,6 @@
 //#include "driver/drv_ir.h"
 #include "driver/drv_public.h"
 #include "driver/drv_bl_shared.h"
-#include "driver/drv_hlw8112.h"
 //#include "ir/ir_local.h"
 
 #include "driver/drv_deviceclock.h"
@@ -1076,9 +1075,7 @@ void Main_OnEverySecond()
 				BL09XX_SaveEmeteringStatistics();
 			}
 #endif       
-#if ENABLE_DRIVER_HLW8112SPI
-			HLW8112_Save_Statistics();
-#endif 
+			DRV_SavePowerMeterDriverStatistics();
 			ADDLOGF_INFO("Rebooting...");
 			// call disconnect so that fast connect wouldn't fail
 			HAL_DisconnectFromWifi();
@@ -1417,6 +1414,10 @@ void Main_Init_BeforeDelay_Unsafe(bool bAutoRunScripts) {
 			if (PIN_FindPinIndexForRole(IOR_BL0937_CF, -1) != -1 && PIN_FindPinIndexForRole(IOR_BL0937_CF1, -1) != -1
 				&& (PIN_FindPinIndexForRole(IOR_BL0937_SEL, -1) != -1 || PIN_FindPinIndexForRole(IOR_BL0937_SEL_n, -1) != -1)) {
 				DRV_StartDriver("BL0937");
+			}
+			if (PIN_FindPinIndexForRole(IOR_BL0939_SCLK, -1) != -1 && PIN_FindPinIndexForRole(IOR_BL0939_MOSI, -1) != -1
+				&& PIN_FindPinIndexForRole(IOR_BL0939_MISO, -1) != -1) {
+				DRV_StartDriver("BL0939SPI");
 			}
 			if ((PIN_FindPinIndexForRole(IOR_BridgeForward, -1) != -1) && (PIN_FindPinIndexForRole(IOR_BridgeReverse, -1) != -1))
 			{

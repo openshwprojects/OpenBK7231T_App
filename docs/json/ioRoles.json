@@ -768,6 +768,30 @@
     "driver": "RC"
   },
   {
+    "name": "BL0939_SCLK",
+    "title": "BL0939 SCLK Pin",
+    "descr": "Software SPI clock pin for BL0939 SPI energy measuring devices.",
+    "enum": "IOR_BL0939_SCLK",
+    "file": "new_pins.h",
+    "driver": "BL0939SPI"
+  },
+  {
+    "name": "BL0939_MOSI",
+    "title": "BL0939 MOSI Pin",
+    "descr": "Software SPI MOSI/SDI pin for BL0939 SPI energy measuring devices.",
+    "enum": "IOR_BL0939_MOSI",
+    "file": "new_pins.h",
+    "driver": "BL0939SPI"
+  },
+  {
+    "name": "BL0939_MISO",
+    "title": "BL0939 MISO Pin",
+    "descr": "Software SPI MISO/SDO pin for BL0939 SPI energy measuring devices.",
+    "enum": "IOR_BL0939_MISO",
+    "file": "new_pins.h",
+    "driver": "BL0939SPI"
+  },
+  {
     "name": "Total_Options",
     "title": "TODO",
     "descr": "Current total number of available IOR roles",
