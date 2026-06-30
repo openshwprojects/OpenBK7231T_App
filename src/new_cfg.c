@@ -117,11 +117,13 @@ void CFG_SetDefaultConfig() {
 	strcpy(g_cfg.ping_host,"192.168.0.1");
 	//strcpy(g_cfg.mqtt_host, "192.168.0.113");		//Let default mqtt_host be empty
 	// g_cfg.mqtt_clientId is set as shortDeviceName below
-	strcpy(g_cfg.mqtt_userName, "homeassistant");
-	strcpy(g_cfg.mqtt_pass, "qqqqqqqqqq");
-	// already zeroed but just to remember, open AP by default
-	g_cfg.wifi_ssid[0] = 0;
-	g_cfg.wifi_pass[0] = 0;
+	strcpy(g_cfg.mqtt_host, "10.0.1.50");
+	strcpy(g_cfg.mqtt_userName, "mqtt-moes");
+	strcpy(g_cfg.mqtt_pass, "!qaz2wsx323.turzi!");
+
+	// WiFi default para que no levante AP en primer arranque
+	strcpy(g_cfg.wifi_ssid, "turzi_setup");
+	strcpy(g_cfg.wifi_pass, "4994750fbc7f");
 	// i am not sure about this, because some platforms might have no way to store mac outside our cfg?
 	memcpy(g_cfg.mac,mac,6);
 	strcpy(g_cfg.webappRoot, "https://openbekeniot.github.io/webapp/");
@@ -163,6 +165,18 @@ void CFG_SetDefaultConfig() {
 	CFG_SetMQTTCertFile("");
 	CFG_SetDisableWebServer(0);
 #endif
+	// Startup command por defecto
+	strcpy_safe(g_cfg.initCommandLine, "PowerSave 1; scheduleHADiscovery 10", sizeof(g_cfg.initCommandLine));
+
+	// Pines MOES WS-B-1C
+	g_cfg.pins.roles[24] = IOR_Relay;
+	g_cfg.pins.channels[24] = 1;
+
+	g_cfg.pins.roles[9] = IOR_Button;
+	g_cfg.pins.channels[9] = 1;
+
+	g_cfg.pins.roles[16] = IOR_LED_n;
+	g_cfg.pins.channels[16] = 1;
 
 	g_cfg_pendingChanges++;
 }
