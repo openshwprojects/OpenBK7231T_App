@@ -727,10 +727,12 @@ OpenBK7231U: prebuild_OpenBK7231U
 .PHONY: OpenBK7252
 OpenBK7252: prebuild_OpenBK7252
 	cd sdk/beken_freertos_sdk && ARM_GCC_TOOLCHAIN=$(PWD)/sdk/beken_freertos_sdk/toolchain/arm-none-eabi/bin/ OBK_VARIANT=$(OBK_VARIANT) sh build.sh bk7251 $(APP_VERSION)
+	cd sdk/beken_freertos_sdk && ./tools/rtt_ota/rt_ota_packaging_tool_cli -f ./out/bsp_enc.bin -o ./out/app_tuya.rbl -p app -c gzip -s aes -k 0123456789ABCDEF0123456789ABCDEF -i 0123456789ABCDEF -v $(APP_VERSION)
 	mkdir -p output/$(APP_VERSION)
 	cp sdk/beken_freertos_sdk/out/bk7251.bin output/$(APP_VERSION)/OpenBK7252_${APP_VERSION}.bin
 	cp sdk/beken_freertos_sdk/out/bk7251_QIO.bin output/$(APP_VERSION)/OpenBK7252_QIO_${APP_VERSION}.bin
 	cp sdk/beken_freertos_sdk/out/app.rbl output/$(APP_VERSION)/OpenBK7252_${APP_VERSION}.rbl
+	cp sdk/beken_freertos_sdk/out/app_tuya.rbl output/$(APP_VERSION)/OpenBK7252_Tuya_${APP_VERSION}.rbl
 	cp sdk/beken_freertos_sdk/out/bk7251_UA.bin output/$(APP_VERSION)/OpenBK7252_UA_${APP_VERSION}.bin
 	cp sdk/beken_freertos_sdk/out/bk7251_Tuya_QIO.bin output/$(APP_VERSION)/OpenBK7252_Tuya_QIO_${APP_VERSION}.bin
 	cp sdk/beken_freertos_sdk/out/bk7251_Tuya_UA.bin output/$(APP_VERSION)/OpenBK7252_Tuya_UA_${APP_VERSION}.bin
