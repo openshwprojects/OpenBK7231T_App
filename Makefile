@@ -737,7 +737,7 @@ OpenBK7252: prebuild_OpenBK7252
 		python ../../platforms/BK723x/patch_bk7252_tuya_bootloader.py "$$raw" "$$patched" "$(PWD)/sdk/beken_freertos_sdk/toolchain/arm-none-eabi/bin" ../../platforms/BK723x/bk7252_tuya_ota_write_wrap.c && \
 			./tools/crc_binary/encrypt_n "$$patched" 510fb093 a3cbeadc 5993a17e c7adeb03 0 && \
 			mv -f "$$patched_enc" "$$boot" && \
-			./tools/rt_partition_tool/rt_partition_tool_cli-x64 "$$boot" ./tools/rt_partition_tool/partition_default.json && \
+			./tools/rt_partition_tool/rt_partition_tool_cli-x64 "$$boot" ../../platforms/BK723x/bk7252_partition_2M.json && \
 			ARM_GCC_TOOLCHAIN=$(PWD)/sdk/beken_freertos_sdk/toolchain/arm-none-eabi/bin/ OBK_VARIANT=$(OBK_VARIANT) sh build.sh bk7251 $(APP_VERSION) || status=$$?; \
 		rm -f "$$patched" "$$patched_enc"; \
 		mv -f "$$bak" "$$boot"; \
