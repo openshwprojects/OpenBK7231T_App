@@ -728,19 +728,25 @@ OpenBK7231U: prebuild_OpenBK7231U
 OpenBK7252: prebuild_OpenBK7252
 	cd sdk/beken_freertos_sdk && { \
 		boot=./tools/beken_packager/bootloader_bk7251_uart2_v1.0.15_enc.bin; \
-		bak=$$boot.bk7252-tuya-table; \
+		raw=./tools/beken_packager/bootloader_bk7251_uart2_v1.0.15.bin; \
+		patched=./tools/beken_packager/bootloader_bk7251_uart2_v1.0.15_tuya_ota_patch.bin; \
+		patched_enc=./tools/beken_packager/bootloader_bk7251_uart2_v1.0.15_tuya_ota_patch_enc.bin; \
+		bak=$$boot.bk7252-tuya-patch; \
 		cp "$$boot" "$$bak" || exit $$?; \
 		status=0; \
-		./tools/rt_partition_tool/rt_partition_tool_cli-x64 "$$boot" ../../platforms/BK723x/bk7252_tuya_partition_2M.json && ARM_GCC_TOOLCHAIN=$(PWD)/sdk/beken_freertos_sdk/toolchain/arm-none-eabi/bin/ OBK_VARIANT=$(OBK_VARIANT) sh build.sh bk7251 $(APP_VERSION) || status=$$?; \
+		python ../../platforms/BK723x/patch_bk7252_tuya_bootloader.py "$$raw" "$$patched" "$(PWD)/sdk/beken_freertos_sdk/toolchain/arm-none-eabi/bin" ../../platforms/BK723x/bk7252_tuya_ota_write_wrap.c && \
+			./tools/crc_binary/encrypt_n "$$patched" 510fb093 a3cbeadc 5993a17e c7adeb03 0 && \
+			mv -f "$$patched_enc" "$$boot" && \
+			./tools/rt_partition_tool/rt_partition_tool_cli-x64 "$$boot" ../../platforms/BK723x/bk7252_tuya_partition_2M.json && \
+			ARM_GCC_TOOLCHAIN=$(PWD)/sdk/beken_freertos_sdk/toolchain/arm-none-eabi/bin/ OBK_VARIANT=$(OBK_VARIANT) sh build.sh bk7251 $(APP_VERSION) || status=$$?; \
+		rm -f "$$patched" "$$patched_enc"; \
 		mv -f "$$bak" "$$boot"; \
 		exit $$status; \
 	}
-	cd sdk/beken_freertos_sdk && ./tools/rtt_ota/rt_ota_packaging_tool_cli -f ./out/bsp_enc.bin -o ./out/app_tuya.rbl -p app -c gzip -s aes -k 0123456789ABCDEF0123456789ABCDEF -i 0123456789ABCDEF -v $(APP_VERSION)
 	mkdir -p output/$(APP_VERSION)
 	cp sdk/beken_freertos_sdk/out/bk7251.bin output/$(APP_VERSION)/OpenBK7252_${APP_VERSION}.bin
 	cp sdk/beken_freertos_sdk/out/bk7251_QIO.bin output/$(APP_VERSION)/OpenBK7252_QIO_${APP_VERSION}.bin
 	cp sdk/beken_freertos_sdk/out/app.rbl output/$(APP_VERSION)/OpenBK7252_${APP_VERSION}.rbl
-	cp sdk/beken_freertos_sdk/out/app_tuya.rbl output/$(APP_VERSION)/OpenBK7252_Tuya_${APP_VERSION}.rbl
 	cp sdk/beken_freertos_sdk/out/bk7251_UA.bin output/$(APP_VERSION)/OpenBK7252_UA_${APP_VERSION}.bin
 	cp sdk/beken_freertos_sdk/out/bk7251_Tuya_QIO.bin output/$(APP_VERSION)/OpenBK7252_Tuya_QIO_${APP_VERSION}.bin
 	cp sdk/beken_freertos_sdk/out/bk7251_Tuya_UA.bin output/$(APP_VERSION)/OpenBK7252_Tuya_UA_${APP_VERSION}.bin
