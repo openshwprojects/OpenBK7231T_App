@@ -30,7 +30,7 @@ extern uint8_t flash_size_8720;
 #include "../cmnds/cmd_public.h"
 
 #ifndef OBK_DISABLE_ALL_DRIVERS
-#include "../driver/drv_local.h"
+#include "../driver/drv_public.h"
 #endif
 
 #define MAX_JSON_VALUE_LENGTH   128
@@ -201,6 +201,9 @@ static int http_rest_post(http_request_t* request) {
 		OTA_IncrementProgress(1);
 #if ENABLE_BT_PROXY
 		HAL_BTProxy_StopScan();
+#endif
+#ifndef OBK_DISABLE_ALL_DRIVERS
+		DRV_ShutdownAllDrivers();
 #endif
 		int r = 0;
 #if PLATFORM_BEKEN

@@ -356,6 +356,10 @@ jobs:
             variant: 4M
             version: v5.5.2
             sdk: esp-idf
+          - platform: OpenESP32
+            variant: xiaomiCompact4
+            version: v5.5.2
+            sdk: esp-idf
           - platform: OpenESP32C2
             variant: 4M
             version: v5.5.2

@@ -264,12 +264,15 @@ int HAL_SetupWiFiOpenAccessPoint(const char* ssid)
 		},
 	};
 
+	strncpy((char*)wifi_ap_config.ap.ssid, (char*)ssid, 32);
+	esp_netif_set_hostname(ap_netif, CFG_GetDeviceName());
+
 	wifi_config_t wifi_sta_config =
 	{
 		.sta = { },
 	};
-	strncpy((char*)wifi_ap_config.ap.ssid, (char*)ssid, 32);
-	esp_netif_set_hostname(ap_netif, CFG_GetDeviceName());
+
+	strncpy((char*)wifi_sta_config.sta.ssid, (char*)ssid, 32);
 
 	esp_wifi_set_config(WIFI_IF_AP, &wifi_ap_config);
 	esp_wifi_set_config(WIFI_IF_STA, &wifi_sta_config);

@@ -23,6 +23,7 @@
 #include "drv_ds1820_common.h"
 #include "drv_ds3231.h"
 #include "drv_hlw8112.h"
+#include "drv_xiaomi_compact4.h"
 #include "drv_DCF77.h"
 
 void DRV_MQTTServer_Init();
@@ -173,6 +174,26 @@ static driver_t g_drivers[] = {
 	DRV_ESPHome_API_Deinit,                  // stopFunction
 	NULL,                                    // onChannelChanged
 	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
+	},
+#endif
+#if ENABLE_DRIVER_XIAOMI_COMPACT4
+	//drvdetail:{"name":"XiaomiCompact4",
+	//drvdetail:"title":"Xiaomi Smart Air Purifier 4 Compact",
+	//drvdetail:"descr":"Device-specific driver for Xiaomi Smart Air Purifier 4 Compact (zhimi.airp.cpa4) on ESP32-WROOM-32D hardware.",
+	//drvdetail:"requires":"ESP32"}
+	{ "XiaomiCompact4",                     // Driver Name
+	XiaomiCompact4_Init,                     // Init
+	XiaomiCompact4_RunEverySecond,           // onEverySecond
+	XiaomiCompact4_AppendInformationToHTTPIndexPage, // appendInformationToHTTPIndexPage
+	XiaomiCompact4_RunQuickTick,             // runQuickTick
+	XiaomiCompact4_Stop,                     // stopFunction
+	XiaomiCompact4_OnChannelChanged,         // onChannelChanged
+#if ENABLE_HA_DISCOVERY
+	XiaomiCompact4_OnHassDiscovery,          // onHassDiscovery
+#else
+	NULL,                                    // onHassDiscovery
+#endif
 	false,                                   // loaded
 	},
 #endif

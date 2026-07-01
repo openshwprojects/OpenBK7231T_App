@@ -251,6 +251,17 @@ void Drawers_QuickTick();
 void HGS02_Init(void);
 void HGS02_RunEverySecond(void);
 
+void XiaomiCompact4_Init(void);
+void XiaomiCompact4_RunEverySecond(void);
+void XiaomiCompact4_RunQuickTick(void);
+void XiaomiCompact4_Stop(void);
+void XiaomiCompact4_OnChannelChanged(int ch, int value);
+void XiaomiCompact4_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState);
+bool XiaomiCompact4_ShouldSkipGenericHassDiscovery(int ch);
+#if ENABLE_HA_DISCOVERY
+void XiaomiCompact4_OnHassDiscovery(const char *topic);
+#endif
+
 void UART_TCP_Init(void);
 void UART_TCP_Deinit(void);
 
