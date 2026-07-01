@@ -141,7 +141,6 @@ generateNotes:
         | BK7252         | OTA Update | [OpenBK7252_{{version}}.rbl]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenBK7252_{{version}}.rbl)                           |
         | BK7252         | UART Flash | [OpenBK7252_UA_{{version}}.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenBK7252_UA_{{version}}.bin)                     |
         | BK7252         | SPI Flash  | [OpenBK7252_QIO_{{version}}.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenBK7252_QIO_{{version}}.bin)                   |
-        | BK7252         | OTA Update | [OpenBK7252_Tuya_{{version}}.rbl]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenBK7252_Tuya_{{version}}.rbl)                 |
         | BK7252         | UART Flash | [OpenBK7252_Tuya_UA_{{version}}.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenBK7252_Tuya_UA_{{version}}.bin)           |
         | BK7252         | SPI Flash  | [OpenBK7252_Tuya_QIO_{{version}}.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenBK7252_Tuya_QIO_{{version}}.bin)         |
         | BK7252N        | OTA Update | [OpenBK7252N_{{version}}.rbl]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenBK7252N_{{version}}.rbl)                         |

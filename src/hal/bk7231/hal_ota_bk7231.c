@@ -15,9 +15,15 @@
 static unsigned char *sector = (void *)0;
 int sectorlen = 0;
 unsigned int addr = 0xff000;
+static unsigned int ota_start_addr = 0xff000;
+static unsigned int ota_total_len = 0;
 #define SECTOR_SIZE 0x1000
+#define RBL_HEADER_SIZE 0x60
+#define OTA_READBACK_BUF_SIZE 1024
 static void store_sector(unsigned int addr, unsigned char *data);
+static void log_ota_readback_crc(void);
 extern void flash_protection_op(UINT8 mode,PROTECT_TYPE type);
+extern UINT32 ef_calc_crc32(UINT32 crc, const void *buf, unsigned int size);
 
 // from wlan_ui.c
 void bk_reboot(void);
@@ -44,6 +50,8 @@ int init_ota(unsigned int startaddr){
         sector = os_malloc(SECTOR_SIZE);
         sectorlen = 0;
         addr = startaddr;
+        ota_start_addr = startaddr;
+        ota_total_len = 0;
         addLogAdv(LOG_INFO, LOG_FEATURE_OTA,"init OTA, startaddr 0x%x", startaddr);
         return 1;
     }
@@ -62,6 +70,7 @@ void close_ota(){
         sectorlen = 0;
     }
     addLogAdv(LOG_INFO, LOG_FEATURE_OTA,"close OTA, addr 0x%x", addr);
+    log_ota_readback_crc();
 
     os_free(sector);
     sector = (void *)0;
@@ -86,6 +95,7 @@ void add_otadata(unsigned char *data, int len)
             data += lenstore;
             len -= lenstore;
             sectorlen += lenstore;
+            ota_total_len += lenstore;
             //addLogAdv(LOG_INFO, LOG_FEATURE_OTA,"OTA sector start: %02.2x %02.2x len %d", sector[0], sector[1], sectorlen);
         }
 
@@ -111,6 +121,58 @@ static void store_sector(unsigned int addr, unsigned char *data){
     flash_ctrl(CMD_FLASH_WRITE_ENABLE, (void *)0);
     flash_write((char *)data , SECTOR_SIZE, addr);
     OTA_IncrementProgress(SECTOR_SIZE);
+}
+
+static UINT32 read_le32(const unsigned char *data) {
+    return ((UINT32)data[0]) |
+        (((UINT32)data[1]) << 8) |
+        (((UINT32)data[2]) << 16) |
+        (((UINT32)data[3]) << 24);
+}
+
+static void log_ota_readback_crc(void) {
+    unsigned char header[RBL_HEADER_SIZE];
+    unsigned char *buf;
+    UINT32 expected_crc;
+    UINT32 package_size;
+    UINT32 calc_crc = 0;
+    UINT32 offset = 0;
+
+    if (ota_total_len < RBL_HEADER_SIZE) {
+        addLogAdv(LOG_INFO, LOG_FEATURE_OTA,"readback skipped, upload too small 0x%x", ota_total_len);
+        return;
+    }
+
+    flash_read((char *)header, sizeof(header), ota_start_addr);
+    if (read_le32(header) != 0x004c4252) {
+        addLogAdv(LOG_INFO, LOG_FEATURE_OTA,"readback skipped, RBL magic 0x%x", read_le32(header));
+        return;
+    }
+
+    expected_crc = read_le32(header + 0x4c);
+    package_size = read_le32(header + 0x58);
+    if ((package_size + RBL_HEADER_SIZE) > ota_total_len) {
+        addLogAdv(LOG_INFO, LOG_FEATURE_OTA,"readback package 0x%x exceeds upload 0x%x", package_size, ota_total_len);
+        return;
+    }
+
+    buf = os_malloc(OTA_READBACK_BUF_SIZE);
+    if (!buf) {
+        addLogAdv(LOG_INFO, LOG_FEATURE_OTA,"readback malloc failed");
+        return;
+    }
+
+    while (offset < package_size) {
+        UINT32 chunk = package_size - offset;
+        if (chunk > OTA_READBACK_BUF_SIZE)
+            chunk = OTA_READBACK_BUF_SIZE;
+        flash_read((char *)buf, chunk, ota_start_addr + RBL_HEADER_SIZE + offset);
+        calc_crc = ef_calc_crc32(calc_crc, buf, chunk);
+        offset += chunk;
+    }
+
+    addLogAdv(LOG_INFO, LOG_FEATURE_OTA,"readback RBL crc calc 0x%x expected 0x%x package 0x%x upload 0x%x", calc_crc, expected_crc, package_size, ota_total_len);
+    os_free(buf);
 }
 
 
