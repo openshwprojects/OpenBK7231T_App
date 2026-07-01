@@ -1103,6 +1103,12 @@ void CMD_Init_Early() {
 	//cmddetail:"fn":"CMD_PowerSave_WFI","file":"cmnds/cmd_main.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("PowerSave_WFI", CMD_PowerSave_WFI, NULL);
+#if PLATFORM_BL602 && !PLATFORM_BL_NEW
+	{
+		extern void BL602_AddPartitionInfoCommand(void);
+		BL602_AddPartitionInfoCommand();
+	}
+#endif
 	//cmddetail:{"name":"if","args":"[Condition]['then'][CommandA]['else'][CommandB]",
 	//cmddetail:"descr":"Executed a conditional. Condition should be single line. You must always use 'then' after condition. 'else' is optional. Use aliases or quotes for commands with spaces",
 	//cmddetail:"fn":"CMD_If","file":"cmnds/cmd_main.c","requires":"",
