@@ -19,6 +19,7 @@ typedef struct dgrCallbacks_s {
 	void (*processLightFixedColor)(byte colorCode);
 	void (*processRGBCW)(byte *rgbcw);
 	int (*checkSequence)(uint16_t seq);
+	void (*sendFullStatus)(void);
 } dgrCallbacks_t;
 
 typedef struct dgrGroupDef_s {

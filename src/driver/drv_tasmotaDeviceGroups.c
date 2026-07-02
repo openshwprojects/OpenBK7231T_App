@@ -49,6 +49,7 @@ typedef struct dgrPacket_s {
 	struct dgrPacket_s *next;
 	byte buffer[MAX_DGR_PACKET];
 	byte length;
+	uint32_t target_ip;  // 0 = multicast, non-zero = unicast to this IP
 } dgrPacket_t;
 
 // the list is not allocated before first use
@@ -93,19 +94,50 @@ void DGR_AddToSendQueue(byte *data, int len) {
 		dgr_pending = p;
 	}
 	p->length = len;
+	p->target_ip = 0;  // multicast by default
 	memcpy(p->buffer,data,len);
+	xSemaphoreGive(g_mutex);
+}
+void DGR_AddToUnicastSendQueue(byte *data, int len, uint32_t target_ip) {
+	dgrPacket_t *p;
+	bool taken;
+	if(len > MAX_DGR_PACKET) {
+		addLogAdv(LOG_INFO, LOG_FEATURE_DGR, "DGR_AddToUnicastSendQueue: DGR packet too long - %i",len);
+		return;
+	}
+	if (g_mutex == 0) {
+		g_mutex = xSemaphoreCreateMutex();
+	}
+	taken = xSemaphoreTake(g_mutex, 10);
+	if (taken == false) {
+		return;
+	}
+	p = dgr_pending;
+	while(p) {
+		if(p->length == 0) {
+			break;
+		}
+		p = p->next;
+	}
+	if(p == 0) {
+		if (dgr_total_alloced_queue_size >= MAX_DGR_QUEUE_SIZE) {
+			addLogAdv(LOG_INFO, LOG_FEATURE_DGR, "DGR_AddToUnicastSendQueue: DGR queue grew to big, will drop packet");
+			return;
+		}
+		dgr_total_alloced_queue_size++;
+		p = malloc(sizeof(dgrPacket_t));
+		p->next = dgr_pending;
+		dgr_pending = p;
+	}
+	p->length = len;
+	p->target_ip = target_ip;
+	memcpy(p->buffer, data, len);
 	xSemaphoreGive(g_mutex);
 }
 void DGR_FlushSendQueue() {
 	dgrPacket_t *p;
-    struct sockaddr_in addr;
 	int nbytes;
 	bool taken;
-
-    memset(&addr, 0, sizeof(addr));
-    addr.sin_family = AF_INET;
-    addr.sin_addr.s_addr = inet_addr(dgr_group);
-    addr.sin_port = htons(dgr_port);
 
 	if (g_mutex == 0)
 	{
@@ -118,14 +150,23 @@ void DGR_FlushSendQueue() {
 	p = dgr_pending;
 	while(p) {
 		if(p->length != 0) {
+			struct sockaddr_in dest_addr;
+			memset(&dest_addr, 0, sizeof(dest_addr));
+			dest_addr.sin_family = AF_INET;
+			dest_addr.sin_port = htons(dgr_port);
+			if (p->target_ip != 0) {
+				dest_addr.sin_addr.s_addr = p->target_ip;
+			} else {
+				dest_addr.sin_addr.s_addr = inet_addr(dgr_group);
+			}
 			g_dgr_stat_sent++;
 			nbytes = sendto(
 				g_dgr_socket_send,
 			   (const char*) p->buffer,
 				p->length,
 				0,
-				(struct sockaddr*) &addr,
-				sizeof(addr)
+				(struct sockaddr*) &dest_addr,
+				sizeof(dest_addr)
 			);
 #if 0
 			rtos_delay_milliseconds(1);
@@ -482,6 +523,19 @@ int DGR_CheckSequence(uint16_t seq) {
 	return 1;
 }
 
+void DGR_HandleIncomingACK(uint16_t seq) {
+	dgrMember_t *m = findMember();
+	if (m == 0) {
+		return;
+	}
+	// Accept if newer, or handles uint16 wrap-around (matching Tasmota's logic: < 64536)
+	if (seq > m->acked_sequence || (m->acked_sequence - seq) < 64536) {
+		m->acked_sequence = seq;
+		addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_DGR, "DGR_HandleIncomingACK: member ACK'd our sequence %u", seq);
+	}
+	m->last_heard_time = xTaskGetTickCount() / portTICK_PERIOD_MS;
+}
+
 void DRV_DGR_RunEverySecond() {
 	const char *myip;
 	uint32_t now;
@@ -556,6 +610,30 @@ void DGR_SpoofNextDGRPacketSource(const char *ipStrs) {
 	addr.sin_addr.s_addr = inet_addr(ipStrs);
 	addr.sin_port = htons(dgr_port);
 }
+
+void DRV_DGR_SendFullStatus(const char *groupName, uint32_t target_ip) {
+	byte message[128];
+	int len;
+	int relayStates;
+	int numChannels = 1;
+
+	// Read current channel 1 state (1-based index)
+	relayStates = CHANNEL_Get(1);
+
+	len = DGR_Quick_FormatPowerState(message, sizeof(message), groupName,
+	                                 g_dgr_send_seq, DGR_FLAG_FULL_STATUS,
+	                                 relayStates, numChannels);
+	if (len > 0) {
+		DGR_AddToUnicastSendQueue(message, len, target_ip);
+		g_dgr_send_seq++;
+		addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_DGR, "DRV_DGR_SendFullStatus: sent full status to requester");
+	}
+}
+
+static void DRV_DGR_SendFullStatus_Callback(void) {
+	DRV_DGR_SendFullStatus(CFG_DeviceGroups_GetName(), addr.sin_addr.s_addr);
+}
+
 void DGR_ProcessIncomingPacket(char *msgbuf, int nbytes) {
 	dgrDevice_t def;
 	bitMessage_t msg;
@@ -563,7 +641,9 @@ void DGR_ProcessIncomingPacket(char *msgbuf, int nbytes) {
 	uint16_t sequence;
 	uint16_t flags;
 
-	msgbuf[nbytes] = '\0';
+	if (nbytes >= 0 && nbytes < 128) {
+		msgbuf[nbytes] = '\0';
+	}
 
 	// Parse the header to get group name, sequence, and flags
 	MSG_BeginReading(&msg, (byte*)msgbuf, nbytes);
@@ -576,6 +656,12 @@ void DGR_ProcessIncomingPacket(char *msgbuf, int nbytes) {
 	sequence = MSG_ReadU16(&msg);
 	flags = MSG_ReadU16(&msg);
 
+	// Intercept ACKs before DGR_Parse — update acked_sequence only, never lastSeq
+	if (flags & DGR_FLAG_ACK) {
+		DGR_HandleIncomingACK(sequence);
+		return;
+	}
+
 	strcpy(def.gr.groupName, CFG_DeviceGroups_GetName());
 	def.gr.devGroupShare_In = CFG_DeviceGroups_GetRecvFlags();
 	def.gr.devGroupShare_Out = CFG_DeviceGroups_GetSendFlags();
@@ -587,6 +673,7 @@ void DGR_ProcessIncomingPacket(char *msgbuf, int nbytes) {
 #endif
 	def.cbs.processPower = DRV_DGR_processPower;
 	def.cbs.checkSequence = DGR_CheckSequence;
+	def.cbs.sendFullStatus = DRV_DGR_SendFullStatus_Callback;
 
 	// don't send things that result from something we rxed...
 	g_inCmdProcessing = 1;
@@ -607,8 +694,8 @@ void DGR_ProcessIncomingPacket(char *msgbuf, int nbytes) {
 		byte ackBuffer[64];
 		int ackLen = DGR_Quick_FormatACK(ackBuffer, sizeof(ackBuffer), groupName, sequence);
 		if(ackLen > 0) {
-			DGR_AddToSendQueue(ackBuffer, ackLen);
-			addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_DGR, "DGR_ProcessIncomingPacket: Sent ACK for sequence %u", sequence);
+			DGR_AddToUnicastSendQueue(ackBuffer, ackLen, addr.sin_addr.s_addr);
+			addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_DGR, "DGR_ProcessIncomingPacket: Sent unicast ACK for sequence %u", sequence);
 		}
 	}
 	
@@ -617,7 +704,7 @@ void DGR_ProcessIncomingPacket(char *msgbuf, int nbytes) {
 }
 
 void DRV_DGR_RunQuickTick() {
-    char msgbuf[64];
+    char msgbuf[128];
 	socklen_t addrlen;
 	int nbytes;
 	int i;
@@ -634,7 +721,7 @@ void DRV_DGR_RunQuickTick() {
 		nbytes = recvfrom(
 			g_dgr_socket_receive,
 			msgbuf,
-			sizeof(msgbuf),
+			sizeof(msgbuf) - 1,
 			0,
 			(struct sockaddr *) &addr,
 			&addrlen
@@ -905,6 +992,7 @@ commandResult_t CMD_DGR_SendFixedColor(const void *context, const char *cmd, con
 
 	return CMD_RES_OK;
 }
+
 void DRV_DGR_Init()
 {
 	memset(&g_dgrMembers[0],0,sizeof(g_dgrMembers));
@@ -914,6 +1002,16 @@ void DRV_DGR_Init()
 
 	DRV_DGR_CreateSocket_Receive();
 	DRV_DGR_CreateSocket_Send();
+
+	// Start initial discovery if sockets were created successfully
+	if (g_dgr_socket_receive > 0 && g_dgr_socket_send > 0) {
+		const char *groupName = CFG_DeviceGroups_GetName();
+		if (groupName && groupName[0]) {
+			g_dgr_initial_discovery_remaining = 10;
+			g_dgr_next_announcement_time = 0xFFFFFFFF;  // Don't send announcement until discovery done
+			addLogAdv(LOG_INFO, LOG_FEATURE_DGR, "DRV_DGR_Init: Starting initial discovery (10 requests)");
+		}
+	}
 
 	//cmddetail:{"name":"DGR_SendPower","args":"[GroupName][ChannelValues][ChannelsCount]",
 	//cmddetail:"descr":"Sends a POWER message to given Tasmota Device Group with no reliability. Requires no prior setup and can control any group, but won't retransmit.",
