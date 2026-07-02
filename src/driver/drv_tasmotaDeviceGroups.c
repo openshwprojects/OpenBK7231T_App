@@ -14,6 +14,14 @@
 #include "lwip/inet.h"
 #include "../httpserver/new_http.h"
 
+/* FreeRTOS compatibility: portTICK_PERIOD_MS fallback
+   TXW81X and OpenRDA5981 don't define portTICK_PERIOD_MS.
+   Other builds already have it defined, so the #ifndef guard protects them.
+*/
+#ifndef portTICK_PERIOD_MS
+  #define portTICK_PERIOD_MS 2
+#endif
+
 static const char* dgr_group = "239.255.250.250";
 static int dgr_port = 4447;
 static int dgr_retry_time_left = 5;

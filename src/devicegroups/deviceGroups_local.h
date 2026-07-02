@@ -2,6 +2,14 @@
 #include "../new_common.h"
 #include "deviceGroups_public.h"
 
+// Windows/MSVC compatibility: map POSIX string functions to Windows equivalents
+#if defined(_WIN32) && !defined(strcasecmp)
+#define strcasecmp _stricmp
+#endif
+#if defined(_WIN32) && !defined(strncasecmp)
+#define strncasecmp _strnicmp
+#endif
+
 #define TASMOTA_DEVICEGROUPS_HEADER "TASMOTA_DGR"
 
 // Device Group Message Flags (must match Tasmota)
