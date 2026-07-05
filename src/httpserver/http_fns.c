@@ -1899,7 +1899,6 @@ int http_fn_cmd_tool(http_request_t* request) {
 	poststr(request, "Remember that some commands are added after a restart when a driver is activated. <br>");
 
 	commandLen = http_getArg(request->url, "cmd", tmpA, sizeof(tmpA));
-	addLogAdv(LOG_ERROR, LOG_FEATURE_HTTP, "http_fn_cmd_tool: len %i",commandLen);
 	if (commandLen) {
 		poststr(request, "<br>");
 		// all log printfs made by command will be sent also to request
@@ -2191,7 +2190,7 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 				hass_free_device_info(dev_info);
 				discoveryQueued = true;
 			}
-			if (i == OBK_VOLTAGE) {
+			if (i == OBK_VOLTAGE && BL_HasEnergySensorReading(OBK_FREQUENCY)) {
 				//20250319 XJIKKA to simplify and save space in flash frequency together with voltage
 				dev_info = hass_init_sensor_device_info(FREQUENCY_SENSOR, SPECIAL_CHANNEL_OBK_FREQUENCY, -1, -1, -1);
 				if (dev_info) {

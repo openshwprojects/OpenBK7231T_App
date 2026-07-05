@@ -107,8 +107,8 @@ void BL0937_Init_Pins()
 	HAL_PIN_Setup_Input_Pullup(GPIO_HLW_CF1);
 	HAL_PIN_Setup_Input_Pullup(GPIO_HLW_CF);
 
-	HAL_AttachInterrupt(GPIO_HLW_CF, INTERRUPT_STUB, HlwCfInterrupt);
-	HAL_AttachInterrupt(GPIO_HLW_CF1, INTERRUPT_STUB, HlwCf1Interrupt);
+	HAL_AttachInterrupt(GPIO_HLW_CF, INTERRUPT_FALLING, HlwCfInterrupt);
+	HAL_AttachInterrupt(GPIO_HLW_CF1, INTERRUPT_FALLING, HlwCf1Interrupt);
 
 	g_vc_pulses = 0;
 	g_p_pulses = 0;

@@ -492,8 +492,8 @@ OpenXR806_DCDC: prebuild_OpenXR806_DCDC $(XR806_SDK_DIR)/project/demo/sharedApp/
 	$(MAKE) -C $(XR806_SDK_DIR) PRJ=$(XR806_SHAREDAPP_PRJ) $(XR806_DCDC_BUILD_ARGS) build
 	$(MAKE) -C $(XR806_SDK_DIR) PRJ=$(XR806_SHAREDAPP_PRJ) $(XR806_DCDC_BUILD_ARGS) image_xz
 	mkdir -p output/$(APP_VERSION)
-	cp $(XR806_SDK_DIR)/project/demo/sharedApp/image/xr806/xr_system.img output/$(APP_VERSION)/OpenXR806_DCDC_$(APP_VERSION).img
-	cp $(XR806_SDK_DIR)/project/demo/sharedApp/image/xr806/xr_system_img_xz.img output/$(APP_VERSION)/OpenXR806_DCDC_$(APP_VERSION)_ota.img
+	cp $(XR806_SDK_DIR)/project/demo/sharedApp/image/xr806/xr_system.img output/$(APP_VERSION)/OpenXR806_$(APP_VERSION)_DCDC.img
+	cp $(XR806_SDK_DIR)/project/demo/sharedApp/image/xr806/xr_system_img_xz.img output/$(APP_VERSION)/OpenXR806_$(APP_VERSION)_DCDC_ota.img
 
 .PHONY: OpenXR809
 OpenXR809: prebuild_OpenXR809 sdk/OpenXR809/project/oxr_sharedApp/shared
@@ -726,7 +726,23 @@ OpenBK7231U: prebuild_OpenBK7231U
 
 .PHONY: OpenBK7252
 OpenBK7252: prebuild_OpenBK7252
-	cd sdk/beken_freertos_sdk && ARM_GCC_TOOLCHAIN=$(PWD)/sdk/beken_freertos_sdk/toolchain/arm-none-eabi/bin/ OBK_VARIANT=$(OBK_VARIANT) sh build.sh bk7251 $(APP_VERSION)
+	cd sdk/beken_freertos_sdk && { \
+		boot=./tools/beken_packager/bootloader_bk7251_uart2_v1.0.15_enc.bin; \
+		raw=./tools/beken_packager/bootloader_bk7251_uart2_v1.0.15.bin; \
+		patched=./tools/beken_packager/bootloader_bk7251_uart2_v1.0.15_tuya_ota_patch.bin; \
+		patched_enc=./tools/beken_packager/bootloader_bk7251_uart2_v1.0.15_tuya_ota_patch_enc.bin; \
+		bak=$$boot.bk7252-tuya-patch; \
+		cp "$$boot" "$$bak" || exit $$?; \
+		status=0; \
+		python ../../platforms/BK723x/patch_bk7252_tuya_bootloader.py "$$raw" "$$patched" "$(PWD)/sdk/beken_freertos_sdk/toolchain/arm-none-eabi/bin" ../../platforms/BK723x/bk7252_tuya_ota_write_wrap.c && \
+			./tools/crc_binary/encrypt_n "$$patched" 510fb093 a3cbeadc 5993a17e c7adeb03 0 && \
+			mv -f "$$patched_enc" "$$boot" && \
+			./tools/rt_partition_tool/rt_partition_tool_cli-x64 "$$boot" ../../platforms/BK723x/bk7252_partition_2M.json && \
+			ARM_GCC_TOOLCHAIN=$(PWD)/sdk/beken_freertos_sdk/toolchain/arm-none-eabi/bin/ OBK_VARIANT=$(OBK_VARIANT) sh build.sh bk7251 $(APP_VERSION) || status=$$?; \
+		rm -f "$$patched" "$$patched_enc"; \
+		mv -f "$$bak" "$$boot"; \
+		exit $$status; \
+	}
 	mkdir -p output/$(APP_VERSION)
 	cp sdk/beken_freertos_sdk/out/bk7251.bin output/$(APP_VERSION)/OpenBK7252_${APP_VERSION}.bin
 	cp sdk/beken_freertos_sdk/out/bk7251_QIO.bin output/$(APP_VERSION)/OpenBK7252_QIO_${APP_VERSION}.bin

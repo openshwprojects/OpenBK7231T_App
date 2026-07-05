@@ -97,4 +97,8 @@ Do not add anything here, as it will overwritten with next rebuild.
 | Button_pd | same as Button but with pulldown instead pullup |
 | Button_pd_n | Same as Button_pd, but with inverted logic. |
 | ToggleChannelOnToggle_pd | pulldown version of ToggleChannelOnToggle |
+| ShutterA | Shutter relay A. |
+| ShutterB | Shutter relay B. |
+| Button_ShutterUp | Pressing this button will start shutter up move. Double click will stop move. |
+| Button_ShutterDown | Pressing this button will start shutter down move. Double click will stop move. |
 | Total_Options | Current total number of available IOR roles |
