@@ -27,7 +27,7 @@ int str_to_ip(const char *s, byte *ip) {
 	// %hhu is a C99 thing, and newlib-nano/mculib don't support it
 	int tmp_ip[4];
 	int res; 
-	res = sscanf(s, "%d.%d.%d.%d", &tmp_ip[0], &tmp_ip[1], &tmp_ip[2], &tmp_ip[3]);
+	res = sscanf(s, IP_STRING_FORMAT, &tmp_ip[0], &tmp_ip[1], &tmp_ip[2], &tmp_ip[3]);
 	ip[0]=tmp_ip[0];
 	ip[1]=tmp_ip[1];
 	ip[2]=tmp_ip[2];
