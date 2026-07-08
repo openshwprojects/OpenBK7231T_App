@@ -23,7 +23,7 @@ static int tok_flags = 0;
 
 int str_to_ip(const char *s, byte *ip) {
 #if PLATFORM_W600 || PLATFORM_LN882H || PLATFORM_REALTEK || PLATFORM_ECR6600 || PLATFORM_TR6260 \
- || PLATFORM_XRADIO || PLATFORM_TXW81X || PLATFORM_LN8825 || PLATFORM_ESP8266 || PLATFORM_GD32VW553
+ || PLATFORM_XRADIO || PLATFORM_TXW81X || PLATFORM_LN8825 || PLATFORM_ESP8266 || PLATFORM_ESPIDF || PLATFORM_GD32VW553
 	// %hhu is a C99 thing, and newlib-nano/mculib don't support it
 	int tmp_ip[4];
 	int res; 
