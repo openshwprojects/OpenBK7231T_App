@@ -339,6 +339,54 @@ void expandQuotes(char* str) {
 	str[writeIndex] = 0;
 }
 
+// search index of a string (e.g. check a "flag")
+// like "-single" or "-multi" - return -1 else
+// you can us it to check "presence" of a string or
+// get the next arg to implement named arguments
+//
+// e.g. "startdriver aht2x -SDA 3 -SCL 5 ..."
+// you can get the SDA pin with Tokenizer_GetPin(Tokenizer_GetStringIndex("-SDA")+1)
+//
+// we'll have some defines for that in cmd_public.h
+// "defining"
+//
+// 	Tokenizer_GetPinEqual(STR,DEF) 		// as in example above, use "Tokenizer_GetPinEqual("-SDA", 8)" 			to get the Pin after "-SDA" (or default)
+//	Tokenizer_GetArgEqualInteger(STR,DEF)	// same for an integer value e.g. Tokenizer_GetArgEqualInteger("-chan_t", 2)	to get the integer after "-chan_t" (or default)
+//	Tokenizer_GetArgEqualDefault(STR,DEF) 	// same for a string, "Tokenizer_GetArgEqualDefault("type", "sht3x")"		to get the "-type" value (or default)
+//	Tokenizer_IsStringPresent(STR)		// test for presenc of a string, "Tokenizer_IsStringPresent("default")		to test, if "default" is present
+//
+
+
+int Tokenizer_GetStringIndex(const char *search) {
+    for (int i = 0; i < g_numArgs; i++) {
+        if (strcmp(g_args[i], search) == 0) return i;
+    }
+    return INDEX_NOTFOUND_VALUE; // return value out of range, we will check range in all Tokenizer_Get<XY> functions or return default; use -2 since we will call return-value +1 !
+}
+#if DEFINED_AND_NOT_ZERO(TOKENIZER_PARAM_EXTENSION)
+// if used multiple times, function will need less memory than macros...
+// 	Macros defined in cmd_public.h:
+// 	Tokenizer_GetPinEqual(STR,DEF) 		// as in example above, use "Tokenizer_GetPinEqual("-SDA", 8)" 			to get the Pin after "-SDA" (or default)
+//	Tokenizer_GetArgEqualInteger(STR,DEF)	// same for an integer value e.g. Tokenizer_GetArgEqualInteger("-chan_t", 2)	to get the integer after "-chan_t" (or default)
+//	Tokenizer_GetArgEqualDefault(STR,DEF) 	// same for a string, "Tokenizer_GetArgEqualDefault("type", "sht3x")"		to get the "-type" value (or default)
+//	Tokenizer_IsStringPresent(STR)		// test for presenc of a string, "Tokenizer_IsStringPresent("default")		to test, if "default" is present
+int Tokenizer_GetPinEqual(const char *search, int def){
+	return Tokenizer_GetPin(Tokenizer_GetStringIndex(search) + 1, def);
+}
+
+int Tokenizer_GetArgEqualInteger(const char *search, int def){
+	return Tokenizer_GetArgIntegerDefault(Tokenizer_GetStringIndex(search) + 1, def);
+}
+
+bool Tokenizer_IsStringPresent(const char *search){
+	return (Tokenizer_GetStringIndex(search) <  INDEX_NOTFOUND_VALUE );
+}
+const char *Tokenizer_GetArgEqualDefault(const char *search, const char *def){
+	int i=Tokenizer_GetStringIndex(search)+1;
+	return i < Tokenizer_GetArgsCount() ? Tokenizer_GetArg( i ) : def;
+}
+#endif
+
 void Tokenizer_TokenizeString(const char *s, int flags) {
 	char *p;
 
