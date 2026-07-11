@@ -36,6 +36,7 @@ sdk_add_include_directories(.)
 sdk_add_include_directories(${OBK_SRCS}../libraries/easyflash/inc)
 
 target_sources(app PRIVATE
+	utils_sha256.c
 	${OBK_SRCS}hal/bl602/hal_flashConfig_bl602.c
 	${OBK_SRCS}hal/bl602/hal_flashVars_bl602.c
 	${OBK_SRCS}hal/bl602/hal_generic_bl602.c

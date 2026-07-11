@@ -1148,6 +1148,108 @@ void SPIDMA_Deinit(void)
 	HAL_SPI_Deinit(port);
 }
 
+#elif PLATFORM_GD32VW553
+
+#include "drv_spidma.h"
+#include "stdbool.h"
+#include "gd32vw55x.h"
+#include "gd32vw55x_dma.h"
+#include "gd32vw55x_spi.h"
+#include "gd32vw55x_rcu.h"
+
+extern int spidma_led_pin;
+static bool spidma_init = false;
+
+void SPIDMA_Init(struct spi_message* msg)
+{
+	switch(spidma_led_pin)
+	{
+		case 0:
+			gpio_af_set(GPIOA, GPIO_AF_5, BIT(spidma_led_pin));
+			break;
+		case 4:
+			gpio_af_set(GPIOA, GPIO_AF_2, BIT(spidma_led_pin));
+			break;
+		case 7:
+			gpio_af_set(GPIOA, GPIO_AF_5, BIT(spidma_led_pin));
+			break;
+		case 9:
+			gpio_af_set(GPIOA, GPIO_AF_0, BIT(spidma_led_pin));
+			break;
+		default:
+			return;
+	}
+	gpio_mode_set(GPIOA, GPIO_MODE_AF, GPIO_PUPD_PULLDOWN, BIT(spidma_led_pin));
+	gpio_output_options_set(GPIOA, GPIO_OTYPE_PP, GPIO_OSPEED_10MHZ, BIT(spidma_led_pin));
+
+	rcu_periph_clock_enable(RCU_SPI);
+	rcu_periph_clock_enable(RCU_DMA);
+
+	spi_deinit();
+	dma_deinit(DMA_CH3);
+
+	spi_parameter_struct spi_init_struct;
+	spi_struct_para_init(&spi_init_struct);
+	spi_init_struct.trans_mode = SPI_TRANSMODE_FULLDUPLEX;
+	spi_init_struct.device_mode = SPI_MASTER;
+	spi_init_struct.frame_size = SPI_FRAMESIZE_8BIT;
+	spi_init_struct.clock_polarity_phase = SPI_CK_PL_LOW_PH_1EDGE;
+	spi_init_struct.prescale = SPI_PSC_64;
+	spi_init_struct.endian = SPI_ENDIAN_MSB;
+	spi_init_struct.nss = SPI_NSS_SOFT;
+	spi_init(&spi_init_struct);
+	spi_nss_internal_high();
+
+	dma_single_data_parameter_struct dma_init_struct;
+	dma_single_data_para_struct_init(&dma_init_struct);
+	dma_init_struct.periph_addr = (uint32_t)&SPI_DATA;
+	dma_init_struct.memory0_addr = 0;
+	dma_init_struct.direction = DMA_MEMORY_TO_PERIPH;
+	dma_init_struct.periph_memory_width = DMA_PERIPH_WIDTH_8BIT;
+	dma_init_struct.priority = DMA_PRIORITY_LOW;
+	dma_init_struct.number = 0;
+	dma_init_struct.periph_inc = DMA_PERIPH_INCREASE_DISABLE;
+	dma_init_struct.memory_inc = DMA_MEMORY_INCREASE_ENABLE;
+	dma_init_struct.circular_mode = DMA_CIRCULAR_MODE_DISABLE;
+	dma_single_data_mode_init(DMA_CH3, &dma_init_struct);
+	dma_channel_subperipheral_select(DMA_CH3, DMA_SUBPERI3);
+
+	spi_enable();
+	spidma_init = true;
+}
+void SPIDMA_StartTX(struct spi_message* msg)
+{
+	if(spidma_init)
+	{
+		dma_memory_address_config(DMA_CH3, DMA_MEMORY_0, (uint32_t)msg->send_buf);
+		dma_transfer_number_config(DMA_CH3, msg->send_len);
+		dma_memory_address_generation_config(DMA_CH3, DMA_MEMORY_INCREASE_ENABLE);
+
+		dma_channel_enable(DMA_CH3);
+
+		spi_dma_enable(SPI_DMA_TRANSMIT);
+
+		while(!dma_flag_get(DMA_CH3, DMA_INTF_FTFIF));
+		dma_flag_clear(DMA_CH3, DMA_INTF_FTFIF);
+
+		while(RESET == spi_flag_get(SPI_FLAG_TBE));
+
+		spi_dma_disable(SPI_DMA_TRANSMIT);
+		dma_channel_disable(DMA_CH3);
+	}
+}
+void SPIDMA_StopTX(void)
+{
+
+}
+void SPIDMA_Deinit(void)
+{
+	spidma_init = false;
+	dma_deinit(DMA_CH3);
+	spi_disable();
+	rcu_periph_clock_disable(RCU_SPI);
+	rcu_periph_clock_disable(RCU_DMA);
+}
 
 #else
 

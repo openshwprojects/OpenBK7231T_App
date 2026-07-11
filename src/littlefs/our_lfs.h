@@ -170,6 +170,13 @@
 #define LFS_BLOCKS_START_MIN 0xE0000
 #define LFS_BLOCKS_END 0xF4000
 
+#elif PLATFORM_GD32VW553
+
+#include "config_gdm32.h"
+#define LFS_BLOCKS_START RE_IMG_1_END
+#define LFS_BLOCKS_START_MIN RE_IMG_1_END
+#define LFS_BLOCKS_END RE_NVDS_DATA_OFFSET - 0x1000
+
 #else
 // TODO
 // start 0x1000 after OTA addr

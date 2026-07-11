@@ -73,6 +73,11 @@ extern uint32_t current_fw_idx;
 #include "temp_detect_pub.h"
 #elif defined(PLATFORM_ECR6600)
 #include "hal_system.h"
+#elif PLATFORM_GD32VW553
+#include "mac_types.h"
+#include "wifi_management.h"
+#include "wifi_export.h"
+#include "macif_types.h"
 #endif
 
 #if (defined(PLATFORM_BK7231T) || defined(PLATFORM_BK7231N)) && !defined(PLATFORM_BEKEN_NEW)
@@ -1056,6 +1061,11 @@ typedef enum {
 		default: s = "ERROR"; break;
 	}
 	hprintf255(request, "<h5>Reboot reason: %i - %s</h5>", reset_type, s);
+#elif PLATFORM_GD32VW553
+	extern uint8_t running_idx;
+	extern char reset_str[64];
+	hprintf255(request, "<h5>Current fw: FW%i</h5>", running_idx + 1);
+	hprintf255(request, "<h5>Reboot reason: %s</h5>", reset_str);
 #endif
 #if ENABLE_MQTT
 	if (CFG_GetMQTTHost()[0] == 0) {
@@ -1622,6 +1632,29 @@ int http_fn_cfg_wifi(http_request_t* request) {
 		hprintf255(request, "</table><br>");
 		//xSemaphoreTake(scan_hdl, pdMS_TO_TICKS(15 * 1000));
 		//vSemaphoreDelete(scan_hdl);
+
+#elif PLATFORM_GD32VW553
+
+		void scan_result_print(int idx, struct mac_scan_result* r)
+		{
+			hprintf255(request,
+				"<tr><td>%s</td><td>%i</td><td>%i</td></tr>",
+				*r->ssid.array ? (char*)r->ssid.array : "&lt;hidden&gt;",
+				wifi_freq_to_channel(r->chan->freq),
+				r->rssi);
+		}
+
+		if(wifi_management_scan(true, NULL) != 0)
+		{
+			hprintf255(request, "ERROR: scan failed!<br>");
+		}
+		else
+		{
+			hprintf255(request, "<table><tr><th>SSID</th><th>Channel</th><th>Signal</th></tr>");
+			wifi_netlink_scan_results_print(WIFI_VIF_INDEX_DEFAULT, scan_result_print);
+			hprintf255(request, "</table><br>");
+		}
+
 #else
 		hprintf255(request, "TODO %s<br>", PLATFORM_MCU_NAME);
 #endif
@@ -1866,7 +1899,6 @@ int http_fn_cmd_tool(http_request_t* request) {
 	poststr(request, "Remember that some commands are added after a restart when a driver is activated. <br>");
 
 	commandLen = http_getArg(request->url, "cmd", tmpA, sizeof(tmpA));
-	addLogAdv(LOG_ERROR, LOG_FEATURE_HTTP, "http_fn_cmd_tool: len %i",commandLen);
 	if (commandLen) {
 		poststr(request, "<br>");
 		// all log printfs made by command will be sent also to request
@@ -2158,7 +2190,7 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 				hass_free_device_info(dev_info);
 				discoveryQueued = true;
 			}
-			if (i == OBK_VOLTAGE) {
+			if (i == OBK_VOLTAGE && BL_HasEnergySensorReading(OBK_FREQUENCY)) {
 				//20250319 XJIKKA to simplify and save space in flash frequency together with voltage
 				dev_info = hass_init_sensor_device_info(FREQUENCY_SENSOR, SPECIAL_CHANNEL_OBK_FREQUENCY, -1, -1, -1);
 				if (dev_info) {
