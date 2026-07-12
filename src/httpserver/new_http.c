@@ -616,6 +616,9 @@ const char *htmlPinRoleNames[] = {
 	"ShutterB",
 	"BtnShutterUp",
 	"BtnShutterDown",
+	"BL0939_SCLK",
+	"BL0939_MOSI",
+	"BL0939_MISO",
 	"error",
 	"error",
 };
