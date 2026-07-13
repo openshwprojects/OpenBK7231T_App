@@ -40,6 +40,7 @@ https://developer.tuya.com/en/docs/iot/tuyacloudlowpoweruniversalserialaccesspro
 #define TUYA_CMD_QUERY_STATE   0x08
 #define TUYA_CMD_SET_TIME      0x1C
 #define TUYA_CMD_WEATHERDATA   0x21
+#define TUYA_CMD_C83_STATE     0x22
 #define TUYA_CMD_SET_RSSI      0x24
 #define TUYA_CMD_NETWORK_STATUS 0x2B
 #define TUYA_CMD_REPORT_STATUS_RECORD_TYPE		0x34 
@@ -131,6 +132,8 @@ const char* TuyaMCU_GetCommandTypeLabel(int t) {
 		return "SetTime";
 	if (t == TUYA_CMD_WEATHERDATA)
 		return "WeatherData";
+		if (t == TUYA_CMD_C83_STATE)
+		return "State";
 	if (t == TUYA_CMD_NETWORK_STATUS)
 		return "NetworkStatus";
 	if (t == TUYA_CMD_SET_RSSI)
@@ -2117,18 +2120,20 @@ void TuyaMCU_ProcessIncoming(const byte* data, int len) {
 		// added for https://www.elektroda.com/rtvforum/viewtopic.php?p=21095905#21095905
 		TuyaMCU_SendCommandWithData(0x04, 0, 0);
 		break;
-	case 0x22:
+	case TUYA_CMD_C83_STATE:
+		// 4.6.2026: in Wifi/Zigbee TH-sensors the state states are sent from tuyamcu via command 0x22 
 		{
 			TuyaMCU_ParseStateMessage(data + 6, len - 6);
-
+			if (version >= 3) {
+				state_updated = true;
+				g_sendQueryStatePackets = 0;
+			}
 			byte data23[1] = { 1 };
 			addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "ProcessIncoming: 0x22 replying");
 			// For example, the module returns 55 aa 00 23 00 01 01 24
 			TuyaMCU_SendCommandWithData(0x23, data23, 1);
 		}
 		break;
-
-		
 	case TUYA_CMD_STATE:
 		TuyaMCU_ParseStateMessage(data + 6, len - 6);
 		state_updated = true;
