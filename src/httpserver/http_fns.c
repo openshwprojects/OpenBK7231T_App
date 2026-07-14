@@ -369,6 +369,21 @@ int http_fn_index(http_request_t* request) {
 			}
 #endif
 		}
+#if ENABLE_LED_BASIC
+		if (http_getArg(request->url, "colormode", tmpA, sizeof(tmpA))) {
+			hprintf255(request, "<h3>Switch to %s mode!</h3>", tmpA);
+			if (strcmp(tmpA, "white") == 0) {
+				CMD_ExecuteCommandArgs("led_enableWhite", "100", COMMAND_FLAG_SOURCE_HTTP);
+			} else if (strcmp(tmpA, "rgb") == 0) {
+				char colorValue[16];
+				LED_GetBaseColorString(colorValue);
+				CMD_ExecuteCommandArgs("led_basecolor_rgb", colorValue, COMMAND_FLAG_SOURCE_HTTP);
+			}
+			if (CFG_HasFlag(OBK_FLAG_LED_AUTOENABLE_ON_WWW_ACTION)) {
+				LED_SetEnableAll(true);
+			}
+		}
+#endif
 		if (http_getArg(request->url, "set", tmpA, sizeof(tmpA))) {
 			int newSetValue = atoi(tmpA);
 			http_getArg(request->url, "setIndex", tmpA, sizeof(tmpA));
@@ -812,16 +827,38 @@ int http_fn_index(http_request_t* request) {
 			hprintf255(request, "<input  type=\"submit\" class='disp-none' value=\"Toggle %i\"/></form>", SPECIAL_CHANNEL_BRIGHTNESS);
 			poststr(request, "</td></tr>");
 		}
+		bool bRGBW = CFG_HasFlag(OBK_FLAG_LED_4PWM_RGBW_MODE);
+		bool bShowCWForPixelAnim = false;
+#if ENABLE_DRIVER_PIXELANIM
+		if (DRV_IsRunning("PixelAnim")) {
+			if (c_realPwms == 2)
+				bShowCWForPixelAnim = true;
+			PixelAnim_CreatePanel(request);
+		}
+#endif
+		if (bRGBW && c_pwms >= 4) {
+			poststr(request, "<tr><td>");
+			poststr(request, "<form action=\"index\">");
+			const char* rgbChecked = (g_colorMode == LIGHT_COLOR_MODE_RGB) ? "checked" : "";
+			const char* whiteChecked = (g_colorMode == LIGHT_COLOR_MODE_WHITE) ? "checked" : "";
+			poststr(request, "<h5>Mode: ");
+			hprintf255(request, "<input type=\"radio\" name=\"colormode\" value=\"rgb\" onclick=\"document.getElementById('rgbPickerRow').style.display=''\" onchange=\"this.form.submit()\" %s>RGB", rgbChecked);
+			hprintf255(request, "<input type=\"radio\" name=\"colormode\" value=\"white\" onclick=\"document.getElementById('rgbPickerRow').style.display='none'\" onchange=\"this.form.submit()\" %s>White", whiteChecked);
+			poststr(request, "</h5>");
+			poststr(request, "</form>");
+			poststr(request, "</td></tr>");
+		}
 		if (c_pwms >= 3) {
 			char colorValue[16];
 			inputName = "rgb";
 			const char* activeStr = "";
-			if (lm == Light_RGB) {
+			if (!bRGBW && lm == Light_RGB) {
 				activeStr = "[ACTIVE]";
 			}
 
 			LED_GetBaseColorString(colorValue);
-			poststr(request, "<tr><td>");
+			const char* rgbRowDisplay = (bRGBW && g_colorMode == LIGHT_COLOR_MODE_WHITE) ? " style=\"display:none\"" : "";
+			hprintf255(request, "<tr id=\"rgbPickerRow\"%s><td>", rgbRowDisplay);
 			hprintf255(request, "<h5>LED RGB Color %s</h5>", activeStr);
 			hprintf255(request, "<form action=\"index\" id=\"form%i\">", SPECIAL_CHANNEL_BASECOLOR);
 			// onchange would fire only if colour was changed
@@ -831,15 +868,7 @@ int http_fn_index(http_request_t* request) {
 			hprintf255(request, "<input  type=\"submit\" class='disp-none' value=\"Toggle Light\"/></form>");
 			poststr(request, "</td></tr>");
 		}
-		bool bShowCWForPixelAnim = false;
-#if ENABLE_DRIVER_PIXELANIM
-		if (DRV_IsRunning("PixelAnim")) {
-			if (c_realPwms == 2)
-				bShowCWForPixelAnim = true;
-			PixelAnim_CreatePanel(request);
-		}
-#endif
-		if (c_pwms == 2 || c_pwms >= 4 || bShowCWForPixelAnim) {
+		if ((!bRGBW || c_pwms < 4) && (c_pwms == 2 || c_pwms >= 4 || bShowCWForPixelAnim)) {
 			// TODO: temperature slider
 			int pwmValue;
 			const char* activeStr = "";
@@ -2164,7 +2193,10 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 		discoveryQueued = true;
 	}
 	else if (pwmCount > 0) {
-		if (pwmCount == 4) {
+		if (pwmCount == 4 && CFG_HasFlag(OBK_FLAG_LED_4PWM_RGBW_MODE)) {
+			dev_info = hass_init_light_device_info(LIGHT_RGBW);
+		}
+		else if (pwmCount == 4) {
 			addLogAdv(LOG_ERROR, LOG_FEATURE_HTTP, "4 PWM device not yet handled");
 		}
 		else if (pwmCount == 3) {
@@ -2670,6 +2702,17 @@ void http_generate_cw_cfg(http_request_t* request, const char* clientId) {
 	hprintf255(request, "    color_temp_state_topic: \"%s/led_temperature/get\"\n", clientId);
 	http_generate_singleColor_cfg(request, clientId);
 }
+void http_generate_rgbw_cfg(http_request_t* request, const char* clientId) {
+	hprintf255(request, "    rgb_command_template: \"{{ '#%%02x%%02x%%02x0000' | format(red, green, blue)}}\"\n");
+	hprintf255(request, "    rgb_value_template: \"{{ value[0:2]|int(base=16) }},{{ value[2:4]|int(base=16) }},{{ value[4:6]|int(base=16) }}\"\n");
+	hprintf255(request, "    rgb_state_topic: \"%s/led_basecolor_rgb/get\"\n", clientId);
+	hprintf255(request, "    rgb_command_topic: \"cmnd/%s/led_basecolor_rgb\"\n", clientId);
+	hprintf255(request, "    white_command_topic: \"cmnd/%s/led_enableWhite\"\n", clientId);
+	hprintf255(request, "    white_scale: 100\n");
+	hprintf255(request, "    color_mode_state_topic: \"%s/led_colorMode/get\"\n", clientId);
+
+	http_generate_singleColor_cfg(request, clientId);
+}
 
 void hprintf_qos_payload(http_request_t* request, const char* clientId) {
 	poststr(request, "    qos: 1\n");
@@ -2771,7 +2814,22 @@ int http_fn_ha_cfg(http_request_t* request) {
 		//hprintf255(request, "    #color_temp_value_template: \"{{ value }}\"\n");
 	}
 	else
-		if (pwmCount == 3) {
+		if (pwmCount == 4 && CFG_HasFlag(OBK_FLAG_LED_4PWM_RGBW_MODE)) {
+			// Enable + RGBW control
+			if (mqttAdded == 0) {
+				poststr(request, "mqtt:\n");
+				mqttAdded = 1;
+			}
+			if (switchAdded == 0) {
+				poststr(request, "  light:\n");
+				switchAdded = 1;
+			}
+
+			hass_print_unique_id(request, "  - unique_id: \"%s\"\n", LIGHT_RGBW, i, 0);
+			hprintf255(request, "    name: Light\n");
+			http_generate_rgbw_cfg(request, clientId);
+		}
+		else if (pwmCount == 3) {
 			// Enable + RGB control
 			if (mqttAdded == 0) {
 				poststr(request, "mqtt:\n");
@@ -3238,7 +3296,7 @@ const char* g_obk_flagNames[] = {
 	"[HTTP] Hide ON/OFF for relays (only red/green buttons)",
 	"[MQTT] Never add GET suffix",
 	"[WiFi] (RTL/BK/BL602) Enhanced fast connect by saving AP data to flash (preferable with Flag 37 & static ip). Quick reset 3 times to connect normally",
-	"error",
+	"[LED] 4 PWM RGBW mode - 3 PWMs for RGB, 4th PWM for independent White channel",
 	"error",
 	"error",
 	"error",
