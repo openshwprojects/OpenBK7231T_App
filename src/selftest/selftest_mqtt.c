@@ -511,6 +511,99 @@ void Test_MQTT_LED_RGBCW() {
 	// if assert has passed, we can clear SIM MQTT history, it's no longer needed
 	SIM_ClearMQTTHistory();
 }
+void Test_MQTT_LED_4PWM_RGBW() {
+	SIM_ClearOBK(0);
+	SIM_ClearAndPrepareForMQTTTesting("fakeRGBW4PWM", "bekens");
+
+	// Configure 4 PWMs on channels 0, 1, 2, 4 (skip 3)
+	PIN_SetPinRoleForPinIndex(3, IOR_PWM);
+	PIN_SetPinChannelForPinIndex(3, 0);
+	PIN_SetPinRoleForPinIndex(4, IOR_PWM);
+	PIN_SetPinChannelForPinIndex(4, 1);
+	PIN_SetPinRoleForPinIndex(21, IOR_PWM);
+	PIN_SetPinChannelForPinIndex(21, 2);
+	PIN_SetPinRoleForPinIndex(20, IOR_PWM);
+	PIN_SetPinChannelForPinIndex(20, 4);
+
+	CFG_SetFlag(OBK_FLAG_LED_4PWM_RGBW_MODE, true);
+	CFG_SetFlag(OBK_FLAG_MQTT_BROADCASTLEDFINALCOLOR, true);
+
+	// Enable and set RGB via MQTT
+	SIM_SendFakeMQTTAndRunSimFrame_CMND("led_enableAll", "1");
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("fakeRGBW4PWM/led_enableAll/get", "1", false);
+	SIM_ClearMQTTHistory();
+
+	SIM_SendFakeMQTTAndRunSimFrame_CMND("led_basecolor_rgb", "FF0000");
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("fakeRGBW4PWM/led_basecolor_rgb/get", "FF0000", false);
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("fakeRGBW4PWM/led_finalcolor_rgb/get", "FF0000", false);
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("fakeRGBW4PWM/led_colorMode/get", "rgb", false);
+	SIM_ClearMQTTHistory();
+
+	// RGB mode: ch0=R active, ch4=W zeroed
+	SELFTEST_ASSERT_CHANNEL(0, 100);
+	SELFTEST_ASSERT_CHANNEL(1, 0);
+	SELFTEST_ASSERT_CHANNEL(2, 0);
+	SELFTEST_ASSERT_CHANNEL(3, 0);
+	SELFTEST_ASSERT_CHANNEL(4, 0);
+	SELFTEST_ASSERT(g_colorMode == LIGHT_COLOR_MODE_RGB);
+
+	// Switch to white mode via MQTT
+	SIM_SendFakeMQTTAndRunSimFrame_CMND("led_enableWhite", "");
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("fakeRGBW4PWM/led_colorMode/get", "white", false);
+	SIM_ClearMQTTHistory();
+
+	// White mode: ch4=W active, ch0-2=RGB zeroed
+	SELFTEST_ASSERT(g_colorMode == LIGHT_COLOR_MODE_WHITE);
+	SELFTEST_ASSERT_CHANNEL(0, 0);
+	SELFTEST_ASSERT_CHANNEL(1, 0);
+	SELFTEST_ASSERT_CHANNEL(2, 0);
+	SELFTEST_ASSERT_CHANNEL(3, 0);
+	SELFTEST_ASSERT_CHANNEL(4, 100);
+
+	// Dimmer via MQTT in white mode
+	SIM_SendFakeMQTTAndRunSimFrame_CMND("led_dimmer", "50");
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("fakeRGBW4PWM/led_dimmer/get", "50", false);
+	SIM_ClearMQTTHistory();
+
+	SELFTEST_ASSERT_CHANNEL(4, 21);
+
+	// Back to full
+	SIM_SendFakeMQTTAndRunSimFrame_CMND("led_dimmer", "100");
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("fakeRGBW4PWM/led_dimmer/get", "100", false);
+	SIM_ClearMQTTHistory();
+
+	// Switch back to RGB mode via MQTT
+	SIM_SendFakeMQTTAndRunSimFrame_CMND("led_basecolor_rgb", "00FF00");
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("fakeRGBW4PWM/led_basecolor_rgb/get", "00FF00", false);
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("fakeRGBW4PWM/led_colorMode/get", "rgb", false);
+	SIM_ClearMQTTHistory();
+
+	SELFTEST_ASSERT(g_colorMode == LIGHT_COLOR_MODE_RGB);
+	SELFTEST_ASSERT_CHANNEL(0, 0);
+	SELFTEST_ASSERT_CHANNEL(1, 100);
+	SELFTEST_ASSERT_CHANNEL(2, 0);
+	SELFTEST_ASSERT_CHANNEL(4, 0);
+
+	// Disable via MQTT
+	SIM_SendFakeMQTTAndRunSimFrame_CMND("led_enableAll", "0");
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("fakeRGBW4PWM/led_enableAll/get", "0", false);
+	SIM_ClearMQTTHistory();
+
+	SELFTEST_ASSERT_CHANNEL(0, 0);
+	SELFTEST_ASSERT_CHANNEL(1, 0);
+	SELFTEST_ASSERT_CHANNEL(2, 0);
+	SELFTEST_ASSERT_CHANNEL(4, 0);
+
+	// Re-enable
+	SIM_SendFakeMQTTAndRunSimFrame_CMND("led_enableAll", "1");
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("fakeRGBW4PWM/led_enableAll/get", "1", false);
+	SIM_ClearMQTTHistory();
+	CFG_SetFlag(OBK_FLAG_LED_4PWM_RGBW_MODE, false);
+
+	SELFTEST_ASSERT(g_colorMode == LIGHT_COLOR_MODE_RGB);
+	SELFTEST_ASSERT_CHANNEL(1, 100);
+	SELFTEST_ASSERT_CHANNEL(4, 0);
+}
 void Test_MQTT_Misc() {
 	SIM_ClearOBK(0);
 	SIM_ClearAndPrepareForMQTTTesting("miscDevice", "bekens");
@@ -836,6 +929,7 @@ void Test_MQTT(){
 	Test_MQTT_LED_CW();
 	Test_MQTT_LED_RGB();
 	Test_MQTT_LED_RGBCW();
+	Test_MQTT_LED_4PWM_RGBW();
 #endif
 	Test_MQTT_Topic_With_Slash();
 	Test_MQTT_Topic_With_Slashes();
