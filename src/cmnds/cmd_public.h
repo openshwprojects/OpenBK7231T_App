@@ -295,10 +295,16 @@ float LED_GetBlue255();
 extern float led_baseColors[5];
 extern byte g_lightEnableAll;
 extern byte g_lightMode;
+enum LightColorMode {
+	LIGHT_COLOR_MODE_RGB = 0,
+	LIGHT_COLOR_MODE_WHITE = 1,
+};
+extern byte g_colorMode;
 void LED_RunQuickColorLerp(int deltaMS);
 void LED_RunOnEverySecond();
 OBK_Publish_Result sendFinalColor();
 OBK_Publish_Result sendColorChange();
+OBK_Publish_Result sendColorMode();
 OBK_Publish_Result LED_SendEnableAllState();
 OBK_Publish_Result LED_SendDimmerChange();
 OBK_Publish_Result sendTemperatureChange();

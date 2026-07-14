@@ -48,6 +48,7 @@ void hass_populate_unique_id(ENTITY_TYPE type, int index, char* uniq_id, int ase
 	case LIGHT_PWMCW:
 	case LIGHT_RGB:
 	case LIGHT_RGBCW:
+	case LIGHT_RGBW:
 		sprintf(uniq_id, "%s_%s", longDeviceName, "light");
 		break;
 		
@@ -178,6 +179,7 @@ void hass_populate_device_config_channel(ENTITY_TYPE type, char* uniq_id, HassDe
 	case LIGHT_PWMCW:
 	case LIGHT_RGB:
 	case LIGHT_RGBCW:
+	case LIGHT_RGBW:
 		sprintf(info->channel, "light/%s/config", uniq_id);
 		break;
 	case RELAY:
@@ -563,6 +565,7 @@ HassDeviceInfo* hass_init_device_info(ENTITY_TYPE type, int index, const char* p
 		case LIGHT_PWMCW:
 		case LIGHT_RGB:
 		case LIGHT_RGBCW:
+		case LIGHT_RGBW:
 			//There can only be one RGB so we can skip including index in the name. Do the same
 			//for 2 PWM case.
 			sprintf(g_hassBuffer, "Light");
@@ -788,6 +791,21 @@ HassDeviceInfo* hass_init_light_device_info(ENTITY_TYPE type) {
 		cJSON_AddStringToObject(info->root, "rgb_stat_t", "~/led_basecolor_rgb/get"); //rgb_state_topic
 		sprintf(g_hassBuffer, "cmnd/%s/led_basecolor_rgb", clientId);
 		cJSON_AddStringToObject(info->root, "rgb_cmd_t", g_hassBuffer);  //rgb_command_topic
+		break;
+
+	case LIGHT_RGBW:
+		cJSON_AddStringToObject(info->root, "rgb_cmd_tpl", "{{'#%02x%02x%02x0000'|format(red,green,blue)}}");
+		cJSON_AddStringToObject(info->root, "rgb_val_tpl", "{{ value[0:2]|int(base=16) }},{{ value[2:4]|int(base=16) }},{{ value[4:6]|int(base=16) }}");
+		cJSON_AddStringToObject(info->root, "rgb_stat_t", "~/led_basecolor_rgb/get");
+		sprintf(g_hassBuffer, "cmnd/%s/led_basecolor_rgb", clientId);
+		cJSON_AddStringToObject(info->root, "rgb_cmd_t", g_hassBuffer);
+
+		sprintf(g_hassBuffer, "cmnd/%s/led_enableWhite", clientId);
+		cJSON_AddStringToObject(info->root, "whit_cmd_t", g_hassBuffer);
+		cJSON_AddNumberToObject(info->root, "whit_scl", 100);
+
+		sprintf(g_hassBuffer, "%s", "~/led_colorMode/get");
+		cJSON_AddStringToObject(info->root, "clrm_stat_t", g_hassBuffer);
 		break;
 
 	case LIGHT_ON_OFF:
