@@ -256,7 +256,7 @@ void event_handler(void* arg, esp_event_base_t event_base,
 		esp_wifi_connect();
 	}
 #if PLATFORM_ESPIDF
-	else if(event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_CONNECTED && !g_bOpenAccessPointMode)
+	else if(event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_CONNECTED && (g_WifiMode != 1))
 	{
 		HAL_ESP_ApplyStaticIP();
 	}
