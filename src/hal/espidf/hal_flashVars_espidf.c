@@ -46,34 +46,38 @@ void HAL_FlashVars_SaveChannel(int index, int value)
 	nvs_close(handle);
 }
 
-void HAL_FlashVars_ReadLED(byte* mode, short* brightness, short* temperature, byte* rgb, byte* bEnableAll)
+void HAL_FlashVars_ReadLED(byte* mode, short* brightness, short* temperatureOrWhite, byte* rgb, byte* bEnableAll, byte* colorMode)
 {
 	InitFlashIfNeeded();
 	nvs_handle_t handle = 0;
 	nvs_open("config", NVS_READONLY, &handle);
 	nvs_get_u8(handle, "mode", mode);
 	nvs_get_i16(handle, "brs", brightness);
-	nvs_get_i16(handle, "temp", temperature);
+	nvs_get_i16(handle, "temp", temperatureOrWhite);
 	nvs_get_u8(handle, "r", &rgb[0]);
 	nvs_get_u8(handle, "g", &rgb[1]);
 	nvs_get_u8(handle, "b", &rgb[2]);
 	nvs_get_u8(handle, "ena", bEnableAll);
+	if (nvs_get_u8(handle, "clr", colorMode) != ESP_OK) {
+		*colorMode = 0;
+	}
 	nvs_close(handle);
 }
 
 
-void HAL_FlashVars_SaveLED(byte mode, short brightness, short temperature, byte r, byte g, byte b, byte bEnableAll)
+void HAL_FlashVars_SaveLED(byte mode, short brightness, short temperatureOrWhite, byte r, byte g, byte b, byte bEnableAll, byte colorMode)
 {
 	InitFlashIfNeeded();
 	nvs_handle_t handle = 0;
 	nvs_open("config", NVS_READWRITE, &handle);
 	nvs_set_u8(handle, "mode", mode);
 	nvs_set_i16(handle, "brs", brightness);
-	nvs_set_i16(handle, "temp", temperature);
+	nvs_set_i16(handle, "temp", temperatureOrWhite);
 	nvs_set_u8(handle, "r", r);
 	nvs_set_u8(handle, "g", g);
 	nvs_set_u8(handle, "b", b);
 	nvs_set_u8(handle, "ena", bEnableAll);
+	nvs_set_u8(handle, "clr", colorMode);
 	nvs_commit(handle);
 	nvs_close(handle);
 }
