@@ -1047,9 +1047,7 @@ typedef enum {
 #elif PLATFORM_XR809
 	image_seq_t running_seq = image_get_running_seq();
 	if (running_seq < IMAGE_SEQ_NUM) {
-		hprintf255(request,
-			"<h5>Current fw: FW%u (XR809 sequence %u)</h5>",
-			(unsigned int)running_seq + 1,
+		hprintf255(request, "<h5>Current fw: FW%u</h5>",
 			(unsigned int)running_seq);
 	} else {
 		hprintf255(request, "<h5>Current fw: Unknown</h5>");
