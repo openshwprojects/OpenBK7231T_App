@@ -486,8 +486,8 @@ int HAL_SetupWiFiAccessPoint(const char* ssid, const char* key)
 	memset(&general, 0, sizeof(general_param_t));
 	memset(&wNetConfig, 0x0, sizeof(network_InitTypeDef_st));
 
-	general.role = 1,
-	general.dhcp_enable = 1,
+	general.role = 1;
+	general.dhcp_enable = 1;
 
 	strcpy((char*)wNetConfig.local_ip_addr, APP_DRONE_DEF_NET_IP);
 	strcpy((char*)wNetConfig.net_mask, APP_DRONE_DEF_NET_MASK);
@@ -495,6 +495,7 @@ int HAL_SetupWiFiAccessPoint(const char* ssid, const char* key)
 
 
 	ADDLOGF_INFO("no flash configuration, use default\r\n");
+	mac = (unsigned char*)&ap_info.bssid.array;
 	// this is MAC for Access Point, it's different than Client one
 	// see wifi_get_mac_address source
 	wifi_get_mac_address((char*)mac, CONFIG_ROLE_AP);
@@ -560,8 +561,8 @@ int HAL_SetupWiFiOpenAccessPoint(const char* ssid){
 	memset(&ap_info, 0, sizeof(ap_param_t));
 	memset(&wNetConfig, 0x0, sizeof(network_InitTypeDef_st));
 
-	general.role = 1,
-	general.dhcp_enable = 1,
+	general.role = 1;
+	general.dhcp_enable = 1;
 
 	strcpy((char*)wNetConfig.local_ip_addr, APP_DRONE_DEF_NET_IP);
 	strcpy((char*)wNetConfig.net_mask, APP_DRONE_DEF_NET_MASK);

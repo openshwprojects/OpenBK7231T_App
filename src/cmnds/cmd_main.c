@@ -702,7 +702,8 @@ static commandResult_t CMD_SetStartValue(const void* context, const char* cmd, c
 }
 static commandResult_t CMD_OpenAP(const void* context, const char* cmd, const char* args, int cmdFlags) {
 
-	g_WifiMode = 1;
+	g_openAP = 5;
+//	g_WifiMode = 1;
 
 	return CMD_RES_OK;
 }
