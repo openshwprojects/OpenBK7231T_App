@@ -481,7 +481,7 @@ int HAL_SetupWiFiAccessPoint(const char* ssid, const char* key)
 	if (sta_ip_is_start()) HAL_DisconnectFromWifi();
 	general_param_t general;
 	network_InitTypeDef_st wNetConfig;
-	unsigned char* mac;
+//	unsigned char* mac;
 
 	memset(&general, 0, sizeof(general_param_t));
 	memset(&wNetConfig, 0x0, sizeof(network_InitTypeDef_st));
@@ -495,10 +495,10 @@ int HAL_SetupWiFiAccessPoint(const char* ssid, const char* key)
 
 
 	ADDLOGF_INFO("no flash configuration, use default\r\n");
-	mac = (unsigned char*)&ap_info.bssid.array;
+//	mac = (unsigned char*)&ap_info.bssid.array;
 	// this is MAC for Access Point, it's different than Client one
 	// see wifi_get_mac_address source
-	wifi_get_mac_address((char*)mac, CONFIG_ROLE_AP);
+//	wifi_get_mac_address((char*)mac, CONFIG_ROLE_AP);
 
 	bk_wlan_ap_set_default_channel(g_wifi_channel);
 	os_strncpy((char*)wNetConfig.wifi_ssid, ssid, sizeof(wNetConfig.wifi_ssid));
