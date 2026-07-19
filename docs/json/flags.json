@@ -88,7 +88,7 @@
     "enum": "OBK_FLAG_LED_REMEMBERLASTSTATE",
     "title": "todo",
     "file": "new_pins.h",
-    "descr": "[LED] Remember LED driver state (RGBCW, enable, brightness, temperature) after reboot"
+    "descr": "[LED] Remember LED driver state (RGBCW/RGBW, enable, brightness, temperature) after reboot"
   },
   {
     "index": "13",

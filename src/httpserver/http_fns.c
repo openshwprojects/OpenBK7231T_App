@@ -3254,7 +3254,7 @@ const char* g_obk_flagNames[] = {
 	"[SM2135] Use separate RGB/CW modes instead of writing all 5 values as RGB",
 	"[MQTT] Broadcast self state on MQTT connect",
 	"[PWM] BK7231 use 600hz instead of 1khz default",
-	"[LED] Remember LED driver state (RGBCW, enable, brightness, temperature) after reboot",
+	"[LED] Remember LED driver state (RGBCW/RGBW, enable, brightness, temperature) after reboot",
 	"[HTTP] Show actual PIN logic level for unconfigured pins",
 	"[IR] Do MQTT publish (RAW STRING) for incoming IR data",
 	"[IR] Allow 'unknown' protocol",

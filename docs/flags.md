@@ -17,7 +17,7 @@ Do not add anything here, as it will overwritten with next rebuild.
 | 9 | [SM2135] Use separate RGB/CW modes instead of writing all 5 values as RGB |
 | 10 | [MQTT] Broadcast self state on MQTT connect |
 | 11 | [PWM] BK7231 use 600hz instead of 1khz default |
-| 12 | [LED] Remember LED driver state (RGBCW, enable, brightness, temperature) after reboot |
+| 12 | [LED] Remember LED driver state (RGBCW/RGBW, enable, brightness, temperature) after reboot |
 | 13 | [HTTP] Show actual PIN logic level for unconfigured pins |
 | 14 | [IR] Do MQTT publish (RAW STRING) for incoming IR data |
 | 15 | [IR] Allow 'unknown' protocol |

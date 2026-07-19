@@ -549,7 +549,8 @@ OBK_Publish_Result sendTemperatureChange() {
 #endif
 
 void LED_SaveStateToFlashVarsNow() {
-	HAL_FlashVars_SaveLED(g_lightMode, g_brightness0to100, led_temperature_current, led_baseColors[0], led_baseColors[1], led_baseColors[2], g_lightEnableAll);
+	short tempOrWhite = CFG_HasFlag(OBK_FLAG_LED_4PWM_RGBW_MODE) ? led_baseColors[4] : led_temperature_current;
+	HAL_FlashVars_SaveLED(g_lightMode, g_brightness0to100, tempOrWhite, led_baseColors[0], led_baseColors[1], led_baseColors[2], g_lightEnableAll, g_colorMode);
 }
 void apply_smart_light() {
 	int i;
@@ -1955,17 +1956,23 @@ void NewLED_InitCommands(){
 void NewLED_RestoreSavedStateIfNeeded() {
 	if(CFG_HasFlag(OBK_FLAG_LED_REMEMBERLASTSTATE)) {
 		short brig;
-		short tmp;
+		short tmpOrWhite;
 		byte rgb[3];
 		byte mod;
 		byte bEnableAll;
+		byte colorMode;
 
-		HAL_FlashVars_ReadLED(&mod, &brig, &tmp, rgb, &bEnableAll);
+		HAL_FlashVars_ReadLED(&mod, &brig, &tmpOrWhite, rgb, &bEnableAll, &colorMode);
 
 		g_lightEnableAll = bEnableAll;
 		SET_LightMode(mod);
 		g_brightness0to100 = brig;
-		LED_SetTemperature(tmp,0);
+		g_colorMode = colorMode;
+		if (CFG_HasFlag(OBK_FLAG_LED_4PWM_RGBW_MODE)) {
+			led_baseColors[4] = (byte)tmpOrWhite;
+		} else {
+			LED_SetTemperature(tmpOrWhite, 0);
+		}
 		led_baseColors[0] = rgb[0];
 		led_baseColors[1] = rgb[1];
 		led_baseColors[2] = rgb[2];
