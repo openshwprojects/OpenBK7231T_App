@@ -78,10 +78,6 @@ short led_timeUntilNextSavePossible = 0;
 byte g_ledStateSavePending = 0;
 byte g_numBaseColors = 5;
 byte g_lightMode = Light_RGB;
-// 0=rgb, 1=white — selects active channels in OBK_FLAG_LED_4PWM_RGBW_MODE.
-// In RGB mode ch0-2 output, ch4 (white) is zeroed.
-// In White mode ch4 outputs, ch0-2 (RGB) are zeroed.
-byte g_colorMode = LIGHT_COLOR_MODE_RGB;
 
 // NOTE: in this system, enabling/disabling whole led light bulb
 // is not changing the stored channel and brightness values.
@@ -99,7 +95,6 @@ void LED_ResetGlobalVariablesToDefaults() {
 	int i;
 
 	g_lightMode = Light_RGB;
-	g_colorMode = LIGHT_COLOR_MODE_RGB;
 	for (i = 0; i < 5; i++) {
 		led_baseColors[i] = 255;
 		finalColors[i] = 0;
@@ -518,6 +513,9 @@ OBK_Publish_Result LED_SendCurrentLightModeParam_TempOrColor() {
 		}
 		return sendColorChange();
 	}
+	else if (g_lightMode == Light_White) {
+		sendColorMode();
+	}
 	return OBK_PUBLISH_WAS_NOT_REQUIRED;
 }
 OBK_Publish_Result sendFinalColor() {
@@ -550,7 +548,7 @@ OBK_Publish_Result sendTemperatureChange() {
 
 void LED_SaveStateToFlashVarsNow() {
 	short tempOrWhite = CFG_HasFlag(OBK_FLAG_LED_4PWM_RGBW_MODE) ? led_baseColors[4] : led_temperature_current;
-	HAL_FlashVars_SaveLED(g_lightMode, g_brightness0to100, tempOrWhite, led_baseColors[0], led_baseColors[1], led_baseColors[2], g_lightEnableAll, g_colorMode);
+	HAL_FlashVars_SaveLED(g_lightMode, g_brightness0to100, tempOrWhite, led_baseColors[0], led_baseColors[1], led_baseColors[2], g_lightEnableAll);
 }
 void apply_smart_light() {
 	int i;
@@ -623,18 +621,10 @@ void apply_smart_light() {
 				}
 			}
 			else if (g_lightMode == Light_RGB) {
-				if (CFG_HasFlag(OBK_FLAG_LED_4PWM_RGBW_MODE)) {
-					// RGB+W mode with channel topology [0]=R, [1]=G, [2]=B, [3]=unused, [4]=W
-					if (g_colorMode == LIGHT_COLOR_MODE_RGB) {
-						// RGB mode: zero channels 3+ (white + unused gap)
-						if (i >= 3) { baseRGBCW[i] = 0; final = 0; }
-					} else {
-						// White mode: zero channels 0-3 (RGB + unused gap)
-						if (i <= 3) { baseRGBCW[i] = 0; final = 0; }
-					}
-				} else {
-					if (i >= 3) { baseRGBCW[i] = 0; final = 0; }
-				}
+				if (i >= 3) { baseRGBCW[i] = 0; final = 0; }
+			} else if (g_lightMode == Light_White) {
+				// White sub-mode for 4PWM RGBW: only channel 4 active, zero 0-3
+				if (i <= 3) { baseRGBCW[i] = 0; final = 0; }
 			} else if(g_lightMode == Light_Anim) {
 				// skip all?
 				baseRGBCW[i] = 0;
@@ -837,6 +827,8 @@ const char *GetLightModeStr(int mode) {
 		return "cw";
 	if(mode == Light_RGB)
 		return "rgb";
+	if(mode == Light_White)
+		return "white";
 	return "er";
 }
 void SET_LightMode(int newMode) {
@@ -1281,7 +1273,7 @@ static commandResult_t dimmer(const void *context, const char *cmd, const char *
 #if ENABLE_MQTT
 // Publish current color mode ("rgb" or "white") for HA to switch UI
 OBK_Publish_Result sendColorMode() {
-	const char *mode = (g_colorMode == LIGHT_COLOR_MODE_RGB) ? "rgb" : "white";
+	const char *mode = (g_lightMode == Light_White) ? "white" : "rgb";
 	return MQTT_PublishMain_StringString_DeDuped(DEDUP_LED_COLOR_MODE, DEDUP_EXPIRE_TIME, "led_colorMode", mode, 0);
 }
 #endif
@@ -1293,7 +1285,7 @@ static commandResult_t led_enableWhite(const void *context, const char *cmd, con
 		return CMD_RES_ERROR;
 	}
 
-	g_colorMode = LIGHT_COLOR_MODE_WHITE;
+	g_lightMode = Light_White;
 
 	led_baseColors[4] = 255.0f;
 
@@ -1510,7 +1502,6 @@ commandResult_t LED_SetBaseColor(const void *context, const char *cmd, const cha
 				SET_LightMode(Light_All);
 			} else {
 				SET_LightMode(Light_RGB);
-				g_colorMode = LIGHT_COLOR_MODE_RGB;
 			}
 
 			g_numBaseColors = 0;
@@ -1960,14 +1951,12 @@ void NewLED_RestoreSavedStateIfNeeded() {
 		byte rgb[3];
 		byte mod;
 		byte bEnableAll;
-		byte colorMode;
 
-		HAL_FlashVars_ReadLED(&mod, &brig, &tmpOrWhite, rgb, &bEnableAll, &colorMode);
+		HAL_FlashVars_ReadLED(&mod, &brig, &tmpOrWhite, rgb, &bEnableAll);
 
 		g_lightEnableAll = bEnableAll;
 		SET_LightMode(mod);
 		g_brightness0to100 = brig;
-		g_colorMode = colorMode;
 		if (CFG_HasFlag(OBK_FLAG_LED_4PWM_RGBW_MODE)) {
 			led_baseColors[4] = (byte)tmpOrWhite;
 		} else {

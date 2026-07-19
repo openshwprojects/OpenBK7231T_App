@@ -407,7 +407,7 @@ void Test_LEDDriver_4PWM_RGBW() {
 	// === RGB mode ===
 	// Set red
 	CMD_ExecuteCommand("led_basecolor_rgb FF0000", 0);
-	SELFTEST_ASSERT(g_colorMode == LIGHT_COLOR_MODE_RGB);
+	SELFTEST_ASSERT(g_lightMode == Light_RGB);
 	SELFTEST_ASSERT_CHANNEL(0, 100);  // R
 	SELFTEST_ASSERT_CHANNEL(1, 0);    // G
 	SELFTEST_ASSERT_CHANNEL(2, 0);    // B
@@ -443,7 +443,7 @@ void Test_LEDDriver_4PWM_RGBW() {
 
 	// === White mode ===
 	CMD_ExecuteCommand("led_enableWhite", 0);
-	SELFTEST_ASSERT(g_colorMode == LIGHT_COLOR_MODE_WHITE);
+	SELFTEST_ASSERT(g_lightMode == Light_White);
 	SELFTEST_ASSERT_CHANNEL(0, 0);   // R zeroed in white mode
 	SELFTEST_ASSERT_CHANNEL(1, 0);   // G zeroed in white mode
 	SELFTEST_ASSERT_CHANNEL(2, 0);   // B zeroed in white mode
@@ -462,7 +462,7 @@ void Test_LEDDriver_4PWM_RGBW() {
 
 	// Switch back to RGB mode via led_basecolor_rgb
 	CMD_ExecuteCommand("led_basecolor_rgb FF0000", 0);
-	SELFTEST_ASSERT(g_colorMode == LIGHT_COLOR_MODE_RGB);
+	SELFTEST_ASSERT(g_lightMode == Light_RGB);
 	SELFTEST_ASSERT_CHANNEL(0, 100);
 	SELFTEST_ASSERT_CHANNEL(1, 0);
 	SELFTEST_ASSERT_CHANNEL(2, 0);
@@ -470,7 +470,7 @@ void Test_LEDDriver_4PWM_RGBW() {
 
 	// Back to white
 	CMD_ExecuteCommand("led_enableWhite", 0);
-	SELFTEST_ASSERT(g_colorMode == LIGHT_COLOR_MODE_WHITE);
+	SELFTEST_ASSERT(g_lightMode == Light_White);
 	SELFTEST_ASSERT_CHANNEL(4, 100);
 	SELFTEST_ASSERT_CHANNEL(0, 0);
 
@@ -483,7 +483,7 @@ void Test_LEDDriver_4PWM_RGBW() {
 
 	// Re-enable should retain white mode and value
 	CMD_ExecuteCommand("led_enableAll 1", 0);
-	SELFTEST_ASSERT(g_colorMode == LIGHT_COLOR_MODE_WHITE);
+	SELFTEST_ASSERT(g_lightMode == Light_White);
 	SELFTEST_ASSERT_CHANNEL(4, 100);
 	SELFTEST_ASSERT_CHANNEL(0, 0);
 

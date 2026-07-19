@@ -13,12 +13,12 @@ void __attribute__((weak)) HAL_FlashVars_SaveChannel(int index, int value)
 
 }
 
-void __attribute__((weak)) HAL_FlashVars_ReadLED(byte* mode, short* brightness, short* temperatureOrWhite, byte* rgb, byte* bEnableAll, byte* colorMode)
+void __attribute__((weak)) HAL_FlashVars_ReadLED(byte* mode, short* brightness, short* temperatureOrWhite, byte* rgb, byte* bEnableAll)
 {
 
 }
 
-void __attribute__((weak)) HAL_FlashVars_SaveLED(byte mode, short brightness, short temperatureOrWhite, byte r, byte g, byte b, byte bEnableAll, byte colorMode)
+void __attribute__((weak)) HAL_FlashVars_SaveLED(byte mode, short brightness, short temperatureOrWhite, byte r, byte g, byte b, byte bEnableAll)
 {
 
 }

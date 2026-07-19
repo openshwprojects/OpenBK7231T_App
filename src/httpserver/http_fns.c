@@ -839,8 +839,8 @@ int http_fn_index(http_request_t* request) {
 		if (bRGBW && c_pwms >= 4) {
 			poststr(request, "<tr><td>");
 			poststr(request, "<form action=\"index\">");
-			const char* rgbChecked = (g_colorMode == LIGHT_COLOR_MODE_RGB) ? "checked" : "";
-			const char* whiteChecked = (g_colorMode == LIGHT_COLOR_MODE_WHITE) ? "checked" : "";
+			const char* rgbChecked = (g_lightMode == Light_RGB) ? "checked" : "";
+			const char* whiteChecked = (g_lightMode == Light_White) ? "checked" : "";
 			poststr(request, "<h5>Mode: ");
 			hprintf255(request, "<input type=\"radio\" name=\"colormode\" value=\"rgb\" onclick=\"document.getElementById('rgbPickerRow').style.display=''\" onchange=\"this.form.submit()\" %s>RGB", rgbChecked);
 			hprintf255(request, "<input type=\"radio\" name=\"colormode\" value=\"white\" onclick=\"document.getElementById('rgbPickerRow').style.display='none'\" onchange=\"this.form.submit()\" %s>White", whiteChecked);
@@ -857,7 +857,7 @@ int http_fn_index(http_request_t* request) {
 			}
 
 			LED_GetBaseColorString(colorValue);
-			const char* rgbRowDisplay = (bRGBW && g_colorMode == LIGHT_COLOR_MODE_WHITE) ? " style=\"display:none\"" : "";
+			const char* rgbRowDisplay = (bRGBW && g_lightMode == Light_White) ? " style=\"display:none\"" : "";
 			hprintf255(request, "<tr id=\"rgbPickerRow\"%s><td>", rgbRowDisplay);
 			hprintf255(request, "<h5>LED RGB Color %s</h5>", activeStr);
 			hprintf255(request, "<form action=\"index\" id=\"form%i\">", SPECIAL_CHANNEL_BASECOLOR);
