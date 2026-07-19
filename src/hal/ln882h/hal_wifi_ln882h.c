@@ -69,7 +69,10 @@ void alert_log(const char *format, ...) {
 
 // length of "192.168.103.103" is 15 but we also need a NULL terminating character
 static char g_IP[32] = "unknown";
-static int g_bOpenAccessPointMode = 0;
+// is (Open-) Access point or a client?
+// included as "extern uint8_t g_WifiMode;" from new_common.h
+// initilized in user_main.c
+// values:	0 = STA	1 = OpenAP	2 = WAP-AP
 static uint8_t* psk_value = NULL;
 
 
@@ -418,7 +421,9 @@ void wifi_init_sta(const char* oob_ssid, const char* connect_key, obkStaticIP_t 
 
 void HAL_ConnectToWiFi(const char* oob_ssid, const char* connect_key, obkStaticIP_t *ip)
 {
-	g_bOpenAccessPointMode = 0;
+    alert_log("HAL_ConnectToWiFi");
+// set in user_main - included as "extern"
+//	g_WifiMode = 0; 	// 0 = STA	1 = OpenAP	2 = WAP-AP 
 	wifi_init_sta(oob_ssid, connect_key, ip, 0, NULL, NULL);
 }
 
@@ -441,7 +446,7 @@ static void ap_startup_cb(void * arg)
     }
 }
 
-void wifi_init_ap(const char* ssid)
+void wifi_init_ap(const char* ssid, const char* key)
 {
     tcpip_ip_info_t  ip_info;
     server_config_t  server_config;
@@ -456,7 +461,7 @@ void wifi_init_ap(const char* ssid)
     server_config.renew         = 2880;
     server_config.ip_start.addr = ipaddr_addr((const char *)"192.168.4.100");
     server_config.ip_end.addr   = ipaddr_addr((const char *)"192.168.4.150");
-    server_config.client_max    = 3;
+    server_config.client_max    = AP_STA_CLIENTS;
     dhcpd_curr_config_set(&server_config);
 
     // fix to generate unique AP MAC, mirrors STA code
@@ -479,11 +484,11 @@ void wifi_init_ap(const char* ssid)
 
     wifi_softap_cfg_t ap_cfg = {
 		.ssid            = ssid,
-		.pwd             = "",
+		.pwd             = (! key || key[0] == 0) ? "" : key,
 		.bssid           = mac_addr,
 		.ext_cfg = {
-			.channel         = 6,
-			.authmode        = WIFI_AUTH_OPEN,
+			.channel         = g_wifi_channel,
+			.authmode        = (! key || key[0] == 0) ? WIFI_AUTH_OPEN : WIFI_AUTH_WPA2_PSK,
 			.ssid_hidden     = 0,
 			.beacon_interval = 100,
 			.psk_value = NULL,
@@ -497,6 +502,14 @@ void wifi_init_ap(const char* ssid)
     wifi_manager_reg_event_callback(WIFI_MGR_EVENT_SOFTAP_STARTUP, &ap_startup_cb);
 
     ap_cfg.ext_cfg.psk_value = NULL;
+    if (ap_cfg.ext_cfg.authmode == WIFI_AUTH_WPA2_PSK){
+	// generate PSK from SSID and password
+	    static uint8_t psk_value[40]      = {0x0};
+	    if (0 == ln_psk_calc(ap_cfg.ssid, ap_cfg.pwd, psk_value, sizeof (psk_value))) {
+		    ap_cfg.ext_cfg.psk_value = psk_value;
+		    hexdump(LOG_LVL_INFO, "psk value ", psk_value, sizeof(psk_value));
+		}
+    }
 
     //3. wifi
     if(WIFI_ERR_NONE !=  wifi_softap_start(&ap_cfg)){
@@ -507,20 +520,60 @@ void wifi_init_ap(const char* ssid)
     }
 }
 
+
+#if ENABLE_WPA_AP
+int HAL_SetupWiFiAccessPoint(const char* ssid, const char* key)
+{
+	bool s = (ssid[0] != 0);
+	bool k = (!key || strlen(key) >= 8);
+	if (s && k) {
+		int tries=0;
+		if (key) alert_log("Starting WPA2 AP: ssid=%s - PW=%s", ssid,key);
+		else alert_log("Starting open AP: %s", ssid);
+		wifi_init_ap(ssid,key);
+		alert_log("AP started, waiting for: netdev_got_ip()");
+		while (!netdev_got_ip() && ++tries < 5) {
+			OS_MsDelay(1000);
+		}
+		if (tries < 5){
+			alert_log("AP started OK!");
+			return WIFI_ERR_NONE;
+		}
+		alert_log("AP start failed!");
+		return WIFI_ERR_TIMEOUT;
+	}
+
+	if (!s) {
+	    alert_log("ERROR: empty SSID!!\r\n");
+	}
+	if (!k) {
+	    alert_log("ERROR: Password minimum is 8 characters!\r\n");
+	}
+
+	if (g_wifiStatusCallback != 0) {
+	    g_wifiStatusCallback(WIFI_AP_FAILED);
+	}
+	return WIFI_ERR_INVALID_PARAM;
+}
+#endif
+
 int HAL_SetupWiFiOpenAccessPoint(const char* ssid)
 {
-	alert_log("Starting AP: %s", ssid);
-	wifi_init_ap(ssid);
+#if !ENABLE_WPA_AP
+	alert_log("Starting open AP: %s", ssid);
+	wifi_init_ap(ssid,NULL);
 
 	alert_log("AP started, waiting for: netdev_got_ip()");
-    while (!netdev_got_ip()) {
-        OS_MsDelay(1000);
-    }
-
-	alert_log("AP started OK!");
-	g_bOpenAccessPointMode = 1;
-
+	int tries=0;
+	while (!netdev_got_ip() && ++tries < 5) {
+		OS_MsDelay(1000);
+	}
+	if (tries < 5) alert_log("AP started OK!");
+	else alert_log("AP start failed!");
 	return 0;
+#else
+	HAL_SetupWiFiAccessPoint(ssid, NULL);
+#endif
 }
 
 void HAL_FastConnectToWiFi(const char* oob_ssid, const char* connect_key, obkStaticIP_t* ip)
@@ -549,6 +602,58 @@ void HAL_DisableEnhancedFastConnect()
 
 #else
 
+#if ENABLE_WPA_AP
+int HAL_SetupWiFiAccessPoint(const char* ssid, const char* key)
+{
+    system_parameter_set_hostname(SOFT_AP_IF, CFG_GetDeviceName());
+
+    uint8_t macaddr[6] = { 0 }, macaddr_default[6] = { 0 };
+    wifi_config_t wifi_config = {
+        .ap = {
+            .ssid_len = strlen(ssid),
+            .password = "",
+            .channel = 1,
+            .authmode = WIFI_AUTH_WPA2_PSK,
+            .ssid_hidden = 0,
+            .max_connection = AP_STA_CLIENTS,
+            .beacon_interval = 100,
+            .reserved = 0,
+        },
+    };
+    memcpy(&wifi_config.ap.password, key, strlen(key));
+    memcpy(&wifi_config.ap.ssid, ssid, wifi_config.ap.ssid_len);
+    wifi_init_type_t init_param = {
+        .wifi_mode = WIFI_MODE_AP,
+        .sta_ps_mode = WIFI_NO_POWERSAVE,
+        .dhcp_mode = WLAN_DHCP_SERVER,
+        .local_ip_addr = "192.168.4.1",
+        .gateway_ip_addr = "192.168.4.1",
+        .net_mask = "255.255.255.0",
+    };
+
+    wifi_set_mode(init_param.wifi_mode);
+
+    system_parameter_get_wifi_macaddr_default(SOFT_AP_IF, macaddr_default);
+    wifi_get_macaddr(SOFT_AP_IF, macaddr);
+    if(ln_is_valid_mac((const char*)macaddr) && memcmp(macaddr, macaddr_default, 6) != 0)
+    {
+        wifi_set_macaddr_current(SOFT_AP_IF, macaddr);
+    }
+    else
+    {
+        ln_generate_random_mac(macaddr);
+        wifi_set_macaddr(SOFT_AP_IF, macaddr);
+    }
+
+    wifi_set_config(SOFT_AP_IF, &wifi_config);
+
+    netif_set_hostname(ethernetif_get_netif(SOFT_AP_IF), CFG_GetDeviceName());
+    wifi_start(&init_param, true);
+//    g_bOpenAccessPointMode = 1;
+
+    return 0;
+}
+#endif
 int HAL_SetupWiFiOpenAccessPoint(const char* ssid)
 {
     system_parameter_set_hostname(SOFT_AP_IF, CFG_GetDeviceName());
@@ -594,7 +699,7 @@ int HAL_SetupWiFiOpenAccessPoint(const char* ssid)
 
     netif_set_hostname(ethernetif_get_netif(SOFT_AP_IF), CFG_GetDeviceName());
     wifi_start(&init_param, true);
-    g_bOpenAccessPointMode = 1;
+//    g_bOpenAccessPointMode = 1;
 
     return 0;
 }

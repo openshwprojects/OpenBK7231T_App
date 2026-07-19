@@ -14,7 +14,10 @@ static void (*g_wifiStatusCallback)(int code);
 
 // lenght of "192.168.103.103" is 15 but we also need a NULL terminating character
 static char g_IP[32] = "unknown";
-static int g_bOpenAccessPointMode = 0;
+// is (Open-) Access point or a client?
+// included as "extern uint8_t g_WifiMode;" from new_common.h
+// initilized in user_main.c
+// values:	0 = STA	1 = OpenAP	2 = WAP-AP
 
 const char* security_names[] = {
 	"OPEN",
@@ -92,23 +95,46 @@ void HAL_PrintNetworkInfo()
 
 	tls_wifi_get_current_bss(&bss);
 	bss.ssid[bss.ssid_len]=0;
-
+/*
+// no need to get mode - we'll rely on g_WifiMode 
+	uint8_t mode;
+	tls_param_get(TLS_PARAM_ID_WPROTOCOL, (void* )&mode, TRUE);
+	bool isAP = mode & IEEE80211_MODE_AP;
+*/
 	struct tls_ethif* tmpethif = tls_netif_get_ethif();
 	char buffer[256];
 	char ip[16] = {0};
-	strcpy(ip, inet_ntoa(tmpethif->ip_addr));
 	char gw[16] = {0};
-	strcpy(gw, inet_ntoa(tmpethif->gw));
 	char netmask[16] = {0};
-	strcpy(netmask, inet_ntoa(tmpethif->netmask));
 	char dns[16] = {0};
-	strcpy(dns, inet_ntoa(tmpethif->dns1));
-	snprintf(buffer, 256, 	"Network info:\r\n"
+//	if(isAP){
+	if(g_WifiMode != 0){
+/*
+		strcpy(ip, inet_ntoa(netif->next->ip_addr));
+		strcpy(gw, inet_ntoa(netif->next->gw));
+		strcpy(netmask, inet_ntoa(netif->next->netmask));
+		strcpy(dns, "-");
+*/
+// just use known values we assign for AP
+		strcpy(ip, "192.168.4.1");
+		strcpy(gw, "192.168.4.1");
+		strcpy(netmask, "255.255.255.0");
+		strcpy(dns, "local.wm");
+
+	} else {
+		strcpy(ip, inet_ntoa(tmpethif->ip_addr));
+		strcpy(gw, inet_ntoa(tmpethif->gw));
+		strcpy(netmask, inet_ntoa(tmpethif->netmask));
+		strcpy(dns, inet_ntoa(tmpethif->dns1));
+	}
+	snprintf(buffer, 256, 	"Network info (g_WifiMode=%i):\r\n"
 				"\tsta:rssi=%d, SSID=%s, BSSID=" MACSTR ", channel=%d, encr=%s\r\n"
-				"\tIP=%s, GW=%s, MASK=%s, MAC=%s, DNS=%s\r\n",
+				"\tIP=%s, GW=%s, MASK=%s, MAC=%s, DNS=%s\r\n",g_WifiMode,
 				bss.rssi, bss.ssid, MAC2STR(bss.bssid), bss.channel, 
 				( bss.encryptype >=  IEEE80211_ENCRYT_NONE && bss.encryptype <= IEEE80211_ENCRYT_AUTO_WPA2) ? security_names[bss.encryptype] : "-",
 				 ip, gw, netmask, macstr, dns );
+//				 inet_ntoa(netif->ip_addr), inet_ntoa(netif->gw), inet_ntoa(netif->netmask), macstr, g_WifiMode == 0? dns :"-" );
+				 				 
 	bk_printf(buffer);
 	// do we need this in web Log?
 	// disable for now
@@ -186,6 +212,10 @@ static void apsta_net_status(u8 status)
 		break;
 	case NETIF_IP_NET2_UP:
 		// wm_printf("\napsta_net_status: softap ip: %v\n", netif->next->ip_addr.addr);
+		if (g_wifiStatusCallback != 0)
+		{
+			g_wifiStatusCallback(WIFI_AP_CONNECTED);
+		}
 		break;
 	default:
 		break;
@@ -255,13 +285,12 @@ static int connect_wifi_demo(char* ssid, char* pwd, obkStaticIP_t *ip)
 }
 void HAL_ConnectToWiFi(const char* oob_ssid, const char* connect_key, obkStaticIP_t *ip)
 {
-	g_bOpenAccessPointMode = 0;
 	connect_wifi_demo(oob_ssid, connect_key, ip);
 }
 
 void HAL_DisconnectFromWifi()
 {
-
+	tls_wifi_disconnect();
 }
 
 
@@ -380,12 +409,31 @@ int demo_create_softap(u8* ssid, u8* key, int chan, int encrypt, int format)
 
 int HAL_SetupWiFiOpenAccessPoint(const char* ssid)
 {
-	demo_create_softap(ssid, "", 15, 0, 1);
+	demo_create_softap((u8*)ssid, "", g_wifi_channel, 0, 1);
 
 	// dhcp_server_start(0);
 	// dhcp_server_stop(void);
 
 	return 0;
 }
+
+#if ENABLE_WPA_AP
+int HAL_SetupWiFiAccessPoint(const char* ssid, const char* key)
+{
+	if ( key && strlen(key) < 8){
+		printf("ERROR! key(%s) needs to be at least 8 characters!\r\n", key);
+		if (g_wifiStatusCallback != 0) {
+			g_wifiStatusCallback(WIFI_AP_FAILED);
+		}
+		return -1;
+	}
+
+
+	// int demo_create_softap(u8 *ssid, u8 *key, int chan, int encrypt, int format)  		format: key's format: 0-HEX, 1-ASCII
+	demo_create_softap((u8*)ssid, (u8*)key, g_wifi_channel, IEEE80211_ENCRYT_CCMP_WPA2, 1);	// tls_softap_info_t has no "AUTO", only tls_ibss_info_t ...
+	return 0;
+}
+#endif	// #if ENABLE_WPA_AP
+
 
 #endif
