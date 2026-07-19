@@ -52,14 +52,6 @@ typedef struct flash_vars_structure
 
 #define MAGIC_FLASHVARS_SIZE 64
 
-static inline short HAL_LED_PackModeAndColorMode(byte mode, byte colorMode) {
-	return mode | ((short)colorMode << 8);
-}
-static inline void HAL_LED_UnpackModeAndColorMode(short packed, byte* mode, byte* colorMode) {
-	*mode = packed & 0xFF;
-	*colorMode = (packed >> 8) & 0xFF;
-}
-
 // call at startup
 void HAL_FlashVars_IncreaseBootCount();
 // call once started (>30s?)
@@ -68,8 +60,8 @@ void HAL_FlashVars_SaveBootComplete();
 int HAL_FlashVars_GetBootFailures();
 int HAL_FlashVars_GetBootCount();
 void HAL_FlashVars_SaveChannel(int index, int value);
-void HAL_FlashVars_SaveLED(byte mode, short brightness, short temperatureOrWhite, byte r, byte g, byte b, byte bEnableAll, byte colorMode);
-void HAL_FlashVars_ReadLED(byte* mode, short* brightness, short* temperatureOrWhite, byte* rgb, byte* bEnableAll, byte* colorMode);
+void HAL_FlashVars_SaveLED(byte mode, short brightness, short temperatureOrWhite, byte r, byte g, byte b, byte bEnableAll);
+void HAL_FlashVars_ReadLED(byte* mode, short* brightness, short* temperatureOrWhite, byte* rgb, byte* bEnableAll);
 int HAL_FlashVars_GetChannelValue(int ch);
 int HAL_GetEnergyMeterStatus(ENERGY_METERING_DATA* data);
 int HAL_SetEnergyMeterStatus(ENERGY_METERING_DATA* data);

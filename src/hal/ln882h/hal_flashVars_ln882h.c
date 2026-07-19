@@ -81,11 +81,11 @@ void HAL_FlashVars_SaveChannel(int index, int value) {
 #endif
 
 }
-void HAL_FlashVars_ReadLED(byte* mode, short* brightness, short* temperatureOrWhite, byte* rgb, byte* bEnableAll, byte* colorMode) {
+void HAL_FlashVars_ReadLED(byte* mode, short* brightness, short* temperatureOrWhite, byte* rgb, byte* bEnableAll) {
 #ifndef DISABLE_FLASH_VARS_VARS
 	if (flash_vars_init()) {
 		*bEnableAll = flash_vars.savedValues[MAX_RETAIN_CHANNELS - 4];
-		HAL_LED_UnpackModeAndColorMode(flash_vars.savedValues[MAX_RETAIN_CHANNELS - 3], mode, colorMode);
+		*mode = flash_vars.savedValues[MAX_RETAIN_CHANNELS - 3];
 		*temperatureOrWhite = flash_vars.savedValues[MAX_RETAIN_CHANNELS - 2];
 		*brightness = flash_vars.savedValues[MAX_RETAIN_CHANNELS - 1];
 		rgb[0] = flash_vars.rgb[0];
@@ -102,16 +102,15 @@ void HAL_FlashVars_ReadLED(byte* mode, short* brightness, short* temperatureOrWh
 		counter++; \
 	}
 
-void HAL_FlashVars_SaveLED(byte mode, short brightness, short temperatureOrWhite, byte r, byte g, byte b, byte bEnableAll, byte colorMode) {
+void HAL_FlashVars_SaveLED(byte mode, short brightness, short temperatureOrWhite, byte r, byte g, byte b, byte bEnableAll) {
 #ifndef DISABLE_FLASH_VARS_VARS
 	int iChangesCount = 0;
 
 
 	if (flash_vars_init()) {
-		short modeAndColorMode = HAL_LED_PackModeAndColorMode(mode, colorMode);
 		SAVE_CHANGE_IF_REQUIRED_AND_COUNT(flash_vars.savedValues[MAX_RETAIN_CHANNELS - 1], brightness, iChangesCount);
 		SAVE_CHANGE_IF_REQUIRED_AND_COUNT(flash_vars.savedValues[MAX_RETAIN_CHANNELS - 2], temperatureOrWhite, iChangesCount);
-		SAVE_CHANGE_IF_REQUIRED_AND_COUNT(flash_vars.savedValues[MAX_RETAIN_CHANNELS - 3], modeAndColorMode, iChangesCount);
+		SAVE_CHANGE_IF_REQUIRED_AND_COUNT(flash_vars.savedValues[MAX_RETAIN_CHANNELS - 3], mode, iChangesCount);
 		SAVE_CHANGE_IF_REQUIRED_AND_COUNT(flash_vars.savedValues[MAX_RETAIN_CHANNELS - 4], bEnableAll, iChangesCount);
 		SAVE_CHANGE_IF_REQUIRED_AND_COUNT(flash_vars.rgb[0], r, iChangesCount);
 		SAVE_CHANGE_IF_REQUIRED_AND_COUNT(flash_vars.rgb[1], g, iChangesCount);
