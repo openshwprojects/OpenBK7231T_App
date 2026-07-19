@@ -16,6 +16,9 @@ sdk_add_compile_options(
 	-Wno-return-type
 	-g0
 )
+sdk_add_link_options(
+	-Wl,--wrap=bflb_gpio_pad_check
+)
 
 if(DEFINED ENV{APP_VERSION})
 	sdk_add_compile_definitions(-DUSER_SW_VER="$ENV{APP_VERSION}")
@@ -33,6 +36,7 @@ sdk_add_include_directories(.)
 sdk_add_include_directories(${OBK_SRCS}../libraries/easyflash/inc)
 
 target_sources(app PRIVATE
+	utils_sha256.c
 	${OBK_SRCS}hal/bl602/hal_flashConfig_bl602.c
 	${OBK_SRCS}hal/bl602/hal_flashVars_bl602.c
 	${OBK_SRCS}hal/bl602/hal_generic_bl602.c

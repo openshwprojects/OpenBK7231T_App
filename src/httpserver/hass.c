@@ -490,7 +490,7 @@ HassDeviceInfo* hass_createHVAC(float min, float max, float step, const char **f
 HassDeviceInfo* hass_createShutter(int index) {
 	HassDeviceInfo* info = hass_init_device_info(HASS_GARAGE, index, NULL, NULL, 0, 0);
 
-	char buffer[64];
+	char buffer[96];
 
 	//cJSON_AddStringToObject(info->root, "name", title);
 	//cJSON_AddStringToObject(info->root, "unique_id", title);
@@ -672,7 +672,7 @@ HassDeviceInfo* hass_init_device_info(ENTITY_TYPE type, int index, const char* p
 	if (DRV_IsRunning("DoorSensor") == false && DRV_IsRunning("tmSensor") == false)
 #endif
 	{
-		if (!isSensor && !flagavty) {
+		if (!flagavty) {
 			cJSON_AddStringToObject(info->root, "avty_t", "~/connected");   //availability_topic, `online` value is broadcasted
 		}
 	}
@@ -899,6 +899,7 @@ HassDeviceInfo* hass_init_energy_sensor_device_info(int index, int asensdataseti
 	//in twin mode, for ix0 is last OBK_CONSUMPTION_YESTERDAY, for ix1 ,OBK_CONSUMPTION_TODAY
 	if ((index > OBK_CONSUMPTION_STORED_LAST[asensdatasetix]) && (index <= OBK_CONSUMPTION__DAILY_LAST)) return info;
 #endif
+	if (index == OBK_FREQUENCY && !BL_HasEnergySensorReadingEx(asensdatasetix, index)) return info;
 	info = hass_init_device_info(ENERGY_METER_SENSOR, index, NULL, NULL, asensdatasetix, NULL);
 
 	cJSON_AddStringToObject(info->root, "dev_cla", DRV_GetEnergySensorNamesEx(asensdatasetix,index)->hass_dev_class);   //device_class=voltage,current,power, energy, timestamp

@@ -139,7 +139,7 @@ sdk/OpenLN8825/project/OpenBeken/app:
 	ln -s "$(shell pwd)/" "sdk/OpenLN8825/project/OpenBeken/app"
 
 .PHONY: prebuild_OpenBK7231N prebuild_OpenBK7231T prebuild_OpenBL602 prebuild_OpenLN882H prebuild_OpenLN8825 
-.PHONY: prebuild_OpenW600 prebuild_OpenW800 prebuild_OpenXR809 prebuild_OpenXR806 prebuild_OpenXR872 prebuild_ESPIDF prebuild_OpenTR6260
+.PHONY: prebuild_OpenW600 prebuild_OpenW800 prebuild_OpenXR809 prebuild_OpenXR806 prebuild_OpenXR806_DCDC prebuild_OpenXR872 prebuild_ESPIDF prebuild_OpenTR6260
 .PHONY: prebuild_OpenRTL87X0C prebuild_OpenBK7238 prebuild_OpenBK7231N_ALT prebuild_OpenBK7231U
 .PHONY: prebuild_OpenBK7231N_ALT prebuild_OpenBK7231T_ALT prebuild_OpenBK7252
 
@@ -218,6 +218,8 @@ prebuild_OpenXR806: berry
 	else echo "prebuild for OpenXR806 not found ... "; \
 	fi
 	
+prebuild_OpenXR806_DCDC: prebuild_OpenXR806
+
 prebuild_OpenXR872: berry
 	git submodule update --init --recursive --depth=1 sdk/OpenXR872
 	@if [ -e platforms/XR872/pre_build.sh ]; then \
@@ -416,6 +418,14 @@ prebuild_OpenBL602_ALT: berry
 	else echo "prebuild for OpenBL602_ALT not found ... "; \
 	fi
 
+prebuild_OpenGD32VW553: berry
+	git submodule update --init --recursive --depth=1 sdk/OpenGD32VW553
+	@if [ -e platforms/GD32VW553/pre_build.sh ]; then \
+		echo "prebuild found for OpenGD32VW553"; \
+		sh platforms/GD32VW553/pre_build.sh; \
+	else echo "prebuild for OpenGD32VW553 not found ... "; \
+	fi
+
 prebuild_OpenRDA5981: berry
 ifdef GITHUB_ACTIONS
 	# just so that there would be no cache error
@@ -450,17 +460,41 @@ OpenXR872: prebuild_OpenXR872 sdk/OpenXR872/project/demo/hello_demo/shared
 	cp sdk/OpenXR872/project/demo/hello_demo/image/xr872/xr_system.img output/$(APP_VERSION)/OpenXR872_$(APP_VERSION).img
 	cp sdk/OpenXR872/project/demo/hello_demo/image/xr872/xr_system_img_xz.img output/$(APP_VERSION)/OpenXR872_$(APP_VERSION)_ota.img
 
-.PHONY: OpenXR806
-OpenXR806: prebuild_OpenXR806 sdk/OpenXR806/project/demo/sharedApp/shared
-	$(MAKE) -C sdk/OpenXR806/src CC_DIR=$(ARM_NONE_EABI_GCC_PATH) APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT) -j $(shell nproc) --no-print-directory
-	$(MAKE) -C sdk/OpenXR806/src install CC_DIR=$(ARM_NONE_EABI_GCC_PATH) APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT) -j $(shell nproc) --no-print-directory
-	$(MAKE) -C sdk/OpenXR806/project/demo/sharedApp/gcc CC_DIR=$(ARM_NONE_EABI_GCC_PATH) APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT) -j $(shell nproc) --no-print-directory
-	$(MAKE) -C sdk/OpenXR806/project/demo/sharedApp/gcc image CC_DIR=$(ARM_NONE_EABI_GCC_PATH) APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT) -j $(shell nproc) --no-print-directory
-	$(MAKE) -C sdk/OpenXR806/project/demo/sharedApp/gcc image_xz CC_DIR=$(ARM_NONE_EABI_GCC_PATH) APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT) -j $(shell nproc) --no-print-directory
+XR806_SDK_DIR := sdk/OpenXR806
+XR806_BOOTLOADER_PRJ := bootloader
+XR806_SHAREDAPP_PRJ := demo/sharedApp
+XR806_BOOTLOADER_DEFCONFIG := project/bootloader/gcc/defconfig
+XR806_SHAREDAPP_DEFCONFIG := project/demo/sharedApp/gcc/defconfig
+XR806_BOOTLOADER_DCDC_DEFCONFIG := project/bootloader/gcc/defconfig_dcdc
+XR806_SHAREDAPP_DCDC_DEFCONFIG := project/demo/sharedApp/gcc/defconfig_dcdc
+XR806_BUILD_ARGS := CC_DIR=$(ARM_NONE_EABI_GCC_PATH) APP_VERSION=$(APP_VERSION) OPLATFORM=3 OBK_VARIANT=$(OBK_VARIANT) -j $(shell nproc) --no-print-directory
+XR806_DCDC_BUILD_ARGS := CC_DIR=$(ARM_NONE_EABI_GCC_PATH) APP_VERSION=$(APP_VERSION)_DCDC OPLATFORM=3 OBK_VARIANT=9 -j $(shell nproc) --no-print-directory
+
+.PHONY: OpenXR806 OpenXR806_DCDC
+OpenXR806: prebuild_OpenXR806 $(XR806_SDK_DIR)/project/demo/sharedApp/shared
+	$(MAKE) -C $(XR806_SDK_DIR) PRJ=$(XR806_BOOTLOADER_PRJ) KCONFIG_DEFCONFIG=$(XR806_BOOTLOADER_DEFCONFIG) defconfig --no-print-directory
+	$(MAKE) -C $(XR806_SDK_DIR) PRJ=$(XR806_BOOTLOADER_PRJ) build_clean --no-print-directory
+	$(MAKE) -C $(XR806_SDK_DIR) PRJ=$(XR806_BOOTLOADER_PRJ) $(XR806_BUILD_ARGS) build
+	$(MAKE) -C $(XR806_SDK_DIR) PRJ=$(XR806_SHAREDAPP_PRJ) KCONFIG_DEFCONFIG=$(XR806_SHAREDAPP_DEFCONFIG) defconfig --no-print-directory
+	$(MAKE) -C $(XR806_SDK_DIR) PRJ=$(XR806_SHAREDAPP_PRJ) build_clean --no-print-directory
+	$(MAKE) -C $(XR806_SDK_DIR) PRJ=$(XR806_SHAREDAPP_PRJ) $(XR806_BUILD_ARGS) build
+	$(MAKE) -C $(XR806_SDK_DIR) PRJ=$(XR806_SHAREDAPP_PRJ) $(XR806_BUILD_ARGS) image_xz
 	mkdir -p output/$(APP_VERSION)
-	cp sdk/OpenXR806/project/demo/sharedApp/image/xr806/xr_system.img output/$(APP_VERSION)/OpenXR806_$(APP_VERSION).img
-	cp sdk/OpenXR806/project/demo/sharedApp/image/xr806/xr_system_img_xz.img output/$(APP_VERSION)/OpenXR806_$(APP_VERSION)_ota.img
-	
+	cp $(XR806_SDK_DIR)/project/demo/sharedApp/image/xr806/xr_system.img output/$(APP_VERSION)/OpenXR806_$(APP_VERSION).img
+	cp $(XR806_SDK_DIR)/project/demo/sharedApp/image/xr806/xr_system_img_xz.img output/$(APP_VERSION)/OpenXR806_$(APP_VERSION)_ota.img
+
+OpenXR806_DCDC: prebuild_OpenXR806_DCDC $(XR806_SDK_DIR)/project/demo/sharedApp/shared
+	$(MAKE) -C $(XR806_SDK_DIR) PRJ=$(XR806_BOOTLOADER_PRJ) KCONFIG_DEFCONFIG=$(XR806_BOOTLOADER_DCDC_DEFCONFIG) defconfig --no-print-directory
+	$(MAKE) -C $(XR806_SDK_DIR) PRJ=$(XR806_BOOTLOADER_PRJ) build_clean --no-print-directory
+	$(MAKE) -C $(XR806_SDK_DIR) PRJ=$(XR806_BOOTLOADER_PRJ) $(XR806_DCDC_BUILD_ARGS) build
+	$(MAKE) -C $(XR806_SDK_DIR) PRJ=$(XR806_SHAREDAPP_PRJ) KCONFIG_DEFCONFIG=$(XR806_SHAREDAPP_DCDC_DEFCONFIG) defconfig --no-print-directory
+	$(MAKE) -C $(XR806_SDK_DIR) PRJ=$(XR806_SHAREDAPP_PRJ) build_clean --no-print-directory
+	$(MAKE) -C $(XR806_SDK_DIR) PRJ=$(XR806_SHAREDAPP_PRJ) $(XR806_DCDC_BUILD_ARGS) build
+	$(MAKE) -C $(XR806_SDK_DIR) PRJ=$(XR806_SHAREDAPP_PRJ) $(XR806_DCDC_BUILD_ARGS) image_xz
+	mkdir -p output/$(APP_VERSION)
+	cp $(XR806_SDK_DIR)/project/demo/sharedApp/image/xr806/xr_system.img output/$(APP_VERSION)/OpenXR806_$(APP_VERSION)_DCDC.img
+	cp $(XR806_SDK_DIR)/project/demo/sharedApp/image/xr806/xr_system_img_xz.img output/$(APP_VERSION)/OpenXR806_$(APP_VERSION)_DCDC_ota.img
+
 .PHONY: OpenXR809
 OpenXR809: prebuild_OpenXR809 sdk/OpenXR809/project/oxr_sharedApp/shared
 	$(MAKE) -C sdk/OpenXR809/src CC_DIR=$(ARM_NONE_EABI_GCC_PATH) APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT) --no-print-directory  -j $(shell nproc)
@@ -692,7 +726,23 @@ OpenBK7231U: prebuild_OpenBK7231U
 
 .PHONY: OpenBK7252
 OpenBK7252: prebuild_OpenBK7252
-	cd sdk/beken_freertos_sdk && ARM_GCC_TOOLCHAIN=$(PWD)/sdk/beken_freertos_sdk/toolchain/arm-none-eabi/bin/ OBK_VARIANT=$(OBK_VARIANT) sh build.sh bk7251 $(APP_VERSION)
+	cd sdk/beken_freertos_sdk && { \
+		boot=./tools/beken_packager/bootloader_bk7251_uart2_v1.0.15_enc.bin; \
+		raw=./tools/beken_packager/bootloader_bk7251_uart2_v1.0.15.bin; \
+		patched=./tools/beken_packager/bootloader_bk7251_uart2_v1.0.15_tuya_ota_patch.bin; \
+		patched_enc=./tools/beken_packager/bootloader_bk7251_uart2_v1.0.15_tuya_ota_patch_enc.bin; \
+		bak=$$boot.bk7252-tuya-patch; \
+		cp "$$boot" "$$bak" || exit $$?; \
+		status=0; \
+		python ../../platforms/BK723x/patch_bk7252_tuya_bootloader.py "$$raw" "$$patched" "$(PWD)/sdk/beken_freertos_sdk/toolchain/arm-none-eabi/bin" ../../platforms/BK723x/bk7252_tuya_ota_write_wrap.c && \
+			./tools/crc_binary/encrypt_n "$$patched" 510fb093 a3cbeadc 5993a17e c7adeb03 0 && \
+			mv -f "$$patched_enc" "$$boot" && \
+			./tools/rt_partition_tool/rt_partition_tool_cli-x64 "$$boot" ../../platforms/BK723x/bk7252_partition_2M.json && \
+			ARM_GCC_TOOLCHAIN=$(PWD)/sdk/beken_freertos_sdk/toolchain/arm-none-eabi/bin/ OBK_VARIANT=$(OBK_VARIANT) sh build.sh bk7251 $(APP_VERSION) || status=$$?; \
+		rm -f "$$patched" "$$patched_enc"; \
+		mv -f "$$bak" "$$boot"; \
+		exit $$status; \
+	}
 	mkdir -p output/$(APP_VERSION)
 	cp sdk/beken_freertos_sdk/out/bk7251.bin output/$(APP_VERSION)/OpenBK7252_${APP_VERSION}.bin
 	cp sdk/beken_freertos_sdk/out/bk7251_QIO.bin output/$(APP_VERSION)/OpenBK7252_QIO_${APP_VERSION}.bin
@@ -785,6 +835,14 @@ OpenBL602_ALT: prebuild_OpenBL602_ALT
 	dd conv=notrunc bs=1K skip=4 if=platforms/BL602_ALT/build/build_out/OpenBeken_bl602.bin of=output/$(APP_VERSION)/OpenBL602_ALT_${APP_VERSION}.bin
 	cp ./platforms/BL602_ALT/build/build_out/OpenBeken_bl602.xz.ota output/$(APP_VERSION)/OpenBL602_ALT_${APP_VERSION}_OTA.bin.xz.ota
 
+.PHONY: OpenGD32VW553
+OpenGD32VW553: prebuild_OpenGD32VW553
+	cd sdk/OpenGD32VW553 && APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT) ./cmake_build.sh ../../../platforms/GD32VW553
+	mkdir -p output/$(APP_VERSION)
+	cp sdk/OpenGD32VW553/scripts/images/image-all.bin output/$(APP_VERSION)/OpenGD32VW553_$(APP_VERSION).bin
+	cp sdk/OpenGD32VW553/scripts/images/image-ota.bin output/$(APP_VERSION)/OpenGD32VW553_$(APP_VERSION)_ota.img
+	md5sum sdk/OpenGD32VW553/scripts/images/image-ota.bin | awk '{print $1}' | xxd -r -p >> output/$(APP_VERSION)/OpenGD32VW553_$(APP_VERSION)_ota.img
+
 # Add custom Makefile if required
 -include custom.mk
 
@@ -794,6 +852,7 @@ clean:
 	-test -d ./sdk/OpenXR809 && $(MAKE) -C sdk/OpenXR809/src clean
 	-test -d ./sdk/OpenXR809 && $(MAKE) -C sdk/OpenXR809/project/oxr_sharedApp/gcc clean
 	-test -d ./sdk/OpenXR806 && $(MAKE) -C sdk/OpenXR806/src clean
+	-test -d ./sdk/OpenXR806 && $(MAKE) -C sdk/OpenXR806/project/bootloader/gcc clean
 	-test -d ./sdk/OpenXR806 && $(MAKE) -C sdk/OpenXR806/project/demo/sharedApp/gcc clean
 	-test -d ./sdk/OpenXR872 && $(MAKE) -C sdk/OpenXR872/src clean
 	-test -d ./sdk/OpenXR872 && $(MAKE) -C sdk/OpenXR872/project/demo/hello_demo/gcc clean

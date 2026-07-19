@@ -4,7 +4,7 @@
 
 #define LOG_FEATURE LOG_FEATURE_MAIN
 
-#include "../../new_common.h"
+#include "../../new_cfg.h"
 #include "../../logging/logging.h"
 #include "lwip/netdb.h"
 #include "lwip/netif.h"

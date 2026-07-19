@@ -261,6 +261,114 @@
     "examples": "berry 1+2"
   },
   {
+    "name": "BL0939_ClearEnergy",
+    "args": "[a|b|all]",
+    "descr": "Clear BL0939 accumulated import/export kWh counters.",
+    "fn": "BL0939_ClearEnergy",
+    "file": "driver/drv_bl0939.c",
+    "requires": "ENABLE_DRIVER_BL0939SPI",
+    "examples": "BL0939_ClearEnergy all"
+  },
+  {
+    "name": "BL0939_ReadReg",
+    "args": "[Register]",
+    "descr": "Read a raw BL0939 register and print the result to the log. Register may be decimal or hexadecimal.",
+    "fn": "BL0939_ReadRegCmd",
+    "file": "driver/drv_bl0939.c",
+    "requires": "ENABLE_DRIVER_BL0939SPI",
+    "examples": "BL0939_ReadReg 0x06"
+  },
+  {
+    "name": "BL0939_SetCurrent",
+    "args": "[a|b] [Current]",
+    "descr": "Calibrate one BL0939 current channel using a channel selector and a known real current in amps.",
+    "fn": "BL0939_CalibrateCurrentAB",
+    "file": "driver/drv_bl0939.c",
+    "requires": "ENABLE_DRIVER_BL0939SPI",
+    "examples": "BL0939_SetCurrent A 1.25"
+  },
+  {
+    "name": "BL0939_SetCurrentA",
+    "args": "[Current]",
+    "descr": "Calibrate BL0939 channel A current using a known real current in amps.",
+    "fn": "BL0939_CalibrateCurrentA",
+    "file": "driver/drv_bl0939.c",
+    "requires": "ENABLE_DRIVER_BL0939SPI",
+    "examples": "BL0939_SetCurrentA 1.25"
+  },
+  {
+    "name": "BL0939_SetCurrentB",
+    "args": "[Current]",
+    "descr": "Calibrate BL0939 channel B current using a known real current in amps.",
+    "fn": "BL0939_CalibrateCurrentB",
+    "file": "driver/drv_bl0939.c",
+    "requires": "ENABLE_DRIVER_BL0939SPI",
+    "examples": "BL0939_SetCurrentB 1.25"
+  },
+  {
+    "name": "BL0939_SetEnergy",
+    "args": "[ImportA] [ExportA] [ImportB] [ExportB]",
+    "descr": "Set BL0939 accumulated import/export kWh counters.",
+    "fn": "BL0939_SetEnergy",
+    "file": "driver/drv_bl0939.c",
+    "requires": "ENABLE_DRIVER_BL0939SPI",
+    "examples": "BL0939_SetEnergy 0 0 0 0"
+  },
+  {
+    "name": "BL0939_SetPower",
+    "args": "[a|b] [Power]",
+    "descr": "Calibrate one BL0939 active power channel using a channel selector and a known real power in watts.",
+    "fn": "BL0939_CalibratePowerAB",
+    "file": "driver/drv_bl0939.c",
+    "requires": "ENABLE_DRIVER_BL0939SPI",
+    "examples": "BL0939_SetPower B 100.0"
+  },
+  {
+    "name": "BL0939_SetPowerA",
+    "args": "[Power]",
+    "descr": "Calibrate BL0939 channel A active power using a known real power in watts.",
+    "fn": "BL0939_CalibratePowerA",
+    "file": "driver/drv_bl0939.c",
+    "requires": "ENABLE_DRIVER_BL0939SPI",
+    "examples": "BL0939_SetPowerA 100.0"
+  },
+  {
+    "name": "BL0939_SetPowerB",
+    "args": "[Power]",
+    "descr": "Calibrate BL0939 channel B active power using a known real power in watts.",
+    "fn": "BL0939_CalibratePowerB",
+    "file": "driver/drv_bl0939.c",
+    "requires": "ENABLE_DRIVER_BL0939SPI",
+    "examples": "BL0939_SetPowerB 100.0"
+  },
+  {
+    "name": "BL0939_SetVoltage",
+    "args": "[Voltage]",
+    "descr": "Calibrate BL0939 voltage using the currently measured raw voltage and a known real voltage.",
+    "fn": "BL0939_CalibrateVoltage",
+    "file": "driver/drv_bl0939.c",
+    "requires": "ENABLE_DRIVER_BL0939SPI",
+    "examples": "BL0939_SetVoltage 230.0"
+  },
+  {
+    "name": "BL0939_Status",
+    "args": "",
+    "descr": "Print current BL0939 scaled readings, energy counters and SPI error counters.",
+    "fn": "BL0939_StatusCmd",
+    "file": "driver/drv_bl0939.c",
+    "requires": "ENABLE_DRIVER_BL0939SPI",
+    "examples": "BL0939_Status"
+  },
+  {
+    "name": "BL0939_WriteReg",
+    "args": "[Register] [Value]",
+    "descr": "Write a raw BL0939 register. Register and value may be decimal or hexadecimal; use only for diagnostics or chip setup experiments.",
+    "fn": "BL0939_WriteRegCmd",
+    "file": "driver/drv_bl0939.c",
+    "requires": "ENABLE_DRIVER_BL0939SPI",
+    "examples": "BL0939_WriteReg 0x1A 0x55"
+  },
+  {
     "name": "BL0942opts",
     "args": "opts",
     "descr": "BL0942opts 0= default mode (as set in config Flag 26), 3= two BL0942 on both UARTs (bit0 BL0942 on UART1, bit1 BL0942 on UART2)",
@@ -356,6 +464,78 @@
     "descr": "Setup value for bridge pulse len",
     "fn": "Bridge_Pulse_length",
     "file": "driver/drv_bridge_driver.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "BTDeinit",
+    "args": "",
+    "descr": "BT deinit",
+    "fn": "CMD_BTDeinit",
+    "file": "hal/generic/hal_bt_proxy_generic.c",
+    "requires": "ENABLE_BT_PROXY",
+    "examples": ""
+  },
+  {
+    "name": "BTFilterDuplicates",
+    "args": "[isActive]",
+    "descr": "BT filter duplicates",
+    "fn": "CMD_BTFilterDuplicates",
+    "file": "hal/generic/hal_bt_proxy_generic.c",
+    "requires": "ENABLE_BT_PROXY",
+    "examples": ""
+  },
+  {
+    "name": "BTInit",
+    "args": "",
+    "descr": "BT init",
+    "fn": "CMD_BTInit",
+    "file": "hal/generic/hal_bt_proxy_generic.c",
+    "requires": "ENABLE_BT_PROXY",
+    "examples": ""
+  },
+  {
+    "name": "BTSetScanMode",
+    "args": "[isActive]",
+    "descr": "Set BT scan mode",
+    "fn": "CMD_SetBTScanMode",
+    "file": "hal/generic/hal_bt_proxy_generic.c",
+    "requires": "ENABLE_BT_PROXY",
+    "examples": ""
+  },
+  {
+    "name": "BTSetWindowInterval",
+    "args": "[window] [interval]",
+    "descr": "Set BT window and interval",
+    "fn": "CMD_SetWindowInterval",
+    "file": "hal/generic/hal_bt_proxy_generic.c",
+    "requires": "ENABLE_BT_PROXY",
+    "examples": ""
+  },
+  {
+    "name": "BTStartScan",
+    "args": "",
+    "descr": "BT start scan",
+    "fn": "CMD_StartScan",
+    "file": "hal/generic/hal_bt_proxy_generic.c",
+    "requires": "ENABLE_BT_PROXY",
+    "examples": ""
+  },
+  {
+    "name": "BTStartScan",
+    "args": "",
+    "descr": "BT start scan",
+    "fn": "CMD_StopScan",
+    "file": "hal/generic/hal_bt_proxy_generic.c",
+    "requires": "ENABLE_BT_PROXY",
+    "examples": ""
+  },
+  {
+    "name": "BTStopScan",
+    "args": "TODO",
+    "descr": "",
+    "fn": "CMD_StopScan",
+    "file": "hal/generic/hal_bt_proxy_generic.c",
     "requires": "",
     "examples": ""
   },
@@ -1674,6 +1854,15 @@
     "examples": ""
   },
   {
+    "name": "logStartup2lfs",
+    "args": "[Seconds - default: 10s] [repetitions - default 1]",
+    "descr": "Enable startup logging to LittleFS. Value is the number of seconds from boot during which log lines are appended to startupLog_N.txt on LFS. Set to 0 to disable.\nIf you want to log severals startups, use optional repeats argument",
+    "fn": "log_command",
+    "file": "logging/logging.c",
+    "requires": "",
+    "examples": "logStartup2lfs 15"
+  },
+  {
     "name": "logtype",
     "args": "[TypeStr]",
     "descr": "logtype direct|thread|none - type of serial logging - thread (in a thread; default), direct (logged directly to serial), none (no UART logging)",
@@ -2286,6 +2475,177 @@
     "examples": ""
   },
   {
+    "name": "RoombaOrder",
+    "args": "TODO",
+    "descr": "",
+    "fn": "CMD_RoombaOrder",
+    "file": "driver/drv_roomba.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "Roomba_Beep",
+    "args": "TODO",
+    "descr": "",
+    "fn": "CMD_Roomba_Beep",
+    "file": "driver/drv_roomba.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "Roomba_Clean",
+    "args": "TODO",
+    "descr": "",
+    "fn": "CMD_Roomba_Clean",
+    "file": "driver/drv_roomba.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "Roomba_DigitsASCII",
+    "args": "TODO",
+    "descr": "",
+    "fn": "CMD_Roomba_DigitsASCII",
+    "file": "driver/drv_roomba.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "Roomba_DigitsRaw",
+    "args": "TODO",
+    "descr": "",
+    "fn": "CMD_Roomba_DigitsRaw",
+    "file": "driver/drv_roomba.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "Roomba_Discovery",
+    "args": "TODO",
+    "descr": "",
+    "fn": "CMD_Roomba_Discovery",
+    "file": "driver/drv_roomba.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "Roomba_Dock",
+    "args": "TODO",
+    "descr": "",
+    "fn": "CMD_Roomba_Dock",
+    "file": "driver/drv_roomba.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "Roomba_Drive",
+    "args": "TODO",
+    "descr": "",
+    "fn": "CMD_Roomba_Drive",
+    "file": "driver/drv_roomba.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "Roomba_DriveDirect",
+    "args": "TODO",
+    "descr": "",
+    "fn": "CMD_Roomba_DriveDirect",
+    "file": "driver/drv_roomba.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "Roomba_LEDs",
+    "args": "TODO",
+    "descr": "",
+    "fn": "CMD_Roomba_LEDs",
+    "file": "driver/drv_roomba.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "Roomba_Max",
+    "args": "TODO",
+    "descr": "",
+    "fn": "CMD_Roomba_Max",
+    "file": "driver/drv_roomba.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "Roomba_Safe",
+    "args": "TODO",
+    "descr": "",
+    "fn": "CMD_Roomba_Safe",
+    "file": "driver/drv_roomba.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "Roomba_SendBytes",
+    "args": "TODO",
+    "descr": "",
+    "fn": "CMD_Roomba_SendBytes",
+    "file": "driver/drv_roomba.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "Roomba_SendCmd",
+    "args": "TODO",
+    "descr": "",
+    "fn": "CMD_Roomba_SendCmd",
+    "file": "driver/drv_roomba.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "Roomba_SetFull",
+    "args": "TODO",
+    "descr": "",
+    "fn": "CMD_Roomba_SetFull",
+    "file": "driver/drv_roomba.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "Roomba_SetPassive",
+    "args": "TODO",
+    "descr": "",
+    "fn": "CMD_Roomba_SetPassive",
+    "file": "driver/drv_roomba.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "Roomba_SetSafe",
+    "args": "TODO",
+    "descr": "",
+    "fn": "CMD_Roomba_SetSafe",
+    "file": "driver/drv_roomba.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "Roomba_Spot",
+    "args": "TODO",
+    "descr": "",
+    "fn": "CMD_Roomba_Spot",
+    "file": "driver/drv_roomba.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "Roomba_Stop",
+    "args": "TODO",
+    "descr": "",
+    "fn": "CMD_Roomba_Stop",
+    "file": "driver/drv_roomba.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
     "name": "SafeMode",
     "args": "[OptionalDelayBeforeRestart]",
     "descr": "Forces device reboot into safe mode (open ap with disabled drivers). Argument is a delay to restart in seconds, optional, minimal delay is 1",
@@ -2556,6 +2916,15 @@
     "examples": ""
   },
   {
+    "name": "SetUARTPins",
+    "args": "[rx pin] [tx pin] [rts pin] [cts pin]",
+    "descr": "Set UART pins",
+    "fn": "CMD_SetUARTPins",
+    "file": "hal/realtek/hal_generic_realtek.c",
+    "requires": "PLATFORM_REALTEK_NEW",
+    "examples": ""
+  },
+  {
     "name": "SetupEnergyStats",
     "args": "[Enable1or0][SampleTime][SampleCount][JSonEnable]",
     "descr": "Setup Energy Statistic Parameters: [enable 0 or 1] [sample_time[10..90]] [sample_count[10..180]] [JsonEnable 0 or 1]. JSONEnable is optional.",
@@ -2741,6 +3110,24 @@
     "descr": "Stop periodical capture for SHT Sensor",
     "fn": "SHT3X_StopPerCmd",
     "file": "driver/drv_sht3x.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "ShutterCalibrate",
+    "args": "TODO",
+    "descr": "",
+    "fn": "CMD_Shutter_Calibrate",
+    "file": "driver/drv_shutters.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "ShutterMove",
+    "args": "TODO",
+    "descr": "",
+    "fn": "CMD_Shutter_MoveTo",
+    "file": "driver/drv_shutters.c",
     "requires": "",
     "examples": ""
   },
@@ -3704,6 +4091,24 @@
     "descr": "",
     "fn": "UCS1912_Test",
     "file": "driver/drv_ucs1912.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "vacuum/command",
+    "args": "TODO",
+    "descr": "",
+    "fn": "CMD_RoombaOrder",
+    "file": "driver/drv_roomba.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "vacuum/send_command",
+    "args": "TODO",
+    "descr": "",
+    "fn": "CMD_RoombaOrder",
+    "file": "driver/drv_roomba.c",
     "requires": "",
     "examples": ""
   },

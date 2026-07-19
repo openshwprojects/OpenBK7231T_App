@@ -19,6 +19,7 @@ sdk_add_compile_options(
 	-fstrict-aliasing -fno-strict-overflow
 	-falign-functions=32 -falign-jumps=32 -falign-loops=32
 )
+sdk_set_linker_script(bl602_flash.ld)
 
 if(DEFINED ENV{APP_VERSION})
 	sdk_add_compile_definitions(-DUSER_SW_VER="$ENV{APP_VERSION}")
@@ -33,9 +34,11 @@ set(OBK_SRCS "../../src/")
 include($ENV{BL_SDK_BASE}/../../platforms/obk_main.cmake)
 
 sdk_add_include_directories(.)
+sdk_add_include_directories(../BL616)
 sdk_add_include_directories(${OBK_SRCS}../libraries/easyflash/inc)
 
 target_sources(app PRIVATE
+	../BL616/utils_sha256.c
 	${OBK_SRCS}hal/bl602/hal_flashConfig_bl602.c
 	${OBK_SRCS}hal/bl602/hal_flashVars_bl602.c
 	${OBK_SRCS}hal/bl602/hal_generic_bl602.c

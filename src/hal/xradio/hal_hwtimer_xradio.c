@@ -26,7 +26,7 @@ int8_t HAL_RequestHWTimer(float requestPeriodUs, float* realPeriodUs, HWTimerCB 
 	param.cfg = HAL_TIMER_MakeInitCfg(TIMER_MODE_REPEAT,
 		TIMER_CLK_SRC_HFCLK, TIMER_CLK_PRESCALER_4);
 	param.isEnableIRQ = 1;
-	param.period = (uint32_t)(6.0f * requestPeriodUs);
+	param.period = (uint32_t)(10.0f * requestPeriodUs);
 
 	HAL_Status status = HAL_TIMER_Init(freetimer, &param);
 	if(status != HAL_OK)

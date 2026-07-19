@@ -13,6 +13,7 @@
 #define OBK_VARIANT_HLW8112						6
 #define OBK_VARIANT_BATTERY						7
 #define OBK_VARIANT_BTPROXY						8
+#define OBK_VARIANT_XR806_DCDC					9
 #define OBK_VARIANT_ESP2M						1
 #define OBK_VARIANT_ESP4M						2
 #define OBK_VARIANT_ESP2M_BERRY					3
@@ -34,11 +35,16 @@
 #define ENABLE_HTTP_PING						1
 #define ENABLE_LED_BASIC						1
 
+// for debugging: Enable logging startup to LFS (only if LFS is present)
+#if ENABLE_LITTLEFS
+//#define ENABLE_LOG2LFS						1
+#endif
+
+
 #if PLATFORM_XRADIO
 
 // #define ENABLE_SEND_POSTANDGET				1
 #define ENABLE_MQTT								1
-#define NO_CHIP_TEMPERATURE						1
 #define ENABLE_HA_DISCOVERY						1
 #define ENABLE_EXPAND_CONSTANT					1
 #define ENABLE_OBK_SCRIPTING					1
@@ -60,6 +66,7 @@
 #define ENABLE_DRIVER_BATTERY					1
 #define ENABLE_OBK_BERRY						1
 #define ENABLE_DRIVER_TUYAMCU					1
+#define NO_CHIP_TEMPERATURE						1
 #endif
 
 #if PLATFORM_XR806
@@ -68,7 +75,13 @@
 #define ENABLE_DRIVER_DHT						1
 #define ENABLE_DRIVER_AHT2X						1
 #define ENABLE_DRIVER_SSDP						1
+#define ENABLE_DRIVER_SM16703P					1
+#define ENABLE_DRIVER_PIXELANIM					1
 #define ENABLE_OBK_BERRY						1
+#define ENABLE_DRIVER_MDNS						1
+#define ENABLE_DRIVER_IR						1
+#define ENABLE_DRIVER_BATTERY					1
+//#define ENABLE_DRIVER_IRREMOTEESP				1
 #endif
 // allow usage as an WPA2 AP and define number of clients to connect
 #define ENABLE_WPA_AP						1
@@ -387,12 +400,17 @@
 #undef ENABLE_DRIVER_BL0942
 #undef ENABLE_DRIVER_BL0942SPI
 #undef ENABLE_DRIVER_HLW8112SPI
+#undef ENABLE_DRIVER_BL0939SPI
 #undef ENABLE_DRIVER_CSE7766
 #undef ENABLE_DRIVER_BRIDGE
 #endif
 
 #if (OBK_VARIANT == OBK_VARIANT_POWERMETERING || OBK_VARIANT == OBK_VARIANT_IRREMOTEESP || OBK_VARIANT == OBK_VARIANT_SENSORS || PLATFORM_BK7252 || PLATFORM_BK7252N)
 #undef ENABLE_DRIVER_TUYAMCU
+#endif
+
+#if (OBK_VARIANT == OBK_VARIANT_POWERMETERING)
+#define ENABLE_DRIVER_BL0939SPI				1
 #endif
 
 #if (OBK_VARIANT == OBK_VARIANT_IRREMOTEESP)
@@ -412,6 +430,7 @@
 #undef ENABLE_DRIVER_BL0937
 #undef ENABLE_DRIVER_BL0942
 #undef ENABLE_DRIVER_BL0942SPI
+#undef ENABLE_DRIVER_BL0939SPI
 #undef ENABLE_DRIVER_CSE7766
 #endif
 //#define ENABLE_DRIVER_DCF77					1
@@ -760,6 +779,28 @@
 #define ENABLE_DRIVER_SM16703P					1
 #define ENABLE_DRIVER_PIXELANIM					1
 
+#elif PLATFORM_GD32VW553
+
+#define ENABLE_EXPAND_CONSTANT					1
+#define ENABLE_HA_DISCOVERY						1
+#define ENABLE_MQTT								1
+#define ENABLE_OBK_SCRIPTING					1
+#define ENABLE_ADVANCED_CHANNELTYPES_DISCOVERY	1
+#define NEW_TCP_SERVER							1
+#define ENABLE_LITTLEFS							1
+#define ENABLE_DRIVER_LED 						1
+//#define ENABLE_TEST_COMMANDS					1
+#define ENABLE_TASMOTA_JSON						1
+#define ENABLE_DRIVER_SSDP						1
+#define ENABLE_DRIVER_MDNS						1
+#define ENABLE_DRIVER_SM16703P					1
+#define ENABLE_DRIVER_PIXELANIM					1
+#define ENABLE_DRIVER_TINYIR_NEC				1
+//#define ENABLE_DRIVER_IRREMOTEESP				1
+#define ENABLE_DRIVER_TUYAMCU					1
+//#define ENABLE_BT_PROXY							1
+//#define ENABLE_DRIVER_ESPHOME_API				1
+
 #else
 
 // #error "Platform not defined"
@@ -786,6 +827,13 @@
 #if ENABLE_DRIVER_IRREMOTEESP
 #undef ENABLE_DRIVER_IR
 #endif
+
+
+// ensure no log2lfs without LFS present
+#if ! ENABLE_LITTLEFS
+#undef ENABLE_LOG2LFS
+#endif
+
 
 // closing OBK_CONFIG_H
 #endif

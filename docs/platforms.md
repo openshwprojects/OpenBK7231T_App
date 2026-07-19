@@ -6,12 +6,12 @@
 | BK7238                                                  | Beken          | ✅   | ✅   | ✅     | ✅       | ✅   | ✅  | ✅  | ✅         | ✅  | ✅     | ✅  | ✅  |
 | BK7252                                                  | Beken          | ✅   | ✅   | ⚠️¹'¹⁴ | ✅       | ✅   | ✅  | ✅  | ✅         | ✅  | ✅     | ✅  | ❌  |
 | BK7252N                                                 | Beken          | ✅   | ✅   | ✅     | ✅       | ✅   | ✅  | ✅  | ✅         | ✅  | ✅     | ✅  | ❓  |
-| XR809                                                   | XRadio         | ✅   | ❌   | ❗️⁵    | ✅       | ✅   | ✅⁸ | ✅  | ✅         | ✅  | ❌     | ❓⁹ | ➖  |
-| XR806                                                   | XRadio         | ✅   | ✅   | ✅     | ✅       | ✅   | ✅⁸ | ✅  | ✅         | ✅  | ❌     | ❓⁹ | ➖  |
-| XR872/XF16                                              | XRadio         | ✅   | ✅   | ✅²    | ✅       | ✅   | ✅⁸ | ✅  | ✅         | ✅  | ❌     | ❓⁹ | ❌  |
+| XR809                                                   | XRadio         | ✅   | ❌   | ❗️⁵    | ✅       | ✅   | ✅⁸ | ✅  | ✅         | ✅  | ❓     | ❓⁹ | ➖  |
+| XR806                                                   | XRadio         | ✅   | ✅   | ✅     | ✅       | ✅   | ✅⁸ | ✅  | ✅         | ✅  | ✅     | ✅  | ❌  |
+| XR872/XF16                                              | XRadio         | ✅   | ✅   | ✅²    | ✅       | ✅   | ✅⁸ | ✅  | ✅         | ✅  | ❓     | ❓⁹ | ➖  |
 | BL602/LF686                                             | Bouffalo Lab   | ✅   | ✅   | ✅⁴    | ✅       | ✅   | ✅  | ❌  | ✅         | ✅  | ✅     | ✅  | ❌  |
 | W800/W801                                               | Winner Micro   | ✅   | ❌   | ✅     | ✅       | ✅   | ✅  | ✅  | ❌         | ✅  | ✅     | ✅  | ❌  |
-| W600/W601                                               | Winner Micro   | ✅   | ❌   | ✅     | ✅       | ✅   | ✅  | ✅  | ❌         | ✅  | ✅⁶    | ❓  | ➖  |
+| W600/W601                                               | Winner Micro   | ✅   | ❌   | ✅     | ✅       | ✅   | ✅  | ✅  | ❌         | ✅  | ✅⁶    | ❓⁹ | ➖  |
 | LN882H                                                  | Lightning Semi | ✅   | ✅   | ✅⁴    | ✅       | ✅   | ✅  | ✅  | ❌         | ✅  | ✅     | ✅  | ✅  |
 | ESP8266<br>ESP8285                                      | Espressif      | ✅   | ⚠️¹³ | ✅²'⁴  | ✅       | ✅   | ✅⁷ | ❌  | ❗️         | ✅  | ➖     | ❓⁹ | ➖  |
 | ESP32<br>-C2<br>-C3<br>-C5<br>-C6<br>-C61<br>-S2<br>-S3 | Espressif      | ✅   | ⚠️¹³ | ✅⁴    | ✅       | ✅   | ✅  | ❓  | ✅¹⁰       | ✅  | ✅     | ❓⁹ | ❌  |
@@ -27,6 +27,7 @@
 | RDA5981                                                 | RDA            | ✅   | ❌   | ✅     | ✅       | ✅   | ✅  | ❌  | ❌         | ✅  | ➖     | ❌  | ➖  |
 | LN8825B                                                 | Lightning Semi | ✅   | ❌   | ✅     | ✅       | ❌   | ✅  | ✅  | ❌         | ✅  | ❌     | ✅  | ➖  |
 | BL616                                                   | Bouffalo Lab   | ✅   | ✅   | ✅⁴    | ✅       | ❌   | ✅  | ❌  | ❌         | ✅  | ✅     | ✅  | ❌  |
+| GD32VW553                                               | GigaDevice     | ✅   | ✅   | ✅⁴    | ✅³      | ✅   | ✅⁸ | ✅  | ✅¹⁰       | ✅  | ✅     | ✅  | ✅⁶ |
 
 
 ✅ - Works<br>
@@ -38,7 +39,7 @@
 
 ¹ Success dependant on partition layout set in bootloader. SPI flash QIO firmware for guaranteed OTA success<br>
 ² Excluding 1MB variation<br>
-³ Implemented, but no tool to generate the file<br>
+³ Be careful with assignments (only one interrupt per pin, something A00 and B00 together is not supported)<br>
 ⁴ No HTTP OTA, only in Web App<br>
 ⁵ OTA attempt leads to device crash<br>
 ⁶ Disabled in obk_config <br>
