@@ -42,6 +42,10 @@
 
 #if MQTT_USE_TLS
 
+#include <limits.h>
+#include <stddef.h>
+#include <stdint.h>
+
 // Plataform specific
 #undef  MBEDTLS_FS_IO
 #undef  MBEDTLS_NET_C
