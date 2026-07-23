@@ -42,8 +42,6 @@
 
 #if MQTT_USE_TLS
 
-#include "mbedtls/config.h"
-
 // Plataform specific
 #undef  MBEDTLS_FS_IO
 #undef  MBEDTLS_NET_C
