@@ -780,6 +780,13 @@
 #undef ENABLE_DRIVER_IR
 #endif
 
+#if MQTT_USE_TLS
+#undef ENABLE_DRIVER_SM16703P
+#undef ENABLE_DRIVER_PIXELANIM
+#undef ENABLE_DRIVER_SM15155E
+#undef ENABLE_DRIVER_IR
+#undef ENABLE_DRIVER_RC
+#endif
 
 // ensure no log2lfs without LFS present
 #if ! ENABLE_LITTLEFS
