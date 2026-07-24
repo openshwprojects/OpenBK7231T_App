@@ -222,6 +222,7 @@
     <ClCompile Include="src\driver\drv_dht.c" />
     <ClCompile Include="src\driver\drv_dht_internal.c" />
     <ClCompile Include="src\driver\drv_dmx512.c" />
+    <ClCompile Include="src\driver\drv_dreo.c" />
     <ClCompile Include="src\driver\drv_ds1820_full.c" />
     <ClCompile Include="src\driver\drv_ds1820_common.c" />
     <ClCompile Include="src\driver\drv_doorSensorWithDeepSleep.c" />
@@ -796,6 +797,7 @@
     <ClCompile Include="src\selftest\selftest_demo_conditionalRelay.c" />
     <ClCompile Include="src\selftest\selftest_demo_signAndValue.c" />
     <ClCompile Include="src\selftest\selftest_doorSensor.c" />
+    <ClCompile Include="src\selftest\selftest_dreo.c" />
     <ClCompile Include="src\selftest\selftest_flashSearch.c" />
     <ClCompile Include="src\selftest\selftest_enums.c" />
     <ClCompile Include="src\selftest\selftest_hass_discovery_base.c" />
