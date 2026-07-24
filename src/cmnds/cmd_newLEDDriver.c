@@ -508,7 +508,13 @@ OBK_Publish_Result LED_SendCurrentLightModeParam_TempOrColor() {
 		return sendTemperatureChange();
 	}
 	else if (g_lightMode == Light_RGB) {
+		if (CFG_HasFlag(OBK_FLAG_LED_4PWM_RGBW_MODE)) {
+			sendColorMode();
+		}
 		return sendColorChange();
+	}
+	else if (g_lightMode == Light_White) {
+		sendColorMode();
 	}
 	return OBK_PUBLISH_WAS_NOT_REQUIRED;
 }
@@ -541,7 +547,8 @@ OBK_Publish_Result sendTemperatureChange() {
 #endif
 
 void LED_SaveStateToFlashVarsNow() {
-	HAL_FlashVars_SaveLED(g_lightMode, g_brightness0to100, led_temperature_current, led_baseColors[0], led_baseColors[1], led_baseColors[2], g_lightEnableAll);
+	short tempOrWhite = CFG_HasFlag(OBK_FLAG_LED_4PWM_RGBW_MODE) ? led_baseColors[4] : led_temperature_current;
+	HAL_FlashVars_SaveLED(g_lightMode, g_brightness0to100, tempOrWhite, led_baseColors[0], led_baseColors[1], led_baseColors[2], g_lightEnableAll);
 }
 void apply_smart_light() {
 	int i;
@@ -614,12 +621,10 @@ void apply_smart_light() {
 				}
 			}
 			else if (g_lightMode == Light_RGB) {
-				// skip channels 3, 4
-				if (i >= 3)
-				{
-					baseRGBCW[i] = 0;
-					final = 0;
-				}
+				if (i >= 3) { baseRGBCW[i] = 0; final = 0; }
+			} else if (g_lightMode == Light_White) {
+				// White sub-mode for 4PWM RGBW: only channel 4 active, zero 0-3
+				if (i <= 3) { baseRGBCW[i] = 0; final = 0; }
 			} else if(g_lightMode == Light_Anim) {
 				// skip all?
 				baseRGBCW[i] = 0;
@@ -822,6 +827,8 @@ const char *GetLightModeStr(int mode) {
 		return "cw";
 	if(mode == Light_RGB)
 		return "rgb";
+	if(mode == Light_White)
+		return "white";
 	return "er";
 }
 void SET_LightMode(int newMode) {
@@ -1263,6 +1270,37 @@ static commandResult_t dimmer(const void *context, const char *cmd, const char *
 
 		return CMD_RES_OK;
 }
+#if ENABLE_MQTT
+// Publish current color mode ("rgb" or "white") for HA to switch UI
+OBK_Publish_Result sendColorMode() {
+	const char *mode = (g_lightMode == Light_White) ? "white" : "rgb";
+	return MQTT_PublishMain_StringString_DeDuped(DEDUP_LED_COLOR_MODE, DEDUP_EXPIRE_TIME, "led_colorMode", mode, 0);
+}
+#endif
+// Switch to white mode in OBK_FLAG_LED_4PWM_RGBW_MODE.
+// White channel is always at max — brightness is controlled by led_dimmer.
+// RGB channels are zeroed in apply_smart_light().
+static commandResult_t led_enableWhite(const void *context, const char *cmd, const char *args, int cmdFlags) {
+	if (CFG_HasFlag(OBK_FLAG_LED_4PWM_RGBW_MODE) == false) {
+		return CMD_RES_ERROR;
+	}
+
+	g_lightMode = Light_White;
+
+	led_baseColors[4] = 255.0f;
+
+	if (CFG_HasFlag(OBK_FLAG_LED_AUTOENABLE_ON_ANY_ACTION)) {
+		LED_SetEnableAll(true);
+	}
+	apply_smart_light();
+#if ENABLE_MQTT
+	sendColorMode();
+	if(CFG_HasFlag(OBK_FLAG_MQTT_BROADCASTLEDPARAMSTOGETHER)) {
+		LED_SendDimmerChange();
+	}
+#endif
+	return CMD_RES_OK;
+}
 void LED_SetFinalRGBCW(byte *rgbcw) {
 	if(rgbcw[0] == 0 && rgbcw[1] == 0 && rgbcw[2] == 0 && rgbcw[3] == 0 && rgbcw[4] == 0) {
 
@@ -1517,6 +1555,9 @@ commandResult_t LED_SetBaseColor(const void *context, const char *cmd, const cha
 			apply_smart_light();
 #if ENABLE_MQTT
 			sendColorChange();
+			if (CFG_HasFlag(OBK_FLAG_LED_4PWM_RGBW_MODE)) {
+				sendColorMode();
+			}
 			if(CFG_HasFlag(OBK_FLAG_MQTT_BROADCASTLEDPARAMSTOGETHER)) {
 				LED_SendDimmerChange();
 			}
@@ -1536,7 +1577,6 @@ static commandResult_t basecolor_rgb(const void *context, const char *cmd, const
 static commandResult_t basecolor_rgbcw(const void *context, const char *cmd, const char *args, int cmdFlags){
 	return LED_SetBaseColor(context,cmd,args,1);
 }
-
 // CONFIG-ONLY command!
 static commandResult_t colorMult(const void *context, const char *cmd, const char *args, int cmdFlags){
         ADDLOG_DEBUG(LOG_FEATURE_CMD, " g_cfg_colorScaleToChannel (%s) received with args %s",cmd,args);
@@ -1752,12 +1792,21 @@ void NewLED_InitCommands(){
 		// if single color or RGB, force RGB
 		g_lightMode = Light_RGB;
 	}
+	// 4 PWM with flag 52: treat as RGB+W (channels [0,1,2,4])
+	else if (pwmCount == 4 && CFG_HasFlag(OBK_FLAG_LED_4PWM_RGBW_MODE)) {
+		g_lightMode = Light_RGB;
+	}
 
 	//cmddetail:{"name":"led_dimmer","args":"[Value]",
 	//cmddetail:"descr":"set output dimmer 0..100",
 	//cmddetail:"fn":"dimmer","file":"cmnds/cmd_newLEDDriver.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("led_dimmer", dimmer, NULL);
+	//cmddetail:{"name":"led_enableWhite","args":"[ignored]",
+	//cmddetail:"descr":"Switch to white mode for 4PWM RGBW (requires flag 52). White channel always at max; brightness via led_dimmer.",
+	//cmddetail:"fn":"led_enableWhite","file":"cmnds/cmd_newLEDDriver.c","requires":"",
+	//cmddetail:"examples":""}
+    CMD_RegisterCommand("led_enableWhite", led_enableWhite, NULL);
 	//cmddetail:{"name":"Dimmer","args":"[Value]",
 	//cmddetail:"descr":"Alias for led_dimmer, added for Tasmota.",
 	//cmddetail:"fn":"dimmer","file":"cmnds/cmd_newLEDDriver.c","requires":"",
@@ -1898,17 +1947,21 @@ void NewLED_InitCommands(){
 void NewLED_RestoreSavedStateIfNeeded() {
 	if(CFG_HasFlag(OBK_FLAG_LED_REMEMBERLASTSTATE)) {
 		short brig;
-		short tmp;
+		short tmpOrWhite;
 		byte rgb[3];
 		byte mod;
 		byte bEnableAll;
 
-		HAL_FlashVars_ReadLED(&mod, &brig, &tmp, rgb, &bEnableAll);
+		HAL_FlashVars_ReadLED(&mod, &brig, &tmpOrWhite, rgb, &bEnableAll);
 
 		g_lightEnableAll = bEnableAll;
 		SET_LightMode(mod);
 		g_brightness0to100 = brig;
-		LED_SetTemperature(tmp,0);
+		if (CFG_HasFlag(OBK_FLAG_LED_4PWM_RGBW_MODE)) {
+			led_baseColors[4] = (byte)tmpOrWhite;
+		} else {
+			LED_SetTemperature(tmpOrWhite, 0);
+		}
 		led_baseColors[0] = rgb[0];
 		led_baseColors[1] = rgb[1];
 		led_baseColors[2] = rgb[2];

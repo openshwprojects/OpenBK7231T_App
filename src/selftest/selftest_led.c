@@ -382,6 +382,129 @@ void Simulator_StoreBP5758DColor(unsigned short *data) {
 
 #define SELFTEST_ASSERT_SM_CHANNELS(a, b, c, d, e) SELFTEST_ASSERT(sim_smChannels[0] == a && sim_smChannels[1] == b && sim_smChannels[2] == c && sim_smChannels[3] == d && sim_smChannels[4] == e);
 
+void Test_LEDDriver_4PWM_RGBW() {
+	// reset
+	SIM_ClearOBK(0);
+
+	// Configure 4 PWMs on channels 0, 1, 2, 4 (skip 3 as per RGBW topology docs)
+	// P3 → ch0 (R), P4 → ch1 (G), P21 → ch2 (B), P20 → ch4 (W)
+	PIN_SetPinRoleForPinIndex(3, IOR_PWM);
+	PIN_SetPinChannelForPinIndex(3, 0);
+	PIN_SetPinRoleForPinIndex(4, IOR_PWM);
+	PIN_SetPinChannelForPinIndex(4, 1);
+	PIN_SetPinRoleForPinIndex(21, IOR_PWM);
+	PIN_SetPinChannelForPinIndex(21, 2);
+	PIN_SetPinRoleForPinIndex(20, IOR_PWM);
+	PIN_SetPinChannelForPinIndex(20, 4);
+
+	// Enable Flag 52 (OBK_FLAG_LED_4PWM_RGBW_MODE)
+	CFG_SetFlag(OBK_FLAG_LED_4PWM_RGBW_MODE, true);
+
+	// Enable light, full brightness
+	CMD_ExecuteCommand("led_enableAll 1", 0);
+	CMD_ExecuteCommand("led_dimmer 100", 0);
+
+	// === RGB mode ===
+	// Set red
+	CMD_ExecuteCommand("led_basecolor_rgb FF0000", 0);
+	SELFTEST_ASSERT(g_lightMode == Light_RGB);
+	SELFTEST_ASSERT_CHANNEL(0, 100);  // R
+	SELFTEST_ASSERT_CHANNEL(1, 0);    // G
+	SELFTEST_ASSERT_CHANNEL(2, 0);    // B
+	SELFTEST_ASSERT_CHANNEL(3, 0);    // unused
+	SELFTEST_ASSERT_CHANNEL(4, 0);    // W zeroed in RGB mode
+
+	// Set green
+	CMD_ExecuteCommand("led_basecolor_rgb 00FF00", 0);
+	SELFTEST_ASSERT_CHANNEL(0, 0);
+	SELFTEST_ASSERT_CHANNEL(1, 100);
+	SELFTEST_ASSERT_CHANNEL(2, 0);
+	SELFTEST_ASSERT_CHANNEL(3, 0);
+	SELFTEST_ASSERT_CHANNEL(4, 0);
+
+	// Set blue with #
+	CMD_ExecuteCommand("led_basecolor_rgb #0000FF", 0);
+	SELFTEST_ASSERT_CHANNEL(0, 0);
+	SELFTEST_ASSERT_CHANNEL(1, 0);
+	SELFTEST_ASSERT_CHANNEL(2, 100);
+	SELFTEST_ASSERT_CHANNEL(3, 0);
+	SELFTEST_ASSERT_CHANNEL(4, 0);
+
+	// Dimmer in RGB mode (values match existing Test_LEDDriver_RGB assertions)
+	CMD_ExecuteCommand("led_dimmer 50", 0);
+	SELFTEST_ASSERT_CHANNEL(0, 0);
+	SELFTEST_ASSERT_CHANNEL(1, 0);
+	SELFTEST_ASSERT_CHANNEL(2, 21);
+	SELFTEST_ASSERT_CHANNEL(3, 0);
+	SELFTEST_ASSERT_CHANNEL(4, 0);
+	SELFTEST_ASSERT_EXPRESSION("$led_dimmer", 50.0f);
+
+	CMD_ExecuteCommand("led_dimmer 100", 0);
+
+	// === White mode ===
+	CMD_ExecuteCommand("led_enableWhite", 0);
+	SELFTEST_ASSERT(g_lightMode == Light_White);
+	SELFTEST_ASSERT_CHANNEL(0, 0);   // R zeroed in white mode
+	SELFTEST_ASSERT_CHANNEL(1, 0);   // G zeroed in white mode
+	SELFTEST_ASSERT_CHANNEL(2, 0);   // B zeroed in white mode
+	SELFTEST_ASSERT_CHANNEL(3, 0);   // unused
+	SELFTEST_ASSERT_CHANNEL(4, 100); // W full
+
+	// Dimmer in white mode (same gamma curve as RGB)
+	CMD_ExecuteCommand("led_dimmer 50", 0);
+	SELFTEST_ASSERT_CHANNEL(0, 0);
+	SELFTEST_ASSERT_CHANNEL(1, 0);
+	SELFTEST_ASSERT_CHANNEL(2, 0);
+	SELFTEST_ASSERT_CHANNEL(3, 0);
+	SELFTEST_ASSERT_CHANNEL(4, 21);
+
+	CMD_ExecuteCommand("led_dimmer 100", 0);
+
+	// Switch back to RGB mode via led_basecolor_rgb
+	CMD_ExecuteCommand("led_basecolor_rgb FF0000", 0);
+	SELFTEST_ASSERT(g_lightMode == Light_RGB);
+	SELFTEST_ASSERT_CHANNEL(0, 100);
+	SELFTEST_ASSERT_CHANNEL(1, 0);
+	SELFTEST_ASSERT_CHANNEL(2, 0);
+	SELFTEST_ASSERT_CHANNEL(4, 0);
+
+	// Back to white
+	CMD_ExecuteCommand("led_enableWhite", 0);
+	SELFTEST_ASSERT(g_lightMode == Light_White);
+	SELFTEST_ASSERT_CHANNEL(4, 100);
+	SELFTEST_ASSERT_CHANNEL(0, 0);
+
+	// === Test enable/disable ===
+	CMD_ExecuteCommand("led_enableAll 0", 0);
+	SELFTEST_ASSERT_CHANNEL(0, 0);
+	SELFTEST_ASSERT_CHANNEL(1, 0);
+	SELFTEST_ASSERT_CHANNEL(2, 0);
+	SELFTEST_ASSERT_CHANNEL(4, 0);
+
+	// Re-enable should retain white mode and value
+	CMD_ExecuteCommand("led_enableAll 1", 0);
+	SELFTEST_ASSERT(g_lightMode == Light_White);
+	SELFTEST_ASSERT_CHANNEL(4, 100);
+	SELFTEST_ASSERT_CHANNEL(0, 0);
+
+	// === Test Web UI ===
+	// White mode: White radio checked, RGB picker hidden, temperature suppressed
+	Test_FakeHTTPClientPacket_GET("index");
+	SELFTEST_ASSERT_HTML_REPLY_CONTAINS("rgbPickerRow\" style=\"display:none\"");
+	SELFTEST_ASSERT_HTML_REPLY_CONTAINS("LED RGB Color");
+	SELFTEST_ASSERT_HTML_REPLY_CONTAINS("checked>White");
+	SELFTEST_ASSERT_HTML_REPLY_NOT_CONTAINS("checked>RGB");
+	SELFTEST_ASSERT_HTML_REPLY_NOT_CONTAINS("LED Temperature Slider");
+
+	// Switch to RGB mode: RGB radio checked, RGB picker shown
+	CMD_ExecuteCommand("led_basecolor_rgb 00FF00", 0);
+	Test_FakeHTTPClientPacket_GET("index");
+	SELFTEST_ASSERT_HTML_REPLY_CONTAINS("checked>RGB");
+	SELFTEST_ASSERT_HTML_REPLY_NOT_CONTAINS("checked>White");
+	SELFTEST_ASSERT_HTML_REPLY_CONTAINS("rgbPickerRow\"><td>");
+	SELFTEST_ASSERT_HTML_REPLY_NOT_CONTAINS("rgbPickerRow\" style=\"display:none\"");
+	SELFTEST_ASSERT_HTML_REPLY_NOT_CONTAINS("LED Temperature Slider");
+}
 void Test_LEDDriver_RGBCW() {
 	// reset whole device
 	SIM_ClearOBK(0);
@@ -1031,6 +1154,7 @@ void Test_LEDDriver() {
 	Test_LEDDriver_Palette();
 	Test_LEDDriver_BP5758_RGBCW();
 	Test_LEDDriver_SM2235_RGBCW();
+	Test_LEDDriver_4PWM_RGBW();
 }
 
 #endif

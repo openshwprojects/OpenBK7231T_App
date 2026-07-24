@@ -617,6 +617,10 @@ int channelGet(obk_mqtt_request_t* request) {
 		sendColorChange();
 		return 1;
 	}
+	if (stribegins(p, "led_colorMode")) {
+		sendColorMode();
+		return 1;
+	}
 #endif
 
 	// atoi won't parse any non-decimal chars, so it should skip over the rest of the topic.

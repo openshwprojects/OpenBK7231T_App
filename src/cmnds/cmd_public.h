@@ -202,6 +202,7 @@ enum LightMode {
 	Light_RGB,
 	Light_All,
 	Light_Anim,
+	Light_White,
 };
 
 #define TOKENIZER_ALLOW_QUOTES					1
@@ -295,10 +296,12 @@ float LED_GetBlue255();
 extern float led_baseColors[5];
 extern byte g_lightEnableAll;
 extern byte g_lightMode;
+
 void LED_RunQuickColorLerp(int deltaMS);
 void LED_RunOnEverySecond();
 OBK_Publish_Result sendFinalColor();
 OBK_Publish_Result sendColorChange();
+OBK_Publish_Result sendColorMode();
 OBK_Publish_Result LED_SendEnableAllState();
 OBK_Publish_Result LED_SendDimmerChange();
 OBK_Publish_Result sendTemperatureChange();
