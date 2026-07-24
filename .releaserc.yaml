@@ -212,6 +212,7 @@ generateNotes:
 
         RTL8710A (RTL8711AM) can be flashed either via JTAG/SWD, or CH341A SPI.
         TXW81X must be flashed via CK-Link
+        XR809 .img file can be used for both UART and OTA flashing.
 
         Flashing instructions are available on the project's [README.md]({{host}}/{{owner}}/{{repository}}#readme)
     preset: conventionalcommits
