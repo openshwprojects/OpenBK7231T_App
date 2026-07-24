@@ -1044,6 +1044,14 @@ typedef enum {
 	hprintf255(request, "<h5>Current fw: FW%i</h5>", current_fw_idx);
 #elif PLATFORM_RTL8710B || PLATFORM_RTL8720D || PLATFORM_REALTEK_NEW
 	hprintf255(request, "<h5>Current fw: FW%i</h5>", current_fw_idx + 1);
+#elif PLATFORM_XR809
+	image_seq_t running_seq = image_get_running_seq();
+	if (running_seq < IMAGE_SEQ_NUM) {
+		hprintf255(request, "<h5>Current fw: FW%u</h5>",
+			(unsigned int)running_seq);
+	} else {
+		hprintf255(request, "<h5>Current fw: Unknown</h5>");
+	}
 #elif PLATFORM_ECR6600
 	RST_TYPE reset_type = hal_get_reset_type();
 	const char* s;
