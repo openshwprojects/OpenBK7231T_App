@@ -31,7 +31,7 @@ int DGR_Parse(const byte *data, int len, dgrDevice_t *dev, struct sockaddr *addr
 
 	if(dev != 0) {
 		// right now, only single group support
-		if(strcmp(dev->gr.groupName,groupName)) {
+		if(strcasecmp(dev->gr.groupName,groupName)) {
 			addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_DGR,"DGR ignoring message from group %s - device is in %s",groupName,dev->gr.groupName);
 			return -1;
 		}
@@ -39,18 +39,34 @@ int DGR_Parse(const byte *data, int len, dgrDevice_t *dev, struct sockaddr *addr
 	sequence = MSG_ReadU16(&msg);
 	flags = MSG_ReadU16(&msg);
 
-	// ack, not supported yet
-	if(flags == 8) {
-		return 1;
+	addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"DGR_Parse: [%s] seq 0x%04X, flags 0x%02X",inet_ntoa(((struct sockaddr_in *)addr)->sin_addr),sequence, flags);
+
+	// Handle ANNOUNCEMENT message - just a heartbeat, update member but don't process
+	if(flags & DGR_FLAG_ANNOUNCEMENT) {
+		addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_DGR, "DGR_Parse: Received ANNOUNCEMENT from device");
+		// Member is tracked via checkSequence call
+		if(dev && dev->cbs.checkSequence(sequence)) {
+			return 1;  // Reject if old sequence
+		}
+		return 0;  // Accept announcement as valid (member was found/updated)
 	}
 
-	if(dev->cbs.checkSequence(sequence)) {
+	// Handle STATUS_REQUEST - we should respond with our full status
+	if(flags & DGR_FLAG_STATUS_REQUEST) {
+		addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_DGR, "DGR_Parse: Received STATUS_REQUEST from device");
+		if(dev && dev->cbs.checkSequence(sequence)) {
+			return 1;  // Reject if old sequence
+		}
+		if (dev && dev->cbs.sendFullStatus) {
+			dev->cbs.sendFullStatus();
+		}
+		return 0;
+	}
+
+	if(dev && dev->cbs.checkSequence(sequence)) {
 		addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_DGR,"DGR ignoring message from duplicate or older sequence %i",sequence);
 		return 1;
 	}
-
-
-	addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"DGR_Parse: [%s] seq 0x%04X, flags 0x%02X",inet_ntoa(((struct sockaddr_in *)addr)->sin_addr),sequence, flags);
 
 	while(MSG_EOF(&msg)==0) {
 		type = MSG_ReadByte(&msg);
