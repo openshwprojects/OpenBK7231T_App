@@ -75,6 +75,10 @@
 // Enabled Ciphers
 #define MBEDTLS_BIGNUM_C
 #define MBEDTLS_ECP_C
+#define MBEDTLS_MD_C
+#define MBEDTLS_HMAC_DRBG_C
+#define MBEDTLS_ENTROPY_C
+#define MBEDTLS_CIPHER_C
 #define MBEDTLS_RSA_C
 #define MBEDTLS_SHA256_C
 #define MBEDTLS_SHA256_SMALLER
