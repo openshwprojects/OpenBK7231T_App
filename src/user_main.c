@@ -44,6 +44,9 @@ uint8_t g_log2lfs;
 #include "driver/drv_mdns.h"
 #include "driver/drv_ssdp.h"
 #include "driver/drv_uart.h"
+#if ENABLE_DRIVER_XIAOMI_COMPACT4
+#include "driver/drv_xiaomi_compact4.h"
+#endif
 
 #if PLATFORM_BEKEN
 #include <mcu_ps.h>
@@ -1094,7 +1097,13 @@ void Main_OnEverySecond()
 		}
 	}
 #endif
+#if ENABLE_DRIVER_XIAOMI_COMPACT4
+	if (bSafeMode || XiaomiCompact4_ShouldFeedWDT()) {
+		HAL_Run_WDT();
+	}
+#else
 	HAL_Run_WDT();
+#endif
 	// force it to sleep...  we MUST have some idle task processing
 	// else task memory doesn't get freed
 	rtos_delay_milliseconds(1);
