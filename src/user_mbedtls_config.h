@@ -73,6 +73,8 @@
 #undef  MBEDTLS_SSL_DTLS_ANTI_REPLAY
 
 // Enabled Ciphers
+#define MBEDTLS_BIGNUM_C
+#define MBEDTLS_ECP_C
 #define MBEDTLS_RSA_C
 #define MBEDTLS_SHA256_C
 #define MBEDTLS_SHA256_SMALLER
