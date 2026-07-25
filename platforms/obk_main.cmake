@@ -65,6 +65,7 @@ set(OBKM_SRC
 	${OBK_SRCS}driver/drv_battery.c
 	${OBK_SRCS}driver/drv_bl0937.c
 	${OBK_SRCS}driver/drv_bl0942.c
+	${OBK_SRCS}driver/drv_bl0939.c
 	${OBK_SRCS}driver/drv_bl_shared.c
 	${OBK_SRCS}driver/drv_bmp280.c
 	${OBK_SRCS}driver/drv_bmpi2c.c
