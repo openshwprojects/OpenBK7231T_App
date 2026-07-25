@@ -1278,14 +1278,16 @@ OBK_Publish_Result sendColorMode() {
 }
 #endif
 // Switch to white mode in OBK_FLAG_LED_4PWM_RGBW_MODE.
-// White channel is always at max — brightness is controlled by led_dimmer.
-// RGB channels are zeroed in apply_smart_light().
+// Home Assistant sends this command with a value only once, as a signal to
+// enter white mode.  The value itself is deliberately ignored — the white
+// channel stays at max, and all brightness changes in white mode continue to
+// go through led_dimmer.  RGB channels are zeroed in apply_smart_light().
 static commandResult_t led_enableWhite(const void *context, const char *cmd, const char *args, int cmdFlags) {
 	if (CFG_HasFlag(OBK_FLAG_LED_4PWM_RGBW_MODE) == false) {
 		return CMD_RES_ERROR;
 	}
 
-	g_lightMode = Light_White;
+	SET_LightMode(Light_White);
 
 	led_baseColors[4] = 255.0f;
 
