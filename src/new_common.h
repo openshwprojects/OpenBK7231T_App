@@ -475,9 +475,7 @@ typedef unsigned int u32;
 #include "FreeRTOS.h"
 #include "task.h"
 
-#if !PLATFORM_XR809
 #define OBK_OTA_EXTENSION ".img"
-#endif
 //typedef unsigned char u8;
 //typedef unsigned char uint8_t;
 //typedef unsigned int uint32_t;

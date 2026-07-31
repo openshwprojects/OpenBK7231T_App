@@ -61,6 +61,7 @@ void DRV_StopDriver(const char* name);
 // right now only used by simulator
 void DRV_ShutdownAllDrivers();
 bool DRV_IsRunning(const char* name);
+void DRV_SavePowerMeterDriverStatistics(void);
 void DRV_OnChannelChanged(int channel, int iVal);
 #if PLATFORM_BK7231N
 void Strip_setMultiplePixel(uint32_t pixel, uint8_t *data, bool push);

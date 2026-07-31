@@ -679,6 +679,27 @@ typedef enum ioRole_e {
 	//iodetail:"file":"new_pins.h",
 	//iodetail:"driver":"RC"}
 	IOR_Button_ShutterDown,
+	//iodetail:{"name":"BL0939_SCLK",
+	//iodetail:"title":"BL0939 SCLK Pin",
+	//iodetail:"descr":"Software SPI clock pin for BL0939 SPI energy measuring devices.",
+	//iodetail:"enum":"IOR_BL0939_SCLK",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":"BL0939SPI"}
+	IOR_BL0939_SCLK,
+	//iodetail:{"name":"BL0939_MOSI",
+	//iodetail:"title":"BL0939 MOSI Pin",
+	//iodetail:"descr":"Software SPI MOSI/SDI pin for BL0939 SPI energy measuring devices.",
+	//iodetail:"enum":"IOR_BL0939_MOSI",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":"BL0939SPI"}
+	IOR_BL0939_MOSI,
+	//iodetail:{"name":"BL0939_MISO",
+	//iodetail:"title":"BL0939 MISO Pin",
+	//iodetail:"descr":"Software SPI MISO/SDO pin for BL0939 SPI energy measuring devices.",
+	//iodetail:"enum":"IOR_BL0939_MISO",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":"BL0939SPI"}
+	IOR_BL0939_MISO,
 	//iodetail:{"name":"Total_Options",
 	//iodetail:"title":"TODO",
 	//iodetail:"descr":"Current total number of available IOR roles",

@@ -8,6 +8,32 @@ var onlineForEl = null;
 
 var getElement = (id) => document.getElementById(id);
 
+function isEditingControl() {
+	var activeElement = document.activeElement;
+	if (!activeElement) {
+		return false;
+	}
+	if (activeElement.tagName == "SELECT") {
+		return true;
+	}
+	return (
+		activeElement.tagName == "INPUT" &&
+		(activeElement.type == "number" || activeElement.type == "color" || activeElement.type == "range")
+	);
+}
+
+function updateSliderValue(slider) {
+	var valueEl = getElement(slider.dataset.valueId);
+	if (valueEl) {
+		valueEl.textContent = slider.value;
+	}
+}
+
+function submitSlider(slider) {
+	updateSliderValue(slider);
+	slider.form.submit();
+}
+
 // refresh status section every 3 seconds
 function showState() {
 	clearTimeout(firstTime);
@@ -19,13 +45,7 @@ function showState() {
 	req.onreadystatechange = () => {
 		// somehow status was 0 on Windows, but "OK" works on both Beken and Windows
 		if (req.readyState == 4 && req.statusText == "OK") {
-			if (
-				!(
-					document.activeElement.tagName == "SELECT" &&
-					(document.activeElement.tagName == "INPUT" &&
-					(document.activeElement.type == "number" || document.activeElement.type == "color"))
-				)
-			) {
+			if (!isEditingControl()) {
 				var stateEl = getElement("state");
 				if (stateEl) {
 					stateEl.innerHTML = req.responseText;
@@ -80,6 +100,7 @@ function onLoad() {
 }
 
 function submitTemperature(slider) {
+	updateSliderValue(slider);
 	var form = getElement("form132");
 	var kelvinField = getElement("kelvin132");
 	kelvinField.value = Math.round(1000000 / parseInt(slider.value));
