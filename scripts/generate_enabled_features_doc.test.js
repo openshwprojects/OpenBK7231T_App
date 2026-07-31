@@ -97,7 +97,7 @@ test('requires and renders a compiler manifest for every matrix build', (t) => {
 
   const rows = loadManifestRows(tempDir);
   assert.equal(rows.length, 59);
-  assert.match(render(rows, true), /real compiler invocation/);
+  assert.match(render(rows), /real compiler invocation/);
 
   fs.rmSync(path.join(tempDir, 'OpenTXW81X-default.json'));
   assert.throws(() => loadManifestRows(tempDir), /Missing compiler manifests: OpenTXW81X/);

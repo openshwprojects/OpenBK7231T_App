@@ -567,11 +567,38 @@ jobs:
           pattern: ${{ env.APP_NAME }}_*
           #delete-merged: true
 
+  update_features_doc:
+    name: Update Enabled Feature Docs
+    needs: [refs, merge]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+    steps:
+      - name: Source checkout
+        uses: actions/checkout@v5
+      - name: Fetch enabled features doc
+        uses: actions/download-artifact@v7
+        with:
+          name: ${{ env.APP_NAME }}_${{ needs.refs.outputs.version }}_enabledFeatures
+          path: docs
+      - name: Commit enabled features doc
+        run: |
+          if git diff --quiet -- docs/enabledFeatures.md; then
+            echo "Enabled features doc is already current"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/enabledFeatures.md
+          git commit -m "docs: refresh enabled features [skip ci]"
+          git push origin HEAD:main
+
   release:
     name: Semantic Release Images and Artifacts
     runs-on: ubuntu-22.04
-    needs: [merge, refs]
-    if: always() && needs.refs.outputs.new_release == 'true' && (github.ref == 'refs/heads/main' || github.ref_name == 'alpha')
+    needs: [merge, refs, update_features_doc]
+    if: always() && (needs.update_features_doc.result == 'success' || needs.update_features_doc.result == 'skipped') && needs.refs.outputs.new_release == 'true' && (github.ref == 'refs/heads/main' || github.ref_name == 'alpha')
     steps:
       - name: Source checkout
         uses: actions/checkout@v5
