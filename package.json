@@ -7,7 +7,8 @@
 	  "test": "echo \"Error: no test specified\" && exit 1",
 	  "getcommands": "node scripts/getcommands.js",
 	  "enabled-features": "node scripts/generate_enabled_features_doc.js",
-	  "enabled-features:check": "node scripts/generate_enabled_features_doc.js --check"
+	  "enabled-features:check": "node scripts/generate_enabled_features_doc.js --check",
+	  "enabled-features:test": "node --test scripts/generate_enabled_features_doc.test.js"
 	},
 	"repository": {
 	  "type": "git",
