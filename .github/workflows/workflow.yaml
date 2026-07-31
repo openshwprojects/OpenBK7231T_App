@@ -529,15 +529,17 @@ jobs:
         with:
           wsl-version: 1
           distribution: Ubuntu-22.04
-          additional-packages: make nodejs
+          additional-packages: make
       - name: Prepare compiler feature probes
         run: node scripts/generate_enabled_features_doc.js --prepare-build-manifest
+        shell: pwsh
       - name: Run make
         run: |
           set -o pipefail
           make APP_VERSION=${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }} APP_NAME=${{ matrix.platform }} VARIANT="${{ matrix.variant }}" ${{ matrix.platform }} 2>&1 | tee enabled-features-build.log
       - name: Collect compiler feature manifest
         run: node scripts/generate_enabled_features_doc.js --collect-build-manifest "${{ matrix.platform }}" "${{ matrix.variant }}" enabled-features-build.log enabled-features-manifests
+        shell: pwsh
       - name: Upload compiler feature manifest
         uses: actions/upload-artifact@v6
         with:
