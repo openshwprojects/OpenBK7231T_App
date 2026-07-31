@@ -76,6 +76,11 @@ int g_sleepfactor = 1;
 #endif
 #elif PLATFORM_ECR6600
 #include "psm_system.h"
+#include "psm_user.h"
+#include "psm_mode_ctrl.h"
+#include "rtc.h"
+#include "oshal.h"
+#include "system_wifi.h"
 #elif PLATFORM_GD32VW553
 #include "gd32vw55x.h"
 #include "gd32vw55x_platform.h"
@@ -104,6 +109,143 @@ static int generateHashValue(const char* fname) {
 
 command_t* g_commands[HASH_SIZE] = { NULL };
 bool g_powersave;
+
+#if PLATFORM_ECR6600
+#define ECR6600_DEEPSLEEP_PREPARE_DELAY_MS       500U
+#define ECR6600_DEEPSLEEP_DISCONNECT_TIMEOUT_MS 3000U
+#define ECR6600_DEEPSLEEP_POLL_MS                  20U
+#define ECR6600_DEEPSLEEP_SETTLE_MS               200U
+#define ECR6600_DEEPSLEEP_TASK_STACK_SIZE        4096
+#define ECR6600_DEEPSLEEP_TASK_PRIORITY             4
+
+static volatile bool g_ecr6600DeepSleepPending = false;
+static unsigned int g_ecr6600DeepSleepSeconds = 0;
+
+// Present in the matched v2.1.23.16 PSM library but not declared by its
+// public headers. The vendor low-power path clears pending PCU status before
+// arming the RTC and entering DEEP_SLEEP.
+extern int psm_clear_pcu_isr(void);
+
+static void ECR6600_DeepSleepTask(void* arg) {
+	unsigned int waitedMS = 0;
+	unsigned int sleepSeconds = g_ecr6600DeepSleepSeconds;
+	wifi_status_e wifiStatus;
+	bool staIdle;
+	bool apIdle;
+	bool bleIdle;
+
+	(void)arg;
+
+	// Let HTTP/UART finish returning the command result before intentionally
+	// dropping the network transport that delivered it.
+	os_msleep(ECR6600_DEEPSLEEP_PREPARE_DELAY_MS);
+
+	wifiStatus = wifi_get_sta_status();
+	if (wifiStatus != STA_STATUS_STOP && wifiStatus != STA_STATUS_DISCON) {
+		ADDLOG_INFO(LOG_FEATURE_CMD,
+			"ECR6600 deep sleep: requesting WiFi disconnect (status %u)",
+			(unsigned int)wifiStatus);
+
+		// wifi_disconnect() queues the disconnect to the WPA task.
+		if (wifi_disconnect() != SYS_OK) {
+			ADDLOG_ERROR(LOG_FEATURE_CMD,
+				"ECR6600 deep sleep: failed to queue WiFi disconnect");
+			g_ecr6600DeepSleepPending = false;
+			os_task_delete(os_task_get_running_handle());
+			return;
+		}
+	}
+
+	// Wait for WPA and DHCP to reach the SDK's real disconnected state.
+	do {
+		wifiStatus = wifi_get_sta_status();
+		if (wifiStatus == STA_STATUS_STOP || wifiStatus == STA_STATUS_DISCON) {
+			break;
+		}
+
+		os_msleep(ECR6600_DEEPSLEEP_POLL_MS);
+		waitedMS += ECR6600_DEEPSLEEP_POLL_MS;
+	} while (waitedMS < ECR6600_DEEPSLEEP_DISCONNECT_TIMEOUT_MS);
+
+	if (wifiStatus != STA_STATUS_STOP && wifiStatus != STA_STATUS_DISCON) {
+		ADDLOG_ERROR(LOG_FEATURE_CMD,
+			"ECR6600 deep sleep: WiFi did not disconnect after %u ms "
+			"(status=%u); aborting",
+			waitedMS, (unsigned int)wifiStatus);
+		g_ecr6600DeepSleepPending = false;
+		os_task_delete(os_task_get_running_handle());
+		return;
+	}
+
+	// The WiFi driver's final disconnect callback updates its PSM device
+	// state after STA_STATUS_DISCON becomes visible. Let that callback drain
+	// before writing the final offline/idle state used for deep sleep.
+	os_msleep(ECR6600_DEEPSLEEP_SETTLE_MS);
+
+	psm_set_wifi_status(PSM_OFF_LINE);
+	psm_set_device_status(PSM_DEVICE_WIFI_STA, PSM_DEVICE_STATUS_IDLE);
+
+	staIdle = psm_check_single_device_idle(PSM_DEVICE_WIFI_STA);
+	apIdle = psm_check_single_device_idle(PSM_DEVICE_WIFI_AP);
+	bleIdle = psm_check_single_device_idle(PSM_DEVICE_BLE);
+
+	if (!staIdle || !apIdle || !bleIdle) {
+		ADDLOG_ERROR(LOG_FEATURE_CMD,
+			"ECR6600 deep sleep: PSM radio users still busy "
+			"(sta=%u ap=%u ble=%u); aborting",
+			(unsigned int)staIdle,
+			(unsigned int)apIdle,
+			(unsigned int)bleIdle);
+		g_ecr6600DeepSleepPending = false;
+		os_task_delete(os_task_get_running_handle());
+		return;
+	}
+
+	// libpsm enables GPIO17 as an external wake source during boot. The
+	// DeepSleep command is timer-only, so remove that source and its edge
+	// trigger before arming the RTC.
+	psm_wake_clear_trigger_level();
+	if (!psm_wakeup_gpio_conf(GPIO_NUM_17, 0)) {
+		ADDLOG_ERROR(LOG_FEATURE_CMD,
+			"ECR6600 deep sleep: failed to disable default GPIO17 wake");
+		g_ecr6600DeepSleepPending = false;
+		os_task_delete(os_task_get_running_handle());
+		return;
+	}
+
+	{
+		unsigned int rtcTicks =
+			(unsigned int)((unsigned long long)sleepSeconds * 32768ULL);
+		unsigned int rtcAlarm;
+
+		ADDLOG_INFO(LOG_FEATURE_CMD,
+			"ECR6600 deep sleep: disconnected and PSM-idle after %u ms; "
+			"arming %u seconds (%u RTC ticks)",
+			waitedMS, sleepSeconds, rtcTicks);
+
+		// Flush the last preparation message while clocks and flash are live.
+		os_msleep(50);
+
+		psm_clear_pcu_isr();
+		rtcAlarm = drv_rtc_set_alarm_relative(rtcTicks);
+		ADDLOG_INFO(LOG_FEATURE_CMD,
+			"ECR6600 deep sleep: RTC alarm armed (0x%08X); "
+			"entering SDK DEEP_SLEEP",
+			rtcAlarm);
+
+		// Keep the watchdog enabled as recovery protection. A valid hardware
+		// deep sleep stops it until the RTC wake resets the SoC.
+		os_msleep(20);
+		psm_enter_sleep(DEEP_SLEEP);
+	}
+
+	// A successful DEEP_SLEEP call resets on wake and never returns here.
+	ADDLOG_ERROR(LOG_FEATURE_CMD,
+		"ECR6600 deep sleep: psm_enter_sleep returned unexpectedly");
+	g_ecr6600DeepSleepPending = false;
+	os_task_delete(os_task_get_running_handle());
+}
+#endif
 
 #if defined(PLATFORM_LN882H) || PLATFORM_LN8825
 // this will be applied after WiFi connect
@@ -379,7 +521,9 @@ static commandResult_t CMD_DeepSleep(const void* context, const char* cmd, const
 
 	timeMS = Tokenizer_GetArgInteger(0);
 
+#if !PLATFORM_ECR6600
 	HAL_DisconnectFromWifi();
+#endif
 #if defined(PLATFORM_BEKEN) && !defined(PLATFORM_BEKEN_NEW)
 	// It requires a define in SDK file:
 	// OpenBK7231T\platforms\bk7231t\bk7231t_os\beken378\func\include\manual_ps_pub.h
@@ -420,22 +564,42 @@ static commandResult_t CMD_DeepSleep(const void* context, const char* cmd, const
 	};
 	HBN_Mode_Enter(&cfg);
 #elif PLATFORM_ECR6600
-	//unsigned int sleep_time;
-	//if(timeMS < 1000)
-	//{
-	//	sleep_time = 1;
-	//}
-	//else
-	//{
-	//	sleep_time = (timeMS + 1000 - 1) / 1000;
-	//}
-	// not working
-	//psm_set_deep_sleep(sleep_time);
-	// not working
-	//psm_enter_sleep(DEEP_SLEEP);
-	// this works fine, but wifi will not receive anything after waking up, and only full power cycle will fix it up.
-	drv_rtc_set_alarm_relative(timeMS * 1000 * 33);
-	psm_enter_deep_sleep();
+	int taskHandle;
+
+	// ECR6600 follows the command's normal seconds-based duration. One day
+	// remains safely within the 32-bit 32.768 kHz RTC tick count.
+	if (timeMS <= 0 || timeMS > 86400) {
+		ADDLOG_ERROR(LOG_FEATURE_CMD,
+			"ECR6600 DeepSleep requires 1..86400 seconds");
+		return CMD_RES_BAD_ARGUMENT;
+	}
+
+	if (g_ecr6600DeepSleepPending) {
+		ADDLOG_ERROR(LOG_FEATURE_CMD,
+			"ECR6600 deep sleep is already pending");
+		return CMD_RES_ERROR;
+	}
+
+	g_ecr6600DeepSleepSeconds = (unsigned int)timeMS;
+	g_ecr6600DeepSleepPending = true;
+
+	taskHandle = os_task_create("obk_deepsleep",
+		ECR6600_DEEPSLEEP_TASK_PRIORITY,
+		ECR6600_DEEPSLEEP_TASK_STACK_SIZE,
+		ECR6600_DeepSleepTask,
+		NULL);
+
+	if (taskHandle < 0) {
+		g_ecr6600DeepSleepPending = false;
+		ADDLOG_ERROR(LOG_FEATURE_CMD,
+			"ECR6600 deep sleep: failed to create preparation task");
+		return CMD_RES_ERROR;
+	}
+
+	ADDLOG_INFO(LOG_FEATURE_CMD,
+		"ECR6600 deep sleep scheduled for %u seconds",
+		g_ecr6600DeepSleepSeconds);
+	return CMD_RES_OK;
 #elif PLATFORM_GD32VW553
 	delay_ms(50);
 	wifi_netlink_wifi_close();
