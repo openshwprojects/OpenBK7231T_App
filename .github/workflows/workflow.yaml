@@ -176,6 +176,7 @@ jobs:
         with:
           name: ${{ env.APP_NAME }}_${{ needs.refs.outputs.version }}_enabledFeatures
           path: docs/enabledFeatures.md
+          retention-days: 1
 
   build:
     name: Build
@@ -355,6 +356,7 @@ jobs:
         with:
           name: enabled-features-manifest-${{ matrix.platform }}-${{ matrix.variant }}
           path: enabled-features-manifests/*.json
+          retention-days: 1
 
       - name: Save build assets
         uses: actions/upload-artifact@v6
@@ -498,6 +500,7 @@ jobs:
         with:
           name: enabled-features-manifest-${{ matrix.platform }}-${{ matrix.variant }}
           path: enabled-features-manifests/*.json
+          retention-days: 1
       - name: Save build assets
         uses: actions/upload-artifact@v6
         with:
@@ -545,6 +548,7 @@ jobs:
         with:
           name: enabled-features-manifest-${{ matrix.platform }}-${{ matrix.variant }}
           path: enabled-features-manifests/*.json
+          retention-days: 1
       - name: Save build assets
         uses: actions/upload-artifact@v6
         with:
@@ -630,7 +634,7 @@ jobs:
   cleanup_artifacts:
     name: Clean Up Enabled Feature Artifacts
     needs: [refs, merge, release, update_features_doc]
-    if: always() && needs.merge.result == 'success' && (needs.release.result == 'success' || needs.release.result == 'skipped') && (needs.update_features_doc.result == 'success' || needs.update_features_doc.result == 'skipped')
+    if: always() && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && needs.merge.result == 'success' && (needs.release.result == 'success' || needs.release.result == 'skipped') && (needs.update_features_doc.result == 'success' || needs.update_features_doc.result == 'skipped')
     runs-on: ubuntu-22.04
     permissions:
       actions: write
