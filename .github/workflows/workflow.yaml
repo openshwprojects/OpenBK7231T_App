@@ -628,23 +628,23 @@ jobs:
           echo ${{ steps.semantic.outputs.new_release_patch_version }}
 
   cleanup_artifacts:
-    name: Clean Up Intermediate Artifacts
+    name: Clean Up Enabled Feature Artifacts
     needs: [refs, merge, release, update_features_doc]
     if: always() && needs.merge.result == 'success' && (needs.release.result == 'success' || needs.release.result == 'skipped') && (needs.update_features_doc.result == 'success' || needs.update_features_doc.result == 'skipped')
     runs-on: ubuntu-22.04
     permissions:
       actions: write
     steps:
-      - name: Delete intermediate artifacts
+      - name: Delete enabled feature intermediates
         env:
-          FINAL_ARTIFACT: ${{ env.APP_NAME }}_${{ needs.refs.outputs.version }}
+          ENABLED_FEATURES_ARTIFACT: ${{ env.APP_NAME }}_${{ needs.refs.outputs.version }}_enabledFeatures
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh api --paginate "/repos/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}/artifacts?per_page=100" \
             --jq '.artifacts[] | [.id, .name] | @tsv' |
           while IFS=$'\t' read -r artifact_id artifact_name; do
             case "$artifact_name" in
-              enabled-features-manifest-*|"${FINAL_ARTIFACT}"_*)
+              enabled-features-manifest-*|"${ENABLED_FEATURES_ARTIFACT}")
                 echo "Deleting intermediate artifact: $artifact_name"
                 gh api --method DELETE "/repos/${GITHUB_REPOSITORY}/actions/artifacts/${artifact_id}"
                 ;;
