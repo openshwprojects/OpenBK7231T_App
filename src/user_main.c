@@ -1491,7 +1491,17 @@ void Main_Init_Before_Delay()
 	bk_printf("\r%s\r\n", __func__);
 	// read or initialise the boot count flash area
 	HAL_FlashVars_IncreaseBootCount();
-
+    int a = 123;
+	ADDLOGF_INFO("integer test");
+	ADDLOGF_INFO("a = %i", a);
+	float x = 3.14;
+	float y = 1.86;
+	float z = x + y;
+	
+	ADDLOGF_INFO("float test");
+	ADDLOGF_INFO("x = %f", x);
+	ADDLOGF_INFO("y = %f", y);
+	ADDLOGF_INFO("x + y = %f", z);
 #if defined(PLATFORM_BEKEN)
 	// this just increments our idle counter variable.
 	// it registers a cllback from RTOS IDLE function.
