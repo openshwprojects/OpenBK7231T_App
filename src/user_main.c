@@ -1491,17 +1491,30 @@ void Main_Init_Before_Delay()
 	bk_printf("\r%s\r\n", __func__);
 	// read or initialise the boot count flash area
 	HAL_FlashVars_IncreaseBootCount();
+    // Integer operations (tests basic ALU)
     int a = 123;
-	ADDLOGF_INFO("integer test");
-	ADDLOGF_INFO("a = %i", a);
-	float x = 3.14;
-	float y = 1.86;
-	float z = x + y;
-	
-	ADDLOGF_INFO("float test");
-	ADDLOGF_INFO("x = %f", x);
-	ADDLOGF_INFO("y = %f", y);
-	ADDLOGF_INFO("x + y = %f", z);
+    int b = 456;
+    int c = (a * b) / 10;
+    
+    ADDLOGF_INFO("Advanced math test started");
+    ADDLOGF_INFO("Integer: (%i * %i) / 10 = %i", a, b, c);
+
+    // Float operations (tests __aeabi_fadd, __aeabi_fmul, __aeabi_fdiv)
+    float x = 3.14159f;
+    float y = 1.86f;
+    float z = (x * y) / (x - 1.0f);
+    
+    ADDLOGF_INFO("Float basic: (%f * %f) / (%f - 1.0) = %f", x, y, x, z);
+
+    // Casting and precision test (tests __aeabi_f2iz, __aeabi_i2f)
+    int float_as_int = (int)(z * 100.0f);
+    float int_as_float = (float)c / 3.33f;
+    
+    ADDLOGF_INFO("Casting: float_to_int = %i, int_to_float = %f", float_as_int, int_as_float);
+    for(x = 1.23f; x < 10.0f; x += 1.23f) {
+       ADDLOGF_INFO("Loop %f", x);
+	}
+
 #if defined(PLATFORM_BEKEN)
 	// this just increments our idle counter variable.
 	// it registers a cllback from RTOS IDLE function.
