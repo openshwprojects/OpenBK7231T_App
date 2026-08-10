@@ -733,6 +733,7 @@ float g_wifi_temperature = 0;
 static byte g_secondsSpentInLowMemoryWarning = 0;
 void Main_OnEverySecond()
 {
+    ADDLOGF_INFO("entered Main_OnEverySecond");
 #if PLATFORM_W600 || PLATFORM_W800
 #define TimeOut_t xTimeOutType 
 #endif
@@ -1123,6 +1124,7 @@ unsigned int g_deltaTimeMS;
 // this is what we do in a qucik tick
 void QuickTick(void* param)
 {
+    ADDLOGF_INFO("quicktick");
 	if (g_bWantPinDeepSleep) {
 		g_bWantPinDeepSleep = 0;
 		HAL_DisconnectFromWifi();
@@ -1706,6 +1708,7 @@ void Main_Init()
 	// do things we want after TCP/IP stack is ready
 	Main_Init_After_Delay();
 
+    ADDLOGF_INFO("exiting Main_Init");
 }
 
 #if PLATFORM_ESPIDF || PLATFORM_ESP8266 || PLATFORM_BL602 || PLATFORM_REALTEK \
