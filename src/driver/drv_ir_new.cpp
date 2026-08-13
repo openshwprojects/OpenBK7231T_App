@@ -707,7 +707,8 @@ extern "C" void DRV_IR_Init() {
 		//bk_gpio_config_input_pup((GPIO_INDEX)pin); // enabled by enableIRIn
 
 		//TODO: we should specify buffer size (now set to 1024), timeout (now 90ms) and tolerance 
-		 ourReceiver = new IRrecv(pin);
+		//ourReceiver = new IRrecv(pin);
+		 ourReceiver = new IRrecv(pin, kRawBuf, 20, false);
 		 ourReceiver->enableIRIn(pup);
 	}
 
