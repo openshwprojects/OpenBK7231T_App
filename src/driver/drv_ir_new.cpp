@@ -178,7 +178,7 @@ SpoofIrReceiver IrReceiver;
 // and then every 50us service the rolling buffer, changing the PWM from 0 duty to 50% duty
 // appropriately.
 #undef SEND_MAXBITS
-#define SEND_MAXBITS 350
+#define SEND_MAXBITS 512
 
 class myIRsend : public IRsend {
 public:
@@ -411,34 +411,29 @@ extern "C" commandResult_t IR_Send_Cmd(const void *context, const char *cmd, con
 							return CMD_RES_BAD_ARGUMENT;
 						}
 					}
-				} else if (protocol == decode_type_t::MITSUBISHI_AC) {
+				} else if (hasACState(protocol)) {
 					char *_data = p;
 					if (_data[0] == '0' && (_data[1] == 'x' || _data[1] == 'X')) {
 						_data += 2;
 					}
-					uint8_t stateBytes[18];
+					uint8_t stateBytes[64];
 					int nBytes = 0;
 					char *hp = _data;
-					while (*hp && *hp != ',' && hp[1] && nBytes < 18) {
+					while (*hp && *hp != ',' && hp[1] && nBytes < 64) {
 						char hex[3] = { hp[0], hp[1], 0 };
 						stateBytes[nBytes] = (uint8_t)strtol(hex, NULL, 16);
 						nBytes++;
 						hp += 2;
 					}
-					if (nBytes == 18) {
-						pIRsend->resetsendqueue();
-						pIRsend->sendMitsubishiAC(stateBytes, 18);
+					if (nBytes > 0) {
+						pIRsend->send(protocol, stateBytes, nBytes);
 						pIRsend->delay(100);
-						ADDLOG_INFO(LOG_FEATURE_IR, (char *)"IR send MITSUBISHI_AC state, %d bytes", nBytes);
+						ADDLOG_INFO(LOG_FEATURE_IR, (char *)"IR send %s state, %d bytes", args, nBytes);
 						return CMD_RES_OK;
 					} else {
-						ADDLOG_ERROR(LOG_FEATURE_IR, (char *)"IR MITSUBISHI_AC state needs 18 bytes, got %d", nBytes);
+						ADDLOG_ERROR(LOG_FEATURE_IR, (char *)"IR %s state: no valid hex bytes found", args);
 						return CMD_RES_BAD_ARGUMENT;
 					}
-				} else {
-					// TODO: implement longer protocols
-					ADDLOG_ERROR(LOG_FEATURE_IR, (char *)"IRSend currently only protocol with up to 64bits are supported", args);
-					return CMD_RES_BAD_ARGUMENT;
 				}
 			} 
 		}
