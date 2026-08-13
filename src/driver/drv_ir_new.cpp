@@ -177,7 +177,8 @@ SpoofIrReceiver IrReceiver;
 // we simply note the numbers into a rolling buffer, assume the first is a mark()
 // and then every 50us service the rolling buffer, changing the PWM from 0 duty to 50% duty
 // appropriately.
-#define SEND_MAXBITS 128
+#undef SEND_MAXBITS
+#define SEND_MAXBITS 350
 
 class myIRsend : public IRsend {
 public:
@@ -425,6 +426,7 @@ extern "C" commandResult_t IR_Send_Cmd(const void *context, const char *cmd, con
 						hp += 2;
 					}
 					if (nBytes == 18) {
+						pIRsend->resetsendqueue();
 						pIRsend->sendMitsubishiAC(stateBytes, 18);
 						pIRsend->delay(100);
 						ADDLOG_INFO(LOG_FEATURE_IR, (char *)"IR send MITSUBISHI_AC state, %d bytes", nBytes);
