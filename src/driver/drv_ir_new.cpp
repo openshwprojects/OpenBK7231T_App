@@ -410,6 +410,29 @@ extern "C" commandResult_t IR_Send_Cmd(const void *context, const char *cmd, con
 							return CMD_RES_BAD_ARGUMENT;
 						}
 					}
+				} else if (protocol == decode_type_t::MITSUBISHI_AC) {
+					char *_data = p;
+					if (_data[0] == '0' && (_data[1] == 'x' || _data[1] == 'X')) {
+						_data += 2;
+					}
+					uint8_t stateBytes[18];
+					int nBytes = 0;
+					char *hp = _data;
+					while (*hp && *hp != ',' && hp[1] && nBytes < 18) {
+						char hex[3] = { hp[0], hp[1], 0 };
+						stateBytes[nBytes] = (uint8_t)strtol(hex, NULL, 16);
+						nBytes++;
+						hp += 2;
+					}
+					if (nBytes == 18) {
+						pIRsend->sendMitsubishiAC(stateBytes, 18);
+						pIRsend->delay(100);
+						ADDLOG_INFO(LOG_FEATURE_IR, (char *)"IR send MITSUBISHI_AC state, %d bytes", nBytes);
+						return CMD_RES_OK;
+					} else {
+						ADDLOG_ERROR(LOG_FEATURE_IR, (char *)"IR MITSUBISHI_AC state needs 18 bytes, got %d", nBytes);
+						return CMD_RES_BAD_ARGUMENT;
+					}
 				} else {
 					// TODO: implement longer protocols
 					ADDLOG_ERROR(LOG_FEATURE_IR, (char *)"IRSend currently only protocol with up to 64bits are supported", args);
