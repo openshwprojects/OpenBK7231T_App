@@ -1466,6 +1466,47 @@ int http_fn_cfg_ping(http_request_t* request) {
 	return 0;
 }
 #endif
+
+#if PLATFORM_BEKEN && PLATFORM_BEKEN_NEW
+// Scanning on the new Beken SDK is ASYNCHRONOUS: bk_wlan_start_scan() only queues
+// the request, and results may be read once the completion event arrives. The
+// sequence below is taken from demos/wifi/scan/wifi_scan.c in the SDK.
+//
+// The callback runs on the WiFi task, so it has to be a plain file scope function
+// rather than a nested one like in the Realtek branch above - a nested function
+// that has its address taken needs a trampoline on the stack, which will not
+// execute here.
+#define HTTP_WIFI_SCAN_TIMEOUT_MS 6000
+
+// Deliberately created once and never destroyed. The callback may arrive after we
+// gave up waiting, and giving a deleted semaphore would write into freed memory.
+static beken_semaphore_t g_wifiScanSem = NULL;
+
+static void HTTP_WiFiScanDone(void* ctxt, uint8_t param) {
+	if (g_wifiScanSem != NULL) {
+		rtos_set_semaphore(&g_wifiScanSem);
+	}
+}
+
+static const char* HTTP_WiFiSecurityName(wlan_sec_type_t sec) {
+	switch (sec) {
+	case BK_SECURITY_TYPE_NONE: return "Open";
+	case BK_SECURITY_TYPE_WEP: return "WEP";
+	case BK_SECURITY_TYPE_WPA_TKIP: return "WPA-TKIP";
+	case BK_SECURITY_TYPE_WPA_AES: return "WPA-AES";
+	case BK_SECURITY_TYPE_WPA_MIXED: return "WPA-Mixed";
+	case BK_SECURITY_TYPE_WPA2_TKIP: return "WPA2-TKIP";
+	case BK_SECURITY_TYPE_WPA2_AES: return "WPA2-AES";
+	case BK_SECURITY_TYPE_WPA2_MIXED: return "WPA2-Mixed";
+	case BK_SECURITY_TYPE_WPA3_SAE: return "WPA3-SAE";
+	case BK_SECURITY_TYPE_WPA3_WPA2_MIXED: return "WPA3/WPA2";
+	case BK_SECURITY_TYPE_EAP: return "EAP";
+	case BK_SECURITY_TYPE_OWE: return "OWE";
+	default: return "Unknown";
+	}
+}
+#endif
+
 int http_fn_cfg_wifi(http_request_t* request) {
 	// for a test, show password as well...
 	char tmpA[128];
@@ -1663,6 +1704,67 @@ int http_fn_cfg_wifi(http_request_t* request) {
 			hprintf255(request, "</table><br>");
 		}
 
+#elif PLATFORM_BEKEN && PLATFORM_BEKEN_NEW
+		// Covers every target built against the new Beken SDK (BK7231T/N/U, BK7238,
+		// BK7252, BK7252N). The two Beken branches above only handle the old Tuya
+		// based SDKs, which is why all of these used to end up in the TODO case.
+		{
+			ScanResult_adv apList;
+			int i, num, res;
+
+			memset(&apList, 0, sizeof(apList));
+
+			if (g_wifiScanSem == NULL) {
+				if (rtos_init_semaphore(&g_wifiScanSem, 1) != 0) {
+					g_wifiScanSem = NULL;
+				}
+			}
+
+			bk_printf("Scan begin...\r\n");
+			bk_wlan_scan_ap_reg_cb(HTTP_WiFiScanDone);
+			bk_wlan_start_scan();
+
+			if (g_wifiScanSem != NULL) {
+				rtos_get_semaphore(&g_wifiScanSem, HTTP_WIFI_SCAN_TIMEOUT_MS);
+			}
+			else {
+				rtos_delay_milliseconds(HTTP_WIFI_SCAN_TIMEOUT_MS);
+			}
+
+			// Read the results even if the event never arrived. In AP mode the scan
+			// takes a different path (wlan_ap_scan), and the completion event is
+			// emitted from the supplicant, so it is not guaranteed to reach us there.
+			// Reading anyway costs nothing and recovers that case.
+			if (bk_wlan_ap_is_up() > 0) {
+				res = wlan_ap_scan_result(&apList);
+			}
+			else {
+				res = wlan_sta_scan_result(&apList);
+			}
+
+			num = (res == 0 && apList.ApList != NULL) ? (int)apList.ApNum : 0;
+			bk_printf("Scan returned %i networks\r\n", num);
+
+			if (num <= 0) {
+				poststr(request, "No networks found, or the scan has not finished yet - try again.<br>");
+			}
+			for (i = 0; i < num; i++) {
+				apList.ApList[i].ssid[32] = 0;
+				hprintf255(request, "[%i/%i] SSID: ", i + 1, num);
+				// The SSID comes from a foreign transmitter, so it has to be escaped.
+				// Otherwise a neighbour whose network name contains a tag would inject
+				// markup into this page.
+				poststr_escaped(request, apList.ApList[i].ssid);
+				hprintf255(request, ", Channel: %i, Security: %s, Signal %i<br>",
+					apList.ApList[i].channel,
+					HTTP_WiFiSecurityName(apList.ApList[i].security),
+					(int)apList.ApList[i].ApPower);
+			}
+
+			if (apList.ApList != NULL) {
+				os_free(apList.ApList);
+			}
+		}
 #else
 		hprintf255(request, "TODO %s<br>", PLATFORM_MCU_NAME);
 #endif
