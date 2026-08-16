@@ -384,7 +384,7 @@ extern "C" commandResult_t IR_Send_Cmd(const void *context, const char *cmd, con
 			*p='\0';
 			decode_type_t protocol = strToDecodeType(args);
 			p++; EDDIG EREDETI*/
-	//TESZT
+	//TESZT kezdete
 	if ((*p != '-') && (*p != ' ')) {
 		// try to decode "new" format, separated by comma
 		// the format is bits,0xDATA[,repeat]
@@ -396,10 +396,15 @@ extern "C" commandResult_t IR_Send_Cmd(const void *context, const char *cmd, con
 		{
 			*p='\0';
 			if (!my_strnicmp(args, "RAW", 3)) {
+				// Format: RAW,<freq_hz>,<duty_percent>,<mark1>,<space1>,<mark2>,<space2>,...
 				p++;
 				char *_freq = p;
 				while (*p && (*p != ',')) p++;
 				uint16_t freq = (uint16_t)strtol(_freq, NULL, 10);
+				if (*p == ',') p++;
+				char *_duty = p;
+				while (*p && (*p != ',')) p++;
+				uint8_t duty = (uint8_t)strtol(_duty, NULL, 10);
 				if (*p == ',') p++;
 				uint16_t rawbuf[300];
 				int rawlen = 0;
@@ -413,9 +418,10 @@ extern "C" commandResult_t IR_Send_Cmd(const void *context, const char *cmd, con
 					else break;
 				}
 				if (rawlen > 0 && pIRsend) {
+					pIRsend->enableIROut(freq, duty);
 					pIRsend->sendRaw(rawbuf, rawlen, freq);
 					pIRsend->delay(100);
-					ADDLOG_INFO(LOG_FEATURE_IR, (char *)"IR send RAW: freq %d, %d values", (int)freq, rawlen);
+					ADDLOG_INFO(LOG_FEATURE_IR, (char *)"IR send RAW: freq %d, duty %d, %d values", (int)freq, (int)duty, rawlen);
 					return CMD_RES_OK;
 				} else {
 					ADDLOG_ERROR(LOG_FEATURE_IR, (char *)"IR send RAW: no values or no sender");
@@ -424,7 +430,7 @@ extern "C" commandResult_t IR_Send_Cmd(const void *context, const char *cmd, con
 			}
 			decode_type_t protocol = strToDecodeType(args);
 			p++;
-	//TESZT
+	//TESZT vége
 			char *_bits=p;
 			while (*p && (*p != ',')) {
 				p++;
