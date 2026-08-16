@@ -370,6 +370,7 @@ extern "C" commandResult_t IR_Send_Cmd(const void *context, const char *cmd, con
 		p++;
 	}
 
+	/*IDEIGLENESEN KISZEDVE
 	if ((*p != '-') && (*p != ' ')) {
 		// try to decode "new" format, separated by comma
 		// the format is bits,0xDATA[,repeat]
@@ -381,7 +382,48 @@ extern "C" commandResult_t IR_Send_Cmd(const void *context, const char *cmd, con
 		{
 			*p='\0';
 			decode_type_t protocol = strToDecodeType(args);
+			p++; EDDIG EREDETI*/
+	//TESZT
+	if ((*p != '-') && (*p != ' ')) {
+		// try to decode "new" format, separated by comma
+		// the format is bits,0xDATA[,repeat]
+		char *p = args;
+		while (*p && (*p != ',')) {
 			p++;
+		}
+		if(*p==',')
+		{
+			*p='\0';
+			if (!my_strnicmp(args, "RAW", 4)) {
+				p++;
+				char *_freq = p;
+				while (*p && (*p != ',')) p++;
+				uint16_t freq = (uint16_t)strtol(_freq, NULL, 10);
+				if (*p == ',') p++;
+				uint16_t rawbuf[300];
+				int rawlen = 0;
+				while (*p && rawlen < 300) {
+					char *tokenstart = p;
+					while (*p && (*p != ',')) p++;
+					bool haveComma = (*p == ',');
+					if (haveComma) *p = '\0';
+					rawbuf[rawlen++] = (uint16_t)strtol(tokenstart, NULL, 10);
+					if (haveComma) p++;
+					else break;
+				}
+				if (rawlen > 0 && pIRsend) {
+					pIRsend->sendRaw(rawbuf, rawlen, freq);
+					pIRsend->delay(100);
+					ADDLOG_INFO(LOG_FEATURE_IR, (char *)"IR send RAW: freq %d, %d values", (int)freq, rawlen);
+					return CMD_RES_OK;
+				} else {
+					ADDLOG_ERROR(LOG_FEATURE_IR, (char *)"IR send RAW: no values or no sender");
+					return CMD_RES_BAD_ARGUMENT;
+				}
+			}
+			decode_type_t protocol = strToDecodeType(args);
+			p++;
+	//TESZT
 			char *_bits=p;
 			while (*p && (*p != ',')) {
 				p++;
