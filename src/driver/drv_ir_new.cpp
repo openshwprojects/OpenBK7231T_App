@@ -418,6 +418,7 @@ extern "C" commandResult_t IR_Send_Cmd(const void *context, const char *cmd, con
 					else break;
 				}
 				if (rawlen > 0 && pIRsend) {
+					pIRsend->resetsendqueue();
 					pIRsend->enableIROut(freq, duty);
 					for (int i = 0; i < rawlen; i++) {
 						if (i & 1) pIRsend->space(rawbuf[i]);
