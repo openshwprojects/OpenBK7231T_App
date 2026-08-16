@@ -360,7 +360,8 @@ extern "C" void DRV_IR_ISR(void* arg)
 
 extern "C" commandResult_t IR_Send_Cmd(const void *context, const char *cmd, const char *args_in, int cmdFlags) {
 	if (!args_in) return CMD_RES_NOT_ENOUGH_ARGUMENTS;
-	char args[128];
+	//char args[128]; TESZTELÉS
+	char args[1024];
 	strncpy(args, args_in, sizeof(args) - 1);
 	args[sizeof(args) - 1] = 0;
 
@@ -394,7 +395,7 @@ extern "C" commandResult_t IR_Send_Cmd(const void *context, const char *cmd, con
 		if(*p==',')
 		{
 			*p='\0';
-			if (!my_strnicmp(args, "RAW", 4)) {
+			if (!my_strnicmp(args, "RAW", 3)) {
 				p++;
 				char *_freq = p;
 				while (*p && (*p != ',')) p++;
