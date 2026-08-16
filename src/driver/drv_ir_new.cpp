@@ -400,7 +400,17 @@ extern "C" commandResult_t IR_Send_Cmd(const void *context, const char *cmd, con
 						int repeats=1;
 						if(*p==',')
 							repeats=strtol(p+1,NULL,10);
-						
+					//TESZT
+						if (protocol == decode_type_t::DENON && bits == 15) {
+							uint64_t inverted = data ^ 0x3FF;
+							pIRsend->sendSharpRaw(data, 15, 0);
+							pIRsend->delay(43);
+							pIRsend->sendSharpRaw(inverted, 15, 0);
+							pIRsend->delay(100);
+							ADDLOG_INFO(LOG_FEATURE_IR, (char *)"IR send DENON (2-frame): data 0x%llX inverted 0x%llX", (long long int)data, (long long int)inverted);
+							return CMD_RES_OK;
+						}
+					//TESZT	
 						if( pIRsend->send(protocol,data,bits,repeats) )
 						{
 							pIRsend->delay(100);
