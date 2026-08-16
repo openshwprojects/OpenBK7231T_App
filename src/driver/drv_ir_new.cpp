@@ -419,7 +419,10 @@ extern "C" commandResult_t IR_Send_Cmd(const void *context, const char *cmd, con
 				}
 				if (rawlen > 0 && pIRsend) {
 					pIRsend->enableIROut(freq, duty);
-					pIRsend->sendRaw(rawbuf, rawlen, freq);
+					for (int i = 0; i < rawlen; i++) {
+						if (i & 1) pIRsend->space(rawbuf[i]);
+						else pIRsend->mark(rawbuf[i]);
+					}
 					pIRsend->delay(100);
 					ADDLOG_INFO(LOG_FEATURE_IR, (char *)"IR send RAW: freq %d, duty %d, %d values", (int)freq, (int)duty, rawlen);
 					return CMD_RES_OK;
