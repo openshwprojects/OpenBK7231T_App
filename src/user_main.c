@@ -123,6 +123,8 @@ void Main_ForceUnsafeInit();
 #elif PLATFORM_BL602 || PLATFORM_REALTEK || PLATFORM_XRADIO || PLATFORM_W600 || PLATFORM_RDA5981 || PLATFORM_LN8825 \
 	|| PLATFORM_LN882H || PLATFORM_BL_NEW || PLATFORM_GD32VW553
 #define WFI_FUNC() __asm volatile("wfi")
+#elif PLATFORM_TR6260 || PLATFORM_ECR6600
+#define WFI_FUNC() __asm volatile("standby no_wake_grant")
 #elif PLATFORM_W800
 #define WFI_FUNC __WFI
 #endif
