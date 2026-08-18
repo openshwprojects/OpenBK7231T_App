@@ -87,6 +87,7 @@ static saradc_desc_t tmp_single_desc;
 static UINT16 tmp_single_buff[ADC_TEMP_BUFFER_SIZE];
 static volatile DD_HANDLE tmp_single_hdl = DD_HANDLE_UNVALID;
 static beken_semaphore_t tmp_single_semaphore = NULL;
+static beken_mutex_t tmp_single_mutex = NULL;
 
 
 static void temp_single_get_disable(void)
@@ -171,25 +172,33 @@ int HAL_ADC_Read(int pinNumber)
         result = rtos_init_semaphore(&tmp_single_semaphore, 1);
         ASSERT(kNoErr == result);
     }
+	if(tmp_single_mutex == NULL) {
+		result = rtos_init_mutex(&tmp_single_mutex);
+		ASSERT(kNoErr == result);
+	}
+
+	rtos_lock_mutex(&tmp_single_mutex);
 
 	while(rtos_get_semaphore(&tmp_single_semaphore, 0) == kNoErr) {
 	}
 
 	if(temp_single_get_enable(channel)==SARADC_FAILURE) {
 
+		rtos_unlock_mutex(&tmp_single_mutex);
 		return -2;
 	}
 
     ret = 1000; // 1s
     result = rtos_get_semaphore(&tmp_single_semaphore, ret);
     if(result == kNoErr) {
-        value = tmp_single_desc.pData[0];
-    } else {
+		value = tmp_single_desc.pData[0];
+	} else {
 		if(tmp_single_hdl != DD_HANDLE_UNVALID) {
 			temp_single_get_disable();
 		}
 		value = -3;
 	}
-    return value;
+	rtos_unlock_mutex(&tmp_single_mutex);
+	return value;
 }
 
