@@ -159,6 +159,7 @@ int HAL_ADC_Read(int pinNumber)
     UINT32 ret;
     int result;
 	int channel;
+	int value;
 
 	channel = gpioToAdc(pinNumber);
 
@@ -170,17 +171,25 @@ int HAL_ADC_Read(int pinNumber)
         result = rtos_init_semaphore(&tmp_single_semaphore, 1);
         ASSERT(kNoErr == result);
     }
-    
+
+	while(rtos_get_semaphore(&tmp_single_semaphore, 0) == kNoErr) {
+	}
+
 	if(temp_single_get_enable(channel)==SARADC_FAILURE) {
 
 		return -2;
 	}
-    
+
     ret = 1000; // 1s
     result = rtos_get_semaphore(&tmp_single_semaphore, ret);
     if(result == kNoErr) {
-        return tmp_single_desc.pData[0];
-    } 
-    return -3;
+        value = tmp_single_desc.pData[0];
+    } else {
+		if(tmp_single_hdl != DD_HANDLE_UNVALID) {
+			temp_single_get_disable();
+		}
+		value = -3;
+	}
+    return value;
 }
 
