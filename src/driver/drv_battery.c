@@ -17,6 +17,7 @@ static int g_pin_adc = 0, channel_adc = 0, g_pin_rel = 0, g_battcycle = 1, g_bat
 static float g_battvoltage = 0.0, g_battlevel = 0.0;
 static int g_lastbattvoltage = 0, g_lastbattlevel = 0;
 static float g_vref = 2400, g_vdivider = 2.29, g_maxbatt = 3000, g_minbatt = 2000, g_adcbits = 4096;
+static bool g_vdividerFromUser = false;
 
 static void Batt_Measure() {
 	//this command has only been tested on CBU
@@ -24,7 +25,9 @@ static void Batt_Measure() {
 	int writeVal = 1;
 	ADDLOG_INFO(LOG_FEATURE_DRV, "DRV_BATTERY: Measure Battery volt en perc");
 	g_pin_adc = PIN_FindPinIndexForRole(IOR_BAT_ADC, g_pin_adc);
-	if (PIN_FindPinIndexForRole(IOR_BAT_Relay, -1) == -1 && PIN_FindPinIndexForRole(IOR_BAT_Relay_n, -1) == -1) {
+	if (g_vdividerFromUser == false
+		&& PIN_FindPinIndexForRole(IOR_BAT_Relay, -1) == -1
+		&& PIN_FindPinIndexForRole(IOR_BAT_Relay_n, -1) == -1) {
 		g_vdivider = 1;
 	}
 	// if divider equal to 1 then no need for relay activation
@@ -113,6 +116,7 @@ commandResult_t Battery_Setup(const void* context, const char* cmd, const char* 
 	g_maxbatt = Tokenizer_GetArgFloat(1);
 	if (Tokenizer_GetArgsCount() > 2) {
 		g_vdivider = Tokenizer_GetArgFloat(2);
+		g_vdividerFromUser = true;
 	}
 	if (Tokenizer_GetArgsCount() > 3) {
 		g_vref = Tokenizer_GetArgFloat(3);
