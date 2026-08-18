@@ -23,6 +23,7 @@ static void Batt_Measure() {
 	//this command has only been tested on CBU
 	float batt_ref, batt_res, vref;
 	int writeVal = 1;
+	int raw;
 	ADDLOG_INFO(LOG_FEATURE_DRV, "DRV_BATTERY: Measure Battery volt en perc");
 	g_pin_adc = PIN_FindPinIndexForRole(IOR_BAT_ADC, g_pin_adc);
 	if (g_vdividerFromUser == false
@@ -54,7 +55,12 @@ static void Batt_Measure() {
 		}
 		rtos_delay_milliseconds(10);
 	}
-	g_battvoltage = HAL_ADC_Read(g_pin_adc);
+	raw = HAL_ADC_Read(g_pin_adc);
+	if (raw < 0) {
+		ADDLOG_INFO(LOG_FEATURE_DRV, "DRV_BATTERY: ADC read failed (%i), keeping %i mV", raw, g_lastbattvoltage);
+		return;
+	}
+	g_battvoltage = raw;
 	ADDLOG_DEBUG(LOG_FEATURE_DRV, "DRV_BATTERY: ADC binary Measurement: %f and channel %i", g_battvoltage, channel_adc);
 	if (g_vdivider > 1) {
 		if (g_pin_rel > 0) {
