@@ -22,9 +22,6 @@
 #include "../driver/drv_ntp.h"
 #include "../driver/drv_deviceclock.h"		// to set clock via Javascript in pmntp
 #include "../driver/drv_local.h"
-#ifdef PLATFORM_BEKEN
-#include "start_type_pub.h"
-#endif
 
 #ifdef WINDOWS
 // nothing
@@ -34,16 +31,12 @@
 #include <bl602_adc.h>  //  For BL602 ADC Standard Driver
 #include <bl602_glb.h>  //  For BL602 Global Register Standard Driver
 #include <wifi_mgmr_ext.h> //For BL602 WiFi AP Scan
-#elif PLATFORM_W600 || PLATFORM_W800
-
+#elif defined(PLATFORM_BEKEN)
+#include "start_type_pub.h"
+#include "rw_pub.h"
 #elif PLATFORM_XRADIO
 #include <image/flash.h>
 #include <ota/ota.h>
-#elif defined(PLATFORM_BK7231N)
-// tuya-iotos-embeded-sdk-wifi-ble-bk7231n/sdk/include/tuya_hal_storage.h
-#include "tuya_hal_storage.h"
-#include "BkDriverFlash.h"
-#include "temp_detect_pub.h"
 #elif defined(PLATFORM_LN882H)
 #elif defined(PLATFORM_TR6260)
 #elif defined(PLATFORM_REALTEK) && !PLATFORM_REALTEK_NEW
@@ -65,12 +58,6 @@ extern uint32_t current_fw_idx;
 #elif defined(PLATFORM_ESPIDF) || PLATFORM_ESP8266
 #include "esp_wifi.h"
 #include "esp_system.h"
-#elif defined(PLATFORM_BK7231T)
-// REALLY? A typo in Tuya SDK? Storge?
-// tuya-iotos-embeded-sdk-wifi-ble-bk7231t/platforms/bk7231t/tuya_os_adapter/include/driver/tuya_hal_storge.h
-#include "tuya_hal_storge.h"
-#include "BkDriverFlash.h"
-#include "temp_detect_pub.h"
 #elif defined(PLATFORM_ECR6600)
 #include "hal_system.h"
 #elif PLATFORM_GD32VW553
@@ -78,11 +65,6 @@ extern uint32_t current_fw_idx;
 #include "wifi_management.h"
 #include "wifi_export.h"
 #include "macif_types.h"
-#endif
-
-#if (defined(PLATFORM_BK7231T) || defined(PLATFORM_BK7231N)) && !defined(PLATFORM_BEKEN_NEW)
-int tuya_os_adapt_wifi_all_ap_scan(AP_IF_S** ap_ary, unsigned int* num);
-int tuya_os_adapt_wifi_release_ap(AP_IF_S* ap);
 #endif
 
 static const char SUBMIT_AND_END_FORM[] = "<br><input type=\"submit\" value=\"Submit\"></form>";
@@ -1467,7 +1449,7 @@ int http_fn_cfg_ping(http_request_t* request) {
 }
 #endif
 
-#if PLATFORM_BEKEN && PLATFORM_BEKEN_NEW
+#if PLATFORM_BEKEN
 // Scanning on the new Beken SDK is ASYNCHRONOUS: bk_wlan_start_scan() only queues
 // the request, and results may be read once the completion event arrives. The
 // sequence below is taken from demos/wifi/scan/wifi_scan.c in the SDK.
@@ -1488,20 +1470,49 @@ static void HTTP_WiFiScanDone(void* ctxt, uint8_t param) {
 	}
 }
 
+#ifdef PLATFORM_BEKEN_NEW
+#define SECURITY_TYPE_NONE			BK_SECURITY_TYPE_NONE
+#define SECURITY_TYPE_WEP			BK_SECURITY_TYPE_WEP
+#define SECURITY_TYPE_WPA_TKIP		BK_SECURITY_TYPE_WPA_TKIP
+#define SECURITY_TYPE_WPA_AES		BK_SECURITY_TYPE_WPA_AES
+#define SECURITY_TYPE_WPA2_TKIP		BK_SECURITY_TYPE_WPA2_TKIP
+#define SECURITY_TYPE_WPA2_AES		BK_SECURITY_TYPE_WPA2_AES
+#define SECURITY_TYPE_WPA2_MIXED	BK_SECURITY_TYPE_WPA2_MIXED
+#define SECURITY_TYPE_AUTO			BK_SECURITY_TYPE_AUTO
+
+#define SC_SSID apList.ApList[i].ssid
+#define SC_CHANNEL apList.ApList[i].channel
+#define SC_RSSI apList.ApList[i].ApPower
+#define SC_SECURITY apList.ApList[i].security
+#define SC_FREE() if(apList.ApList != NULL) os_free(apList.ApList)
+#else
+// only 32 chars in length, compared to new 33, so use strncpy
+#define SC_SSID scan_rst->res[i]->ssid
+#define SC_CHANNEL scan_rst->res[i]->channel
+#define SC_RSSI scan_rst->res[i]->level
+#define SC_SECURITY scan_rst->res[i]->security
+#define SC_FREE() if(scan_rst != NULL) sr_release_scan_results(scan_rst)
+#endif
+
 static const char* HTTP_WiFiSecurityName(wlan_sec_type_t sec) {
 	switch (sec) {
-	case BK_SECURITY_TYPE_NONE: return "Open";
-	case BK_SECURITY_TYPE_WEP: return "WEP";
-	case BK_SECURITY_TYPE_WPA_TKIP: return "WPA-TKIP";
-	case BK_SECURITY_TYPE_WPA_AES: return "WPA-AES";
+	case SECURITY_TYPE_NONE: return "Open";
+	case SECURITY_TYPE_WEP: return "WEP";
+	case SECURITY_TYPE_WPA_TKIP: return "WPA-TKIP";
+	case SECURITY_TYPE_WPA_AES: return "WPA-AES";
+#ifdef PLATFORM_BEKEN_NEW
 	case BK_SECURITY_TYPE_WPA_MIXED: return "WPA-Mixed";
-	case BK_SECURITY_TYPE_WPA2_TKIP: return "WPA2-TKIP";
-	case BK_SECURITY_TYPE_WPA2_AES: return "WPA2-AES";
-	case BK_SECURITY_TYPE_WPA2_MIXED: return "WPA2-Mixed";
+#endif
+	case SECURITY_TYPE_WPA2_TKIP: return "WPA2-TKIP";
+	case SECURITY_TYPE_WPA2_AES: return "WPA2-AES";
+	case SECURITY_TYPE_WPA2_MIXED: return "WPA2-Mixed";
+	// old sdk sees WPA3 or mixed WPA3 as WPA2-AES
+#ifdef PLATFORM_BEKEN_NEW
 	case BK_SECURITY_TYPE_WPA3_SAE: return "WPA3-SAE";
 	case BK_SECURITY_TYPE_WPA3_WPA2_MIXED: return "WPA3/WPA2";
 	case BK_SECURITY_TYPE_EAP: return "EAP";
 	case BK_SECURITY_TYPE_OWE: return "OWE";
+#endif
 	default: return "Unknown";
 	}
 }
@@ -1544,32 +1555,6 @@ int http_fn_cfg_wifi(http_request_t* request) {
                        hprintf255(request, "[%i/%i] SSID: %s, Channel: %i, Signal %i<br>", (i+1), (int)ap_num, ap_info[i].ssid, ap_info[i].channel, ap_info[i].rssi);
                }
                vPortFree(ap_info);
-#elif defined(PLATFORM_BK7231T) && !defined(PLATFORM_BEKEN_NEW)
-		int i;
-
-		AP_IF_S* ar;
-		uint32_t num;
-
-		bk_printf("Scan begin...\r\n");
-		tuya_hal_wifi_all_ap_scan(&ar, &num);
-		bk_printf("Scan returned %i networks\r\n", num);
-		for (i = 0; i < num; i++) {
-			hprintf255(request, "[%i/%i] SSID: %s, Channel: %i, Signal %i<br>", i, (int)num, ar[i].ssid, ar[i].channel, ar[i].rssi);
-		}
-		tuya_hal_wifi_release_ap(ar);
-#elif defined(PLATFORM_BK7231N) && !defined(PLATFORM_BEKEN_NEW)
-		int i;
-
-		AP_IF_S* ar;
-		uint32_t num;
-
-		bk_printf("Scan begin...\r\n");
-		tuya_os_adapt_wifi_all_ap_scan(&ar, (unsigned int*)&num);
-		bk_printf("Scan returned %i networks\r\n", num);
-		for (i = 0; i < num; i++) {
-			hprintf255(request, "[%i/%i] SSID: %s, Channel: %i, Signal %i<br>", i + 1, (int)num, ar[i].ssid, ar[i].channel, ar[i].rssi);
-		}
-		tuya_os_adapt_wifi_release_ap(ar);
 #elif PLATFORM_ESPIDF || PLATFORM_ESP8266
 		// doesn't work in ap mode, only sta/apsta
 		uint16_t ap_count = 0, number = 30;
@@ -1704,67 +1689,66 @@ int http_fn_cfg_wifi(http_request_t* request) {
 			hprintf255(request, "</table><br>");
 		}
 
-#elif PLATFORM_BEKEN && PLATFORM_BEKEN_NEW
+#elif PLATFORM_BEKEN
 		// Covers every target built against the new Beken SDK (BK7231T/N/U, BK7238,
 		// BK7252, BK7252N). The two Beken branches above only handle the old Tuya
 		// based SDKs, which is why all of these used to end up in the TODO case.
-		{
-			ScanResult_adv apList;
-			int i, num, res;
+		int i, num;
 
-			memset(&apList, 0, sizeof(apList));
-
-			if (g_wifiScanSem == NULL) {
-				if (rtos_init_semaphore(&g_wifiScanSem, 1) != 0) {
-					g_wifiScanSem = NULL;
-				}
+		if (g_wifiScanSem == NULL) {
+			if (rtos_init_semaphore(&g_wifiScanSem, 1) != 0) {
+				g_wifiScanSem = NULL;
 			}
+		}
 
-			bk_printf("Scan begin...\r\n");
-			bk_wlan_scan_ap_reg_cb(HTTP_WiFiScanDone);
-			bk_wlan_start_scan();
+		bk_wlan_scan_ap_reg_cb(HTTP_WiFiScanDone);
+		bk_wlan_start_scan();
 
-			if (g_wifiScanSem != NULL) {
-				rtos_get_semaphore(&g_wifiScanSem, HTTP_WIFI_SCAN_TIMEOUT_MS);
-			}
-			else {
-				rtos_delay_milliseconds(HTTP_WIFI_SCAN_TIMEOUT_MS);
-			}
+		if (g_wifiScanSem != NULL) {
+			rtos_get_semaphore(&g_wifiScanSem, HTTP_WIFI_SCAN_TIMEOUT_MS);
+		}
+		else {
+			rtos_delay_milliseconds(HTTP_WIFI_SCAN_TIMEOUT_MS);
+		}
+#ifdef PLATFORM_BEKEN_NEW
+		ScanResult_adv apList;
+		int res;
+		memset(&apList, 0, sizeof(apList));
+		// Read the results even if the event never arrived. In AP mode the scan
+		// takes a different path (wlan_ap_scan), and the completion event is
+		// emitted from the supplicant, so it is not guaranteed to reach us there.
+		// Reading anyway costs nothing and recovers that case.
+		if(bk_wlan_ap_is_up() > 0) res = wlan_ap_scan_result(&apList);
+		else res = wlan_sta_scan_result(&apList);
+		num = (res == 0 && apList.ApList != NULL) ? (int)apList.ApNum : 0;
+#else
+		// these are present in new SDK too, but it's freed before we are able to use it.
+		struct scanu_rst_upload* scan_rst;
+		scan_rst = sr_get_scan_results();
+		num = bk_wlan_get_scan_ap_result_numbers();
+#endif
 
-			// Read the results even if the event never arrived. In AP mode the scan
-			// takes a different path (wlan_ap_scan), and the completion event is
-			// emitted from the supplicant, so it is not guaranteed to reach us there.
-			// Reading anyway costs nothing and recovers that case.
-			if (bk_wlan_ap_is_up() > 0) {
-				res = wlan_ap_scan_result(&apList);
-			}
-			else {
-				res = wlan_sta_scan_result(&apList);
-			}
-
-			num = (res == 0 && apList.ApList != NULL) ? (int)apList.ApNum : 0;
-			bk_printf("Scan returned %i networks\r\n", num);
-
-			if (num <= 0) {
-				poststr(request, "No networks found, or the scan has not finished yet - try again.<br>");
-			}
-			for (i = 0; i < num; i++) {
-				apList.ApList[i].ssid[32] = 0;
-				hprintf255(request, "[%i/%i] SSID: ", i + 1, num);
+		if (num <= 0) poststr(request, "No networks found, or the scan has not finished yet - try again.<br>");
+		else {
+			hprintf255(request, "<table><tr><th>SSID</th><th>Channel</th><th>Signal</th><th>Security</th></tr>");
+			for(i = 0; i < num; i++) {
+				char ssid[33];
+				memset(&ssid, 0, sizeof(ssid));
+				strncpy((char*)&ssid, SC_SSID, 32);
+				hprintf255(request, "<tr><td>");
 				// The SSID comes from a foreign transmitter, so it has to be escaped.
 				// Otherwise a neighbour whose network name contains a tag would inject
 				// markup into this page.
-				poststr_escaped(request, apList.ApList[i].ssid);
-				hprintf255(request, ", Channel: %i, Security: %s, Signal %i<br>",
-					apList.ApList[i].channel,
-					HTTP_WiFiSecurityName(apList.ApList[i].security),
-					(int)apList.ApList[i].ApPower);
+				poststr_escaped(request, *ssid ? ssid : "<hidden>");
+				hprintf255(request,
+					"</td><td>%i</td><td>%i</td><td>%s</td></tr>",
+					SC_CHANNEL,
+					SC_RSSI,
+					HTTP_WiFiSecurityName(SC_SECURITY));
 			}
-
-			if (apList.ApList != NULL) {
-				os_free(apList.ApList);
-			}
+			hprintf255(request, "</table><br>");
 		}
+		SC_FREE();
 #else
 		hprintf255(request, "TODO %s<br>", PLATFORM_MCU_NAME);
 #endif
