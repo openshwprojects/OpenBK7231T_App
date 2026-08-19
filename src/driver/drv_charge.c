@@ -70,6 +70,22 @@ static const char *CHG_PhaseName(UINT8 st)
 	return "idle";
 }
 
+static commandResult_t CHG_Cmd_State(const void *context, const char *cmd,
+	const char *args, int cmdFlags)
+{
+	UINT8 st = CHG_ReadState();
+	int i;
+
+	ADDLOG_INFO(LOG_FEATURE_CMD, "Charger: %s, %s, Ilim 0x%02X, Vout 0x%X, raw 0x%02X",
+		CHG_PhaseName(st), CHG_EnabledGet() ? "enabled" : "disabled",
+		(unsigned)CHG_CurrentGet(), (unsigned)CHG_VoutGet(), st);
+	for (i = 0; i < 8; i++) {
+		if (st & (1 << i))
+			ADDLOG_INFO(LOG_FEATURE_CMD, "Charger: %s", g_chg_names[i]);
+	}
+	return CMD_RES_OK;
+}
+
 static commandResult_t CHG_Cmd_Enable(const void *context, const char *cmd,
 	const char *args, int cmdFlags)
 {
@@ -103,33 +119,9 @@ static commandResult_t CHG_Cmd_Channel(const void *context, const char *cmd,
 	return CMD_RES_OK;
 }
 
-static int CHG_Http(http_request_t *request)
-{
-	UINT8 st = CHG_ReadState();
-	char line[96];
-	int i;
-
-	poststr(request, "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n"
-	        "Connection: close\r\n\r\n");
-	for (i = 0; i < 8; i++) {
-		snprintf(line, sizeof(line), "%-9s %u\n", g_chg_names[i], (st >> i) & 1u);
-		poststr(request, line);
-	}
-	snprintf(line, sizeof(line), "phase %s, charging %i\n", CHG_PhaseName(st), CHG_IsCharging(st));
-	poststr(request, line);
-	snprintf(line, sizeof(line), "enabled %i, current 0x%02X, vout_sel 0x%X\n",
-	         CHG_EnabledGet(), (unsigned)CHG_CurrentGet(), (unsigned)CHG_VoutGet());
-	poststr(request, line);
-	snprintf(line, sizeof(line), "raw 0x%02X, analog6 0x%08X, analog7 0x%08X\n",
-	         st, REG_READ(SCTRL_ANALOG_CTRL6), REG_READ(SCTRL_ANALOG_CTRL7));
-	poststr(request, line);
-	return 0;
-}
-
 void CHG_Init(void)
 {
 	g_chg_state = CHG_ReadState();
-	HTTP_RegisterCallback("/charge", HTTP_GET, CHG_Http, 0);
 
 	//cmddetail:{"name":"ChargeChannel","args":"[ChannelIndex]",
 	//cmddetail:"descr":"Publishes the charging state to the given channel, 1 while the charger is in trickle, CC or CV.",
@@ -142,6 +134,12 @@ void CHG_Init(void)
 	//cmddetail:"fn":"CHG_Cmd_Enable","file":"driver/drv_charge.c","requires":"",
 	//cmddetail:"examples":"ChargeEnable 1"}
 	CMD_RegisterCommand("ChargeEnable", CHG_Cmd_Enable, NULL);
+
+	//cmddetail:{"name":"ChargeState","args":"",
+	//cmddetail:"descr":"Logs the charger phase, whether it is enabled, the current limit and the raw status bits.",
+	//cmddetail:"fn":"CHG_Cmd_State","file":"driver/drv_charge.c","requires":"",
+	//cmddetail:"examples":"ChargeState"}
+	CMD_RegisterCommand("ChargeState", CHG_Cmd_State, NULL);
 
 	ADDLOG_INFO(LOG_FEATURE_DRV, "CHG: charger state 0x%02X", g_chg_state);
 }
