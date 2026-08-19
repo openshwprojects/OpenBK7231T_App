@@ -31,6 +31,7 @@ static const char *g_chg_names[8] = {
 
 static UINT8 g_chg_state = 0;
 static UINT8 g_chg_prev = 0;
+static bool g_chg_havePrev = false;
 static int g_chg_channel = -1;
 
 static UINT8 CHG_ReadState(void)
@@ -47,13 +48,15 @@ static int CHG_IsCharging(UINT8 st)
 
 static void CHG_Publish(UINT8 st)
 {
+	int charging = CHG_IsCharging(st);
+
 #if ENABLE_MQTT
-	MQTT_PublishMain_StringInt("charging", CHG_IsCharging(st), 0);
+	MQTT_PublishMain_StringInt("charging", charging, 0);
 	MQTT_PublishMain_StringInt("charge_full", (st & (1 << CHARGE_3_TERMINAL)) ? 1 : 0, 0);
 	MQTT_PublishMain_StringInt("usb_power", (st & (1 << CHARGE_7_USB_READY)) ? 1 : 0, 0);
 #endif
 	if (g_chg_channel >= 0)
-		CHANNEL_Set(g_chg_channel, CHG_IsCharging(st), 0);
+		CHANNEL_Set(g_chg_channel, charging, 0);
 }
 
 static const char *CHG_PhaseName(UINT8 st)
@@ -82,6 +85,7 @@ static commandResult_t CHG_Cmd_Enable(const void *context, const char *cmd,
 	else
 		v &= ~CHG_ENABLE;
 	REG_WRITE(SCTRL_ANALOG_CTRL7, v);
+	CHG_Publish(CHG_ReadState());
 	ADDLOG_INFO(LOG_FEATURE_CMD, "ChargeEnable: now %i", CHG_EnabledGet());
 	return CMD_RES_OK;
 }
@@ -93,6 +97,7 @@ static commandResult_t CHG_Cmd_Channel(const void *context, const char *cmd,
 	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1))
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	g_chg_channel = Tokenizer_GetArgInteger(0);
+	CHG_Publish(CHG_ReadState());
 	ADDLOG_INFO(LOG_FEATURE_CMD, "ChargeChannel: publishing charging state to channel %i",
 	            g_chg_channel);
 	return CMD_RES_OK;
@@ -123,7 +128,7 @@ static int CHG_Http(http_request_t *request)
 
 void CHG_Init(void)
 {
-	g_chg_state = g_chg_prev = CHG_ReadState();
+	g_chg_state = CHG_ReadState();
 	HTTP_RegisterCallback("/charge", HTTP_GET, CHG_Http, 0);
 
 	//cmddetail:{"name":"ChargeChannel","args":"[ChannelIndex]",
@@ -144,10 +149,11 @@ void CHG_Init(void)
 void CHG_OnEverySecond(void)
 {
 	g_chg_state = CHG_ReadState();
-	if (g_chg_state != g_chg_prev) {
+	if (!g_chg_havePrev || g_chg_state != g_chg_prev) {
 		ADDLOG_INFO(LOG_FEATURE_DRV, "CHG: state 0x%02X -> 0x%02X",
 		            g_chg_prev, g_chg_state);
 		g_chg_prev = g_chg_state;
+		g_chg_havePrev = true;
 		CHG_Publish(g_chg_state);
 	}
 }
