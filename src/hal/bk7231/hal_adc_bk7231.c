@@ -173,13 +173,18 @@ int HAL_ADC_Read(int pinNumber)
 		return -1;
 	}
 
-    if(tmp_single_semaphore == NULL) {
-        result = rtos_init_semaphore(&tmp_single_semaphore, 1);
-        ASSERT(kNoErr == result);
-    }
-	if(tmp_single_mutex == NULL) {
-		result = rtos_init_mutex(&tmp_single_mutex);
-		ASSERT(kNoErr == result);
+	{
+		GLOBAL_INT_DECLARATION();
+		GLOBAL_INT_DISABLE();
+		if(tmp_single_semaphore == NULL) {
+			result = rtos_init_semaphore(&tmp_single_semaphore, 1);
+			ASSERT(kNoErr == result);
+		}
+		if(tmp_single_mutex == NULL) {
+			result = rtos_init_mutex(&tmp_single_mutex);
+			ASSERT(kNoErr == result);
+		}
+		GLOBAL_INT_RESTORE();
 	}
 
 	rtos_lock_mutex(&tmp_single_mutex);
