@@ -61,6 +61,8 @@ static void BKCharge_Publish(UINT8 st)
 
 static const char *BKCharge_PhaseName(UINT8 st)
 {
+	if (!BKCharge_EnabledGet())
+		return "off";
 	if (st & (1 << CHARGE_6_CC))
 		return "CC";
 	if (st & (1 << CHARGE_5_CV))
@@ -79,6 +81,10 @@ static commandResult_t BKCharge_Cmd_State(const void *context, const char *cmd,
 	ADDLOG_INFO(LOG_FEATURE_CMD, "Charger: %s, %s, Ilim 0x%02X, Vout 0x%X, raw 0x%02X",
 		BKCharge_PhaseName(st), BKCharge_EnabledGet() ? "enabled" : "disabled",
 		(unsigned)BKCharge_CurrentGet(), (unsigned)BKCharge_VoutGet(), st);
+	if (!BKCharge_EnabledGet()) {
+		ADDLOG_INFO(LOG_FEATURE_CMD,
+			"Charger: off, the status bits below do not track the cell while it is off");
+	}
 	for (i = 0; i < 8; i++) {
 		if (st & (1 << i))
 			ADDLOG_INFO(LOG_FEATURE_CMD, "Charger: %s", g_bkchg_names[i]);
@@ -167,9 +173,13 @@ void BKCharge_AppendInformationToHTTPIndexPage(http_request_t *request, int bPre
 	if (bPreState)
 		return;
 	st = BKCharge_ReadState();
-	hprintf255(request, "<h5>Charger: %s, %s, Ilim 0x%02X, USB %s (0x%02X)</h5>",
+	if (!BKCharge_EnabledGet()) {
+		hprintf255(request, "<h5>Charger: off, Ilim 0x%02X (raw 0x%02X)</h5>",
+		           (unsigned)BKCharge_CurrentGet(), st);
+		return;
+	}
+	hprintf255(request, "<h5>Charger: %s, Ilim 0x%02X, USB %s (raw 0x%02X)</h5>",
 	           BKCharge_PhaseName(st),
-	           BKCharge_EnabledGet() ? "enabled" : "disabled",
 	           (unsigned)BKCharge_CurrentGet(),
 	           (st & (1 << CHARGE_7_USB_READY)) ? "yes" : "no", st);
 }
