@@ -92,20 +92,25 @@ static beken_mutex_t tmp_single_mutex = NULL;
 
 static void temp_single_get_disable(void)
 {
-    UINT32 status = DRV_SUCCESS;
-    
-    status = ddev_close(tmp_single_hdl);
-    if(DRV_FAILURE == status )
-    {
-        //TMP_DETECT_PRT("saradc disable failed\r\n");
-        //return;
-    }
-    saradc_ensure_close();
+    UINT32 status;
+    DD_HANDLE hdl;
+    GLOBAL_INT_DECLARATION();
+
+    GLOBAL_INT_DISABLE();
+    hdl = tmp_single_hdl;
     tmp_single_hdl = DD_HANDLE_UNVALID;
-    
+    GLOBAL_INT_RESTORE();
+
+    if(DD_HANDLE_UNVALID == hdl)
+    {
+        return;
+    }
+
+    ddev_close(hdl);
+    saradc_ensure_close();
+
     status = BLK_BIT_TEMPRATURE_SENSOR;
     sddev_control(SCTRL_DEV_NAME, CMD_SCTRL_BLK_DISABLE, &status);
-    
 }
 static void temp_single_detect_handler(void)
 {
@@ -193,9 +198,7 @@ int HAL_ADC_Read(int pinNumber)
     if(result == kNoErr) {
 		value = tmp_single_desc.pData[0];
 	} else {
-		if(tmp_single_hdl != DD_HANDLE_UNVALID) {
-			temp_single_get_disable();
-		}
+		temp_single_get_disable();
 		value = -3;
 	}
 	rtos_unlock_mutex(&tmp_single_mutex);
