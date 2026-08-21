@@ -529,9 +529,14 @@ int __cdecl main(int argc, char **argv)
 		printf("OFFSETOF(mainConfig_t, wifi_pass) != 0x00000054: %i\n", OFFSETOF(mainConfig_t, wifi_pass));
 		system("pause");
 	}
-	if (OFFSETOF(mainConfig_t, unused_fill) != 0x0000045E)
+	if (OFFSETOF(mainConfig_t, log2lfs) != 0x0000045E)
 	{
-		printf("OFFSETOF(mainConfig_t, unused_fill) != 0x0000045E: %i\n", OFFSETOF(mainConfig_t, unused_fill));
+		printf("OFFSETOF(mainConfig_t, log2lfs) != 0x0000045E: %i\n", OFFSETOF(mainConfig_t, log2lfs));
+		system("pause");
+	}
+	if (OFFSETOF(mainConfig_t, unused_fill) != 0x0000045F)
+	{
+		printf("OFFSETOF(mainConfig_t, unused_fill) != 0x0000045F: %i\n", OFFSETOF(mainConfig_t, unused_fill));
 		system("pause");
 	}
 	if (OFFSETOF(mainConfig_t, buttonHoldRepeat) != 0x000004BA)

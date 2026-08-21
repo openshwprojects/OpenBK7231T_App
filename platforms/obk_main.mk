@@ -79,6 +79,7 @@ OBKM_SRC  += $(OBK_SRCS)driver/drv_main.c
 OBKM_SRC  += $(OBK_SRCS)driver/drv_adcButton.c
 OBKM_SRC  += $(OBK_SRCS)driver/drv_adcSmoother.c
 OBKM_SRC  += $(OBK_SRCS)driver/drv_aht2x.c
+OBKM_SRC  += $(OBK_SRCS)driver/drv_bkCharge.c
 OBKM_SRC  += $(OBK_SRCS)driver/drv_battery.c
 OBKM_SRC  += $(OBK_SRCS)driver/drv_bl0937.c
 OBKM_SRC  += $(OBK_SRCS)driver/drv_bl0942.c
