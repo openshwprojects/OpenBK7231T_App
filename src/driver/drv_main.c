@@ -1405,6 +1405,22 @@ static driver_t g_drivers[] = {
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"Custom mechanism to measure battery level with ADC and an optional relay. See [example here](https://www.elektroda.com/rtvforum/topic3959103.html).",
 	//drvdetail:"requires":""}
+#if ENABLE_DRIVER_BKCHARGE
+	//drvdetail:{"name":"BKCharge",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"Reports the state of the BK7252N on-chip Li-ion charger: trickle, CC, CV, full, recharge and USB present. Publishes charging, charge_full and usb_power over MQTT and can drive a channel.",
+	//drvdetail:"requires":""}
+	{ "BKCharge",                            // Driver Name
+	BKCharge_Init,                                // Init
+	BKCharge_OnEverySecond,                       // onEverySecond
+	BKCharge_AppendInformationToHTTPIndexPage,    // appendInformationToHTTPIndexPage
+	NULL,                                    // runQuickTick
+	BKCharge_StopDriver,                          // stopFunction
+	NULL,                                    // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
+	},
+#endif
 	{ "Battery",                             // Driver Name
 	Batt_Init,                               // Init
 	Batt_OnEverySecond,                      // onEverySecond
