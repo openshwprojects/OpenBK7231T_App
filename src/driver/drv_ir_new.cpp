@@ -1093,7 +1093,10 @@ extern "C" void DRV_IR_RunFrame() {
 	#endif
 	if (ourReceiver && receive_enabled && receive_frame_ready) {
 		decode_results results;
-		uint8_t max_skip = ir_learning_active ? 1 : 0;
+		uint8_t max_skip = 0;
+		#if OBK_IR_BK_EDGE_RX
+		max_skip = ir_learning_active ? 1 : 0;
+		#endif
 		bool decoded = ourReceiver->decode(&results, NULL, max_skip);
 		#if OBK_IR_BK_EDGE_RX
 		if (decoded) {
