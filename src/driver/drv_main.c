@@ -813,7 +813,7 @@ static driver_t g_drivers[] = {
 	{ "IR",                                  // Driver Name
 	DRV_IR_Init,                             // Init
 	NULL,                                    // onEverySecond
-	NULL,                                    // appendInformationToHTTPIndexPage
+	DRV_IR_AppendInformationToHTTPIndexPage, // appendInformationToHTTPIndexPage
 	DRV_IR_RunFrame,                         // runQuickTick
 	DRV_IR_Deinit,                           // stopFunction
 	NULL,                                    // onChannelChanged
