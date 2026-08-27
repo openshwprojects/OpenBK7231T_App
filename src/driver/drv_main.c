@@ -1570,6 +1570,22 @@ static driver_t g_drivers[] = {
 	NULL,                                    // onChannelChanged
 	NULL,                                    // onHassDiscovery
 	false,                                   // loaded
+	},
+#endif
+#if ENABLE_DRIVER_VKL060
+	//drvdetail:{"name":"VKL060",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"VKL060 segment LCD driver (soft I2C) for Tuya WiFi temperature/humidity sensors on BK7231N (CBU/CB3S) with AHT20 + VKL060 LCD directly on the I2C bus. Ported from ZigbeeTLc lcd_lktmzl02.c. Usage: startDriver VKL060 <scl> <sda> [tempCh] [humidCh] [battCh], defaults scl=P28 sda=P9, channels must match your sensor driver (e.g. with 'startDriver AHT2X 7 8 2 3' use 'startDriver VKL060 28 9 2 3').",
+	//drvdetail:"requires":""}
+	{ "VKL060",                               // Driver Name
+	VKL060_Init,                             // Init
+	VKL060_OnEverySecond,                    // onEverySecond
+	VKL060_AppendInformationToHTTPIndexPage, // appendInformationToHTTPIndexPage
+	NULL,                                    // runQuickTick
+	VKL060_StopDriver,                       // stopFunction
+	NULL,                                    // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
 	}
 #endif
 	//{ "", NULL, NULL, NULL, NULL, NULL, NULL, NULL, false },

@@ -223,6 +223,11 @@ void TCA9554_Init();
 void TCA9554_OnEverySecond();
 void TCA9554_OnChannelChanged(int ch, int value);
 
+void VKL060_Init();
+void VKL060_OnEverySecond();
+void VKL060_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState);
+void VKL060_StopDriver();
+
 void DMX_Init();
 void DMX_OnEverySecond();
 void DMX_Shutdown();
