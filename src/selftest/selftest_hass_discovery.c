@@ -1,6 +1,7 @@
 ﻿#ifdef WINDOWS
 
 #include "selftest_local.h"
+#include "../driver/drv_bl_shared.h"
 
 void CheckForCommonVars() {
 
@@ -378,12 +379,14 @@ void Test_HassDiscovery_BL0942() {
 	CFG_SetDeviceName(fullName);
 
 	CMD_ExecuteCommand("startDriver BL0942", 0);
+	BL_ProcessUpdate(230, 0.26f, 60, 50, 0);
 	SIM_ClearMQTTHistory();
 
 	CMD_ExecuteCommand("scheduleHADiscovery 1", 0);
 	Sim_RunSeconds(10, false);
 
 	Test_VerifyForCommonPowerMeteringStuff();
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant", true, 0, 0, "stat_t", "~/138/get");
 }
 void Test_HassDiscovery_BL0937() {
 	const char *shortName = "PowerMeteringFake";
@@ -407,6 +410,7 @@ void Test_HassDiscovery_BL0937() {
 	Sim_RunSeconds(10, false);
 
 	Test_VerifyForCommonPowerMeteringStuff();
+	SELFTEST_ASSERT_HAS_NOT_MQTT_JSON_SENT_ANY("homeassistant", true, 0, 0, "stat_t", "~/138/get");
 }
 void Test_HassDiscovery_digitalInput() {
 	const char *shortName = "DigitalInputTest";

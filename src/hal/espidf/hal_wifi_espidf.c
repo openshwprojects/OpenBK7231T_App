@@ -43,6 +43,98 @@ static esp_netif_ip_info_t g_ip_info;
 esp_event_handler_instance_t instance_any_id, instance_got_ip;
 bool handlers_registered = false;
 
+#if PLATFORM_ESPIDF
+static obkStaticIP_t g_staticIP;
+static bool g_bStaticIP = false;
+
+static void HAL_ESP_IP4AddrFromBytes(ip4_addr_t* out, const unsigned char* src)
+{
+	IP4_ADDR(out, src[0], src[1], src[2], src[3]);
+}
+
+static bool HAL_ESP_IsStaticIPConfigured(const obkStaticIP_t* ip)
+{
+	return ip != NULL && ip->localIPAddr[0] != 0;
+}
+
+static void HAL_ESP_RecordStaticIPConfig(const obkStaticIP_t* ip)
+{
+	g_bStaticIP = false;
+	memset(&g_staticIP, 0, sizeof(g_staticIP));
+
+	if (!HAL_ESP_IsStaticIPConfigured(ip)) {
+		return;
+	}
+
+	memcpy(&g_staticIP, ip, sizeof(g_staticIP));
+	g_bStaticIP = true;
+}
+
+static void HAL_ESP_BuildStaticIPInfo(esp_netif_ip_info_t* ip_info)
+{
+	ip4_addr_t tmp;
+
+	memset(ip_info, 0, sizeof(*ip_info));
+
+	HAL_ESP_IP4AddrFromBytes(&tmp, g_staticIP.localIPAddr);
+	ip_info->ip.addr = tmp.addr;
+	HAL_ESP_IP4AddrFromBytes(&tmp, g_staticIP.netMask);
+	ip_info->netmask.addr = tmp.addr;
+	HAL_ESP_IP4AddrFromBytes(&tmp, g_staticIP.gatewayIPAddr);
+	ip_info->gw.addr = tmp.addr;
+}
+
+static bool HAL_ESP_StaticIPMatches(const esp_netif_ip_info_t* ip_info)
+{
+	esp_netif_ip_info_t static_ip_info;
+
+	if (!g_bStaticIP || ip_info == NULL) {
+		return true;
+	}
+
+	HAL_ESP_BuildStaticIPInfo(&static_ip_info);
+	return ip_info->ip.addr == static_ip_info.ip.addr
+		&& ip_info->netmask.addr == static_ip_info.netmask.addr
+		&& ip_info->gw.addr == static_ip_info.gw.addr;
+}
+
+static bool HAL_ESP_ApplyStaticIP(void)
+{
+	esp_err_t err;
+	esp_netif_ip_info_t ip_info;
+	esp_netif_dns_info_t dns_info;
+	ip4_addr_t dns;
+
+	if (!g_bStaticIP || sta_netif == NULL) {
+		return false;
+	}
+
+	err = esp_netif_dhcpc_stop(sta_netif);
+	if (err != ESP_OK && err != ESP_ERR_ESP_NETIF_DHCP_ALREADY_STOPPED) {
+		ADDLOG_ERROR(LOG_FEATURE_MAIN, "ESP static IP: failed to stop DHCP client");
+		return false;
+	}
+
+	HAL_ESP_BuildStaticIPInfo(&ip_info);
+	if (esp_netif_set_ip_info(sta_netif, &ip_info) != ESP_OK) {
+		ADDLOG_ERROR(LOG_FEATURE_MAIN, "ESP static IP: failed to set IP info");
+		return false;
+	}
+
+	HAL_ESP_IP4AddrFromBytes(&dns, g_staticIP.dnsServerIpAddr);
+	memset(&dns_info, 0, sizeof(dns_info));
+	dns_info.ip.type = IPADDR_TYPE_V4;
+	dns_info.ip.u_addr.ip4.addr = dns.addr;
+	if (esp_netif_set_dns_info(sta_netif, ESP_NETIF_DNS_MAIN, &dns_info) != ESP_OK) {
+		ADDLOG_ERROR(LOG_FEATURE_MAIN, "ESP static IP: failed to set DNS");
+		return false;
+	}
+
+	g_ip_info = ip_info;
+	return true;
+}
+#endif
+
 // This must return correct IP for both SOFT_AP and STATION modes,
 // because, for example, javascript control panel requires it
 const char* HAL_GetMyIPString()
@@ -60,6 +152,18 @@ const char* HAL_GetMyDNSString()
 #if PLATFORM_ESP8266
 	ip4_addr_t dns = dhcps_dns_getserver();
 	return ipaddr_ntoa(&dns);
+#elif PLATFORM_ESPIDF
+	static char dnsStr[16];
+	esp_netif_dns_info_t dns;
+
+	if (sta_netif != NULL
+		&& esp_netif_get_dns_info(sta_netif, ESP_NETIF_DNS_MAIN, &dns) == ESP_OK
+		&& dns.ip.type == IPADDR_TYPE_V4) {
+		strncpy(dnsStr, ipaddr_ntoa((ip4_addr_t*)&dns.ip.u_addr.ip4), sizeof(dnsStr));
+		dnsStr[sizeof(dnsStr) - 1] = 0;
+		return dnsStr;
+	}
+	return "error";
 #else
 	return "error";
 #endif
@@ -147,6 +251,12 @@ void event_handler(void* arg, esp_event_base_t event_base,
 		ADDLOG_INFO(LOG_FEATURE_MAIN, "WiFi Connecting...");
 		esp_wifi_connect();
 	}
+#if PLATFORM_ESPIDF
+	else if(event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_CONNECTED && !g_bOpenAccessPointMode)
+	{
+		HAL_ESP_ApplyStaticIP();
+	}
+#endif
 	else if(event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_DISCONNECTED)
 	{
 		if(g_wifiStatusCallback != NULL)
@@ -158,6 +268,13 @@ void event_handler(void* arg, esp_event_base_t event_base,
 	else if(event_base == IP_EVENT && event_id == IP_EVENT_STA_GOT_IP)
 	{
 		ip_event_got_ip_t* event = (ip_event_got_ip_t*)event_data;
+#if PLATFORM_ESPIDF
+		if(g_bStaticIP && !HAL_ESP_StaticIPMatches(&event->ip_info))
+		{
+			HAL_ESP_ApplyStaticIP();
+			return;
+		}
+#endif
 		g_ip_info = event->ip_info;
 		if(g_wifiStatusCallback != NULL)
 		{
@@ -187,6 +304,11 @@ void HAL_ConnectToWiFi(const char* oob_ssid, const char* connect_key, obkStaticI
 		delay_ms(50);
 	}
 
+	sta_netif = esp_netif_create_default_wifi_sta();
+#if PLATFORM_ESPIDF
+	HAL_ESP_RecordStaticIPConfig(ip);
+#endif
+
 	if(!handlers_registered)
 	{
 		esp_event_handler_instance_register(WIFI_EVENT,
@@ -202,7 +324,6 @@ void HAL_ConnectToWiFi(const char* oob_ssid, const char* connect_key, obkStaticI
 		handlers_registered = true;
 	}
 
-	sta_netif = esp_netif_create_default_wifi_sta();
 	wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
 	esp_wifi_init(&cfg);
 
@@ -235,6 +356,9 @@ void HAL_DisconnectFromWifi()
 int HAL_SetupWiFiOpenAccessPoint(const char* ssid)
 {
 	g_bOpenAccessPointMode = 1;
+#if PLATFORM_ESPIDF
+	g_bStaticIP = false;
+#endif
 	ap_netif = esp_netif_create_default_wifi_ap();
 	sta_netif = esp_netif_create_default_wifi_sta();
 	wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
