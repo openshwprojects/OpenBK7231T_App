@@ -121,7 +121,7 @@ void Main_ForceUnsafeInit();
 #if PLATFORM_BEKEN
 #define WFI_FUNC WFI
 #elif PLATFORM_BL602 || PLATFORM_REALTEK || PLATFORM_XRADIO || PLATFORM_W600 || PLATFORM_RDA5981 || PLATFORM_LN8825 \
-	|| PLATFORM_LN882H || PLATFORM_BL_NEW || PLATFORM_GD32VW553
+	|| PLATFORM_LN882H || PLATFORM_BL_NEW || PLATFORM_GD32VW553 || PLATFORM_ARMINO
 #define WFI_FUNC() __asm volatile("wfi")
 #elif PLATFORM_W800
 #define WFI_FUNC __WFI
@@ -775,6 +775,10 @@ void Main_OnEverySecond()
 		g_wifi_temperature = HAL_ADC_Temp();
 #elif PLATFORM_ECR6600
 		g_wifi_temperature = hal_adc_tempsensor();
+#elif PLATFORM_ARMINO
+		uint32_t adc_code = 0;
+		temp_detect_get_temperature(&adc_code);
+		g_wifi_temperature = bk_adc_data_calculate(adc_code, ADC_TEMP_SENSOR_CHANNEL);
 #endif
 	}
 
@@ -1686,8 +1690,8 @@ void Main_Init()
 }
 
 #if PLATFORM_ESPIDF || PLATFORM_ESP8266 || PLATFORM_BL602 || PLATFORM_REALTEK \
-|| PLATFORM_XRADIO || PLATFORM_W600 || PLATFORM_W800 || PLATFORM_LN8825 || PLATFORM_LN882H || PLATFORM_BL_NEW
-#if PLATFORM_REALTEK_NEW
+|| PLATFORM_XRADIO || PLATFORM_W600 || PLATFORM_W800 || PLATFORM_LN8825 || PLATFORM_LN882H || PLATFORM_BL_NEW || PLATFORM_ARMINO
+#if PLATFORM_REALTEK_NEW || PLATFORM_ARMINO
 void __wrap_vApplicationIdleHook(void)
 {
 	__real_vApplicationIdleHook();

@@ -244,6 +244,18 @@ typedef long BaseType_t;
 #define PLATFORM_MCU_NAME "GD32VW553"
 #define MANUFACTURER "GigaDevices"
 #define DEF_MQTT_GROUP "gd32s"
+#elif PLATFORM_BK7239N
+#define DEVICENAME_PREFIX_FULL "OpenBK7239N"
+#define DEVICENAME_PREFIX_SHORT "obk"
+#define PLATFORM_MCU_NAME "BK7239N"
+#define MANUFACTURER "Beken Corporation"
+#define DEF_MQTT_GROUP "bekens_9n"
+#elif PLATFORM_BK7236
+#define DEVICENAME_PREFIX_FULL "OpenBK7236"
+#define DEVICENAME_PREFIX_SHORT "obk"
+#define PLATFORM_MCU_NAME "BK7236"
+#define MANUFACTURER "Beken Corporation"
+#define DEF_MQTT_GROUP "bekens_6"
 #else
 #error "You must define a platform.."
 This platform is not supported, error!
@@ -319,6 +331,8 @@ This platform is not supported, error!
 #define USER_SW_VER "BL616_Test"
 #elif PLATFORM_GD32VW553
 #define USER_SW_VER "GD32VW553_Test"
+#elif PLATFORM_BK7239N
+#define USER_SW_VER "BK7239N_Test"
 #else
 #warning "USER_SW_VER undefined"
 #define USER_SW_VER "unknown"
@@ -1111,6 +1125,33 @@ OSStatus rtos_suspend_thread(beken_thread_t* thread);
 
 #define OBK_OTA_EXTENSION ".img"
 
+#elif PLATFORM_ARMINO
+
+#include "stdint.h"
+#include "FreeRTOS.h"
+#include "task.h"
+#include "semphr.h"
+#include "queue.h"
+#include "event_groups.h"
+#include "components/system.h"
+#include "lwip/sockets.h"
+#include "lwip/ip_addr.h"
+#include "lwip/inet.h"
+#include "bk_wifi_types.h"
+#include "bk_sensor_internal.h"
+#include "driver/adc.h"
+#include "temp_detect.h"
+#include <driver/flash_partition.h>
+void* os_malloc(size_t size);
+void  os_free(void* ptr);
+void* os_realloc(void* ptr, size_t size);
+typedef int OSStatus;
+#define ASSERT
+
+#define printf(...) addLog(__VA_ARGS__)
+
+#define OBK_OTA_EXTENSION ".rbl"
+
 #else
 
 #include "gw_intf.h"
@@ -1199,7 +1240,7 @@ void urldecode2_safe(char *dst, const char *srcin, int maxDstLen);
 int strIsInteger(const char *s);
 
 #if !defined(PLATFORM_ESPIDF) && !defined(PLATFORM_TR6260) && !defined(PLATFORM_ECR6600) && !defined(PLATFORM_BL602) && \
-	!defined(PLATFORM_ESP8266) && !defined(PLATFORM_W800)
+	!defined(PLATFORM_ESP8266) && !defined(PLATFORM_W800) && !defined(PLATFORM_ARMINO)
 
 const char* strcasestr(const char* str1, const char* str2);
 #endif

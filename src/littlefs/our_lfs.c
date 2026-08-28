@@ -350,7 +350,9 @@ static commandResult_t CMD_LFS_Format(const void *context, const char *cmd, cons
             LFS_Size = newsize = (flash_size_8720 << 20) - LFS_Start;
             break;
     }
-
+#elif PLATFORM_ARMINO
+    extern uint32_t g_ota_end_addr;
+    LFS_Start = newstart = g_ota_end_addr - 0x1000 - newsize;
 #endif
 
     cfg.block_count = (newsize/LFS_BLOCK_SIZE);
@@ -639,7 +641,9 @@ void init_lfs(int create){
         }
         ADDLOGF_INFO("8721DA/8720E Detected Flash Size: %i MB, adjusting LFS, start: 0x%X, size: 0x%X", flash_size_8720, newstart, newsize);
         CFG_SetLFS_Size(newsize);
-
+#elif PLATFORM_ARMINO
+        extern uint32_t g_ota_end_addr;
+        LFS_Start = newstart = g_ota_end_addr - 0x1000 - newsize;
 #endif
 
         LFS_Start = newstart;
@@ -1181,7 +1185,7 @@ static int lfs_erase(const struct lfs_config* c, lfs_block_t block)
 	return res;
 }
 
-#elif PLATFORM_TXW81X || PLATFORM_RDA5981 || PLATFORM_GD32VW553
+#elif PLATFORM_TXW81X || PLATFORM_RDA5981 || PLATFORM_GD32VW553 || PLATFORM_ARMINO
 
 static int lfs_read(const struct lfs_config* c, lfs_block_t block,
 	lfs_off_t off, void* buffer, lfs_size_t size)

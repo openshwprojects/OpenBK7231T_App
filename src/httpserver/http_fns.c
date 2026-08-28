@@ -1449,7 +1449,7 @@ int http_fn_cfg_ping(http_request_t* request) {
 }
 #endif
 
-#if PLATFORM_BEKEN
+#if PLATFORM_BEKEN || PLATFORM_ARMINO
 // Scanning on the new Beken SDK is ASYNCHRONOUS: bk_wlan_start_scan() only queues
 // the request, and results may be read once the completion event arrives. The
 // sequence below is taken from demos/wifi/scan/wifi_scan.c in the SDK.
@@ -1458,7 +1458,7 @@ int http_fn_cfg_ping(http_request_t* request) {
 // rather than a nested one like in the Realtek branch above - a nested function
 // that has its address taken needs a trampoline on the stack, which will not
 // execute here.
-#define HTTP_WIFI_SCAN_TIMEOUT_MS 6000
+#define HTTP_WIFI_SCAN_TIMEOUT_MS 7000
 
 // Deliberately created once and never destroyed. The callback may arrive after we
 // gave up waiting, and giving a deleted semaphore would write into freed memory.
@@ -1470,7 +1470,7 @@ static void HTTP_WiFiScanDone(void* ctxt, uint8_t param) {
 	}
 }
 
-#ifdef PLATFORM_BEKEN_NEW
+#if PLATFORM_BEKEN_NEW
 #define SECURITY_TYPE_NONE			BK_SECURITY_TYPE_NONE
 #define SECURITY_TYPE_WEP			BK_SECURITY_TYPE_WEP
 #define SECURITY_TYPE_WPA_TKIP		BK_SECURITY_TYPE_WPA_TKIP
@@ -1485,6 +1485,31 @@ static void HTTP_WiFiScanDone(void* ctxt, uint8_t param) {
 #define SC_RSSI apList.ApList[i].ApPower
 #define SC_SECURITY apList.ApList[i].security
 #define SC_FREE() if(apList.ApList != NULL) os_free(apList.ApList)
+#elif PLATFORM_ARMINO
+#define SECURITY_TYPE_NONE					WIFI_SECURITY_NONE
+#define SECURITY_TYPE_WEP					WIFI_SECURITY_WEP
+#define SECURITY_TYPE_WPA_TKIP				WIFI_SECURITY_WPA_TKIP
+#define SECURITY_TYPE_WPA_AES				WIFI_SECURITY_WPA_AES
+#define BK_SECURITY_TYPE_WPA_MIXED			WIFI_SECURITY_WPA_MIXED
+#define SECURITY_TYPE_WPA2_TKIP				WIFI_SECURITY_WPA2_TKIP
+#define SECURITY_TYPE_WPA2_AES				WIFI_SECURITY_WPA2_AES
+#define SECURITY_TYPE_WPA2_MIXED			WIFI_SECURITY_WPA2_MIXED
+#define BK_SECURITY_TYPE_WPA3_SAE			WIFI_SECURITY_WPA3_SAE
+#define BK_SECURITY_TYPE_WPA3_WPA2_MIXED	WIFI_SECURITY_WPA3_WPA2_MIXED
+#define BK_SECURITY_TYPE_EAP				WIFI_SECURITY_EAP
+#define BK_SECURITY_TYPE_OWE				WIFI_SECURITY_OWE
+#define SECURITY_TYPE_AUTO					WIFI_SECURITY_AUTO
+
+#define SC_SSID apList.ApList[i].ssid
+#define SC_CHANNEL apList.ApList[i].channel
+#define SC_RSSI apList.ApList[i].ApPower
+#define SC_SECURITY apList.ApList[i].security
+#define SC_FREE() if(apList.ApList != NULL) os_free(apList.ApList)
+
+#define bk_wlan_scan_ap_reg_cb(a) mhdr_scanu_reg_cb(a,0)
+#define bk_wlan_start_scan() do{ wifi_scan_config_t scan_config = {0}; bk_wifi_scan_start(scan_config); }while(0)
+#define bk_wlan_ap_is_up() 0
+#define wlan_ap_scan_result(a) NULL
 #else
 // only 32 chars in length, compared to new 33, so use strncpy
 #define SC_SSID scan_rst->res[i]->ssid
@@ -1500,14 +1525,14 @@ static const char* HTTP_WiFiSecurityName(wlan_sec_type_t sec) {
 	case SECURITY_TYPE_WEP: return "WEP";
 	case SECURITY_TYPE_WPA_TKIP: return "WPA-TKIP";
 	case SECURITY_TYPE_WPA_AES: return "WPA-AES";
-#ifdef PLATFORM_BEKEN_NEW
+#if PLATFORM_BEKEN_NEW || PLATFORM_ARMINO
 	case BK_SECURITY_TYPE_WPA_MIXED: return "WPA-Mixed";
 #endif
 	case SECURITY_TYPE_WPA2_TKIP: return "WPA2-TKIP";
 	case SECURITY_TYPE_WPA2_AES: return "WPA2-AES";
 	case SECURITY_TYPE_WPA2_MIXED: return "WPA2-Mixed";
 	// old sdk sees WPA3 or mixed WPA3 as WPA2-AES
-#ifdef PLATFORM_BEKEN_NEW
+#if PLATFORM_BEKEN_NEW || PLATFORM_ARMINO
 	case BK_SECURITY_TYPE_WPA3_SAE: return "WPA3-SAE";
 	case BK_SECURITY_TYPE_WPA3_WPA2_MIXED: return "WPA3/WPA2";
 	case BK_SECURITY_TYPE_EAP: return "EAP";
@@ -1689,7 +1714,7 @@ int http_fn_cfg_wifi(http_request_t* request) {
 			hprintf255(request, "</table><br>");
 		}
 
-#elif PLATFORM_BEKEN
+#elif PLATFORM_BEKEN || PLATFORM_ARMINO
 		// Covers every target built against the new Beken SDK (BK7231T/N/U, BK7238,
 		// BK7252, BK7252N). The two Beken branches above only handle the old Tuya
 		// based SDKs, which is why all of these used to end up in the TODO case.
@@ -1710,7 +1735,7 @@ int http_fn_cfg_wifi(http_request_t* request) {
 		else {
 			rtos_delay_milliseconds(HTTP_WIFI_SCAN_TIMEOUT_MS);
 		}
-#ifdef PLATFORM_BEKEN_NEW
+#if PLATFORM_BEKEN_NEW || PLATFORM_ARMINO
 		ScanResult_adv apList;
 		int res;
 		memset(&apList, 0, sizeof(apList));
@@ -3226,7 +3251,7 @@ int http_fn_cfg_pins(http_request_t* request) {
 		si = PIN_GetPinRoleForPinIndex(i);
 		hprintf255(request, "f(\"");
 		if (alias) {
-#if defined(PLATFORM_BEKEN) || defined(WINDOWS)
+#if defined(PLATFORM_BEKEN) || defined(WINDOWS) || PLATFORM_ARMINO
 			hprintf255(request, "P%i (%s) ", i, alias);
 #else
 			poststr(request, alias);
