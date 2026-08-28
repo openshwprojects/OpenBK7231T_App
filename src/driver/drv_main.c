@@ -1,6 +1,7 @@
 #include "../i2c/drv_i2c_public.h"
 #include "../logging/logging.h"
 #include "drv_bl0937.h"
+#include "drv_liftmaster.h"
 #include "drv_bl0942.h"
 #include "drv_bl0939.h"
 #include "drv_bl_shared.h"
@@ -51,6 +52,26 @@ void GirierMCU_RunEverySecond();
 
 // startDriver BL0937
 static driver_t g_drivers[] = {
+#if ENABLE_DRIVER_LIFTMASTER
+	//drvdetail:{"name":"LiftMaster",
+	//drvdetail:"title":"LiftMaster/Chamberlain commercial operator",
+	//drvdetail:"descr":"Host-link driver for a LiftMaster commercial door operator logic board. Reproduces the RTL8720 side of the framed serial link (cgi::msg1210 / Saturn, 57600 8N1) so the door can be driven locally. Decodes door state to a channel; LM_Send injects frames.",
+	//drvdetail:"requires":""}
+	{ "LiftMaster",                          // Driver Name
+	LiftMaster_Init,                         // Init
+	LiftMaster_RunEverySecond,               // onEverySecond
+	LiftMaster_AppendInformationToHTTPIndexPage, // appendInformationToHTTPIndexPage
+	LiftMaster_RunFrame,                     // runQuickTick
+	LiftMaster_Shutdown,                     // stopFunction
+	LiftMaster_OnChannelChanged,             // onChannelChanged
+#if ENABLE_HA_DISCOVERY
+	LiftMaster_OnHassDiscovery,              // onHassDiscovery
+#else
+	NULL,                                    // onHassDiscovery
+#endif
+	false,                                   // loaded
+	},
+#endif
 #if ENABLE_DRIVER_TUYAMCU
 	//drvdetail:{"name":"TuyaMCU",
 	//drvdetail:"title":"TODO",
