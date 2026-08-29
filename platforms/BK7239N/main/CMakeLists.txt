@@ -25,6 +25,7 @@ list(APPEND srcs
 	${OBK_SRCS}hal/bk_armino/hal_pins_bk_armino.c
 	${OBK_SRCS}hal/bk_armino/hal_ota_bk_armino.c
 	${OBK_SRCS}hal/bk_armino/hal_wifi_bk_armino.c
+	${OBK_SRCS}hal/bk_armino/hal_uart_bk_armino.c
 	$ENV{ARMINO_PATH}/../../libraries/mqtt_patched.c
 )
 armino_component_register(SRCS "${srcs}" INCLUDE_DIRS "${incs}")

@@ -75,7 +75,7 @@ void HAL_PIN_SetOutputValue(int index, int iVal)
 
 int HAL_PIN_ReadDigitalInput(int index)
 {
-	return bk_gpio_get_value(index);
+	return bk_gpio_get_input(index);
 }
 
 void HAL_PIN_Setup_Input_Pullup(int index)
@@ -136,7 +136,7 @@ void HAL_PIN_PWM_Start(int index, int freq)
 		g_pwm_freq[g_pwm_ch[index]] = freq;
 		return;
 	}
-	if((g_active_pwm & (1 << (PWM_ID_MAX - 1))) == (1 << (PWM_ID_MAX - 1))) return;
+	if((g_active_pwm & ((1 << PWM_ID_MAX) - 1)) == ((1 << PWM_ID_MAX) - 1)) return;
 	uint8_t freech;
 	for(freech = 0; freech < PWM_ID_MAX; freech++) if(!BIT_CHECK(g_active_pwm, freech)) break;
 	if(g_active_pwm == 0)
@@ -146,18 +146,18 @@ void HAL_PIN_PWM_Start(int index, int freq)
 #if PLATFORM_BK7236
 	switch(index)
 	{
-		case 8:  freech = 2;
-		case 9:  freech = 3;
-		case 18: freech = 0;
-		case 19: freech = 1;
-		case 24: freech = 4;
-		case 25: freech = 5;
-		case 32: freech = 6;
-		case 33: freech = 7;
-		case 34: freech = 8;
-		case 35: freech = 9;
-		case 36: freech = 10;
-		case 37: freech = 11;
+		case 8:  freech = 2; break;
+		case 9:  freech = 3; break;
+		case 18: freech = 0; break;
+		case 19: freech = 1; break;
+		case 24: freech = 4; break;
+		case 25: freech = 5; break;
+		case 32: freech = 6; break;
+		case 33: freech = 7; break;
+		case 34: freech = 8; break;
+		case 35: freech = 9; break;
+		case 36: freech = 10; break;
+		case 37: freech = 11; break;
 		default: return;
 	}
 #endif

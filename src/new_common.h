@@ -1147,6 +1147,7 @@ void  os_free(void* ptr);
 void* os_realloc(void* ptr, size_t size);
 typedef int OSStatus;
 #define ASSERT
+#define delay_ms rtos_delay_milliseconds
 
 #define printf(...) addLog(__VA_ARGS__)
 

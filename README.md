@@ -129,7 +129,7 @@ There is also a bit more outdated [WIKI](https://github.com/openshwprojects/Open
 
 # Building
 
-OpenBeken supports [online builds](https://www.elektroda.com/rtvforum/viewtopic.php?p=20946719#20946719) for all platforms (BK7231T, BK7231N, BK7238, XR809, BL602, W600, W800, ESP32, RTL8710A, RTL8710B, RTL87X0C, RTL8720D/CS, TR6260, ECR6600, LN882H), but if you want to compile it yourself, see [BUILDING.md](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/BUILDING.md)
+OpenBeken supports [online builds](https://www.elektroda.com/rtvforum/viewtopic.php?p=20946719#20946719) for all platforms, but if you want to compile it yourself, see [BUILDING.md](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/BUILDING.md)
 
 # Developer Guides
 
@@ -141,7 +141,7 @@ OpenBeken supports [online builds](https://www.elektroda.com/rtvforum/viewtopic.
 
 # Flashing
 
-See our [GUI easy flash tool](https://github.com/openshwprojects/BK7231GUIFlashTool) for BK7231N, BK7231T, BK7231M, BK7238, BK7252N, BK7252U, BL2028N, T34, BL602, ECR6600, LN882H, RDA5981, RTL8710B, RTL8710C, RTL8720D / RTL8720CS, W800, and W600 (write-only). Also see [FLASHING.md](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/FLASHING.md)
+See our [GUI easy flash tool](https://github.com/openshwprojects/BK7231GUIFlashTool) for BK7231N, BK7231T, BK7231M, BK7231U, BK7236, BK7238, BK7239N, BK7252N, BK7252U, BL602, BL616, ECR6600, ESP32 (and variants), ESP8266, GD32VW553, LN882H, LN8825, RDA5981, RTL8710B, RTL87x0C, RTL8720D, RTL87x1DA, RTL87x0E, TR6260, W800, W600 (write-only), XR806, XR809, XR872. Also see [FLASHING.md](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/FLASHING.md)
 
 Repository of flash tools for [all other supported platforms](https://github.com/openshwprojects/FlashTools/tree/main)
 
