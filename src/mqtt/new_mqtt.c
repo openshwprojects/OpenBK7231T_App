@@ -178,7 +178,10 @@ static void MQTT_Mutex_Free()
 // system can use it to spoof MQTT packets to check if MQTT commands
 // are working...
 int MQTT_Post_Received(const char *topic, int topiclen, const unsigned char *data, int datalen){
-	MQTT_Mutex_Take(100);
+	// resolution for mutex ownership race condition - added return 0;
+	if (!MQTT_Mutex_Take(100)) {
+		return 0;
+	}
 	if ((MQTT_RX_BUFFER_MAX - 1 - mqtt_rx_buffer_count) < topiclen + datalen + 2 + 2){
 		addLogAdv(LOG_ERROR, LOG_FEATURE_MQTT, "MQTT_rx buffer overflow for topic %s", topic);
 	} else {
@@ -198,7 +201,10 @@ int MQTT_Post_Received_Str(const char *topic, const char *data) {
 }
 int get_received(char **topic, int *topiclen, unsigned char **data, int *datalen){
 	int res = 0;
-	MQTT_Mutex_Take(100);
+	// resolution for mutex ownership race condition - added return 0;
+	if (!MQTT_Mutex_Take(100)) {
+		return 0;
+	}
 	if (mqtt_rx_buffer_tail != mqtt_rx_buffer_head){
 		getLenData(topiclen, temp_topic, sizeof(temp_topic)-1);
 		temp_topic[*topiclen] = 0;
