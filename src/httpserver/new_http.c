@@ -672,7 +672,7 @@ void setupAllWB2SPinsAsButtons()
 // supply length
 int postany(http_request_t *request, const char *str, int len)
 {
-#if PLATFORM_BL602 || PLATFORM_BEKEN_NEW || PLATFORM_RTL8720D || PLATFORM_ARMINO
+#if PLATFORM_BL602 || PLATFORM_BEKEN_NEW || PLATFORM_RTL8720D
 	send(request->fd, str, len, 0);
 	return 0;
 #else

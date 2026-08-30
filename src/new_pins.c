@@ -256,6 +256,8 @@ void PINS_BeginDeepSleepWithPinWakeUp(unsigned int wakeUpTime) {
 				pull = 2;
 			}
 			SetWUPIO(i, pull, falling);
+#elif PLATFORM_ARMINO
+			bk_gpio_register_wakeup_source(i, 2 + falling);
 #else
 			setGPIActive(i, 1, falling);
 #endif
@@ -342,6 +344,22 @@ void PINS_BeginDeepSleepWithPinWakeUp(unsigned int wakeUpTime) {
 	HBN_Clear_IRQ(HBN_INT_GPIO7);
 	HBN_Clear_IRQ(HBN_INT_GPIO8);
 	HBN_Mode_Enter(&cfg);
+#elif PLATFORM_ARMINO
+	if(wakeUpTime)
+	{
+		alarm_info_t deep_sleep_alarm = {
+			"deep_ps",
+			(rtc_tick_t)((uint32_t)(wakeUpTime * 1000) * AON_RTC_MS_TICK_CNT),
+			1,
+			NULL,
+			NULL
+		};
+		bk_alarm_unregister(AON_RTC_ID_1, deep_sleep_alarm.name);
+		bk_alarm_register(AON_RTC_ID_1, &deep_sleep_alarm);
+		bk_pm_wakeup_source_set(PM_WAKEUP_SOURCE_INT_RTC, NULL);
+	}
+	bk_pm_wakeup_source_set(PM_WAKEUP_SOURCE_INT_GPIO, NULL);
+	bk_pm_sleep_mode_set(PM_MODE_DEEP_SLEEP);
 #endif
 }
 
@@ -2196,7 +2214,7 @@ void PIN_ticks(void* param)
 
 	PIN_ApplyCounterDeltas();
 
-#if defined(PLATFORM_BEKEN) || defined(WINDOWS)
+#if defined(PLATFORM_BEKEN) || defined(WINDOWS) || defined(PLATFORM_ARMINO)
 	g_time = rtos_get_time();
 #else
 	g_time += PIN_TMR_DURATION;

@@ -256,6 +256,12 @@ typedef long BaseType_t;
 #define PLATFORM_MCU_NAME "BK7236"
 #define MANUFACTURER "Beken Corporation"
 #define DEF_MQTT_GROUP "bekens_6"
+#elif PLATFORM_BK7236N
+#define DEVICENAME_PREFIX_FULL "OpenBK7236N"
+#define DEVICENAME_PREFIX_SHORT "obk"
+#define PLATFORM_MCU_NAME "BK7236N"
+#define MANUFACTURER "Beken Corporation"
+#define DEF_MQTT_GROUP "bekens_6n"
 #else
 #error "You must define a platform.."
 This platform is not supported, error!
@@ -333,6 +339,10 @@ This platform is not supported, error!
 #define USER_SW_VER "GD32VW553_Test"
 #elif PLATFORM_BK7239N
 #define USER_SW_VER "BK7239N_Test"
+#elif PLATFORM_BK7236
+#define USER_SW_VER "BK7236_Test"
+#elif PLATFORM_BK7236N
+#define USER_SW_VER "BK7236N_Test"
 #else
 #warning "USER_SW_VER undefined"
 #define USER_SW_VER "unknown"
@@ -1142,12 +1152,15 @@ OSStatus rtos_suspend_thread(beken_thread_t* thread);
 #include "driver/adc.h"
 #include "temp_detect.h"
 #include <driver/flash_partition.h>
+#include "modules/pm.h"
+#include "driver/aon_rtc.h"
 void* os_malloc(size_t size);
 void  os_free(void* ptr);
 void* os_realloc(void* ptr, size_t size);
 typedef int OSStatus;
 #define ASSERT
 #define delay_ms rtos_delay_milliseconds
+#define lwip_close_force(x) lwip_close(x)
 
 #define printf(...) addLog(__VA_ARGS__)
 

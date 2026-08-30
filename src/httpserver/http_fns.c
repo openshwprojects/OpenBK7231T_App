@@ -266,12 +266,12 @@ int http_fn_index(http_request_t* request) {
 		http_html_start(request, NULL);
 
 		poststr(request, "<div id=\"changed\">");
-#if defined(PLATFORM_BEKEN) || defined(WINDOWS)
+#if defined(PLATFORM_BEKEN) || defined(WINDOWS) || defined(PLATFORM_ARMINO)
 		if (DRV_IsRunning("PWMToggler")) {
 			DRV_Toggler_ProcessChanges(request);
 		}
 #endif
-#if defined(PLATFORM_BEKEN) || defined(WINDOWS)
+#if defined(PLATFORM_BEKEN) || defined(WINDOWS) || defined(PLATFORM_ARMINO)
 		if (DRV_IsRunning("httpButtons")) {
 			DRV_HTTPButtons_ProcessChanges(request);
 		}
@@ -852,12 +852,12 @@ int http_fn_index(http_request_t* request) {
 
 	}
 #endif
-#if defined(PLATFORM_BEKEN) || defined(WINDOWS)
+#if defined(PLATFORM_BEKEN) || defined(WINDOWS) || defined(PLATFORM_ARMINO)
 	if (DRV_IsRunning("PWMToggler")) {
 		DRV_Toggler_AddToHtmlPage(request);
 	}
 #endif
-#if defined(PLATFORM_BEKEN) || defined(WINDOWS)
+#if defined(PLATFORM_BEKEN) || defined(WINDOWS) || defined(PLATFORM_ARMINO)
 	if (DRV_IsRunning("httpButtons")) {
 		DRV_HTTPButtons_AddToHtmlPage(request);
 	}
@@ -898,7 +898,7 @@ int http_fn_index(http_request_t* request) {
 				hprintf255(request, "%i event handlers", i);
 				bFirst = false;
 			}
-#if defined(WINDOWS) || defined(PLATFORM_BEKEN)
+#if defined(WINDOWS) || defined(PLATFORM_BEKEN) || defined(PLATFORM_ARMINO)
 			i = CMD_GetCountActiveScriptThreads();
 			if (i) {
 				if (bFirst == false) {
@@ -1056,6 +1056,9 @@ typedef enum {
 	extern char reset_str[64];
 	hprintf255(request, "<h5>Current fw: FW%i</h5>", running_idx + 1);
 	hprintf255(request, "<h5>Reboot reason: %s</h5>", reset_str);
+#elif PLATFORM_ARMINO
+	extern char* misc_get_start_type_str(uint32_t start_type);
+	hprintf255(request, "<h5>Reboot reason: %i - %s</h5>", g_rebootReason, misc_get_start_type_str((uint32_t)g_rebootReason));
 #endif
 #if ENABLE_MQTT
 	if (CFG_GetMQTTHost()[0] == 0) {
@@ -3603,7 +3606,7 @@ int http_fn_cfg_dgr(http_request_t* request) {
 #endif
 
 void OTA_RequestDownloadFromHTTP(const char* s) {
-#if PLATFORM_BEKEN
+#if PLATFORM_BEKEN || PLATFORM_ARMINO
 	otarequest(s);
 #elif PLATFORM_ECR6600
 	extern int http_client_download_file(const char* url);
@@ -3696,7 +3699,7 @@ int http_fn_ota(http_request_t* request) {
 	poststr(request, "<h3>Sorry, OTA update not implemented for " DEVICENAME_PREFIX_FULL " </h3>");
 #else
 	poststr(request, "<p>It's recommended to use the OTA option in the Web Application, where you can easily drag and drop files.<br><br>If you have an HTTP server providing the OTA file, you may enter the URL below. "
-#if PLATFORM_BEKEN
+#if PLATFORM_BEKEN || PLATFORM_ARMINO
 	" On Beken platforms, the .rbl file is used for OTA updates."
 #endif
 	"</p>");

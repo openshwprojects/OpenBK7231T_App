@@ -12,6 +12,8 @@
 
 #if PLATFORM_BEKEN || WINDOWS
 #include "hal_machw.h"
+#elif PLATFORM_ARMINO
+extern int hal_machw_time();
 #elif PLATFORM_ECR6600
 int hal_machw_time() {
 	return os_time_get() * 1000;

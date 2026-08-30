@@ -23,18 +23,39 @@ const char* HAL_PIN_GetPinNameAlias(int index)
 #if PLATFORM_BK7236
 	switch(index)
 	{
-		case 8:  return "PWM2";
+		case 0:  return "ADC12";
+		case 1:  return "ADC13";
+		case 8:  return "ADC10/PWM2";
 		case 9:  return "PWM3";
+		case 12: return "ADC14";
+		case 13: return "ADC15";
 		case 18: return "PWM0";
 		case 19: return "PWM1";
-		case 24: return "PWM4";
-		case 25: return "PWM5";
+		case 21: return "ADC6";
+		case 22: return "ADC5";
+		case 23: return "ADC3";
+		case 24: return "ADC2/PWM4";
+		case 25: return "ADC1/PWM5";
+		case 28: return "ADC4";
 		case 32: return "PWM6";
 		case 33: return "PWM7";
 		case 34: return "PWM8";
 		case 35: return "PWM9";
 		case 36: return "PWM10";
 		case 37: return "PWM11";
+	}
+#elif PLATFORM_BK7239N || PLATFORM_BK7236N
+	switch(index)
+	{
+		case 2:  return "ADC1";
+		case 3:  return "ADC2";
+		case 4:  return "ADC3";
+		case 5:  return "ADC4";
+		case 6:  return "ADC5";
+		case 7:  return "ADC6";
+		case 8:  return "ADC10";
+		case 12: return "ADC14";
+		case 13: return "ADC15";
 	}
 #endif
 	return "IO";
@@ -116,16 +137,9 @@ void HAL_PIN_PWM_Stop(int index)
 	bk_pwm_stop(ch - 1);
 	bk_pwm_deinit(ch - 1);
 	BIT_CLEAR(g_active_pwm, (ch - 1));
-	if(g_active_pwm == 0)
-	{
-		bk_pwm_driver_deinit();
-	}
+	g_pwm_freq[ch - 1] = 0;
 	g_pwm_ch[index] = 0;
-	g_pwm_freq[ch] = 0;
 	gpio_dev_unmap(index);
-	//gpio_dev_map(index, 0);
-	//bk_gpio_enable_output(index);
-	//bk_gpio_set_capacity(index, GPIO_DRIVER_CAPACITY_1);
 	return;
 }
 
@@ -133,16 +147,12 @@ void HAL_PIN_PWM_Start(int index, int freq)
 {
 	if(g_pwm_ch[index] != 0)
 	{
-		g_pwm_freq[g_pwm_ch[index]] = freq;
+		g_pwm_freq[g_pwm_ch[index] - 1] = freq;
 		return;
 	}
 	if((g_active_pwm & ((1 << PWM_ID_MAX) - 1)) == ((1 << PWM_ID_MAX) - 1)) return;
 	uint8_t freech;
 	for(freech = 0; freech < PWM_ID_MAX; freech++) if(!BIT_CHECK(g_active_pwm, freech)) break;
-	if(g_active_pwm == 0)
-	{
-		bk_pwm_driver_init();
-	}
 #if PLATFORM_BK7236
 	switch(index)
 	{
@@ -166,7 +176,7 @@ void HAL_PIN_PWM_Start(int index, int freq)
 	g_pwm_freq[freech] = freq;
 	pwm_init_config_t cfg =
 	{
-		.period_cycle = 26000000 / freq,
+		.period_cycle = CONFIG_XTAL_FREQ / freq,
 		.duty_cycle = 0,
 		.duty2_cycle = 0,
 		.duty3_cycle = 0,
@@ -183,7 +193,7 @@ void HAL_PIN_PWM_Update(int index, float value)
 {
 	uint8_t ch = g_pwm_ch[index];
 	if(ch == 0) return;
-	uint32_t period = 26000000 / g_pwm_freq[ch - 1];
+	uint32_t period = CONFIG_XTAL_FREQ / g_pwm_freq[ch - 1];
 	pwm_period_duty_config_t cfg =
 	{
 		.period_cycle = period,
