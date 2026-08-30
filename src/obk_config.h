@@ -756,6 +756,27 @@
 //#define ENABLE_BT_PROXY							1
 //#define ENABLE_DRIVER_ESPHOME_API				1
 
+#elif PLATFORM_ARMINO
+
+#define ENABLE_EXPAND_CONSTANT					1
+#define ENABLE_HA_DISCOVERY						1
+#define ENABLE_MQTT								1
+#define ENABLE_OBK_SCRIPTING					1
+#define ENABLE_ADVANCED_CHANNELTYPES_DISCOVERY	1
+#define NEW_TCP_SERVER							1
+#define ENABLE_LITTLEFS							1
+#define ENABLE_DRIVER_LED						1
+#define ENABLE_DRIVER_WEMO						1
+#define ENABLE_DRIVER_CHT83XX					1
+#define ENABLE_DRIVER_SM16703P					1
+#define ENABLE_DRIVER_PIXELANIM					1
+#define ENABLE_DRIVER_TINYIR_NEC				1
+#define ENABLE_TEST_COMMANDS					1
+#define ENABLE_DRIVER_TUYAMCU					1
+#define ENABLE_DRIVER_AHT2X						1
+#define ENABLE_I2C								1
+#define ENABLE_DRIVER_IRREMOTEESP				1
+
 #else
 
 // #error "Platform not defined"

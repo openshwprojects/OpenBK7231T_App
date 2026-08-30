@@ -1,10 +1,11 @@
-#if PLATFORM_BEKEN
+#if PLATFORM_BEKEN || PLATFORM_ARMINO
 
 #include "../../new_common.h"
 #include "../hal_flashVars.h"
 #include "../../logging/logging.h"
 #include <easyflash.h>
 
+#if PLATFORM_BEKEN
 static int g_easyFlash_Ready = 0;
 void InitEasyFlashIfNeeded()
 {
@@ -14,6 +15,9 @@ void InitEasyFlashIfNeeded()
 		g_easyFlash_Ready = 1;
 	}
 }
+#else
+void InitEasyFlashIfNeeded() {}
+#endif
 
 FLASH_VARS_STRUCTURE flash_vars;
 static int g_loaded = 0;

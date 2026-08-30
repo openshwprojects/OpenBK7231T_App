@@ -227,6 +227,10 @@ static int http_rest_post(http_request_t* request) {
 		r = http_rest_post_flash(request, 0, -1);
 #elif PLATFORM_GD32VW553
 		r = http_rest_post_flash(request, 0, -1);
+#elif PLATFORM_ARMINO
+		extern uint32_t g_ota_start_addr;
+		extern uint32_t g_ota_end_addr;
+		r = http_rest_post_flash(request, g_ota_start_addr, g_ota_end_addr);
 #else
 		// TODO
 		ADDLOG_ERROR(LOG_FEATURE_API, "No OTA");
@@ -244,6 +248,8 @@ static int http_rest_post(http_request_t* request) {
 
 
 #if ENABLE_LITTLEFS
+	// FIXME: this is beken (non-armino) only
+#if PLATFORM_BEKEN
 	if (!strcmp(request->url, "api/fsblock")) {
 		if (lfs_present()) {
 			release_lfs();
@@ -270,6 +276,7 @@ static int http_rest_post(http_request_t* request) {
 		init_lfs(0);
 		return res;
 	}
+#endif
 	if (!strncmp(request->url, "api/lfs/", 8)) {
 		return http_rest_post_lfs_file(request);
 	}
