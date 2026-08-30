@@ -821,7 +821,7 @@ void Main_OnEverySecond()
 #ifndef OBK_DISABLE_ALL_DRIVERS
 	DRV_OnEverySecond();
 #if defined(PLATFORM_BEKEN) || defined(WINDOWS) || defined(PLATFORM_BL602) || defined(PLATFORM_ESPIDF) \
- || defined (PLATFORM_RTL87X0C) || PLATFORM_ESP8266 && !PLATFORM_BL_NEW
+ || defined (PLATFORM_RTL87X0C) || PLATFORM_ESP8266 || defined(PLATFORM_ARMINO) && !PLATFORM_BL_NEW
 	UART_RunEverySecond();
 #endif
 #endif
@@ -1140,7 +1140,7 @@ void QuickTick(void* param)
 	PIN_ticks(param);
 #endif
 
-#if defined(PLATFORM_BEKEN) || defined(WINDOWS)
+#if defined(PLATFORM_BEKEN) || defined(WINDOWS) || defined(PLATFORM_ARMINO)
 	g_timeMs = rtos_get_time();
 #elif defined(PLATFORM_ESPIDF) //|| defined(PLATFORM_ESP8266)
 	g_timeMs = esp_timer_get_time() / 1000;
@@ -1335,6 +1335,9 @@ void Main_Init_BeforeDelay_Unsafe(bool bAutoRunScripts) {
 #ifdef PLATFORM_BEKEN
 	int bk_misc_get_start_type();
 	g_rebootReason = bk_misc_get_start_type();
+#elif PLATFORM_ARMINO
+	extern uint32_t reset_reason_init(void);
+	g_rebootReason = reset_reason_init();
 #endif
 
 	RepeatingEvents_Init();

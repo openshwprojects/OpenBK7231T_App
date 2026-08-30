@@ -61,7 +61,7 @@ struct altcp_tls_config {
 #endif
 #endif
 
-#ifdef PLATFORM_BEKEN
+#if defined(PLATFORM_BEKEN) || defined(PLATFORM_ARMINO)
 #include <tcpip.h>
 // from hal_main_bk7231.c
 // triggers a one-shot timer to cause read.
@@ -188,7 +188,7 @@ int MQTT_Post_Received(const char *topic, int topiclen, const unsigned char *dat
 	MQTT_Mutex_Free();
 
 
-#ifdef PLATFORM_BEKEN
+#if defined(PLATFORM_BEKEN) || defined(PLATFORM_ARMINO)
 	MQTT_TriggerRead();
 #endif
 	return 1;

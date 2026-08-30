@@ -5,6 +5,9 @@
 #include "../../new_cfg.h"
 #include "../../logging/logging.h"
 #include "../../httpserver/new_http.h"
+#include "../../httpclient/http_client.h"
+#include "../../driver/drv_public.h"
+#include "../../driver/drv_bl_shared.h"
 #include "driver/flash.h"
 
 static unsigned char *sector = (void *)0;
@@ -149,6 +152,125 @@ int http_rest_post_flash(http_request_t* request, int startaddr, int maxaddr)
 	extern uint32_t g_ota_start_addr;
 	if(initial_addr == g_ota_start_addr) CFG_IncrementOTACount();
 	return 0;
+}
+
+
+httprequest_t httprequest;
+extern uint32_t g_ota_start_addr;
+
+int myhttpclientcallback(httprequest_t* request)
+{
+
+	//httpclient_t *client = &request->client;
+	httpclient_data_t* client_data = &request->client_data;
+
+	// NOTE: Called from the client thread, beware
+	//It is not clear if we can just update total_bytes instead of incrementing. Maintaining previous behavior.
+	OTA_SetTotalBytes(OTA_GetTotalBytes() + request->client_data.response_buf_filled);
+
+	switch(request->state)
+	{
+		case 0: // start
+			//init_ota(0xff000);
+
+			init_ota(g_ota_start_addr);
+			addLogAdv(LOG_INFO, LOG_FEATURE_OTA, "\rmyhttpclientcallback state %d total %d/%d", request->state, OTA_GetTotalBytes(), request->client_data.response_content_len);
+			break;
+		case 1: // data
+			if(request->client_data.response_buf_filled)
+			{
+				unsigned char* d = (unsigned char*)request->client_data.response_buf;
+				int l = request->client_data.response_buf_filled;
+				add_otadata(d, l);
+			}
+			break;
+		case 2: // ended, write any remaining bytes to the sector
+			close_ota();
+			OTA_ResetProgress();
+			addLogAdv(LOG_INFO, LOG_FEATURE_OTA, "\rmyhttpclientcallback state %d total %d/%d", request->state, OTA_GetTotalBytes(), request->client_data.response_content_len);
+
+			addLogAdv(LOG_INFO, LOG_FEATURE_OTA, "Rebooting in 1 seconds...");
+
+			// record this OTA
+			CFG_IncrementOTACount();
+			// make sure it's saved before reboot
+			CFG_Save_IfThereArePendingChanges();
+#if ENABLE_BL_SHARED
+			if(DRV_IsMeasuringPower())
+			{
+				BL09XX_SaveEmeteringStatistics();
+			}
+#endif
+			DRV_SavePowerMeterDriverStatistics();
+			rtos_delay_milliseconds(1000);
+			bk_reboot();
+			break;
+	}
+
+	//rtos_delay_milliseconds(500);
+
+	if(request->state == 2)
+	{
+		//os_free(client_data->response_buf);
+		client_data->response_buf = (void*)0;
+		client_data->response_buf_len = 0;
+	}
+	//rtos_delay_milliseconds(100);
+
+	return 0;
+}
+
+// NOTE: these MUST persist
+// note: url must have a '/' after host, else it can;t parse it..
+static char url[256] = "http://raspberrypi:1880/firmware";
+static const char* header = "";
+static char* content_type = "text/csv";
+static char* post_data = "";
+#define BUF_SIZE 2048
+
+char* http_buf = (void*)0;
+
+void otarequest(const char* urlin)
+{
+	httprequest_t* request = &httprequest;
+	if(request->state == 1)
+	{
+		addLogAdv(LOG_INFO, LOG_FEATURE_OTA, "********************http in progress, not starting another");
+		return;
+	}
+
+	strncpy(url, urlin, sizeof(url));
+
+	OTA_SetTotalBytes(0);
+	memset(request, 0, sizeof(*request));
+	httpclient_t* client = &request->client;
+	httpclient_data_t* client_data = &request->client_data;
+
+	if(http_buf == (void*)0)
+	{
+		http_buf = os_malloc(BUF_SIZE + 1);
+		if(http_buf == (void*)0)
+		{
+			addLogAdv(LOG_INFO, LOG_FEATURE_OTA, "startrequest Malloc failed.");
+			return;
+		}
+		memset(http_buf, 0, BUF_SIZE);
+	}
+	client_data->response_buf = http_buf;  //Sets a buffer to store the result.
+	client_data->response_buf_len = BUF_SIZE;  //Sets the buffer size.
+	HTTPClient_SetCustomHeader(client, header);  //Sets the custom header if needed.
+	client_data->post_buf = post_data;  //Sets the user data to be posted.
+	client_data->post_buf_len = strlen(post_data);  //Sets the post data length.
+	client_data->post_content_type = content_type;  //Sets the content type.
+	request->data_callback = &myhttpclientcallback;
+	request->port = 80;//HTTP_PORT;
+	request->url = url;
+	request->method = HTTPCLIENT_GET;
+	request->timeout = 10000;
+	HTTPClient_Async_SendGeneric(request);
+	//+2 Updating ota_status to 0 as before.
+	OTA_ResetProgress();
+	OTA_IncrementProgress(1);
 }
 
 #endif
