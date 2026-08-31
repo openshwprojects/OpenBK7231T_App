@@ -11,7 +11,7 @@
 
 #include "rtos_pub.h"
 
-#define RTC_REBASE_THRESHOLD_S 5
+#define BKRTC_REBASE_THRESHOLD_S 5
 
 static unsigned long long g_rtcBaseUs;
 static unsigned int g_rtcEpochBase;
@@ -19,36 +19,36 @@ static int g_rtcHasBase;
 static unsigned int g_rtcRebases;
 static int g_rtcLastDelta;
 
-unsigned long long RTC_GetUptimeUs(void)
+unsigned long long BKRTC_GetUptimeUs(void)
 {
 	return (unsigned long long)rtos_get_time_us();
 }
 
-unsigned int RTC_GetUptimeSeconds(void)
+unsigned int BKRTC_GetUptimeSeconds(void)
 {
-	return (unsigned int)(RTC_GetUptimeUs() / 1000000ull);
+	return (unsigned int)(BKRTC_GetUptimeUs() / 1000000ull);
 }
 
-int RTC_HasBase(void)
+int BKRTC_HasBase(void)
 {
 	return g_rtcHasBase;
 }
 
-unsigned int RTC_GetEpoch(void)
+unsigned int BKRTC_GetEpoch(void)
 {
 	if (!g_rtcHasBase)
 		return 0;
-	return g_rtcEpochBase + (unsigned int)((RTC_GetUptimeUs() - g_rtcBaseUs) / 1000000ull);
+	return g_rtcEpochBase + (unsigned int)((BKRTC_GetUptimeUs() - g_rtcBaseUs) / 1000000ull);
 }
 
-static void RTC_SetBase(unsigned int epoch)
+static void BKRTC_SetBase(unsigned int epoch)
 {
-	g_rtcBaseUs = RTC_GetUptimeUs();
+	g_rtcBaseUs = BKRTC_GetUptimeUs();
 	g_rtcEpochBase = epoch;
 	g_rtcHasBase = 1;
 }
 
-void RTC_OnEverySecond(void)
+void BKRTC_OnEverySecond(void)
 {
 	unsigned int ntp;
 
@@ -60,30 +60,30 @@ void RTC_OnEverySecond(void)
 		return;
 
 	if (!g_rtcHasBase) {
-		RTC_SetBase(ntp);
+		BKRTC_SetBase(ntp);
 		ADDLOG_INFO(LOG_FEATURE_DRV, "RTC: base set to %u", ntp);
 		return;
 	}
 
-	g_rtcLastDelta = (int)(ntp - RTC_GetEpoch());
-	if (g_rtcLastDelta >= RTC_REBASE_THRESHOLD_S || g_rtcLastDelta <= -RTC_REBASE_THRESHOLD_S) {
-		RTC_SetBase(ntp);
+	g_rtcLastDelta = (int)(ntp - BKRTC_GetEpoch());
+	if (g_rtcLastDelta >= BKRTC_REBASE_THRESHOLD_S || g_rtcLastDelta <= -BKRTC_REBASE_THRESHOLD_S) {
+		BKRTC_SetBase(ntp);
 		g_rtcRebases++;
 		ADDLOG_WARN(LOG_FEATURE_DRV, "RTC: rebased on %u, drift was %i s", ntp, g_rtcLastDelta);
 	}
 }
 
-void RTC_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState)
+void BKRTC_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState)
 {
 	unsigned int up;
 
 	if (bPreState)
 		return;
 
-	up = RTC_GetUptimeSeconds();
+	up = BKRTC_GetUptimeSeconds();
 	if (g_rtcHasBase) {
 		hprintf255(request, "<h5>RTC: hardware uptime %us, epoch %u, drift %is, rebases %u</h5>",
-		           up, RTC_GetEpoch(), g_rtcLastDelta, g_rtcRebases);
+		           up, BKRTC_GetEpoch(), g_rtcLastDelta, g_rtcRebases);
 	} else {
 		hprintf255(request, "<h5>RTC: hardware uptime %us, no time base yet</h5>", up);
 	}
@@ -92,15 +92,15 @@ void RTC_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState
 static commandResult_t CMD_RTCTime(const void *context, const char *cmd,
                                    const char *args, int cmdFlags)
 {
-	unsigned long long us = RTC_GetUptimeUs();
+	unsigned long long us = BKRTC_GetUptimeUs();
 
 	ADDLOG_INFO(LOG_FEATURE_CMD, "RTCTime: uptime %u.%06u s, epoch %u, base %s, drift %i s, rebases %u",
 	            (unsigned int)(us / 1000000ull), (unsigned int)(us % 1000000ull),
-	            RTC_GetEpoch(), g_rtcHasBase ? "set" : "none", g_rtcLastDelta, g_rtcRebases);
+	            BKRTC_GetEpoch(), g_rtcHasBase ? "set" : "none", g_rtcLastDelta, g_rtcRebases);
 	return CMD_RES_OK;
 }
 
-void RTC_Init(void)
+void BKRTC_Init(void)
 {
 	g_rtcHasBase = 0;
 	g_rtcRebases = 0;
