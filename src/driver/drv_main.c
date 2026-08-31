@@ -1437,6 +1437,22 @@ static driver_t g_drivers[] = {
 	false,                                   // loaded
 	},
 #endif
+#if ENABLE_DRIVER_RTC
+	//drvdetail:{"name":"RTC",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"Uses the always-on RTC counter of the BK7252N as the time base. The wall clock is anchored to NTP once and then advanced in hardware, so it stays correct while NTP is unreachable, and the driver reports how far the software second counter has drifted from the hardware one.",
+	//drvdetail:"requires":""}
+	{ "RTC",                                 // Driver Name
+	RTC_Init,                                // Init
+	RTC_OnEverySecond,                       // onEverySecond
+	RTC_AppendInformationToHTTPIndexPage,    // appendInformationToHTTPIndexPage
+	NULL,                                    // runQuickTick
+	NULL,                                    // stopFunction
+	NULL,                                    // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
+	},
+#endif
 	{ "Battery",                             // Driver Name
 	Batt_Init,                               // Init
 	Batt_OnEverySecond,                      // onEverySecond

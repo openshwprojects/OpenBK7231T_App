@@ -180,6 +180,14 @@ void BKCharge_Init(void);
 void BKCharge_OnEverySecond(void);
 void BKCharge_StopDriver(void);
 void BKCharge_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState);
+
+void RTC_Init(void);
+void RTC_OnEverySecond(void);
+void RTC_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState);
+unsigned long long RTC_GetUptimeUs(void);
+unsigned int RTC_GetUptimeSeconds(void);
+unsigned int RTC_GetEpoch(void);
+int RTC_HasBase(void);
 void Batt_Init();
 void Batt_OnEverySecond();
 void Batt_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState);
