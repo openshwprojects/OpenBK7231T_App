@@ -130,6 +130,7 @@ OBKM_SRC  += $(OBK_SRCS)driver/drv_mqttServer.c
 OBKM_SRC  += $(OBK_SRCS)driver/drv_mqttServerBerry.c
 OBKM_SRC  += $(OBK_SRCS)driver/drv_multiPinI2CScanner.c
 OBKM_SRC  += $(OBK_SRCS)driver/drv_ntp.c
+OBKM_SRC  += $(OBK_SRCS)driver/drv_audio.c
 OBKM_SRC  += $(OBK_SRCS)driver/drv_deviceclock.c
 OBKM_SRC  += $(OBK_SRCS)driver/drv_ds3231.c
 OBKM_SRC  += $(OBK_SRCS)driver/drv_neo6m.c
