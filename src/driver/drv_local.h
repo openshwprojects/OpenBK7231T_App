@@ -186,6 +186,14 @@ void BKAudio_OnEverySecond(void);
 void BKAudio_RunQuickTick(void);
 void BKAudio_StopDriver(void);
 void BKAudio_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState);
+
+void RTC_Init(void);
+void RTC_OnEverySecond(void);
+void RTC_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState);
+unsigned long long RTC_GetUptimeUs(void);
+unsigned int RTC_GetUptimeSeconds(void);
+unsigned int RTC_GetEpoch(void);
+int RTC_HasBase(void);
 void Batt_Init();
 void Batt_OnEverySecond();
 void Batt_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState);
