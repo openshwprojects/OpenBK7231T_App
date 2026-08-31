@@ -137,6 +137,20 @@ void DRV_HTTPButtons_AddToHtmlPage(http_request_t *request);
 void DRV_InitHTTPButtons();
 #if ENABLE_HA_DISCOVERY
 void DRV_HTTPButtons_OnHassDiscovery(const char *topic);
+
+void BKSDCard_Init(void);
+void BKSDCard_OnEverySecond(void);
+void BKSDCard_StopDriver(void);
+void BKSDCard_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState);
+int BKSDCardFs_Mount(void);
+int BKSDCardFs_Unmount(void);
+int BKSDCardFs_IsMounted(void);
+int BKSDCardFs_LastResult(void);
+void BKSDCardFs_SetBase(unsigned int lba);
+unsigned int BKSDCardFs_GetBase(void);
+unsigned int BKSDCardFs_Reads(void);
+unsigned int BKSDCardFs_ReadFails(void);
+
 #endif
 
 void CHT83XX_Init();
