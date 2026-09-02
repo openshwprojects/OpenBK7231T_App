@@ -347,6 +347,9 @@
 #if PLATFORM_BEKEN_NEW
 #define NEW_TCP_SERVER							1
 #endif
+#if PLATFORM_BK7252N
+#define ENABLE_DRIVER_BKSDCARD					1
+#endif
 //#define ENABLE_DRIVER_NEO6M					1
 //#define ENABLE_DRIVER_ARISTON					1
 //#define ENABLE_DRIVER_ROOMBA				    1
