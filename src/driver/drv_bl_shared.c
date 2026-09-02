@@ -10,6 +10,7 @@
 #include "../logging/logging.h"
 #include "../mqtt/new_mqtt.h"
 #include "../hal/hal_ota.h"
+#include "../httpserver/hass.h"
 #include "drv_local.h"
 //#include "drv_ntp.h"
 #include "drv_deviceclock.h"
@@ -129,6 +130,197 @@ time_t ConsumptionResetTime = 0;
 
 int changeSendAlwaysFrames = 60;
 int changeDoNotSendMinFrames = 5;
+
+#if ENABLE_BL_POWER_LIMIT
+static int powerLimitChannel = -1;
+static float powerLimitCurrent = 0.0f;
+static float powerLimitPower = 0.0f;
+static int powerLimitDelaySeconds = 0;
+static portTickType powerLimitOverLimitSince = 0;
+static bool powerLimitOverLimitActive = false;
+static bool powerLimitTripped = false;
+static bool powerLimitOverride = false;
+static unsigned int powerLimitTripCount = 0;
+
+static void BL_PowerLimit_LogStatus(void)
+{
+	addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,
+		"PowerLimit: ch=%i current=%1.3fA power=%1.1fW delay=%is tripped=%i override=%i trips=%u",
+		powerLimitChannel, powerLimitCurrent, powerLimitPower, powerLimitDelaySeconds, powerLimitTripped, powerLimitOverride, powerLimitTripCount);
+}
+
+static void BL_PowerLimit_PublishStatus(void)
+{
+#if ENABLE_MQTT
+	MQTT_PublishMain_StringInt("power_limit_tripped", powerLimitTripped, OBK_PUBLISH_FLAG_RETAIN);
+	MQTT_PublishMain_StringInt("power_limit_override", powerLimitOverride, OBK_PUBLISH_FLAG_RETAIN);
+	MQTT_PublishMain_StringInt("power_limit_trips", powerLimitTripCount, OBK_PUBLISH_FLAG_RETAIN);
+#endif
+}
+
+#if ENABLE_HA_DISCOVERY
+static HassDeviceInfo* BL_PowerLimit_CreateBinaryHassInfo(const char *idTitle, const char *name, const char *stateTopic)
+{
+	HassDeviceInfo* info;
+
+	info = hass_init_device_info(BINARY_SENSOR, 0, "1", "0", 0, idTitle);
+	cJSON_ReplaceItemInObject(info->root, "name", cJSON_CreateString(name));
+	cJSON_AddStringToObject(info->root, "stat_t", stateTopic);
+	return info;
+}
+
+static HassDeviceInfo* BL_PowerLimit_CreateSensorHassInfo(const char *idTitle, const char *name, const char *stateTopic)
+{
+	HassDeviceInfo* info;
+
+	info = hass_init_device_info(CUSTOM_SENSOR, 0, NULL, NULL, 0, idTitle);
+	cJSON_ReplaceItemInObject(info->root, "name", cJSON_CreateString(name));
+	cJSON_AddStringToObject(info->root, "stat_t", stateTopic);
+	cJSON_AddStringToObject(info->root, "stat_cla", "measurement");
+	return info;
+}
+
+static void BL_PowerLimit_PublishHassInfo(const char *topic, HassDeviceInfo* dev_info)
+{
+	if (dev_info) {
+		MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
+		hass_free_device_info(dev_info);
+	}
+}
+
+void BL_PowerLimit_OnHassDiscovery(const char *topic)
+{
+	BL_PowerLimit_PublishStatus();
+	BL_PowerLimit_PublishHassInfo(topic,
+		BL_PowerLimit_CreateBinaryHassInfo("PLTrip", "Power Limit Tripped", "~/power_limit_tripped/get"));
+	BL_PowerLimit_PublishHassInfo(topic,
+		BL_PowerLimit_CreateBinaryHassInfo("PLOverride", "Power Limit Override", "~/power_limit_override/get"));
+	BL_PowerLimit_PublishHassInfo(topic,
+		BL_PowerLimit_CreateSensorHassInfo("PLTrips", "Power Limit Trips", "~/power_limit_trips/get"));
+}
+#endif
+
+static commandResult_t BL_PowerLimit_Setup(const void *context, const char *cmd, const char *args, int cmdFlags)
+{
+	Tokenizer_TokenizeString(args, 0);
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 3)) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+
+	powerLimitChannel = Tokenizer_GetArgInteger(0);
+	powerLimitCurrent = Tokenizer_GetArgFloat(1);
+	powerLimitPower = Tokenizer_GetArgFloat(2);
+	powerLimitDelaySeconds = Tokenizer_GetArgIntegerDefault(3, 0);
+	powerLimitOverLimitSince = 0;
+	powerLimitOverLimitActive = false;
+	powerLimitTripped = false;
+	powerLimitOverride = false;
+
+	if (powerLimitChannel >= CHANNEL_MAX) {
+		powerLimitChannel = -1;
+	}
+	if (powerLimitCurrent < 0.0f) {
+		powerLimitCurrent = 0.0f;
+	}
+	if (powerLimitPower < 0.0f) {
+		powerLimitPower = 0.0f;
+	}
+	if (powerLimitDelaySeconds < 0) {
+		powerLimitDelaySeconds = 0;
+	}
+
+	BL_PowerLimit_LogStatus();
+	BL_PowerLimit_PublishStatus();
+	return CMD_RES_OK;
+}
+
+static commandResult_t BL_PowerLimit_Reset(const void *context, const char *cmd, const char *args, int cmdFlags)
+{
+	powerLimitOverLimitSince = 0;
+	powerLimitOverLimitActive = false;
+	powerLimitTripped = false;
+	BL_PowerLimit_LogStatus();
+	BL_PowerLimit_PublishStatus();
+	return CMD_RES_OK;
+}
+
+static commandResult_t BL_PowerLimit_Status(const void *context, const char *cmd, const char *args, int cmdFlags)
+{
+	BL_PowerLimit_LogStatus();
+	return CMD_RES_OK;
+}
+
+static commandResult_t BL_PowerLimit_Override(const void *context, const char *cmd, const char *args, int cmdFlags)
+{
+	Tokenizer_TokenizeString(args, 0);
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+
+	powerLimitOverride = Tokenizer_GetArgInteger(0) != 0;
+	BL_PowerLimit_LogStatus();
+	BL_PowerLimit_PublishStatus();
+	return CMD_RES_OK;
+}
+
+static void BL_PowerLimit_Check(int asensdatasetix)
+{
+	energysensdataset_t* sensdataset;
+	float current;
+	float power;
+	bool overLimit;
+	portTickType now;
+	portTickType delayTicks;
+
+	if (asensdatasetix != BL_SENSORS_IX_0) return;
+	if (powerLimitChannel < 0) return;
+	if (powerLimitTripped) {
+		if (!powerLimitOverride && CHANNEL_Get(powerLimitChannel) > 0) {
+			addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,
+				"PowerLimit latch active, forcing channel %i off", powerLimitChannel);
+			CHANNEL_Set(powerLimitChannel, 0, 0);
+			BL_PowerLimit_PublishStatus();
+		}
+		return;
+	}
+	if ((powerLimitCurrent <= 0.0f) && (powerLimitPower <= 0.0f)) return;
+
+	sensdataset = &datasetlist[asensdatasetix];
+	current = fabsf((float)sensdataset->sensors[OBK_CURRENT].lastReading);
+	power = fabsf((float)sensdataset->sensors[OBK_POWER].lastReading);
+	overLimit = false;
+
+	if ((powerLimitCurrent > 0.0f) && (current >= powerLimitCurrent)) {
+		overLimit = true;
+	}
+	if ((powerLimitPower > 0.0f) && (power >= powerLimitPower)) {
+		overLimit = true;
+	}
+
+	if (!overLimit) {
+		powerLimitOverLimitSince = 0;
+		powerLimitOverLimitActive = false;
+		return;
+	}
+
+	now = xTaskGetTickCount();
+	if (!powerLimitOverLimitActive) {
+		powerLimitOverLimitSince = now;
+		powerLimitOverLimitActive = true;
+	}
+	delayTicks = powerLimitDelaySeconds * (1000 / portTICK_PERIOD_MS);
+	if ((powerLimitDelaySeconds > 0) && ((now - powerLimitOverLimitSince) < delayTicks)) {
+		return;
+	}
+
+	CHANNEL_Set(powerLimitChannel, 0, 0);
+	powerLimitTripped = true;
+	powerLimitTripCount++;
+	ADDLOG_WARN(LOG_FEATURE_ENERGYMETER, "PowerLimit tripped");
+	BL_PowerLimit_LogStatus();
+	BL_PowerLimit_PublishStatus();
+}
+#endif
 
 void BL_ResetRecivedDataBool() {
   for (int i = 0; i < BL_SENSDATASETS_COUNT; i++) sensors_reciveddata[i] = 0;
@@ -675,6 +867,9 @@ void BL_ProcessUpdate(float voltage, float current, float power,
   sensdataset->sensors[OBK_POWER_FACTOR].lastReading =
     (sensdataset->sensors[OBK_POWER_APPARENT].lastReading == 0 ? 1 : sensdataset->sensors[OBK_POWER].lastReading / sensdataset->sensors[OBK_POWER_APPARENT].lastReading);
 
+#if ENABLE_BL_POWER_LIMIT
+	BL_PowerLimit_Check(asensdatasetix);
+#endif
 
   sensors_reciveddata[asensdatasetix] = 1;
   {
@@ -1079,6 +1274,28 @@ void BL_Shared_Init(void) {
 	//cmddetail:"fn":"BL09XX_VCPPublishIntervals","file":"driver/drv_bl_shared.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("VCPPublishIntervals", BL09XX_VCPPublishIntervals, NULL);
+#if ENABLE_BL_POWER_LIMIT
+	//cmddetail:{"name":"PowerLimit","args":"[Channel][MaxCurrentA][MaxPowerW][DelaySeconds]",
+	//cmddetail:"descr":"Configures runtime current/power protection. Zero current or power disables that threshold. The target channel is turned off and latched when the limit is exceeded.",
+	//cmddetail:"fn":"BL_PowerLimit_Setup","file":"driver/drv_bl_shared.c","requires":"ENABLE_BL_POWER_LIMIT",
+	//cmddetail:"examples":"`PowerLimit 1 10 2300 3`"}
+	CMD_RegisterCommand("PowerLimit", BL_PowerLimit_Setup, NULL);
+	//cmddetail:{"name":"PowerLimitReset","args":"",
+	//cmddetail:"descr":"Clears the runtime power limit latch.",
+	//cmddetail:"fn":"BL_PowerLimit_Reset","file":"driver/drv_bl_shared.c","requires":"ENABLE_BL_POWER_LIMIT",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("PowerLimitReset", BL_PowerLimit_Reset, NULL);
+	//cmddetail:{"name":"PowerLimitStatus","args":"",
+	//cmddetail:"descr":"Logs the current runtime power limit setup, latch, override, and trip count state.",
+	//cmddetail:"fn":"BL_PowerLimit_Status","file":"driver/drv_bl_shared.c","requires":"ENABLE_BL_POWER_LIMIT",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("PowerLimitStatus", BL_PowerLimit_Status, NULL);
+	//cmddetail:{"name":"PowerLimitOverride","args":"[0or1]",
+	//cmddetail:"descr":"Sets runtime power limit service override. Override allows the target channel to stay on while preserving trip latch and trip count history.",
+	//cmddetail:"fn":"BL_PowerLimit_Override","file":"driver/drv_bl_shared.c","requires":"ENABLE_BL_POWER_LIMIT",
+	//cmddetail:"examples":"`PowerLimitOverride 1`"}
+	CMD_RegisterCommand("PowerLimitOverride", BL_PowerLimit_Override, NULL);
+#endif
 }
 
 // OBK_POWER etc
