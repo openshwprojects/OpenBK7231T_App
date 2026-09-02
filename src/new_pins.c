@@ -266,6 +266,14 @@ void PINS_BeginDeepSleepWithPinWakeUp(unsigned int wakeUpTime) {
 	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "Index map: %i, edge: %i", g_gpio_index_map[0], g_gpio_edge_map[0]);
 #ifdef PLATFORM_BEKEN_NEW
 	PS_DEEP_CTRL_PARAM params;
+	// PS_DEEP_CTRL_PARAM has nine fields; we only fill a few of them, so without
+	// this the SDK gets stack garbage for gpio_stay_lo_map, gpio_stay_hi_map,
+	// gpio_last_index_map, gpio_last_edge_map and - worst of all - lpo_32k_src,
+	// which picks the RTC clock source. A random clock source is why timed
+	// wakeups fired at arbitrary times. Zero also happens to be the right
+	// default here: LPO_SELECT_ROSC, the internal oscillator, which every board
+	// has (a 32k crystal may not be fitted).
+	memset(&params, 0, sizeof(params));
 	params.gpio_index_map = g_gpio_index_map[0];
 	params.gpio_edge_map = g_gpio_edge_map[0];
 	params.sleep_mode = MANUAL_MODE_IDLE;
