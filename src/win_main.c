@@ -203,6 +203,7 @@ void Test_PartitionSearch()
 }
 void Win_DoUnitTests()
 {
+	Test_Dreo();
 	Test_LEDstrips();
 
 	// SELFTEST_ASSERT_EXPRESSION("sqrt(4)", 2)
