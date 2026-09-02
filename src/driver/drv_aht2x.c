@@ -188,8 +188,17 @@ void AHT2X_Init()
 	channel_temp = Tokenizer_GetArgIntegerDefault(3, -1);
 	channel_humid = Tokenizer_GetArgIntegerDefault(4, -1);
 
+	// test, if extended arguments are present
+	g_softI2C.pin_clk   = Tokenizer_GetPinEqual("SCL",    g_softI2C.pin_clk);
+	g_softI2C.pin_data  = Tokenizer_GetPinEqual("SDA",    g_softI2C.pin_data);
+	channel_temp  = Tokenizer_GetArgEqualInteger("chan_t", channel_temp);
+	channel_humid = Tokenizer_GetArgEqualInteger("chan_h", channel_humid);
+
 	Soft_I2C_PreInit(&g_softI2C);
 	rtos_delay_milliseconds(100);
+	setPinUsedString(g_softI2C.pin_clk, "AHT2X SCL");
+	setPinUsedString(g_softI2C.pin_data, "AHT2X SDA");
+
 
 	AHT2X_Initialization();
 

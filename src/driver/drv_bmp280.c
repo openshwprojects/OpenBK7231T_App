@@ -24,6 +24,10 @@ unsigned short BMP280_Start(void) {
 	Soft_I2C_Start_Internal(&g_softI2C);
 	return 0;
 }
+unsigned short BMP280_Start_new(uint8_t addr) {
+	Soft_I2C_Start(&g_softI2C,addr);
+	return 0;
+}
 unsigned short BMP280_Write(byte data_) {
 	Soft_I2C_WriteByte(&g_softI2C, data_);
 	return 0;
@@ -53,6 +57,8 @@ void BMP280_Init() {
 	g_softI2C.address8bit = Tokenizer_GetArgIntegerDefault(6, 236);
 
 	Soft_I2C_PreInit(&g_softI2C);
+	setPinUsedString(g_softI2C.pin_clk, "BMP280 SCL");
+	setPinUsedString(g_softI2C.pin_data, "BMP280 SDA");
 
 	usleep(100);
 	if (BMP280_begin(MODE_NORMAL, SAMPLING_X1, SAMPLING_X1, SAMPLING_X1, FILTER_OFF, STANDBY_0_5) == 0) {
