@@ -177,7 +177,8 @@ SpoofIrReceiver IrReceiver;
 // we simply note the numbers into a rolling buffer, assume the first is a mark()
 // and then every 50us service the rolling buffer, changing the PWM from 0 duty to 50% duty
 // appropriately.
-#define SEND_MAXBITS 128
+#undef SEND_MAXBITS
+#define SEND_MAXBITS 512
 
 class myIRsend : public IRsend {
 public:
@@ -359,7 +360,8 @@ extern "C" void DRV_IR_ISR(void* arg)
 
 extern "C" commandResult_t IR_Send_Cmd(const void *context, const char *cmd, const char *args_in, int cmdFlags) {
 	if (!args_in) return CMD_RES_NOT_ENOUGH_ARGUMENTS;
-	char args[128];
+	//char args[128]; TESZTELÉS
+	char args[1024];
 	strncpy(args, args_in, sizeof(args) - 1);
 	args[sizeof(args) - 1] = 0;
 
@@ -369,6 +371,7 @@ extern "C" commandResult_t IR_Send_Cmd(const void *context, const char *cmd, con
 		p++;
 	}
 
+	/*IDEIGLENESEN KISZEDVE
 	if ((*p != '-') && (*p != ' ')) {
 		// try to decode "new" format, separated by comma
 		// the format is bits,0xDATA[,repeat]
@@ -380,7 +383,58 @@ extern "C" commandResult_t IR_Send_Cmd(const void *context, const char *cmd, con
 		{
 			*p='\0';
 			decode_type_t protocol = strToDecodeType(args);
+			p++; EDDIG EREDETI*/
+	//TESZT kezdete
+	if ((*p != '-') && (*p != ' ')) {
+		// try to decode "new" format, separated by comma
+		// the format is bits,0xDATA[,repeat]
+		char *p = args;
+		while (*p && (*p != ',')) {
 			p++;
+		}
+		if(*p==',')
+		{
+			*p='\0';
+			if (!my_strnicmp(args, "RAW", 3)) {
+				// Format: RAW,<freq_hz>,<duty_percent>,<mark1>,<space1>,<mark2>,<space2>,...
+				p++;
+				char *_freq = p;
+				while (*p && (*p != ',')) p++;
+				uint16_t freq = (uint16_t)strtol(_freq, NULL, 10);
+				if (*p == ',') p++;
+				char *_duty = p;
+				while (*p && (*p != ',')) p++;
+				uint8_t duty = (uint8_t)strtol(_duty, NULL, 10);
+				if (*p == ',') p++;
+				uint16_t rawbuf[300];
+				int rawlen = 0;
+				while (*p && rawlen < 300) {
+					char *tokenstart = p;
+					while (*p && (*p != ',')) p++;
+					bool haveComma = (*p == ',');
+					if (haveComma) *p = '\0';
+					rawbuf[rawlen++] = (uint16_t)strtol(tokenstart, NULL, 10);
+					if (haveComma) p++;
+					else break;
+				}
+				if (rawlen > 0 && pIRsend) {
+					pIRsend->resetsendqueue();
+					pIRsend->enableIROut(freq, duty);
+					for (int i = 0; i < rawlen; i++) {
+						if (i & 1) pIRsend->space(rawbuf[i]);
+						else pIRsend->mark(rawbuf[i]);
+					}
+					pIRsend->delay(100);
+					ADDLOG_INFO(LOG_FEATURE_IR, (char *)"IR send RAW: freq %d, duty %d, %d values", (int)freq, (int)duty, rawlen);
+					return CMD_RES_OK;
+				} else {
+					ADDLOG_ERROR(LOG_FEATURE_IR, (char *)"IR send RAW: no values or no sender");
+					return CMD_RES_BAD_ARGUMENT;
+				}
+			}
+			decode_type_t protocol = strToDecodeType(args);
+			p++;
+	//TESZT vége
 			char *_bits=p;
 			while (*p && (*p != ',')) {
 				p++;
@@ -399,7 +453,6 @@ extern "C" commandResult_t IR_Send_Cmd(const void *context, const char *cmd, con
 						int repeats=1;
 						if(*p==',')
 							repeats=strtol(p+1,NULL,10);
-						
 						if( pIRsend->send(protocol,data,bits,repeats) )
 						{
 							pIRsend->delay(100);
@@ -410,10 +463,29 @@ extern "C" commandResult_t IR_Send_Cmd(const void *context, const char *cmd, con
 							return CMD_RES_BAD_ARGUMENT;
 						}
 					}
-				} else {
-					// TODO: implement longer protocols
-					ADDLOG_ERROR(LOG_FEATURE_IR, (char *)"IRSend currently only protocol with up to 64bits are supported", args);
-					return CMD_RES_BAD_ARGUMENT;
+				} else if (hasACState(protocol)) {
+					char *_data = p;
+					if (_data[0] == '0' && (_data[1] == 'x' || _data[1] == 'X')) {
+						_data += 2;
+					}
+					uint8_t stateBytes[64];
+					int nBytes = 0;
+					char *hp = _data;
+					while (*hp && *hp != ',' && hp[1] && nBytes < 64) {
+						char hex[3] = { hp[0], hp[1], 0 };
+						stateBytes[nBytes] = (uint8_t)strtol(hex, NULL, 16);
+						nBytes++;
+						hp += 2;
+					}
+					if (nBytes > 0) {
+						pIRsend->send(protocol, stateBytes, nBytes);
+						pIRsend->delay(100);
+						ADDLOG_INFO(LOG_FEATURE_IR, (char *)"IR send %s state, %d bytes", args, nBytes);
+						return CMD_RES_OK;
+					} else {
+						ADDLOG_ERROR(LOG_FEATURE_IR, (char *)"IR %s state: no valid hex bytes found", args);
+						return CMD_RES_BAD_ARGUMENT;
+					}
 				}
 			} 
 		}
