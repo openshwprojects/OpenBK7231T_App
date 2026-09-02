@@ -497,7 +497,7 @@ int PIN_IOR_NofChan(int test){
 	if (test == IOR_SGP_CLK || test == IOR_SHT3X_CLK || test == IOR_CHT83XX_CLK || test == IOR_Button_ToggleAll || test == IOR_Button_ToggleAll_n
 			|| test == IOR_BL0937_CF || test == IOR_BL0937_CF1 || test == IOR_BL0937_SEL
 			|| test == IOR_LED_WIFI || test == IOR_LED_WIFI_n || test == IOR_BL0937_SEL_n
-			|| test == IOR_RCRecv || test == IOR_RCRecv_nPup || test == IOR_IRRecv_nPup
+			|| test == IOR_RCRecv || test == IOR_RCRecv_nPup || test == IOR_IRRecv_nPup || test == IOR_IRLearn
 			|| (test >= IOR_IRRecv && test <= IOR_DHT11)
 			|| (test >= IOR_SM2135_DAT && test <= IOR_BP1658CJ_CLK)
 			|| test == IOR_BL0939_SCLK || test == IOR_BL0939_MOSI || test == IOR_BL0939_MISO
@@ -1126,6 +1126,7 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 		break;
 
 		case IOR_IRRecv:
+		case IOR_IRLearn:
 			falling = 1;
 			// add to active inputs
 			setGPIActive(index, 1, falling);

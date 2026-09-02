@@ -6,6 +6,9 @@
 #include "../../beken378/driver/pwm/bk_timer.h"
 #include "../../beken378/driver/include/bk_timer_pub.h"
 #include "../../beken378/func/include/fake_clock_pub.h"
+#if PLATFORM_BK7238
+#include <rtos_pub.h>
+#endif
 
 // from wlan_ui.c
 void bk_reboot(void);
@@ -16,7 +19,13 @@ void HAL_RebootModule()
 	bk_reboot();
 }
 
-#if ! (PLATFORM_BK7252 || PLATFORM_BK7238)
+#if PLATFORM_BK7238
+
+uint32_t HAL_GetMicroseconds(void) {
+	return (uint32_t)rtos_get_time_us();
+}
+
+#elif !PLATFORM_BK7252
 #if !defined TIMER0_2_READ_VALUE && defined TIMERR0_2_READ_VALUE
 //typo in sdk
 #define TIMER0_2_READ_VALUE TIMERR0_2_READ_VALUE
@@ -48,7 +57,13 @@ static uint32_t getTicksCount() {
 // 26 ticks per us * 15 000 000 us per overflow
 #define TICKS_PER_OVERFLOW (TICKS_PER_US * US_PER_OVERFLOW)
 
-#endif // #if ! (PLATFORM_BK7252 || PLATFORM_BK7238)
+uint32_t HAL_GetMicroseconds(void) {
+	uint32_t ticks = getTicksCount();
+	if (ticks == BK_TIMER_FAILURE) return 0;
+	return ticks / TICKS_PER_US;
+}
+
+#endif
 
 // https://github.com/libretiny-eu/libretiny
 // not working on BK7238

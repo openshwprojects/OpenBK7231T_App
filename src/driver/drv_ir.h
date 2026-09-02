@@ -6,9 +6,12 @@
 extern "C" {
 #endif
 
+#include "../httpserver/new_http.h"
+
 void DRV_IR_Init();
 void DRV_IR_RunFrame();
 void DRV_IR_Deinit();
+void DRV_IR_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState);
 
 #ifdef __cplusplus
 }
