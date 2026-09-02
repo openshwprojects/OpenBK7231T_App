@@ -322,7 +322,6 @@ static void tcp_server_thread(beken_thread_arg_t arg)
 					ADDLOG_ERROR(LOG_FEATURE_HTTP, "[sock=%d]: TCP Client thread creation failed!", sock[new_idx].fd);
 					lwip_close(sock[new_idx].fd);
 					sock[new_idx].fd = INVALID_SOCK;
-					goto error;
 				}
 			}
 		}
