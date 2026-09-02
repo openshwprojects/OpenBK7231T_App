@@ -21,7 +21,10 @@ uint8_t g_enable_cmw = 0;
 bool g_bStaticIP = false, mac_init = false;
 
 static struct ip_info if_ip;
-static int g_bOpenAccessPointMode = 0;
+// is (Open-) Access point or a client?
+// included as "extern uint8_t g_WifiMode;" from new_common.h
+// initilized in user_main.c
+// values:	0 = STA	1 = OpenAP	2 = WAP-AP
 
 const char* HAL_GetMyIPString()
 {
@@ -74,7 +77,7 @@ void HAL_PrintNetworkInfo()
 	WiFI_GetMacAddress((char*)mac);
 	// left align not working, mculib problem? But then tr6260 uses mculib too, and no such problem there.
 	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "+--------------- net device info ------------+");
-	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "|netif type    : %-16s            |", g_bOpenAccessPointMode == 0 ? "STA" : "AP");
+	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "|netif type    : %-16s            |", g_WifiMode == 0 ? "STA" : "AP");
 	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "|netif rssi    = %-16i            |", HAL_GetWifiStrength());
 	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "|netif ip      = %-16s            |", HAL_GetMyIPString());
 	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "|netif mask    = %-16s            |", HAL_GetMyMaskString());
@@ -180,7 +183,6 @@ void HAL_WiFi_SetupStatusCallback(void (*cb)(int code))
 
 void HAL_ConnectToWiFi(const char* oob_ssid, const char* connect_key, obkStaticIP_t* ip)
 {
-	g_bOpenAccessPointMode = 0;
 	wifi_set_opmode(WIFI_MODE_STA);
 	wifi_remove_config_all(STATION_IF);
 	wifi_remove_config_all(SOFTAP_IF);
@@ -214,15 +216,66 @@ void HAL_DisconnectFromWifi()
 	wifi_disconnect();
 }
 
-int HAL_SetupWiFiOpenAccessPoint(const char* ssid)
+#if ENABLE_WPA_AP
+int HAL_SetupWiFiAccessPoint(const char* ssid, const char* key)
 {
 	wifi_set_opmode(WIFI_MODE_AP_STA);
-	int channel = 1, ret;
+	int ret;
 	wifi_config_u config;
 
 	memset(&config, 0, sizeof(config));
 	strlcpy((char*)config.ap.ssid, ssid, sizeof(config.ap.ssid));
-	config.ap.channel = channel;
+	config.ap.channel = g_wifi_channel;
+	config.ap.max_connect = AP_STA_CLIENTS;
+	config.ap.authmode = (! key || key[0] == 0) ? AUTH_OPEN : AUTH_WPA2_PSK;
+	if ( key && key[0] != 0) {
+		strlcpy((char*)config.ap.password, key, sizeof(config.ap.password));
+	}
+
+	while(!wifi_is_ready())
+	{
+		system_printf("wifi not ready!\n");
+		delay_ms(10);
+	}
+
+	ret = wifi_start_softap(&config);
+	if(SYS_OK != ret)
+	{
+		system_printf("HAL_SetupWiFiAccessPoint failed, err: %d\n", ret);
+		if(g_wifiStatusCallback != NULL)
+		{
+			g_wifiStatusCallback(WIFI_AP_FAILED);
+		}
+		return ret;
+	}
+	memset(&if_ip, 0, sizeof(if_ip));
+	IP_ADDR4(&if_ip.ip, 192, 168, 4, 1);
+	IP_ADDR4(&if_ip.gw, 192, 168, 4, 1);
+	IP_ADDR4(&if_ip.netmask, 255, 255, 255, 0);
+	set_softap_ipconfig(&if_ip);
+
+	struct dhcps_lease dhcp_cfg_info;
+	dhcp_cfg_info.enable = true;
+	IP_ADDR4(&dhcp_cfg_info.start_ip, 192, 168, 4, 100);
+	IP_ADDR4(&dhcp_cfg_info.end_ip, 192, 168, 4, 150);
+
+	wifi_softap_set_dhcps_lease(&dhcp_cfg_info);
+	return 0;
+}
+#endif
+
+int HAL_SetupWiFiOpenAccessPoint(const char* ssid)
+{
+#if !ENABLE_WPA_AP
+	wifi_set_opmode(WIFI_MODE_AP_STA);
+//	int channel = 1, ret;
+	int ret;
+	wifi_config_u config;
+
+	memset(&config, 0, sizeof(config));
+	strlcpy((char*)config.ap.ssid, ssid, sizeof(config.ap.ssid));
+//	config.ap.channel = channel;
+	config.ap.channel = g_wifi_channel;
 	config.ap.authmode = AUTH_OPEN;
 
 	while(!wifi_is_ready())
@@ -254,6 +307,9 @@ int HAL_SetupWiFiOpenAccessPoint(const char* ssid)
 
 	wifi_softap_set_dhcps_lease(&dhcp_cfg_info);
 	return 0;
+#else
+	return HAL_SetupWiFiAccessPoint(ssid, NULL);
+#endif
 }
 
 #endif // PLATFORM_ECR6600

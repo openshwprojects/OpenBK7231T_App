@@ -28,7 +28,10 @@
 
 static void(*g_wifiStatusCallback)(int code);
 
-bool g_bOpenAccessPointMode = false;
+// is (Open-) Access point or a client?
+// included as "extern uint8_t g_WifiMode;" from new_common.h
+// initilized in user_main.c
+// values:	0 = STA	1 = OpenAP	2 = WAP-AP
 
 void HAL_ConnectToWiFi(const char *ssid, const char *psk, obkStaticIP_t *ip)
 {
@@ -65,15 +68,60 @@ void HAL_DisconnectFromWifi()
 }
 
 int HAL_SetupWiFiOpenAccessPoint(const char *ssid) {
+#if !ENABLE_WPA_AP
 	char ap_psk[8] = { 0 };
-	g_bOpenAccessPointMode = true;
 	net_switch_mode(WLAN_MODE_HOSTAP);
 	wlan_ap_disable();
 	wlan_ap_set((uint8_t *)ssid, strlen(ssid), (uint8_t *)ap_psk);
 	wlan_ap_enable();
 
 	return 0;
+#else
+	printf("Debug HAL_SetupWiFiOpenAccessPoint! ssid=%s!\r\n",ssid);
+	return HAL_SetupWiFiAccessPoint(ssid, NULL);
+#endif
 }
+
+#if ENABLE_WPA_AP
+int HAL_SetupWiFiAccessPoint(const char *ssid, const char *key) {
+	
+
+	printf("Debug HAL_SetupWiFiAccessPoint! ssid=%s key=%s channel=%i!\r\n",ssid, key?key:"NULL", g_wifi_channel);
+
+	if ( key && strlen(key) < 8){
+		printf("ERROR! key(%s) needs to be at least 8 characters!\r\n", key);
+		if (g_wifiStatusCallback != 0) {
+			g_wifiStatusCallback(WIFI_AP_FAILED);
+		}
+		return -1;
+	}
+	char ap_psk[8] = { 0 };
+	net_switch_mode(WLAN_MODE_HOSTAP);
+	wlan_ap_disable();
+/*
+#if !PLATFORM_XR809
+	// not present in XR809
+	// doesn't work: channel is always 1, but at least ssid is not altered ... 
+	wlan_ap_default_conf_t *conf;
+	conf=(wlan_ap_default_conf_t *)wlan_ap_get_default_conf();
+	conf->channel=g_wifi_channel;
+#endif
+*/
+	wlan_ap_set((uint8_t *)ssid, strlen(ssid), (uint8_t *)key);
+/*
+	// doesn't work: channel is always 1  
+	// even worse: will change first char of SSID ?!? so don't use
+	wlan_ap_config_t config;
+	memset(&config, 0, sizeof(config));
+	wlan_ap_get_config(&config);
+	config.u.channel=(uint8_t)g_wifi_channel;
+	wlan_ap_set_config(&config);
+*/
+	wlan_ap_enable();
+
+	return 0;
+}
+#endif
 
 static void wlan_msg_recv(uint32_t event, uint32_t data, void *arg)
 {
@@ -153,7 +201,7 @@ void HAL_PrintNetworkInfo()
 	uint8_t mac[6];
 	WiFI_GetMacAddress((char*)mac);
 	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "+--------------- net device info ------------+");
-	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "|netif type    : %-16s            |", g_bOpenAccessPointMode == 0 ? "STA" : "AP");
+	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "|netif type    : %-16s            |", g_WifiMode == 0 ? "STA" : "AP");
 	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "|netif rssi    = %-16i            |", HAL_GetWifiStrength());
 	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "|netif ip      = %-16s            |", HAL_GetMyIPString());
 	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "|netif mask    = %-16s            |", HAL_GetMyMaskString());
