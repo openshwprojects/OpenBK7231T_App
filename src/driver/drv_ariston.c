@@ -6,7 +6,6 @@
 #include "../new_common.h"
 #include "../new_pins.h"
 #include "../new_cfg.h"
-#include "../hal/hal_flashVars.h"
 #include "../cmnds/cmd_public.h"
 #include "../logging/logging.h"
 #include "drv_public.h"
@@ -16,6 +15,13 @@
 #include "../mqtt/new_mqtt.h"
 #include "../httpserver/new_http.h"
 #include "drv_ariston.h"
+
+#if PLATFORM_ESPIDF
+#include "driver/uart.h"
+#include "nvs.h"
+#include "nvs_flash.h"
+void InitFlashIfNeeded(void);
+#endif
 
 // Externs for MQTT
 extern int MQTT_PublishMain_StringString(const char* sChannel, const char* valueStr, int flags);
@@ -58,8 +64,16 @@ extern const char *CFG_GetMQTTClientId(void);
 #define WIFI_STATE_AP_MODE        0x04
 #define WIFI_STATE_OFF            0x00
 
+typedef struct {
+    float TotalWh;
+    uint32_t save_counter;
+} ariston_energy_data_t;
+
 // UART port
 static int g_ariston_uart = 1;
+static int g_ariston_rx_pin = -1;
+static int g_ariston_tx_pin = -1;
+static int g_ariston_ready = 0;
 
 static ariston_ctx_t g_ctx;
 
@@ -84,13 +98,22 @@ static float g_energy_session_wh = 0.0f;
 static float g_energy_total_wh = 0.0f;
 static float g_energy_today_wh = 0.0f;
 static float g_energy_unsaved_wh = 0.0f;
+static int g_energy_dirty = 0;
 static int g_energy_save_seconds = 0;
 static uint32_t g_energy_save_counter = 0;
+static uint32_t g_energy_nvs_attempts = 0;
+static uint32_t g_energy_nvs_successes = 0;
+static uint32_t g_energy_nvs_failures = 0;
+static uint32_t g_energy_nvs_last_ms = 0;
+static uint32_t g_energy_nvs_max_ms = 0;
 static int g_ariston_energy_loaded = 0;
 static uint32_t g_energy_last_tick = 0;
 static int g_energy_day_key = -1;
 static int g_ariston_discovery_sent = 0;
 static int g_ariston_mqtt_was_ready = 0;
+// A full retained snapshot does not fit comfortably in the ESP MQTT send buffer.
+// Walk through it over several seconds instead of publishing everything at once.
+static int g_ariston_mqtt_republish_stage = -1;
 static int g_ntp_sync_prev_synced = 0;
 static int g_ntp_sync_last_day_key = -1;
 static int g_ntp_sync_last_minute_of_day = -1;
@@ -104,8 +127,9 @@ static int g_ariston_identity_warned = 0;
 
 #define ARISTON_CLOCK_STALE_MS 120000U
 #define ARISTON_ON_TIME_MAX_DELTA_MINUTES 180
-#define ARISTON_ENERGY_SAVE_DELTA_WH 50.0f
-#define ARISTON_ENERGY_SAVE_INTERVAL_SECONDS 1800
+#define ARISTON_ENERGY_SAVE_INTERVAL_SECONDS 3600
+#define ARISTON_ENERGY_SAVE_RETRY_SECONDS 60
+#define ARISTON_ENERGY_MQTT_INTERVAL_MS 30000U
 
 #define ARISTON_PWR_OFF      0
 #define ARISTON_PWR_ON       1
@@ -155,12 +179,70 @@ static commandResult_t Cmd_Ariston_Standby(const void *context, const char *cmd,
 static commandResult_t Cmd_Ariston_Mode(const void *context, const char *cmd, const char *args, int cmdFlags);
 static commandResult_t Cmd_Ariston_AntiLegionella(const void *context, const char *cmd, const char *args, int cmdFlags);
 static commandResult_t Cmd_Ariston_EnergyReset(const void *context, const char *cmd, const char *args, int cmdFlags);
+static commandResult_t Cmd_Ariston_NvsStatus(const void *context, const char *cmd, const char *args, int cmdFlags);
 static commandResult_t Cmd_Ariston_OnTimeReset(const void *context, const char *cmd, const char *args, int cmdFlags);
 static commandResult_t Cmd_Ariston_Uart(const void *context, const char *cmd, const char *args, int cmdFlags);
 static commandResult_t Cmd_Ariston_Discovery(const void *context, const char *cmd, const char *args, int cmdFlags);
 static void Ariston_PublishSensors(void);
 
-static void Ariston_ReinitUart(void) {
+static int Ariston_NvsLoadEnergy(ariston_energy_data_t *data) {
+#if PLATFORM_ESPIDF
+    nvs_handle_t handle = 0;
+    size_t size;
+    esp_err_t err;
+
+    if (!data) {
+        return 0;
+    }
+    memset(data, 0, sizeof(*data));
+    InitFlashIfNeeded();
+    if (nvs_open("config", NVS_READONLY, &handle) != ESP_OK) {
+        return 0;
+    }
+    size = sizeof(*data);
+    err = nvs_get_blob(handle, "aem", data, &size);
+    nvs_close(handle);
+    if (err != ESP_OK || size != sizeof(*data)) {
+        memset(data, 0, sizeof(*data));
+        return 0;
+    }
+    return 1;
+#else
+    if (data) {
+        memset(data, 0, sizeof(*data));
+    }
+    return 0;
+#endif
+}
+
+static int Ariston_NvsSaveEnergy(const ariston_energy_data_t *data) {
+#if PLATFORM_ESPIDF
+    nvs_handle_t handle = 0;
+
+    if (!data) {
+        return 0;
+    }
+    InitFlashIfNeeded();
+    if (nvs_open("config", NVS_READWRITE, &handle) != ESP_OK) {
+        return 0;
+    }
+    if (nvs_set_blob(handle, "aem", data, sizeof(*data)) != ESP_OK) {
+        nvs_close(handle);
+        return 0;
+    }
+    if (nvs_commit(handle) != ESP_OK) {
+        nvs_close(handle);
+        return 0;
+    }
+    nvs_close(handle);
+    return 1;
+#else
+    (void)data;
+    return 0;
+#endif
+}
+
+static int Ariston_ReinitUart(void) {
 #if PLATFORM_ESPIDF
     if (!CFG_HasFlag(OBK_FLAG_USE_SECONDARY_UART)) {
         CFG_SetFlag(OBK_FLAG_USE_SECONDARY_UART, true);
@@ -169,7 +251,18 @@ static void Ariston_ReinitUart(void) {
     }
 #endif
     UART_InitUARTEx(g_ariston_uart, 9600, 0, 0);
+#if PLATFORM_ESPIDF
+    if (uart_set_pin((uart_port_t)g_ariston_uart,
+            g_ariston_tx_pin, g_ariston_rx_pin,
+            UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE) != ESP_OK) {
+        addLogAdv(LOG_ERROR, LOG_FEATURE_DRV,
+            "Ariston: failed to map UART%d RX=%d TX=%d",
+            g_ariston_uart, g_ariston_rx_pin, g_ariston_tx_pin);
+        return 0;
+    }
+#endif
     UART_InitReceiveRingBufferEx(g_ariston_uart, 256);
+    return 1;
 }
 
 // -------------------------------------------------------
@@ -762,9 +855,13 @@ static void Ariston_UpdateDailyEnergyKey(void) {
 
 static void Ariston_PublishClockAndDayState(int force) {
 #if ENABLE_MQTT
-    static float last_energy_today_wh = -1.0f;
+    // MQTT exposes energy with 1 Wh resolution. Raw float changes below that would
+    // only resend the same displayed value and needlessly fill the send queue.
+    static int last_energy_today_wh = -1;
+    static uint32_t last_publish_tick = 0;
     uint32_t now;
     ariston_clock_source_t src;
+    int energy_today_wh;
 
     if (!MQTT_IsReady()) {
         return;
@@ -773,10 +870,14 @@ static void Ariston_PublishClockAndDayState(int force) {
     now = xTaskGetTickCount();
     src = Ariston_SelectClockSource(now, 0);
     g_ctx.clock_using_uptime_fallback = (src == ARISTON_CLOCK_SRC_UPTIME) ? 1 : 0;
+    energy_today_wh = (int)(g_energy_today_wh + 0.5f);
 
-    if (force || (g_energy_today_wh - last_energy_today_wh > 0.05f) || (last_energy_today_wh - g_energy_today_wh > 0.05f)) {
+    if (force || (energy_today_wh != last_energy_today_wh &&
+                  (last_publish_tick == 0 ||
+                   (now - last_publish_tick) * (uint32_t)portTICK_PERIOD_MS >= ARISTON_ENERGY_MQTT_INTERVAL_MS))) {
         MQTT_PublishMain_StringFloat("ariston/energy_today_kwh", g_energy_today_wh / 1000.0f, 3, OBK_PUBLISH_FLAG_RETAIN);
-        last_energy_today_wh = g_energy_today_wh;
+        last_energy_today_wh = energy_today_wh;
+        last_publish_tick = now;
     }
 #else
     (void)force;
@@ -971,57 +1072,136 @@ static void Ariston_PublishControlStates(void) {
     Ariston_PublishControlStateSnapshot(0);
 }
 
-static void Ariston_PublishAllStatesNow(void) {
+static void Ariston_PublishNextRetainedState(void) {
 #if ENABLE_MQTT
-    if (!MQTT_IsReady()) {
+    if (!MQTT_IsReady() || g_ariston_mqtt_republish_stage < 0) {
         return;
     }
-    Ariston_PublishControlStateSnapshot(1);
-
-    MQTT_PublishMain_StringFloat("ariston/water_temp", g_ctx.water_temp, 1, OBK_PUBLISH_FLAG_RETAIN);
-    MQTT_PublishMain_StringFloat("ariston/target_temp", g_ctx.target_temp, 1, OBK_PUBLISH_FLAG_RETAIN);
-    MQTT_PublishMain_StringFloat("ariston/current_temp", g_ctx.current_temp, 1, OBK_PUBLISH_FLAG_RETAIN);
-    MQTT_PublishMain_StringFloat("ariston/heater_power", (float)g_ctx.heater_power, 0, OBK_PUBLISH_FLAG_RETAIN);
-    MQTT_PublishMain_StringFloat("ariston/heater_active", (float)g_ctx.heater_active, 0, OBK_PUBLISH_FLAG_RETAIN);
-    MQTT_PublishMain_StringFloat("ariston/showers", (float)g_ctx.showers, 0, OBK_PUBLISH_FLAG_RETAIN);
-    MQTT_PublishMain_StringFloat("ariston/time_to_temp", (float)g_ctx.time_to_temp, 0, OBK_PUBLISH_FLAG_RETAIN);
-    MQTT_PublishMain_StringFloat("ariston/on_time", (float)g_ctx.on_time, 0, OBK_PUBLISH_FLAG_RETAIN);
-    MQTT_PublishMain_StringFloat("ariston/energy_est_kwh", g_energy_session_wh / 1000.0f, 3, OBK_PUBLISH_FLAG_RETAIN);
-    MQTT_PublishMain_StringFloat("ariston/energy_total_kwh", g_energy_total_wh / 1000.0f, 3, OBK_PUBLISH_FLAG_RETAIN);
-    MQTT_PublishMain_StringFloat("ariston/energy_today_kwh", g_energy_today_wh / 1000.0f, 3, OBK_PUBLISH_FLAG_RETAIN);
-    Ariston_PublishClockAndDayState(1);
+    // One topic per call keeps reconnect recovery gentle. Normal on-change
+    // publications may still happen between these snapshot entries.
+    switch (g_ariston_mqtt_republish_stage++) {
+        case 0:
+            MQTT_PublishMain_StringString("ariston/power_state", Ariston_GetPowerStateString(), OBK_PUBLISH_FLAG_RETAIN);
+            break;
+        case 1:
+            if (g_power_state >= 0) MQTT_PublishMain_StringString("ariston/power", Ariston_IsPowerOnLike() ? "1" : "0", OBK_PUBLISH_FLAG_RETAIN);
+            break;
+        case 2:
+            if (g_app_power_state >= 0) MQTT_PublishMain_StringString("ariston/app_power", g_app_power_state ? "1" : "0", OBK_PUBLISH_FLAG_RETAIN);
+            break;
+        case 3:
+            if (g_mode_state >= 0) MQTT_PublishMain_StringString("ariston/mode", Ariston_GetModeStateString(), OBK_PUBLISH_FLAG_RETAIN);
+            break;
+        case 4:
+            if (g_anti_legionella >= 0) MQTT_PublishMain_StringString("ariston/anti_legionella", g_anti_legionella ? "1" : "0", OBK_PUBLISH_FLAG_RETAIN);
+            break;
+        case 5:
+            if (g_boost_state >= 0) MQTT_PublishMain_StringString("ariston/boost", g_boost_state ? "1" : "0", OBK_PUBLISH_FLAG_RETAIN);
+            break;
+        case 6:
+            if (Ariston_GetHAModeString()) MQTT_PublishMain_StringString("ariston/ha_mode", Ariston_GetHAModeString(), OBK_PUBLISH_FLAG_RETAIN);
+            break;
+        case 7:
+            MQTT_PublishMain_StringFloat("ariston/water_temp", g_ctx.water_temp, 1, OBK_PUBLISH_FLAG_RETAIN);
+            break;
+        case 8:
+            MQTT_PublishMain_StringFloat("ariston/target_temp", g_ctx.target_temp, 1, OBK_PUBLISH_FLAG_RETAIN);
+            break;
+        case 9:
+            MQTT_PublishMain_StringFloat("ariston/current_temp", g_ctx.current_temp, 1, OBK_PUBLISH_FLAG_RETAIN);
+            break;
+        case 10:
+            MQTT_PublishMain_StringFloat("ariston/heater_power", (float)g_ctx.heater_power, 0, OBK_PUBLISH_FLAG_RETAIN);
+            break;
+        case 11:
+            MQTT_PublishMain_StringFloat("ariston/heater_active", (float)g_ctx.heater_active, 0, OBK_PUBLISH_FLAG_RETAIN);
+            break;
+        case 12:
+            MQTT_PublishMain_StringFloat("ariston/showers", (float)g_ctx.showers, 0, OBK_PUBLISH_FLAG_RETAIN);
+            break;
+        case 13:
+            MQTT_PublishMain_StringFloat("ariston/time_to_temp", (float)g_ctx.time_to_temp, 0, OBK_PUBLISH_FLAG_RETAIN);
+            break;
+        case 14:
+            MQTT_PublishMain_StringFloat("ariston/on_time", (float)g_ctx.on_time, 0, OBK_PUBLISH_FLAG_RETAIN);
+            break;
+        case 15:
+            MQTT_PublishMain_StringFloat("ariston/energy_est_kwh", g_energy_session_wh / 1000.0f, 3, OBK_PUBLISH_FLAG_RETAIN);
+            break;
+        case 16:
+            MQTT_PublishMain_StringFloat("ariston/energy_total_kwh", g_energy_total_wh / 1000.0f, 3, OBK_PUBLISH_FLAG_RETAIN);
+            break;
+        case 17:
+            MQTT_PublishMain_StringFloat("ariston/energy_today_kwh", g_energy_today_wh / 1000.0f, 3, OBK_PUBLISH_FLAG_RETAIN);
+            g_ariston_mqtt_republish_stage = -1;
+            break;
+        default:
+            g_ariston_mqtt_republish_stage = -1;
+            break;
+    }
 #endif
 }
 
 static void Ariston_SaveEnergyTotalIfNeeded(int force) {
-    ARISTON_ENERGY_DATA data;
+    ariston_energy_data_t data;
+    uint32_t start_tick;
+    uint32_t duration_ms;
     if (!g_ariston_energy_loaded) {
         return;
     }
-    if (!force &&
-        g_energy_unsaved_wh < ARISTON_ENERGY_SAVE_DELTA_WH &&
-        g_energy_save_seconds < ARISTON_ENERGY_SAVE_INTERVAL_SECONDS) {
-        return;
+    if (!force) {
+        if (!g_energy_dirty ||
+            g_energy_save_seconds < ARISTON_ENERGY_SAVE_INTERVAL_SECONDS) {
+            return;
+        }
     }
     data.TotalWh = g_energy_total_wh;
-    data.save_counter = ++g_energy_save_counter;
-    if (HAL_SetAristonEnergyStatus(&data)) {
+    data.save_counter = g_energy_save_counter + 1;
+    g_energy_nvs_attempts++;
+    start_tick = xTaskGetTickCount();
+    if (Ariston_NvsSaveEnergy(&data)) {
+        duration_ms = (xTaskGetTickCount() - start_tick) * (uint32_t)portTICK_PERIOD_MS;
+        g_energy_nvs_last_ms = duration_ms;
+        if (duration_ms > g_energy_nvs_max_ms) {
+            g_energy_nvs_max_ms = duration_ms;
+        }
+        g_energy_nvs_successes++;
+        g_energy_save_counter = data.save_counter;
         g_energy_unsaved_wh = 0.0f;
+        g_energy_dirty = 0;
         g_energy_save_seconds = 0;
+        addLogAdv(LOG_DEBUG, LOG_FEATURE_DRV,
+            "Ariston NVS save OK total=%.2fWh count=%u duration=%ums",
+            g_energy_total_wh, (unsigned int)g_energy_save_counter,
+            (unsigned int)duration_ms);
+    } else {
+        duration_ms = (xTaskGetTickCount() - start_tick) * (uint32_t)portTICK_PERIOD_MS;
+        g_energy_nvs_last_ms = duration_ms;
+        if (duration_ms > g_energy_nvs_max_ms) {
+            g_energy_nvs_max_ms = duration_ms;
+        }
+        g_energy_nvs_failures++;
+        g_energy_save_seconds = ARISTON_ENERGY_SAVE_INTERVAL_SECONDS -
+            ARISTON_ENERGY_SAVE_RETRY_SECONDS;
+        addLogAdv(LOG_WARN, LOG_FEATURE_DRV,
+            "Ariston NVS save failed total=%.2fWh attempts=%u failures=%u retry=%ds",
+            g_energy_total_wh, (unsigned int)g_energy_nvs_attempts,
+            (unsigned int)g_energy_nvs_failures, ARISTON_ENERGY_SAVE_RETRY_SECONDS);
     }
 }
 
 static void Ariston_LoadEnergyTotal(void) {
-    ARISTON_ENERGY_DATA data;
+    ariston_energy_data_t data;
 
     g_energy_total_wh = 0.0f;
     g_energy_today_wh = 0.0f;
     g_energy_day_key = -1;
     g_energy_save_counter = 0;
     g_energy_unsaved_wh = 0.0f;
+    g_energy_dirty = 0;
     g_energy_save_seconds = 0;
     memset(&data, 0, sizeof(data));
-    if (HAL_GetAristonEnergyStatus(&data)) {
+    if (Ariston_NvsLoadEnergy(&data)) {
         if (data.TotalWh >= 0.0f) {
             g_energy_total_wh = data.TotalWh;
         }
@@ -1066,6 +1246,7 @@ static void Ariston_UpdateEnergyEstimate(void) {
             g_energy_today_wh += add_wh;
             g_ctx.energy_today_wh = g_energy_today_wh;
             g_energy_unsaved_wh += add_wh;
+            g_energy_dirty = 1;
         }
     }
 }
@@ -1076,6 +1257,7 @@ static void Ariston_ResetEnergyTotal(void) {
     g_energy_today_wh = 0.0f;
     g_ctx.energy_today_wh = 0.0f;
     g_energy_unsaved_wh = 0.0f;
+    g_energy_dirty = 1;
     g_energy_save_counter = 0;
     g_energy_day_key = -1;
     g_energy_day_source = ARISTON_CLOCK_SRC_UNKNOWN;
@@ -1243,21 +1425,27 @@ static void Ariston_SendAntiLegionella(uint8_t enabled) {
 static void Ariston_PublishSensors(void) {
 #if ENABLE_MQTT
     if (!MQTT_IsReady()) return;
-    static float last_water = -1, last_target = -1, last_room = -1;
+    // Compare temperatures at the same tenth-of-a-degree resolution sent to
+    // MQTT. Comparing floats directly caused visually identical republishing.
+    static int last_water_tenths = -1, last_target_tenths = -1, last_room_tenths = -1;
     static int last_heater = -1;
     static int last_heater_active = -2;
+    int value_tenths;
 
-    if (g_ctx.water_temp != last_water) {
+    value_tenths = (int)(g_ctx.water_temp * 10.0f + 0.5f);
+    if (value_tenths != last_water_tenths) {
         MQTT_PublishMain_StringFloat("ariston/water_temp", g_ctx.water_temp, 1, OBK_PUBLISH_FLAG_RETAIN);
-        last_water = g_ctx.water_temp;
+        last_water_tenths = value_tenths;
     }
-    if (g_ctx.target_temp != last_target) {
+    value_tenths = (int)(g_ctx.target_temp * 10.0f + 0.5f);
+    if (value_tenths != last_target_tenths) {
         MQTT_PublishMain_StringFloat("ariston/target_temp", g_ctx.target_temp, 1, OBK_PUBLISH_FLAG_RETAIN);
-        last_target = g_ctx.target_temp;
+        last_target_tenths = value_tenths;
     }
-    if (g_ctx.current_temp != last_room) {
+    value_tenths = (int)(g_ctx.current_temp * 10.0f + 0.5f);
+    if (value_tenths != last_room_tenths) {
         MQTT_PublishMain_StringFloat("ariston/current_temp", g_ctx.current_temp, 1, OBK_PUBLISH_FLAG_RETAIN);
-        last_room = g_ctx.current_temp;
+        last_room_tenths = value_tenths;
     }
     if (g_ctx.heater_power != last_heater) {
         MQTT_PublishMain_StringFloat("ariston/heater_power", (float)g_ctx.heater_power, 0, OBK_PUBLISH_FLAG_RETAIN);
@@ -1282,25 +1470,25 @@ static void Ariston_PublishSensors(void) {
         MQTT_PublishMain_StringFloat("ariston/on_time", (float)g_ctx.on_time, 0, OBK_PUBLISH_FLAG_RETAIN);
         last_on_time = g_ctx.on_time;
     }
-    static float last_energy_est_wh = -1.0f;
-    static float last_energy_total_wh = -1.0f;
+    static int last_energy_est_wh = -1;
+    static int last_energy_total_wh = -1;
+    static uint32_t last_energy_publish_tick = 0;
+    uint32_t now = xTaskGetTickCount();
     float energy_est_wh = g_energy_session_wh;
     float energy_total_wh = g_energy_total_wh;
-    float delta = energy_est_wh - last_energy_est_wh;
-    if (delta < 0.0f) {
-        delta = -delta;
-    }
-    if (delta > 0.05f) {
+    int energy_est_wh_rounded = (int)(energy_est_wh + 0.5f);
+    int energy_total_wh_rounded = (int)(energy_total_wh + 0.5f);
+    // Energy changes continuously while heating. Publish the three counters no
+    // more than once per interval, and only if at least one visible value moved.
+    if ((last_energy_publish_tick == 0 ||
+         (now - last_energy_publish_tick) * (uint32_t)portTICK_PERIOD_MS >= ARISTON_ENERGY_MQTT_INTERVAL_MS) &&
+        (energy_est_wh_rounded != last_energy_est_wh ||
+         energy_total_wh_rounded != last_energy_total_wh)) {
         MQTT_PublishMain_StringFloat("ariston/energy_est_kwh", energy_est_wh / 1000.0f, 3, OBK_PUBLISH_FLAG_RETAIN);
-        last_energy_est_wh = energy_est_wh;
-    }
-    delta = energy_total_wh - last_energy_total_wh;
-    if (delta < 0.0f) {
-        delta = -delta;
-    }
-    if (delta > 0.05f) {
         MQTT_PublishMain_StringFloat("ariston/energy_total_kwh", energy_total_wh / 1000.0f, 3, OBK_PUBLISH_FLAG_RETAIN);
-        last_energy_total_wh = energy_total_wh;
+        last_energy_est_wh = energy_est_wh_rounded;
+        last_energy_total_wh = energy_total_wh_rounded;
+        last_energy_publish_tick = now;
     }
     Ariston_PublishClockAndDayState(0);
 #endif
@@ -1360,6 +1548,8 @@ static void Ariston_ProcessBoilerFrame(void) {
                 case ARISTON_QUERY_WATER_TEMP:
                     if (g_ctx.rx_len >= 10) {
                         float best = -1.0f;
+                        int best_raw = -1;
+                        static int last_logged_raw = -1;
                         int pairs = g_ctx.rx_len / 2;
                         if (pairs > 5) {
                             pairs = 5;
@@ -1370,18 +1560,26 @@ static void Ariston_ProcessBoilerFrame(void) {
                             float val = raw / 10.0f;
                             if (val >= 5.0f && val <= 95.0f) {
                                 best = val;
+                                best_raw = (int)raw;
                                 break;
                             }
                         }
                         if (best > 0.0f) {
                             g_ctx.water_temp = best;
-                            addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "Ariston: Water temp=%.1f C", g_ctx.water_temp);
+                            // Successful polls are frequent; INFO is useful only
+                            // when the value received from the boiler has changed.
+                            if (best_raw != last_logged_raw) {
+                                addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "Ariston: Water temp=%.1f C", g_ctx.water_temp);
+                                last_logged_raw = best_raw;
+                            }
                         }
                     }
                     break;
 
                 case ARISTON_QUERY_SETPOINT:
                     if (g_ctx.rx_len == 12) {
+                        static int last_logged_cur_raw = -1;
+                        static int last_logged_set_raw = -1;
                         uint16_t raw_cur = (uint16_t)g_ctx.rx_payload[8] | ((uint16_t)g_ctx.rx_payload[9] << 8);
                         float temp_cur = raw_cur / 10.0f;
                         if (temp_cur >= 0.0f && temp_cur <= 95.0f) {
@@ -1393,13 +1591,21 @@ static void Ariston_ProcessBoilerFrame(void) {
                         if (temp_set >= 20.0f && temp_set <= 90.0f) {
                             // First time setup, OR if not actively overridden by user recently
                             g_ctx.target_temp = temp_set;
-                            addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "Ariston: Target=%.1f°C, Current=%.1f°C", temp_set, temp_cur);
+                            if ((int)raw_cur != last_logged_cur_raw || (int)raw_set != last_logged_set_raw) {
+                                addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "Ariston: Target=%.1f°C, Current=%.1f°C", temp_set, temp_cur);
+                                last_logged_cur_raw = (int)raw_cur;
+                                last_logged_set_raw = (int)raw_set;
+                            }
                         }
                     }
                     break;
 
                 case ARISTON_QUERY_TELEMETRY:
                     if (g_ctx.rx_len == 7) {
+                        static int last_logged_activity = -1;
+                        static int last_logged_heater = -2;
+                        static int last_logged_showers = -1;
+                        static int last_logged_time_to_temp = -1;
                         // byte1 in this block correlates with relay activity in captures:
                         // 0x01 = heater OFF, 0x04 = heater ON.
                         if (g_ctx.rx_payload[1] == 0x01) {
@@ -1410,25 +1616,45 @@ static void Ariston_ProcessBoilerFrame(void) {
                         g_ctx.showers = g_ctx.rx_payload[2];
                         g_ctx.time_to_temp = g_ctx.rx_payload[3];
                         Ariston_ApplyHeaterActivity();
-                        addLogAdv(LOG_INFO, LOG_FEATURE_DRV,
-                                  "Ariston: Telemetry activity=%02X heater=%d Showers=%d TimeToTemp=%d",
-                                  g_ctx.rx_payload[1], g_ctx.heater_active, g_ctx.showers, g_ctx.time_to_temp);
+                        // Keep state transitions visible without repeating the
+                        // same healthy telemetry block every polling cycle.
+                        if ((int)g_ctx.rx_payload[1] != last_logged_activity ||
+                            g_ctx.heater_active != last_logged_heater ||
+                            g_ctx.showers != last_logged_showers ||
+                            g_ctx.time_to_temp != last_logged_time_to_temp) {
+                            addLogAdv(LOG_INFO, LOG_FEATURE_DRV,
+                                      "Ariston: Telemetry activity=%02X heater=%d Showers=%d TimeToTemp=%d",
+                                      g_ctx.rx_payload[1], g_ctx.heater_active, g_ctx.showers, g_ctx.time_to_temp);
+                            last_logged_activity = (int)g_ctx.rx_payload[1];
+                            last_logged_heater = g_ctx.heater_active;
+                            last_logged_showers = g_ctx.showers;
+                            last_logged_time_to_temp = g_ctx.time_to_temp;
+                        }
                     }
                     break;
 
                 case ARISTON_QUERY_POWER:
                     if (g_ctx.rx_len == 10) {
+                        static int last_logged_nominal = -1;
+                        static int last_logged_effective = -1;
                         g_ctx.heater_power_nominal = (int)g_ctx.rx_payload[2] | ((int)g_ctx.rx_payload[3] << 8);
                         g_ctx.heater_power = g_ctx.heater_power_nominal;
                         Ariston_ApplyHeaterActivity();
-                        addLogAdv(LOG_INFO, LOG_FEATURE_DRV,
-                                  "Ariston: Heater power raw=%dW effective=%dW",
-                                  g_ctx.heater_power_nominal, g_ctx.heater_power);
+                        if (g_ctx.heater_power_nominal != last_logged_nominal ||
+                            g_ctx.heater_power != last_logged_effective) {
+                            addLogAdv(LOG_INFO, LOG_FEATURE_DRV,
+                                      "Ariston: Heater power raw=%dW effective=%dW",
+                                      g_ctx.heater_power_nominal, g_ctx.heater_power);
+                            last_logged_nominal = g_ctx.heater_power_nominal;
+                            last_logged_effective = g_ctx.heater_power;
+                        }
                     }
                     break;
                     
                 case ARISTON_QUERY_ON_TIME:
                     if (g_ctx.rx_len == 6) {
+                        static int last_logged_raw = -1;
+                        static int last_logged_minute = -1;
                         uint32_t nowTick = xTaskGetTickCount();
                         g_on_time_raw_companion = (int)g_ctx.rx_payload[0] | ((int)g_ctx.rx_payload[1] << 8);
                         if (g_ctx.rx_payload[0] <= 59) {
@@ -1436,14 +1662,25 @@ static void Ariston_ProcessBoilerFrame(void) {
                             g_ctx.clock_has_minute = 1;
                             g_ctx.clock_minute_tick = nowTick;
                         }
-                        addLogAdv(LOG_INFO, LOG_FEATURE_DRV,
-                                  "Ariston: Minute companion raw=%d minute=%d",
-                                  g_on_time_raw_companion, g_ctx.clock_minute);
+                        if (g_on_time_raw_companion != last_logged_raw ||
+                            g_ctx.clock_minute != last_logged_minute) {
+                            addLogAdv(LOG_INFO, LOG_FEATURE_DRV,
+                                      "Ariston: Minute companion raw=%d minute=%d",
+                                      g_on_time_raw_companion, g_ctx.clock_minute);
+                            last_logged_raw = g_on_time_raw_companion;
+                            last_logged_minute = g_ctx.clock_minute;
+                        }
                     }
                     break;
 
                 case ARISTON_QUERY_STATUS3:
                     if (g_ctx.rx_len == 6) {
+                        static int last_logged_raw0 = -1;
+                        static int last_logged_wday = -1;
+                        static int last_logged_year2 = -1;
+                        static int last_logged_month = -1;
+                        static int last_logged_day = -1;
+                        static int last_logged_hour = -1;
                         uint32_t nowTick = xTaskGetTickCount();
                         int year2 = (int)g_ctx.rx_payload[2];
                         int month = (int)g_ctx.rx_payload[3];
@@ -1467,10 +1704,23 @@ static void Ariston_ProcessBoilerFrame(void) {
                             g_ctx.clock_weekday_raw = wday;
                         }
 
-                        addLogAdv(LOG_INFO, LOG_FEATURE_DRV,
-                                  "Ariston: STATUS3 raw0=%d wday=%d date=20%02d-%02d-%02d hour=%02d",
-                                  g_ctx.clock_status3_raw0, g_ctx.clock_weekday_raw,
-                                  g_ctx.clock_year2, g_ctx.clock_month, g_ctx.clock_day, g_ctx.clock_hour);
+                        if (g_ctx.clock_status3_raw0 != last_logged_raw0 ||
+                            g_ctx.clock_weekday_raw != last_logged_wday ||
+                            g_ctx.clock_year2 != last_logged_year2 ||
+                            g_ctx.clock_month != last_logged_month ||
+                            g_ctx.clock_day != last_logged_day ||
+                            g_ctx.clock_hour != last_logged_hour) {
+                            addLogAdv(LOG_INFO, LOG_FEATURE_DRV,
+                                      "Ariston: STATUS3 raw0=%d wday=%d date=20%02d-%02d-%02d hour=%02d",
+                                      g_ctx.clock_status3_raw0, g_ctx.clock_weekday_raw,
+                                      g_ctx.clock_year2, g_ctx.clock_month, g_ctx.clock_day, g_ctx.clock_hour);
+                            last_logged_raw0 = g_ctx.clock_status3_raw0;
+                            last_logged_wday = g_ctx.clock_weekday_raw;
+                            last_logged_year2 = g_ctx.clock_year2;
+                            last_logged_month = g_ctx.clock_month;
+                            last_logged_day = g_ctx.clock_day;
+                            last_logged_hour = g_ctx.clock_hour;
+                        }
                     }
                     break;
 
@@ -1513,6 +1763,9 @@ static void Ariston_ProcessBoilerFrame(void) {
 // States track this 3-byte SOF sequence.
 // -------------------------------------------------------
 void Ariston_RunFrame(void) {
+    if (!g_ariston_ready) {
+        return;
+    }
     int avail = UART_GetDataSizeEx(g_ariston_uart);
     while (avail > 0) {
         uint8_t byte = UART_GetByteEx(g_ariston_uart, 0);
@@ -1734,18 +1987,23 @@ static void Ariston_DriveSequence(void) {
 // Called every second from the driver framework
 // -------------------------------------------------------
 void Ariston_OnEverySecond(void) {
+    if (!g_ariston_ready) {
+        return;
+    }
     Ariston_DriveSequence();
 
 #if ENABLE_MQTT
     if (MQTT_IsReady()) {
         if (!g_ariston_mqtt_was_ready) {
-            // MQTT just became ready: republish full retained state so HA entities
-            // don't stay Unknown after reconnect/discovery.
+            // Spread retained-state refresh across seconds. Publishing the full
+            // snapshot synchronously can exhaust the lwIP MQTT send buffer.
             g_ariston_mqtt_was_ready = 1;
-            Ariston_PublishAllStatesNow();
+            g_ariston_mqtt_republish_stage = 0;
         }
+        Ariston_PublishNextRetainedState();
     } else {
         g_ariston_mqtt_was_ready = 0;
+        g_ariston_mqtt_republish_stage = -1;
     }
 #endif
 
@@ -2042,6 +2300,26 @@ static commandResult_t Cmd_Ariston_EnergyReset(const void *context, const char *
     return CMD_RES_OK;
 }
 
+// ariston_nvs -> show energy persistence state and write diagnostics
+static commandResult_t Cmd_Ariston_NvsStatus(const void *context, const char *cmd, const char *args, int cmdFlags) {
+    (void)context;
+    (void)cmd;
+    (void)args;
+    (void)cmdFlags;
+    addLogAdv(LOG_INFO, LOG_FEATURE_DRV,
+        "Ariston NVS total=%.2fWh dirty=%d pending=%.2fWh checkpoint_in=%ds stored_count=%u attempts=%u successes=%u failures=%u last_ms=%u max_ms=%u",
+        g_energy_total_wh, g_energy_dirty, g_energy_unsaved_wh,
+        g_energy_save_seconds >= ARISTON_ENERGY_SAVE_INTERVAL_SECONDS ? 0 :
+            ARISTON_ENERGY_SAVE_INTERVAL_SECONDS - g_energy_save_seconds,
+        (unsigned int)g_energy_save_counter,
+        (unsigned int)g_energy_nvs_attempts,
+        (unsigned int)g_energy_nvs_successes,
+        (unsigned int)g_energy_nvs_failures,
+        (unsigned int)g_energy_nvs_last_ms,
+        (unsigned int)g_energy_nvs_max_ms);
+    return CMD_RES_OK;
+}
+
 // ariston_onTimeReset -> clear the derived runtime counter without touching
 // the boiler clock or the persisted energy total.
 static commandResult_t Cmd_Ariston_OnTimeReset(const void *context, const char *cmd, const char *args, int cmdFlags) {
@@ -2066,7 +2344,9 @@ static commandResult_t Cmd_Ariston_Uart(const void *context, const char *cmd, co
     }
     int port = Tokenizer_GetArgInteger(0);
     g_ariston_uart = port;
-    Ariston_ReinitUart();
+    if (!Ariston_ReinitUart()) {
+        return CMD_RES_ERROR;
+    }
     addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "Ariston UART changed to %d", g_ariston_uart);
     return CMD_RES_OK;
 }
@@ -2087,16 +2367,39 @@ static commandResult_t Cmd_Ariston_Discovery(const void *context, const char *cm
 // Driver init
 // -------------------------------------------------------
 void Ariston_Init(void) {
-    if (Tokenizer_GetArgsCount() >= 3) {
-        if (!Ariston_SetIdentityFromStrings(Tokenizer_GetArg(1), Tokenizer_GetArg(2))) {
-            addLogAdv(LOG_WARN, LOG_FEATURE_DRV,
-                "Ariston: invalid startup identity, driver will stay idle");
-        }
-    } else {
+    g_ariston_ready = 0;
+    if (Tokenizer_GetArgsCount() < 5 ||
+        !Tokenizer_IsArgInteger(3) || !Tokenizer_IsArgInteger(4)) {
         Ariston_ClearIdentity();
+        addLogAdv(LOG_ERROR, LOG_FEATURE_DRV,
+            "Usage: startDriver Ariston <MAC> <SN> <RX pin> <TX pin>");
+        return;
     }
 
-    Ariston_ReinitUart();
+    g_ariston_rx_pin = Tokenizer_GetArgInteger(3);
+    g_ariston_tx_pin = Tokenizer_GetArgInteger(4);
+    if (g_ariston_rx_pin < 0 || g_ariston_rx_pin >= PLATFORM_GPIO_MAX ||
+        g_ariston_tx_pin < 0 || g_ariston_tx_pin >= PLATFORM_GPIO_MAX ||
+        g_ariston_rx_pin == g_ariston_tx_pin) {
+        Ariston_ClearIdentity();
+        addLogAdv(LOG_ERROR, LOG_FEATURE_DRV,
+            "Ariston: invalid UART pins RX=%d TX=%d (valid range 0-%d, pins must differ)",
+            g_ariston_rx_pin, g_ariston_tx_pin, PLATFORM_GPIO_MAX - 1);
+        return;
+    }
+
+    if (!Ariston_SetIdentityFromStrings(Tokenizer_GetArg(1), Tokenizer_GetArg(2))) {
+        addLogAdv(LOG_ERROR, LOG_FEATURE_DRV,
+            "Ariston: invalid startup identity, driver will stay idle");
+        return;
+    }
+
+    if (!Ariston_ReinitUart()) {
+        addLogAdv(LOG_ERROR, LOG_FEATURE_DRV,
+            "Ariston: UART initialization failed, driver will stay idle");
+        return;
+    }
+    g_ariston_ready = 1;
 
     memset(&g_ctx, 0, sizeof(g_ctx));
     g_ctx.rx_state = ARISTON_STATE_INIT;
@@ -2118,6 +2421,8 @@ void Ariston_Init(void) {
     g_seq_timer = 0;
     g_param_poll_index = 0;
     g_startup_wifi_stage = 0;
+    g_ariston_mqtt_was_ready = 0;
+    g_ariston_mqtt_republish_stage = -1;
     g_energy_day_source = ARISTON_CLOCK_SRC_UNKNOWN;
     g_ntp_sync_prev_synced = 0;
     g_ntp_sync_last_day_key = -1;
@@ -2136,18 +2441,21 @@ void Ariston_Init(void) {
     CMD_RegisterCommand("ariston_mode",    Cmd_Ariston_Mode,    NULL);
     CMD_RegisterCommand("ariston_antiLegionella", Cmd_Ariston_AntiLegionella, NULL);
     CMD_RegisterCommand("ariston_energyReset", Cmd_Ariston_EnergyReset, NULL);
+    CMD_RegisterCommand("ariston_nvs", Cmd_Ariston_NvsStatus, NULL);
     CMD_RegisterCommand("ariston_onTimeReset", Cmd_Ariston_OnTimeReset, NULL);
     CMD_RegisterCommand("ariston_uart",    Cmd_Ariston_Uart,    NULL);
     CMD_RegisterCommand("ariston_discovery", Cmd_Ariston_Discovery, NULL);
 
-    addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "Ariston driver initialized (ESP=master C3 41)");
+    addLogAdv(LOG_INFO, LOG_FEATURE_DRV,
+        "Ariston driver initialized (ESP=master C3 41, UART%d RX=%d TX=%d)",
+        g_ariston_uart, g_ariston_rx_pin, g_ariston_tx_pin);
 }
 
 // -------------------------------------------------------
 // HTTP index page info
 // -------------------------------------------------------
 void Ariston_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState) {
-    if (bPreState) {
+    if (bPreState || !g_ariston_ready) {
         return;
     }
 
@@ -2291,6 +2599,7 @@ static void Ariston_QueueDiscovery(const char *config_topic, const char *payload
 
 void Ariston_OnHassDiscovery(const char *topic) {
 #if ENABLE_MQTT
+    if (!g_ariston_ready) return;
     (void)topic;
     if (!MQTT_IsReady()) return;
     if (g_ariston_discovery_sent) {

@@ -10,8 +10,8 @@
 #include "driver/gpio.h"
 
 #ifdef CONFIG_IDF_TARGET_ESP32C6
-#define RX1_PIN GPIO_NUM_6
-#define TX1_PIN GPIO_NUM_7
+#define RX1_PIN GPIO_NUM_7
+#define TX1_PIN GPIO_NUM_5
 #elif CONFIG_IDF_TARGET_ESP32C3 || CONFIG_IDF_TARGET_ESP32C2
 #define RX1_PIN GPIO_NUM_6
 #define TX1_PIN GPIO_NUM_7
@@ -144,18 +144,10 @@ int HAL_UART_Init(int baud, int parity, bool hwflowc, int txOverride, int rxOver
 	uart_enable_rx_intr(uartnum);
 
 #if PLATFORM_ESPIDF
-	if (txOverride != -1 || rxOverride != -1) {
-		int txPin = (txOverride != -1) ? txOverride : UART_PIN_NO_CHANGE;
-		int rxPin = (rxOverride != -1) ? rxOverride : UART_PIN_NO_CHANGE;
+	if (txOverride != -1) {
 		uart_set_pin(uartnum,
-			txPin, rxPin,
+			txOverride, 21,
 			UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE);
-	} else {
-		if (uartnum == UART_NUM_0) {
-			uart_set_pin(uartnum, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE);
-		} else {
-			uart_set_pin(uartnum, TX1_PIN, RX1_PIN, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE);
-		}
 	}
 #endif
 
