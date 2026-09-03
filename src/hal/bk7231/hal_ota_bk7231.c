@@ -236,7 +236,8 @@ int http_rest_post_flash(http_request_t* request, int startaddr, int maxaddr)
 		towrite = request->contentLength;
 	}
 
-	if (writelen < 0 || towrite < 0 || (startaddr + towrite > maxaddr))
+	if (writelen < 0 || towrite <= 0 || startaddr < 0 || startaddr > maxaddr
+		|| towrite > maxaddr - startaddr)
 	{
 		ADDLOG_DEBUG(LOG_FEATURE_OTA, "ABORTED: %d bytes to write", towrite);
 		return http_rest_error(request, -20, "invalid length, or end beyond maxaddr");
