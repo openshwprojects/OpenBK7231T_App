@@ -299,6 +299,8 @@ static int http_rest_post(http_request_t* request) {
 
 static int http_rest_app(http_request_t* request) {
 	const char* webhost = CFG_GetWebappRoot();
+	const char* webhostSeparator = "/";
+	size_t webhostLen;
 //	const char* ourip = HAL_GetMyIPString(); //CFG_GetOurIP();
 	http_setup(request, httpMimeTypeHTML);
 //	if (webhost && ourip) {
@@ -307,6 +309,11 @@ static int http_rest_app(http_request_t* request) {
 // know our ip (and port) inside the browser (JS "location").
 // Knowing/using the port from location.host is very usefull e.g. in simulator ;-) 
 	if (webhost) {
+		webhostLen = strlen(webhost);
+		if (webhostLen > 0 && webhost[webhostLen - 1] == '/') {
+			webhostSeparator = "";
+		}
+
 		poststr(request, htmlDoctype);
 
 		poststr(request, "<head><title>");
@@ -315,8 +322,8 @@ static int http_rest_app(http_request_t* request) {
 
 		poststr(request, htmlShortcutIcon);
 		poststr(request, htmlHeadMeta);
-		hprintf255(request, "<script>var root='%s',device='http://'+location.host;</script>", webhost);
-		hprintf255(request, "<script src='%s/startup.js'></script>", webhost);
+		hprintf255(request, "<script>var root='%s%s',device='http://'+location.host;</script>", webhost, webhostSeparator);
+		hprintf255(request, "<script src='%s%sstartup.js'></script>", webhost, webhostSeparator);
 		poststr(request, "</head><body></body></html>");
 	}
 	else {
