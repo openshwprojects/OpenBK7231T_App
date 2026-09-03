@@ -44,6 +44,9 @@ uint8_t g_log2lfs;
 #include "driver/drv_mdns.h"
 #include "driver/drv_ssdp.h"
 #include "driver/drv_uart.h"
+#if ENABLE_DRIVER_XIAOMI_COMPACT4
+#include "driver/drv_xiaomi_compact4.h"
+#endif
 
 #if PLATFORM_BEKEN
 #include <mcu_ps.h>
@@ -1098,7 +1101,13 @@ void Main_OnEverySecond()
 		}
 	}
 #endif
+#if ENABLE_DRIVER_XIAOMI_COMPACT4
+	if (bSafeMode || XiaomiCompact4_ShouldFeedWDT()) {
+		HAL_Run_WDT();
+	}
+#else
 	HAL_Run_WDT();
+#endif
 	// force it to sleep...  we MUST have some idle task processing
 	// else task memory doesn't get freed
 	rtos_delay_milliseconds(1);
@@ -1207,7 +1216,11 @@ void QuickTick(void* param)
 
 }
 
+#if ENABLE_DRIVER_XIAOMI_COMPACT4
+#define QT_STACK_SIZE 4096
+#else
 #define QT_STACK_SIZE 2048
+#endif
 
 ////////////////////////////////////////////////////////
 // this is the bit which runs the quick tick timer
@@ -1516,6 +1529,11 @@ void Main_Init_Before_Delay()
 	}
 	CFG_InitAndLoad();
 
+#if ENABLE_DRIVER_XIAOMI_COMPACT4
+	// Keep motor hardware inert before normal driver startup and throughout safe mode.
+	XiaomiCompact4_PreDriverSafetyInit(bSafeMode);
+#endif
+
 #if ENABLE_LITTLEFS
 	LFSAddCmds();
 #endif
@@ -1579,7 +1597,12 @@ void Main_Init_After_Delay()
 		bForceOpenAP = 1;
 #endif
 
+#if ENABLE_DRIVER_XIAOMI_COMPACT4
+	// Keep the appliance watchdog local without changing other ESP-IDF variants.
+	XiaomiCompact4_ConfigureWDT();
+#else
 	HAL_Configure_WDT();
+#endif
 
 	if ((*wifi_ssid == 0))
 	{
