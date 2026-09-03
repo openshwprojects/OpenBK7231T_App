@@ -217,6 +217,9 @@ enum LightMode {
 int Tokenizer_GetArgsCount();
 bool Tokenizer_CheckArgsCountAndPrintWarning(const char* cmdStr, int reqCount);
 const char* Tokenizer_GetArg(int i);
+
+const char* Tokenizer_GetArgExpanding(int i);//hieu modify
+
 const char* Tokenizer_GetArgFrom(int i);
 int Tokenizer_GetArgInteger(int i); 
 int Tokenizer_GetPin(int i, int def);

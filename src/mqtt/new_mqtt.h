@@ -180,6 +180,8 @@ typedef struct obk_mqtt_publishReplyPrinter_s {
 void MQTT_PublishPrinterContentsToStat(obk_mqtt_publishReplyPrinter_t *printer, const char *statName);
 void MQTT_PublishPrinterContentsToTele(obk_mqtt_publishReplyPrinter_t *printer, const char *statName);
 
+void MQTT_BuildAndPublishBatch_ByIndex(int *indices, int count, uint8_t* leh, int leh_len);
+
 #endif // ENABLE_MQTT
 
 
