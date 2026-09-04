@@ -29,6 +29,9 @@ static void Batt_Measure() {
 	if (g_vdividerFromUser == false
 		&& PIN_FindPinIndexForRole(IOR_BAT_Relay, -1) == -1
 		&& PIN_FindPinIndexForRole(IOR_BAT_Relay_n, -1) == -1) {
+		if (g_vdivider != 1) {
+			ADDLOG_INFO(LOG_FEATURE_DRV, "DRV_BATTERY: no relay pin and no divider given, ignoring divider %f and measuring directly", g_vdivider);
+		}
 		g_vdivider = 1;
 	}
 	// if divider equal to 1 then no need for relay activation
@@ -56,18 +59,20 @@ static void Batt_Measure() {
 		rtos_delay_milliseconds(10);
 	}
 	raw = HAL_ADC_Read(g_pin_adc);
-	if (raw < 0) {
-		ADDLOG_INFO(LOG_FEATURE_DRV, "DRV_BATTERY: ADC read failed (%i), keeping %i mV", raw, g_lastbattvoltage);
-		return;
-	}
-	g_battvoltage = raw;
-	ADDLOG_DEBUG(LOG_FEATURE_DRV, "DRV_BATTERY: ADC binary Measurement: %f and channel %i", g_battvoltage, channel_adc);
+	// switch the divider back off on both paths, so a failed conversion
+	// cannot leave it powered until the next measurement
 	if (g_vdivider > 1) {
 		if (g_pin_rel > 0) {
 			HAL_PIN_SetOutputValue(g_pin_rel, !writeVal);
 		}
 		//CHANNEL_Set(channel_rel, 0, 0);
 	}
+	if (raw < 0) {
+		ADDLOG_INFO(LOG_FEATURE_DRV, "DRV_BATTERY: ADC read failed (%i), keeping %i mV", raw, g_lastbattvoltage);
+		return;
+	}
+	g_battvoltage = raw;
+	ADDLOG_DEBUG(LOG_FEATURE_DRV, "DRV_BATTERY: ADC binary Measurement: %f and channel %i", g_battvoltage, channel_adc);
 	ADDLOG_DEBUG(LOG_FEATURE_DRV, "DRV_BATTERY: Calculation with param: %f %f %f", g_vref, g_adcbits, g_vdivider);
 	// batt_value = batt_value / vref / 12bits value should be 10 un doc ... but on CBU is 12 ....
 	vref = g_vref / g_adcbits;
