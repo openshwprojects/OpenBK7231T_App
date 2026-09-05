@@ -180,6 +180,12 @@ void BKCharge_Init(void);
 void BKCharge_OnEverySecond(void);
 void BKCharge_StopDriver(void);
 void BKCharge_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState);
+
+void BKAudio_Init(void);
+void BKAudio_OnEverySecond(void);
+void BKAudio_RunQuickTick(void);
+void BKAudio_StopDriver(void);
+void BKAudio_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState);
 void Batt_Init();
 void Batt_OnEverySecond();
 void Batt_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState);
