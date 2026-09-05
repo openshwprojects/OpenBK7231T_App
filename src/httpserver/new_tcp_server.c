@@ -247,7 +247,7 @@ static void tcp_server_thread(beken_thread_arg_t arg)
 	}
 	ADDLOG_EXTRADEBUG(LOG_FEATURE_HTTP, "Socket bound on 0.0.0.0:%i", HTTP_SERVER_PORT);
 
-	err = listen(listen_sock, 0);
+	err = listen(listen_sock, (int)max_socks);
 	if(err != 0)
 	{
 		ADDLOG_ERROR(LOG_FEATURE_HTTP, "Error occurred during listen");
