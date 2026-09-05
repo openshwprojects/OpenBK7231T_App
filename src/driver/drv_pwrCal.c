@@ -16,6 +16,7 @@ static int latest_raw_voltage;
 static float latest_raw_current;
 static int latest_raw_power;
 
+#define VERY_SMALL_VAL 0.001f
 //#define PWRCAL_DEBUG
 
 static commandResult_t Calibrate(const char *cmd, const char *args, float raw,
@@ -31,7 +32,7 @@ static commandResult_t Calibrate(const char *cmd, const char *args, float raw,
                      CMD_GetResultString(CMD_RES_BAD_ARGUMENT));
         return CMD_RES_BAD_ARGUMENT;
     }
-#define VERY_SMALL_VAL 0.001f
+
 	if (raw > -VERY_SMALL_VAL && raw < VERY_SMALL_VAL) {
 		ADDLOG_ERROR(LOG_FEATURE_ENERGYMETER, "Calibration incorrect - connect load first.");
 		return CMD_RES_ERROR;
@@ -70,6 +71,53 @@ static commandResult_t CalibratePower(const void *context, const char *cmd,
     return Calibrate(cmd, args, latest_raw_power, &power_cal, CFG_OBK_POWER);
 }
 
+static commandResult_t CalibrationSet(const void *context, const char *cmd,
+                                        const char *args, int cmdFlags) {
+    Tokenizer_TokenizeString(args, 0);
+    int numArgs = Tokenizer_GetArgsCount();
+
+    // 1. If called without parameters, print current constants to logs
+    if (numArgs == 0) {
+        ADDLOG_INFO(LOG_FEATURE_ENERGYMETER, "Current Calibration Constants: V=%f, I=%f, P=%f",
+                    voltage_cal, current_cal, power_cal);
+        return CMD_RES_OK;
+    }
+
+    // 2. Ensure we have exactly 3 arguments for V, I, and P
+    if (numArgs < 3) {
+        ADDLOG_ERROR(LOG_FEATURE_ENERGYMETER, "CalibrationSet requires 3 args: [VoltageCal] [CurrentCal] [PowerCal]");
+        return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+    }
+
+    float vals[3];
+    vals[0] = Tokenizer_GetArgFloat(0); // Voltage
+    vals[1] = Tokenizer_GetArgFloat(1); // Current
+    vals[2] = Tokenizer_GetArgFloat(2); // Power
+
+    // 3. Validation: NOT NaN, Positive, and > VERY_SMALL_VAL
+    for (int i = 0; i < 3; i++) {
+        if (isnan(vals[i]) || vals[i] <= VERY_SMALL_VAL) {
+            ADDLOG_ERROR(LOG_FEATURE_ENERGYMETER, "CalibrationSet: Argument %d is invalid (%f). Must be > %f and not NaN.", 
+                         i + 1, vals[i], VERY_SMALL_VAL);
+            return CMD_RES_BAD_ARGUMENT;
+        }
+    }
+
+    // 4. Apply and Save
+    voltage_cal = vals[0];
+    current_cal = vals[1];
+    power_cal = vals[2];
+
+    CFG_SetPowerMeasurementCalibrationFloat(CFG_OBK_VOLTAGE, voltage_cal);
+    CFG_SetPowerMeasurementCalibrationFloat(CFG_OBK_CURRENT, current_cal);
+    CFG_SetPowerMeasurementCalibrationFloat(CFG_OBK_POWER, power_cal);
+
+    ADDLOG_INFO(LOG_FEATURE_ENERGYMETER, "Calibration Constants updated to: V=%f, I=%f, P=%f",
+                voltage_cal, current_cal, power_cal);
+
+    return CMD_RES_OK;
+}
+
 static float Scale(float raw, float cal) {
     return (cal_type == PWR_CAL_MULTIPLY ? raw * cal : raw / cal);
 }
@@ -100,6 +148,11 @@ void PwrCal_Init(pwr_cal_type_t type, float default_voltage_cal,
 	//cmddetail:"fn":"CalibratePower","file":"driver/drv_pwrCal.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("PowerSet", CalibratePower, NULL);
+    //cmddetail:{"name":"CalibrationSet","args":"[VoltageCal][CurrentCal][PowerCal]",
+    //cmddetail:"descr":"Directly sets or displays calibration constants. Call without args to print current values. Provide 3 floats (>0.001) to overwrite.",
+    //cmddetail:"fn":"CalibrationSet","file":"driver/drv_pwrCal.c","requires":"",
+    //cmddetail:"examples":"CalibrationSet 0.1245 0.0052 1.002"}
+    CMD_RegisterCommand("CalibrationSet", CalibrationSet, NULL);
 }
 
 void PwrCal_Scale(int raw_voltage, float raw_current, int raw_power,
