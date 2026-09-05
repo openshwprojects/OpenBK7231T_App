@@ -18,6 +18,7 @@ static unsigned int g_rtcEpochBase;
 static int g_rtcHasBase;
 static unsigned int g_rtcRebases;
 static int g_rtcLastDelta;
+static unsigned int g_rtcSyncSeen;
 
 unsigned long long BKRTC_GetUptimeUs(void)
 {
@@ -50,22 +51,34 @@ static void BKRTC_SetBase(unsigned int epoch)
 
 void BKRTC_OnEverySecond(void)
 {
-	unsigned int ntp;
+	unsigned int ntp, syncs;
 
 	if (!NTP_IsTimeSynced())
 		return;
 
-	ntp = NTP_GetCurrentTime();
+	ntp = NTP_GetCurrentTimeWithoutOffset();
 	if (ntp == 0)
 		return;
 
+	if (g_rtcHasBase && BKRTC_GetUptimeUs() < g_rtcBaseUs) {
+		g_rtcHasBase = 0;
+		ADDLOG_WARN(LOG_FEATURE_DRV, "RTC: hardware counter went backwards, time base dropped");
+	}
+
+	syncs = NTP_GetSyncCount();
 	if (!g_rtcHasBase) {
+		if (syncs == g_rtcSyncSeen)
+			return;
+		g_rtcSyncSeen = syncs;
 		BKRTC_SetBase(ntp);
 		ADDLOG_INFO(LOG_FEATURE_DRV, "RTC: base set to %u", ntp);
 		return;
 	}
 
-	g_rtcLastDelta = (int)(ntp - BKRTC_GetEpoch());
+	g_rtcLastDelta = (int)((long long)ntp - (long long)BKRTC_GetEpoch());
+	if (syncs == g_rtcSyncSeen)
+		return;
+	g_rtcSyncSeen = syncs;
 	if (g_rtcLastDelta >= BKRTC_REBASE_THRESHOLD_S || g_rtcLastDelta <= -BKRTC_REBASE_THRESHOLD_S) {
 		BKRTC_SetBase(ntp);
 		g_rtcRebases++;
@@ -105,6 +118,7 @@ void BKRTC_Init(void)
 	g_rtcHasBase = 0;
 	g_rtcRebases = 0;
 	g_rtcLastDelta = 0;
+	g_rtcSyncSeen = 0;
 
 	//cmddetail:{"name":"RTCTime","args":"",
 	//cmddetail:"descr":"Prints the hardware RTC uptime, the derived wall clock, and how far the software clock has drifted from it.",
