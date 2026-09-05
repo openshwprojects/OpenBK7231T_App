@@ -1963,13 +1963,23 @@ int http_fn_cfg_mac(http_request_t* request) {
 			mac[i] = hexbyte(&tmpA[i * 2]);
 		}
 		//sscanf(tmpA,"%02X%02X%02X%02X%02X%02X",&mac[0],&mac[1],&mac[2],&mac[3],&mac[4],&mac[5]);
+		// Store and flush the new MAC first - CFG_InitAndLoad() applies it on
+		// every boot, so persisting it is what actually makes the change stick.
+		CFG_SetMac((char*)mac);
+		CFG_Save_IfThereArePendingChanges();
+#if defined(PLATFORM_BEKEN)
+		// Beken's wifi_set_mac_address() is only safe before the WiFi stack is
+		// started; calling it on a live link wedges the radio until the next
+		// power cycle - so on Beken we only store it and let the reboot apply it.
+		poststr_h4(request, "New MAC saved - reboot to apply it!");
+#else
 		if (WiFI_SetMacAddress((char*)mac)) {
 			poststr_h4(request, "New MAC set!");
 		}
 		else {
 			poststr_h4(request, "MAC change error?");
 		}
-		CFG_Save_IfThereArePendingChanges();
+#endif
 	}
 
 	WiFI_GetMacAddress((char*)mac);
