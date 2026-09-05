@@ -1602,6 +1602,22 @@ static driver_t g_drivers[] = {
 	NULL,                                    // onChannelChanged
 	NULL,                                    // onHassDiscovery
 	false,                                   // loaded
+	},
+#endif
+#if ENABLE_DRIVER_VKL060
+	//drvdetail:{"name":"VKL060",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"VKL060 segment LCD driver (soft I2C).",
+	//drvdetail:"requires":""}
+	{ "VKL060",                               // Driver Name
+	VKL060_Init,                             // Init
+	VKL060_OnEverySecond,                    // onEverySecond
+	VKL060_AppendInformationToHTTPIndexPage, // appendInformationToHTTPIndexPage
+	NULL,                                    // runQuickTick
+	VKL060_StopDriver,                       // stopFunction
+	NULL,                                    // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
 	}
 #endif
 	//{ "", NULL, NULL, NULL, NULL, NULL, NULL, NULL, false },
