@@ -320,6 +320,10 @@ void LED_RunQuickColorLerp(int deltaMS) {
 	int target_value_brightness = 0;
 	int target_value_cold_or_warm = 0;
 
+#if PLATFORM_ESP8266
+	HAL_PIN_PWM_BeginUpdate();
+#endif
+
 	if (CFG_HasFlag(OBK_FLAG_LED_FORCE_MODE_RGB)) {
 		// only allow setting pwm 0, 1 and 2, force-skip 3 and 4
 		maxPossibleIndexToSet = 3;
@@ -405,6 +409,9 @@ void LED_RunQuickColorLerp(int deltaMS) {
 			}
 		}
 	}
+#if PLATFORM_ESP8266
+	HAL_PIN_PWM_EndUpdate();
+#endif
 	
 	LED_I2CDriver_WriteRGBCW(led_rawLerpCurrent);
 }
@@ -554,6 +561,9 @@ void apply_smart_light() {
 	int value_brightness = 0;
 	int value_cold_or_warm = 0;
 
+#if PLATFORM_ESP8266
+	HAL_PIN_PWM_BeginUpdate();
+#endif
 
 	firstChannelIndex = LED_GetFirstChannelIndex();
 
@@ -681,6 +691,9 @@ void apply_smart_light() {
 			}
 		}
 	}
+#if PLATFORM_ESP8266
+	HAL_PIN_PWM_EndUpdate();
+#endif
 	if(CFG_HasFlag(OBK_FLAG_LED_SMOOTH_TRANSITIONS) == false) {
 		LED_I2CDriver_WriteRGBCW(finalColors);
 	}
