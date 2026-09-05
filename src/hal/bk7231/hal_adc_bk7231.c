@@ -87,24 +87,30 @@ static saradc_desc_t tmp_single_desc;
 static UINT16 tmp_single_buff[ADC_TEMP_BUFFER_SIZE];
 static volatile DD_HANDLE tmp_single_hdl = DD_HANDLE_UNVALID;
 static beken_semaphore_t tmp_single_semaphore = NULL;
+static beken_mutex_t tmp_single_mutex = NULL;
 
 
 static void temp_single_get_disable(void)
 {
-    UINT32 status = DRV_SUCCESS;
-    
-    status = ddev_close(tmp_single_hdl);
-    if(DRV_FAILURE == status )
-    {
-        //TMP_DETECT_PRT("saradc disable failed\r\n");
-        //return;
-    }
-    saradc_ensure_close();
+    UINT32 status;
+    DD_HANDLE hdl;
+    GLOBAL_INT_DECLARATION();
+
+    GLOBAL_INT_DISABLE();
+    hdl = tmp_single_hdl;
     tmp_single_hdl = DD_HANDLE_UNVALID;
-    
+    GLOBAL_INT_RESTORE();
+
+    if(DD_HANDLE_UNVALID == hdl)
+    {
+        return;
+    }
+
+    ddev_close(hdl);
+    saradc_ensure_close();
+
     status = BLK_BIT_TEMPRATURE_SENSOR;
     sddev_control(SCTRL_DEV_NAME, CMD_SCTRL_BLK_DISABLE, &status);
-    
 }
 static void temp_single_detect_handler(void)
 {
@@ -159,6 +165,7 @@ int HAL_ADC_Read(int pinNumber)
     UINT32 ret;
     int result;
 	int channel;
+	int value;
 
 	channel = gpioToAdc(pinNumber);
 
@@ -166,21 +173,40 @@ int HAL_ADC_Read(int pinNumber)
 		return -1;
 	}
 
-    if(tmp_single_semaphore == NULL) {
-        result = rtos_init_semaphore(&tmp_single_semaphore, 1);
-        ASSERT(kNoErr == result);
-    }
-    
+	{
+		GLOBAL_INT_DECLARATION();
+		GLOBAL_INT_DISABLE();
+		if(tmp_single_semaphore == NULL) {
+			result = rtos_init_semaphore(&tmp_single_semaphore, 1);
+			ASSERT(kNoErr == result);
+		}
+		if(tmp_single_mutex == NULL) {
+			result = rtos_init_mutex(&tmp_single_mutex);
+			ASSERT(kNoErr == result);
+		}
+		GLOBAL_INT_RESTORE();
+	}
+
+	rtos_lock_mutex(&tmp_single_mutex);
+
+	while(rtos_get_semaphore(&tmp_single_semaphore, 0) == kNoErr) {
+	}
+
 	if(temp_single_get_enable(channel)==SARADC_FAILURE) {
 
+		rtos_unlock_mutex(&tmp_single_mutex);
 		return -2;
 	}
-    
+
     ret = 1000; // 1s
     result = rtos_get_semaphore(&tmp_single_semaphore, ret);
     if(result == kNoErr) {
-        return tmp_single_desc.pData[0];
-    } 
-    return -3;
+		value = tmp_single_desc.pData[0];
+	} else {
+		temp_single_get_disable();
+		value = -3;
+	}
+	rtos_unlock_mutex(&tmp_single_mutex);
+	return value;
 }
 
