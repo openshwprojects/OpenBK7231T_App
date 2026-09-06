@@ -829,11 +829,15 @@ void CFG_InitAndLoad() {
 		// mark as changed
 		g_cfg_pendingChanges ++;
 	} else {
-#if defined(PLATFORM_XRADIO) || defined(PLATFORM_BL602)
+#if defined(PLATFORM_XRADIO) || defined(PLATFORM_BL602) || defined(PLATFORM_BEKEN)
 		if (g_cfg.mac[0] == 0 && g_cfg.mac[1] == 0 && g_cfg.mac[2] == 0 && g_cfg.mac[3] == 0 && g_cfg.mac[4] == 0 && g_cfg.mac[5] == 0) {
 			WiFI_GetMacAddress((char*)g_cfg.mac);
 		}
-		WiFI_SetMacAddress((char*)g_cfg.mac);
+		// never apply an all-zero or a multicast/broadcast MAC - that would kill WiFi
+		if ((g_cfg.mac[0] & 1) == 0 && (g_cfg.mac[0] | g_cfg.mac[1] | g_cfg.mac[2]
+			| g_cfg.mac[3] | g_cfg.mac[4] | g_cfg.mac[5]) != 0) {
+			WiFI_SetMacAddressAtBoot((char*)g_cfg.mac);
+		}
 #endif
 		addLogAdv(LOG_WARN, LOG_FEATURE_CFG, "CFG_InitAndLoad: Correct config has been loaded with %i changes count.",g_cfg.changeCounter);
 	}
