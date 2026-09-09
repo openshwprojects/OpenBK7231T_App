@@ -1104,7 +1104,10 @@ void Main_OnEverySecond()
 	rtos_delay_milliseconds(1);
 
 }
-
+#ifdef ENABLE_DRIVER_TM_CUSTOM
+    #include "drv_tm_custom.h"
+    drv_tm_custom_auto_start();
+#endif
 
 //////////////////////////////////////////////////////
 // Quick tick
