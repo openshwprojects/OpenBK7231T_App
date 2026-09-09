@@ -1,0 +1,15 @@
+CONFIG_FREERTOS_UNICORE=y
+CONFIG_ESP_MAC_IGNORE_MAC_CRC_ERROR=y
+
+# Forensic reference: these settings produced a complete binary UART coredump
+# that could be decoded against the matching ELF after an interrupt watchdog.
+# Leave them disabled in release builds; uncomment together for a diagnostic
+# image. Whole-DRAM capture and a dedicated coredump stack are deliberately not
+# included because both re-entered the panic handler during validation.
+# CONFIG_ESP_COREDUMP_ENABLE_TO_UART=y
+# CONFIG_ESP_COREDUMP_DATA_FORMAT_BIN=y
+# CONFIG_ESP_COREDUMP_CHECKSUM_CRC32=y
+# CONFIG_ESP_COREDUMP_MAX_TASKS_NUM=64
+# CONFIG_ESP_COREDUMP_UART_DELAY=0
+# CONFIG_ESP_COREDUMP_STACK_SIZE=0
+# CONFIG_ESP_COREDUMP_DECODE_DISABLE=y
