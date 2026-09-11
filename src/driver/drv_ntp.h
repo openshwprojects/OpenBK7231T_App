@@ -14,6 +14,7 @@ unsigned int NTP_GetCurrentTime();
 unsigned int NTP_GetCurrentTimeWithoutOffset();
 void NTP_AppendInformationToHTTPIndexPage(http_request_t* request, int bPreState);
 bool NTP_IsTimeSynced();
+unsigned int NTP_GetSyncCount();
 int NTP_GetTimesZoneOfsSeconds();
 void NTP_SetTimesZoneOfsSeconds(int o);
 // for Simulator only, on Windows, for unit testing
