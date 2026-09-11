@@ -1,7 +1,12 @@
 cmake_minimum_required(VERSION 3.16.0)
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)
 add_compile_definitions(PLATFORM_ESPIDF=1)
-add_compile_definitions(LWIP_NOASSERT=1)
+# Keep lwIP assertions enabled now that MQTT observes TCP/IP core ownership.
+# add_compile_definitions(LWIP_NOASSERT=1)
+# ESP32-C3 2M has no room for lwIP's assertion strings in its OTA partitions.
+if("$ENV{IDF_TARGET}" STREQUAL "esp32c3" AND "$ENV{OBK_VARIANT}" STREQUAL "1")
+	add_compile_definitions(LWIP_NOASSERT=1)
+endif()
 set(ENABLE_MDNS_ESPIDF 0)
 if("$ENV{IDF_TARGET}" STREQUAL "esp32" OR "$ENV{IDF_TARGET}" STREQUAL "esp32c6" OR "$ENV{IDF_TARGET}" STREQUAL "esp32s3")
 	set(ENABLE_MDNS_ESPIDF 1)
