@@ -1300,7 +1300,8 @@ void Main_Init_AfterDelay_Unsafe(bool bStartAutoRunScripts) {
 
 	if (bStartAutoRunScripts) {
 		if (PIN_FindPinIndexForRole(IOR_IRRecv, -1) != -1 || PIN_FindPinIndexForRole(IOR_IRSend, -1) != -1
-			|| PIN_FindPinIndexForRole(IOR_IRRecv_nPup, -1) != -1) {
+			|| PIN_FindPinIndexForRole(IOR_IRRecv_nPup, -1) != -1
+			|| PIN_FindPinIndexForRole(IOR_IRLearn, -1) != -1) {
 			// start IR driver 5 seconds after boot.  It may affect wifi connect?
 			// yet we also want it to start if no wifi for IR control...
 #ifndef OBK_DISABLE_ALL_DRIVERS

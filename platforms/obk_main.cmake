@@ -198,6 +198,7 @@ set(OBKM_SRC_CXX
 	${OBK_SRCS}libraries/IRremoteESP8266/src/ir_Arris.cpp
 	${OBK_SRCS}libraries/IRremoteESP8266/src/ir_Bosch.cpp
 	${OBK_SRCS}libraries/IRremoteESP8266/src/ir_Bose.cpp
+	${OBK_SRCS}libraries/IRremoteESP8266/src/ir_BluestarHeavy.cpp
 	${OBK_SRCS}libraries/IRremoteESP8266/src/ir_Carrier.cpp
 	${OBK_SRCS}libraries/IRremoteESP8266/src/ir_ClimaButler.cpp
 	${OBK_SRCS}libraries/IRremoteESP8266/src/ir_Coolix.cpp
@@ -211,6 +212,7 @@ set(OBKM_SRC_CXX
 	${OBK_SRCS}libraries/IRremoteESP8266/src/ir_Electra.cpp
 	${OBK_SRCS}libraries/IRremoteESP8266/src/ir_EliteScreens.cpp
 	${OBK_SRCS}libraries/IRremoteESP8266/src/ir_Epson.cpp
+	${OBK_SRCS}libraries/IRremoteESP8266/src/ir_Eurom.cpp
 	${OBK_SRCS}libraries/IRremoteESP8266/src/ir_Fujitsu.cpp
 	${OBK_SRCS}libraries/IRremoteESP8266/src/ir_GICable.cpp
 	${OBK_SRCS}libraries/IRremoteESP8266/src/ir_GlobalCache.cpp
@@ -266,6 +268,7 @@ set(OBKM_SRC_CXX
 	${OBK_SRCS}libraries/IRremoteESP8266/src/ir_Whynter.cpp
 	${OBK_SRCS}libraries/IRremoteESP8266/src/ir_Wowwee.cpp
 	${OBK_SRCS}libraries/IRremoteESP8266/src/ir_Xmp.cpp
+	${OBK_SRCS}libraries/IRremoteESP8266/src/ir_York.cpp
 	${OBK_SRCS}libraries/IRremoteESP8266/src/ir_Zepeal.cpp
 	${OBK_SRCS}libraries/IRremoteESP8266/src/itoa.cpp
 )

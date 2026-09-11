@@ -724,8 +724,10 @@ void IRHaierAC176::setTemp(const uint8_t degree, const bool fahrenheit) {
       temp = kHaierAcYrw02MinTempF;
     else if (temp > kHaierAcYrw02MaxTempF)
       temp = kHaierAcYrw02MaxTempF;
-    if (degree >= 77) { temp++; }
-    if (degree >= 79) { temp++; }
+    if (degree >= 77)
+      temp++;
+    if (degree >= 79)
+      temp++;
     // See at IRHaierAC176::getTemp() comments for clarification
     _.ExtraDegreeF = temp % 2;
     _.Temp = (temp - kHaierAcYrw02MinTempF -_.ExtraDegreeF) >> 1;
@@ -742,7 +744,8 @@ void IRHaierAC176::setTemp(const uint8_t degree, const bool fahrenheit) {
 /// The unit of temperature is specified by UseFahrenheit value.
 /// @return The current setting for temperature.
 uint8_t IRHaierAC176::getTemp(void) const {
-  if (!_.UseFahrenheit) { return _.Temp + kHaierAcYrw02MinTempC; }
+  if (!_.UseFahrenheit)
+    return _.Temp + kHaierAcYrw02MinTempC;
   uint8_t degree = _.Temp*2 + kHaierAcYrw02MinTempF + _.ExtraDegreeF;
   // The way of coding the temperature in degree Fahrenheit is
   // kHaierAcYrw02MinTempF + Temp*2 + ExtraDegreeF, for example
@@ -779,8 +782,10 @@ uint8_t IRHaierAC176::getTemp(void) const {
   // |    84F     | 0b1101 |     0b0      |
   // |    86F     | 0b1110 |     0b0      |
   // |    85F     | 0b1101 |     0b1      |
-  if (degree >= 77) { degree--; }
-  if (degree >= 79) { degree--; }
+  if (degree >= 77)
+    degree--;
+  if (degree >= 79)
+    degree--;
   return degree;
 }
 
@@ -959,7 +964,7 @@ uint8_t IRHaierAC176::getTimerMode(void) const { return _.TimerMode; }
 /// Set the number of minutes of the On Timer setting.
 /// @param[in] mins Nr. of Minutes for the Timer. `0` means disable the timer.
 void IRHaierAC176::setOnTimer(const uint16_t mins) {
-  const uint16_t nr_mins = ::min((uint16_t)(23 * 60 + 59), mins);
+  const uint16_t nr_mins = ::min(static_cast<uint16_t>(23 * 60 + 59), mins);
   _.OnTimerHrs = nr_mins / 60;
   _.OnTimerMins = nr_mins % 60;
 
@@ -989,7 +994,7 @@ uint16_t IRHaierAC176::getOnTimer(void) const {
 /// Set the number of minutes of the Off Timer setting.
 /// @param[in] mins Nr. of Minutes for the Timer. `0` means disable the timer.
 void IRHaierAC176::setOffTimer(const uint16_t mins) {
-  const uint16_t nr_mins = ::min((uint16_t)(23 * 60 + 59), mins);
+  const uint16_t nr_mins = ::min(static_cast<uint16_t>(23 * 60 + 59), mins);
   _.OffTimerHrs = nr_mins / 60;
   _.OffTimerMins = nr_mins % 60;
 
@@ -1618,8 +1623,10 @@ void IRHaierAC160::setTemp(const uint8_t degree, const bool fahrenheit) {
       temp = kHaierAcYrw02MinTempF;
     else if (temp > kHaierAcYrw02MaxTempF)
       temp = kHaierAcYrw02MaxTempF;
-    if (degree >= 77) { temp++; }
-    if (degree >= 79) { temp++; }
+    if (degree >= 77)
+      temp++;
+    if (degree >= 79)
+      temp++;
     // See at IRHaierAC160::getTemp() comments for clarification
     _.ExtraDegreeF = temp % 2;
     _.Temp = (temp - kHaierAcYrw02MinTempF -_.ExtraDegreeF) >> 1;
@@ -1636,7 +1643,8 @@ void IRHaierAC160::setTemp(const uint8_t degree, const bool fahrenheit) {
 /// The unit of temperature is specified by UseFahrenheit value.
 /// @return The current setting for temperature.
 uint8_t IRHaierAC160::getTemp(void) const {
-  if (!_.UseFahrenheit) { return _.Temp + kHaierAcYrw02MinTempC; }
+  if (!_.UseFahrenheit)
+    return _.Temp + kHaierAcYrw02MinTempC;
   uint8_t degree = _.Temp*2 + kHaierAcYrw02MinTempF + _.ExtraDegreeF;
   // The way of coding the temperature in degree Fahrenheit is
   // kHaierAcYrw02MinTempF + Temp*2 + ExtraDegreeF, for example
@@ -1673,8 +1681,10 @@ uint8_t IRHaierAC160::getTemp(void) const {
   // |    84F     | 0b1101 |     0b0      |
   // |    86F     | 0b1110 |     0b0      |
   // |    85F     | 0b1101 |     0b1      |
-  if (degree >= 77) { degree--; }
-  if (degree >= 79) { degree--; }
+  if (degree >= 77)
+    degree--;
+  if (degree >= 79)
+    degree--;
   return degree;
 }
 
@@ -1855,7 +1865,7 @@ uint8_t IRHaierAC160::getTimerMode(void) const { return _.TimerMode; }
 /// Set the number of minutes of the On Timer setting.
 /// @param[in] mins Nr. of Minutes for the Timer. `0` means disable the timer.
 void IRHaierAC160::setOnTimer(const uint16_t mins) {
-  const uint16_t nr_mins = ::min((uint16_t)(23 * 60 + 59), mins);
+  const uint16_t nr_mins = ::min(static_cast<uint16_t>(23 * 60 + 59), mins);
   _.OnTimerHrs = nr_mins / 60;
   _.OnTimerMins = nr_mins % 60;
 
@@ -1885,7 +1895,7 @@ uint16_t IRHaierAC160::getOnTimer(void) const {
 /// Set the number of minutes of the Off Timer setting.
 /// @param[in] mins Nr. of Minutes for the Timer. `0` means disable the timer.
 void IRHaierAC160::setOffTimer(const uint16_t mins) {
-  const uint16_t nr_mins = ::min((uint16_t)(23 * 60 + 59), mins);
+  const uint16_t nr_mins = ::min(static_cast<uint16_t>(23 * 60 + 59), mins);
   _.OffTimerHrs = nr_mins / 60;
   _.OffTimerMins = nr_mins % 60;
 
