@@ -558,7 +558,7 @@ void Main_OnWiFiStatusChange(int code)
 			HAL_GetWiFiChannel(&g_wifi_channel);
 
 
-			if (strlen(CFG_DeviceGroups_GetName()) > 0) {
+			if (CFG_DeviceGroups_GetCount() > 0) {
 				ScheduleDriverStart("DGR", 5);
 			}
 			// if SSDP should be active, 

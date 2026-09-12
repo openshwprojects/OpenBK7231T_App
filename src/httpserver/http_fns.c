@@ -3507,6 +3507,14 @@ int http_fn_cfg_startup(http_request_t* request) {
 #endif
 #if ENABLE_HTTP_DGR
 int http_fn_cfg_dgr(http_request_t* request) {
+	static const struct {
+		const char *label;
+		const char *key;
+		int code;
+		int mask;
+	} extraOptions[] = {
+		{ "Event", "evt", 64, DGR_SHARE_EVENT }
+	};
 	char tmpA[128];
 	bool bForceSet;
 
@@ -3541,8 +3549,27 @@ int http_fn_cfg_dgr(http_request_t* request) {
 			newSendFlags |= DGR_SHARE_LIGHT_COLOR;
 		if (http_getArgInteger(request->url, "r_lcl"))
 			newRecvFlags |= DGR_SHARE_LIGHT_COLOR;
+		for (unsigned int i = 0; i < sizeof(extraOptions) / sizeof(extraOptions[0]); i++) {
+			char argumentName[8];
+			snprintf(argumentName, sizeof(argumentName), "s_%s", extraOptions[i].key);
+			if (http_getArgInteger(request->url, argumentName)) newSendFlags |= extraOptions[i].mask;
+			argumentName[0] = 'r';
+			if (http_getArgInteger(request->url, argumentName)) newRecvFlags |= extraOptions[i].mask;
+		}
 
 		CFG_DeviceGroups_SetName(tmpA);
+		for (int groupIndex = 1; groupIndex < CFG_DEVICE_GROUP_MAX; groupIndex++) {
+			char argumentName[12];
+			snprintf(argumentName, sizeof(argumentName), "name%i", groupIndex + 1);
+			if (http_getArg(request->url, argumentName, tmpA, sizeof(tmpA))) {
+				CFG_DeviceGroups_SetNameByIndex(groupIndex, tmpA);
+			}
+		}
+		for (int groupIndex = 0; groupIndex < CFG_DEVICE_GROUP_MAX; groupIndex++) {
+			char argumentName[12];
+			snprintf(argumentName, sizeof(argumentName), "tie%i", groupIndex + 1);
+			CFG_DeviceGroups_SetTie(groupIndex, http_getArgInteger(request->url, argumentName));
+		}
 		CFG_DeviceGroups_SetSendFlags(newSendFlags);
 		CFG_DeviceGroups_SetRecvFlags(newRecvFlags);
 
@@ -3562,7 +3589,20 @@ int http_fn_cfg_dgr(http_request_t* request) {
 		newSendFlags = CFG_DeviceGroups_GetSendFlags();
 		newRecvFlags = CFG_DeviceGroups_GetRecvFlags();
 
-		add_label_text_field(request, "Group name", "name", groupName, "<form action=\"/cfg_dgr\">");
+		add_label_text_field(request, "Group name 1", "name", groupName, "<form action=\"/cfg_dgr\">");
+		for (int groupIndex = 1; groupIndex < CFG_DEVICE_GROUP_MAX; groupIndex++) {
+			char label[20];
+			char argumentName[12];
+			snprintf(label, sizeof(label), "Group name %i", groupIndex + 1);
+			snprintf(argumentName, sizeof(argumentName), "name%i", groupIndex + 1);
+			add_label_text_field(request, label, argumentName, CFG_DeviceGroups_GetNameByIndex(groupIndex), "");
+		}
+		poststr(request, "<br><table><tr><th>Group</th><th>Relay tie (0=none)</th></tr>");
+		for (int groupIndex = 0; groupIndex < CFG_DEVICE_GROUP_MAX; groupIndex++) {
+			hprintf255(request, "<tr><td>%i</td><td><input name=\"tie%i\" type=\"number\" min=\"0\" max=\"24\" value=\"%i\"></td></tr>",
+				groupIndex + 1, groupIndex + 1, CFG_DeviceGroups_GetTie(groupIndex));
+		}
+		poststr(request, "</table>");
 		poststr(request, "<br><table><tr><th>Name</th><th>Tasmota Code</th><th>Receive</th><th>Send</th></tr><tr><td>Power</td><td>1</td>");
 
 		poststr(request, "<td><input type=\"checkbox\" name=\"r_pwr\" value=\"1\"");
@@ -3591,6 +3631,13 @@ int http_fn_cfg_dgr(http_request_t* request) {
 		if (newSendFlags & DGR_SHARE_LIGHT_COLOR)
 			poststr(request, " checked");
 		poststr(request, "></td> ");
+
+		for (unsigned int i = 0; i < sizeof(extraOptions) / sizeof(extraOptions[0]); i++) {
+			hprintf255(request, "</tr><tr><td>%s</td><td>%i</td><td><input type=\"checkbox\" name=\"r_%s\" value=\"1\"%s></td><td><input type=\"checkbox\" name=\"s_%s\" value=\"1\"%s></td>",
+				extraOptions[i].label, extraOptions[i].code, extraOptions[i].key,
+				(newRecvFlags & extraOptions[i].mask) ? " checked" : "", extraOptions[i].key,
+				(newSendFlags & extraOptions[i].mask) ? " checked" : "");
+		}
 
 		poststr(request, "<input type=\"hidden\" name=\"bSet\" value=\"1\">");
 
