@@ -86,13 +86,13 @@ int HAL_FlashVars_GetChannelValue(int ch) {
 }
 
 
-void HAL_FlashVars_SaveLED(byte mode, short brightness, short temperature, byte r, byte g, byte b, byte bEnableAll) {
+void HAL_FlashVars_SaveLED(byte mode, short brightness, short temperatureOrWhite, byte r, byte g, byte b, byte bEnableAll) {
 #ifndef DISABLE_FLASH_VARS_VARS
 	int iChangesCount = 0;
 	ef_get_env_blob(KV_KEY_FLASH_VARS, &flash_vars, FLASH_VARS_STRUCTURE_SIZE, NULL);
 
 	SAVE_CHANGE_IF_REQUIRED_AND_COUNT(flash_vars.savedValues[MAX_RETAIN_CHANNELS - 1], brightness, iChangesCount);
-	SAVE_CHANGE_IF_REQUIRED_AND_COUNT(flash_vars.savedValues[MAX_RETAIN_CHANNELS - 2], temperature, iChangesCount);
+	SAVE_CHANGE_IF_REQUIRED_AND_COUNT(flash_vars.savedValues[MAX_RETAIN_CHANNELS - 2], temperatureOrWhite, iChangesCount);
 	SAVE_CHANGE_IF_REQUIRED_AND_COUNT(flash_vars.savedValues[MAX_RETAIN_CHANNELS - 3], mode, iChangesCount);
 	SAVE_CHANGE_IF_REQUIRED_AND_COUNT(flash_vars.savedValues[MAX_RETAIN_CHANNELS - 4], bEnableAll, iChangesCount);
 	SAVE_CHANGE_IF_REQUIRED_AND_COUNT(flash_vars.rgb[0], r, iChangesCount);
@@ -105,11 +105,11 @@ void HAL_FlashVars_SaveLED(byte mode, short brightness, short temperature, byte 
 	}
 #endif
 }
-void HAL_FlashVars_ReadLED(byte* mode, short* brightness, short* temperature, byte* rgb, byte* bEnableAll) {
+void HAL_FlashVars_ReadLED(byte* mode, short* brightness, short* temperatureOrWhite, byte* rgb, byte* bEnableAll) {
 #ifndef DISABLE_FLASH_VARS_VARS
 	* bEnableAll = flash_vars.savedValues[MAX_RETAIN_CHANNELS - 4];
 	*mode = flash_vars.savedValues[MAX_RETAIN_CHANNELS - 3];
-	*temperature = flash_vars.savedValues[MAX_RETAIN_CHANNELS - 2];
+	*temperatureOrWhite = flash_vars.savedValues[MAX_RETAIN_CHANNELS - 2];
 	*brightness = flash_vars.savedValues[MAX_RETAIN_CHANNELS - 1];
 	rgb[0] = flash_vars.rgb[0];
 	rgb[1] = flash_vars.rgb[1];
