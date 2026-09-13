@@ -900,6 +900,9 @@ HassDeviceInfo* hass_init_energy_sensor_device_info(int index, int asensdataseti
 	if ((index > OBK_CONSUMPTION_STORED_LAST[asensdatasetix]) && (index <= OBK_CONSUMPTION__DAILY_LAST)) return info;
 #endif
 	if (index == OBK_FREQUENCY && !BL_HasEnergySensorReadingEx(asensdatasetix, index)) return info;
+	// Skip Apparent Power / Reactive Power / Power Factor entities if the user disabled them
+	if ((index == OBK_POWER_APPARENT || index == OBK_POWER_REACTIVE || index == OBK_POWER_FACTOR)
+		&& CFG_HasFlag(OBK_FLAG_POWER_HIDE_EXTENDED_SENSORS)) return info;
 	info = hass_init_device_info(ENERGY_METER_SENSOR, index, NULL, NULL, asensdatasetix, NULL);
 
 	cJSON_AddStringToObject(info->root, "dev_cla", DRV_GetEnergySensorNamesEx(asensdatasetix,index)->hass_dev_class);   //device_class=voltage,current,power, energy, timestamp
