@@ -7,6 +7,7 @@
 #include "drv_local.h"
 #include "../hal/hal_pins.h"
 #include "../hal/hal_flashVars.h"
+#include "../quicktick.h"
 
 /*
 // sensitivity pin
@@ -36,6 +37,17 @@ static int ch_motion; // pir 1 or 0
 static int ch_sens; // pir sens
 static int g_timeLeft = 0;
 static int g_isDark = 0;
+static int g_sensInverted = 0; // sensitivity pin uses an inverted (_n) PWM role
+
+// "Lamp is about to switch off" warning: blink a few times shortly before
+// the on-time runs out, so you can wave and get the light extended.
+#define PIR_BLINK_WARN_SECONDS	3	// how long before switch-off the warning starts
+#define PIR_BLINK_COUNT			3	// number of blinks
+#define PIR_BLINK_OFF_MS		150	// dark part of one blink
+#define PIR_BLINK_ON_MS			350	// lit part of one blink
+
+static int g_blinkPhase = -1;	// -1 = idle, else 0..(PIR_BLINK_COUNT*2-1); even = dark, odd = lit
+static int g_blinkTimeMs = 0;
 
 // PIR settings are kept in the retained flash variables (see hal_flashVars.h).
 // NOTE: HAL_FlashVars_SaveChannel/HAL_FlashVars_GetChannelValue take a raw slot
@@ -60,6 +72,38 @@ static int g_isDark = 0;
 #define PIR_DEFAULT_ONTIME			60
 #define PIR_DEFAULT_SENSITIVITY		50
 #define PIR_DEFAULT_LIGHTLEVEL		300
+
+static void PIR_StopBlink() {
+	g_blinkPhase = -1;
+	g_blinkTimeMs = 0;
+}
+
+static void PIR_StartBlink() {
+	g_blinkPhase = 0;
+	g_blinkTimeMs = 0;
+	LED_SetEnableAll(false);
+}
+
+// Runs every QUICK_TMR_DURATION ms, drives the warning blink sequence.
+void PIR_OnQuickTick() {
+	int phaseDurationMs;
+
+	if (g_blinkPhase < 0)
+		return;
+	g_blinkTimeMs += QUICK_TMR_DURATION;
+	phaseDurationMs = (g_blinkPhase & 1) ? PIR_BLINK_ON_MS : PIR_BLINK_OFF_MS;
+	if (g_blinkTimeMs < phaseDurationMs)
+		return;
+	g_blinkTimeMs = 0;
+	g_blinkPhase++;
+	if (g_blinkPhase >= (PIR_BLINK_COUNT * 2)) {
+		// warning done - stay lit until the on-time actually expires
+		PIR_StopBlink();
+		LED_SetEnableAll(true);
+		return;
+	}
+	LED_SetEnableAll((g_blinkPhase & 1) ? true : false);
+}
 
 // Stores a setting only if it really changed, so we don't wear out the flash
 // with redundant writes (the whole flash vars blob is rewritten on each save).
@@ -96,6 +140,9 @@ void PIR_Init() {
 		}
 	}
 	ch_sens = CHANNEL_FindIndexForPinType2(IOR_PWM_ScriptOnly, IOR_PWM_ScriptOnly_n);
+	// An _n pin role drives the pin with (100 - value), so the slider is inverted
+	// on the hardware side. Remember it so we can show the real duty cycle in the UI.
+	g_sensInverted = (ch_sens != -1 && CHANNEL_FindIndexForPinType(IOR_PWM_ScriptOnly_n) == ch_sens);
 }
 
 void PIR_OnEverySecond() {
@@ -116,18 +163,27 @@ void PIR_OnEverySecond() {
 		// While the lamp is already on, motion alone extends the on time.
 		if (motion && (g_isDark || g_timeLeft > 0)) {
 			g_timeLeft = g_onTime;
+			// someone is still there - abort a running switch-off warning
+			PIR_StopBlink();
 			LED_SetEnableAll(true);
 		}
 		if (g_timeLeft > 0) {
 			g_timeLeft--;
 			if (g_timeLeft <= 0) {
 				// turn off
+				PIR_StopBlink();
 				LED_SetEnableAll(false);
+			}
+			else if (g_timeLeft == PIR_BLINK_WARN_SECONDS && g_blinkPhase < 0
+				&& g_onTime > PIR_BLINK_WARN_SECONDS) {
+				// warn that the light is about to go out
+				PIR_StartBlink();
 			}
 		}
 	}
 	else {
 		g_timeLeft = 0;
+		PIR_StopBlink();
 	}
 
 }
@@ -158,6 +214,11 @@ void PIR_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState
 
 		hprintf255(request, "On Time (seconds): <input type=\"text\" name=\"pirTime\" value=\"%i\"/><br><br>", g_onTime);
 		hprintf255(request, "PIR Sensitivity: <input type=\"range\" name=\"pirSensitivity\" min=\"1\" max=\"100\" value=\"%i\"/><br><br>", g_sensitivity);
+		if (ch_sens != -1) {
+			hprintf255(request, "&nbsp;&nbsp;(channel %i, PWM duty %i%%%s)<br><br>", ch_sens,
+				g_sensInverted ? (100 - g_sensitivity) : g_sensitivity,
+				g_sensInverted ? ", pin role is inverted" : "");
+		}
 		hprintf255(request, "Light Level Margin: <input type=\"text\" name=\"light\" value=\"%i\"/><br><br>", g_lightLevelMargin);
 
 		hprintf255(request, "Mode:<br>");
