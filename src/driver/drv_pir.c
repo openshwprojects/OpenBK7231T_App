@@ -37,16 +37,56 @@ static int ch_sens; // pir sens
 static int g_timeLeft = 0;
 static int g_isDark = 0;
 
-#define VAR_TIME SPECIAL_CHANNEL_FLASHVARS_LAST
-#define VAR_SENS (SPECIAL_CHANNEL_FLASHVARS_LAST-1)
-#define VAR_MODE (SPECIAL_CHANNEL_FLASHVARS_LAST-2)
-#define VAR_LIGHTLEVEL (SPECIAL_CHANNEL_FLASHVARS_LAST-3)
+// PIR settings are kept in the retained flash variables (see hal_flashVars.h).
+// NOTE: HAL_FlashVars_SaveChannel/HAL_FlashVars_GetChannelValue take a raw slot
+// index in range <0, MAX_RETAIN_CHANNELS), NOT a SPECIAL_CHANNEL_FLASHVARS_*
+// constant - those are only understood by CHANNEL_Set/CHANNEL_Get, which
+// subtract SPECIAL_CHANNEL_FLASHVARS_FIRST before calling the HAL.
+// Passing the special constants here made every save silently fail the
+// "index >= MAX_RETAIN_CHANNELS" range check, so all PIR settings were lost
+// on every power cycle.
+// The LED driver (flag OBK_FLAG_LED_REMEMBERLASTSTATE) uses the last 4 slots,
+// so use the first 4 here to avoid clashing with it.
+#define VAR_TIME		0
+#define VAR_SENS		1
+#define VAR_MODE		2
+#define VAR_LIGHTLEVEL	3
+
+#if (VAR_LIGHTLEVEL >= (MAX_RETAIN_CHANNELS - 4))
+#error "PIR flash variable slots overlap the LED driver slots"
+#endif
+
+// Used when nothing has been stored yet (fresh device / erased flash vars)
+#define PIR_DEFAULT_ONTIME			60
+#define PIR_DEFAULT_SENSITIVITY		50
+#define PIR_DEFAULT_LIGHTLEVEL		300
+
+// Stores a setting only if it really changed, so we don't wear out the flash
+// with redundant writes (the whole flash vars blob is rewritten on each save).
+static void PIR_SaveVar(int index, int *pTarget, int value) {
+	if (*pTarget == value)
+		return;
+	*pTarget = value;
+	HAL_FlashVars_SaveChannel(index, value);
+}
 
 void PIR_Init() {
 	g_onTime = HAL_FlashVars_GetChannelValue(VAR_TIME);
 	g_sensitivity = HAL_FlashVars_GetChannelValue(VAR_SENS);
 	g_mode = HAL_FlashVars_GetChannelValue(VAR_MODE);
 	g_lightLevelMargin = HAL_FlashVars_GetChannelValue(VAR_LIGHTLEVEL);
+	// A zero here means "never configured" - those values are not usable
+	// (on time 0 would switch the light off immediately, sensitivity 0
+	// would keep the PIR blind), so fall back to sane defaults.
+	if (g_onTime <= 0) {
+		g_onTime = PIR_DEFAULT_ONTIME;
+	}
+	if (g_sensitivity <= 0) {
+		g_sensitivity = PIR_DEFAULT_SENSITIVITY;
+	}
+	if (g_lightLevelMargin <= 0) {
+		g_lightLevelMargin = PIR_DEFAULT_LIGHTLEVEL;
+	}
 	ch_lightAdc = CHANNEL_FindIndexForPinType(IOR_ADC);
 	ch_motion = CHANNEL_FindIndexForType(ChType_Motion);
 	if (ch_motion == -1) {
@@ -64,11 +104,12 @@ void PIR_OnEverySecond() {
 	}
 	if (g_mode == 1) {
 		// "Value seems to go down if MORE light is here and UP is LESS light is here"
-		int lightLevel = CHANNEL_Get(ch_lightAdc);
+		// If no light sensor is mapped, don't ask for channel -1, just assume it's dark
+		int lightLevel = (ch_lightAdc != -1) ? CHANNEL_Get(ch_lightAdc) : (g_lightLevelMargin + 1);
 		g_isDark = lightLevel > g_lightLevelMargin;
 		if (g_isDark) {
 			// auto mode
-			int motion = CHANNEL_Get(ch_motion);
+			int motion = (ch_motion != -1) ? CHANNEL_Get(ch_motion) : 0;
 			if (motion) {
 				g_timeLeft = g_onTime;
 				LED_SetEnableAll(true);
@@ -97,20 +138,16 @@ void PIR_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState
 	{
 		char tmpA[32];
 		if (http_getArg(request->url, "pirTime", tmpA, sizeof(tmpA))) {
-			g_onTime = atoi(tmpA);
-			HAL_FlashVars_SaveChannel(VAR_TIME, g_onTime);
+			PIR_SaveVar(VAR_TIME, &g_onTime, atoi(tmpA));
 		}
 		if (http_getArg(request->url, "pirSensitivity", tmpA, sizeof(tmpA))) {
-			g_sensitivity = atoi(tmpA);
-			HAL_FlashVars_SaveChannel(VAR_SENS, g_sensitivity);
+			PIR_SaveVar(VAR_SENS, &g_sensitivity, atoi(tmpA));
 		}
 		if (http_getArg(request->url, "pirMode", tmpA, sizeof(tmpA))) {
-			g_mode = atoi(tmpA);
-			HAL_FlashVars_SaveChannel(VAR_MODE, g_mode);
+			PIR_SaveVar(VAR_MODE, &g_mode, atoi(tmpA));
 		}
 		if (http_getArg(request->url, "light", tmpA, sizeof(tmpA))) {
-			g_lightLevelMargin = atoi(tmpA);
-			HAL_FlashVars_SaveChannel(VAR_LIGHTLEVEL, g_lightLevelMargin);
+			PIR_SaveVar(VAR_LIGHTLEVEL, &g_lightLevelMargin, atoi(tmpA));
 		}
 
 		hprintf255(request, "<h3>PIR Sensor Settings</h3>");
