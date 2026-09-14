@@ -63,8 +63,9 @@ static int g_blinkTimeMs = 0;
 #define VAR_SENS		1
 #define VAR_MODE		2
 #define VAR_LIGHTLEVEL	3
+#define VAR_LIGHTHYST	4
 
-#if (VAR_LIGHTLEVEL >= (MAX_RETAIN_CHANNELS - 4))
+#if (VAR_LIGHTHYST >= (MAX_RETAIN_CHANNELS - 4))
 #error "PIR flash variable slots overlap the LED driver slots"
 #endif
 
@@ -72,6 +73,35 @@ static int g_blinkTimeMs = 0;
 #define PIR_DEFAULT_ONTIME			60
 #define PIR_DEFAULT_SENSITIVITY		50
 #define PIR_DEFAULT_LIGHTLEVEL		300
+#define PIR_DEFAULT_LIGHTHYST		50
+
+// The raw ADC reading jitters by a few counts, and right at the threshold that
+// would make isDark flip every second. So average it over a few seconds and
+// require the average to move clearly past the threshold before flipping.
+#define PIR_LIGHT_AVG_SAMPLES		8
+
+static int g_lightHysteresis;
+static int g_lightHistory[PIR_LIGHT_AVG_SAMPLES];
+static int g_lightHistoryCount = 0;
+static int g_lightHistoryPos = 0;
+static int g_lightAvg = 0;
+static int g_lightStateKnown = 0; // 0 until the first reading decided dark/bright
+
+// Adds one reading and returns the average over the last PIR_LIGHT_AVG_SAMPLES.
+static int PIR_PushLightSample(int value) {
+	int i, sum;
+
+	g_lightHistory[g_lightHistoryPos] = value;
+	g_lightHistoryPos = (g_lightHistoryPos + 1) % PIR_LIGHT_AVG_SAMPLES;
+	if (g_lightHistoryCount < PIR_LIGHT_AVG_SAMPLES) {
+		g_lightHistoryCount++;
+	}
+	sum = 0;
+	for (i = 0; i < g_lightHistoryCount; i++) {
+		sum += g_lightHistory[i];
+	}
+	return sum / g_lightHistoryCount;
+}
 
 static void PIR_StopBlink() {
 	g_blinkPhase = -1;
@@ -119,6 +149,7 @@ void PIR_Init() {
 	g_sensitivity = HAL_FlashVars_GetChannelValue(VAR_SENS);
 	g_mode = HAL_FlashVars_GetChannelValue(VAR_MODE);
 	g_lightLevelMargin = HAL_FlashVars_GetChannelValue(VAR_LIGHTLEVEL);
+	g_lightHysteresis = HAL_FlashVars_GetChannelValue(VAR_LIGHTHYST);
 	// A zero here means "never configured" - those values are not usable
 	// (on time 0 would switch the light off immediately, sensitivity 0
 	// would keep the PIR blind), so fall back to sane defaults.
@@ -131,6 +162,12 @@ void PIR_Init() {
 	if (g_lightLevelMargin <= 0) {
 		g_lightLevelMargin = PIR_DEFAULT_LIGHTLEVEL;
 	}
+	if (g_lightHysteresis <= 0) {
+		g_lightHysteresis = PIR_DEFAULT_LIGHTHYST;
+	}
+	g_lightHistoryCount = 0;
+	g_lightHistoryPos = 0;
+	g_lightStateKnown = 0;
 	ch_lightAdc = CHANNEL_FindIndexForPinType(IOR_ADC);
 	ch_motion = CHANNEL_FindIndexForType(ChType_Motion);
 	if (ch_motion == -1) {
@@ -158,7 +195,24 @@ void PIR_OnEverySecond() {
 		// If no light sensor is mapped, don't ask for channel -1, just assume it's dark
 		int lightLevel = (ch_lightAdc != -1) ? CHANNEL_Get(ch_lightAdc) : (g_lightLevelMargin + 1);
 		int motion = (ch_motion != -1) ? CHANNEL_Get(ch_motion) : 0;
-		g_isDark = lightLevel > g_lightLevelMargin;
+		g_lightAvg = PIR_PushLightSample(lightLevel);
+		if (g_lightStateKnown == 0) {
+			// first reading after start - just take the plain comparison
+			g_isDark = g_lightAvg > g_lightLevelMargin;
+			g_lightStateKnown = 1;
+		}
+		else if (g_isDark) {
+			// stay "dark" until the average is clearly below the threshold
+			if (g_lightAvg < (g_lightLevelMargin - g_lightHysteresis)) {
+				g_isDark = 0;
+			}
+		}
+		else {
+			// stay "bright" until the average is clearly above the threshold
+			if (g_lightAvg > (g_lightLevelMargin + g_lightHysteresis)) {
+				g_isDark = 1;
+			}
+		}
 		// The light level only decides whether the lamp may turn ON in the first
 		// place. Once it is lit, our own light falls back onto the sensor and
 		// g_isDark goes false - so re-checking it here would stop motion from
@@ -233,6 +287,9 @@ void PIR_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState
 		if (http_getArg(request->url, "light", tmpA, sizeof(tmpA))) {
 			PIR_SaveVar(VAR_LIGHTLEVEL, &g_lightLevelMargin, atoi(tmpA));
 		}
+		if (http_getArg(request->url, "lightHyst", tmpA, sizeof(tmpA))) {
+			PIR_SaveVar(VAR_LIGHTHYST, &g_lightHysteresis, atoi(tmpA));
+		}
 
 		hprintf255(request, "<h3>PIR Sensor Settings</h3>");
 		hprintf255(request, "<form action=\"index\" method=\"get\">");
@@ -245,6 +302,10 @@ void PIR_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState
 				g_sensInverted ? ", inverted pin role compensated" : "");
 		}
 		hprintf255(request, "Light Level Margin: <input type=\"text\" name=\"light\" value=\"%i\"/><br><br>", g_lightLevelMargin);
+
+		hprintf255(request, "Light Hysteresis: <input type=\"text\" name=\"lightHyst\" value=\"%i\"/>", g_lightHysteresis);
+		hprintf255(request, "&nbsp;&nbsp;(now: raw %i, averaged %i, %s)<br><br>",
+			(ch_lightAdc != -1) ? CHANNEL_Get(ch_lightAdc) : -1, g_lightAvg, g_isDark ? "dark" : "bright");
 
 		hprintf255(request, "Mode:<br>");
 		hprintf255(request, "<input type=\"radio\" id=\"manual\" name=\"pirMode\" value=\"0\" %s><label for=\"manual\">Manual Mode</label><br>", g_mode == 0 ? "checked" : "");
