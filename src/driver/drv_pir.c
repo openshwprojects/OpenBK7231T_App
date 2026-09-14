@@ -147,7 +147,11 @@ void PIR_Init() {
 
 void PIR_OnEverySecond() {
 	if (ch_sens != -1) {
-		CHANNEL_Set(ch_sens,g_sensitivity, 0);
+		// An _n pin role drives the pin with (100 - value), which would make the
+		// slider mean the opposite of what it says: 1 on the slider ended up as
+		// 99% duty on the sensitivity pin. Pre-invert here so the value the user
+		// sets is the duty cycle that actually reaches the PIR module.
+		CHANNEL_Set(ch_sens, g_sensInverted ? (100 - g_sensitivity) : g_sensitivity, 0);
 	}
 	if (g_mode == 1) {
 		// "Value seems to go down if MORE light is here and UP is LESS light is here"
@@ -216,8 +220,8 @@ void PIR_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState
 		hprintf255(request, "PIR Sensitivity: <input type=\"range\" name=\"pirSensitivity\" min=\"1\" max=\"100\" value=\"%i\"/><br><br>", g_sensitivity);
 		if (ch_sens != -1) {
 			hprintf255(request, "&nbsp;&nbsp;(channel %i, PWM duty %i%%%s)<br><br>", ch_sens,
-				g_sensInverted ? (100 - g_sensitivity) : g_sensitivity,
-				g_sensInverted ? ", pin role is inverted" : "");
+				g_sensitivity,
+				g_sensInverted ? ", inverted pin role compensated" : "");
 		}
 		hprintf255(request, "Light Level Margin: <input type=\"text\" name=\"light\" value=\"%i\"/><br><br>", g_lightLevelMargin);
 
