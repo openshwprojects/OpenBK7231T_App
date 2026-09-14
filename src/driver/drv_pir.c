@@ -192,8 +192,29 @@ void PIR_OnEverySecond() {
 
 }
 
+// The motion input is scanned by PIN_ticks every ~25 ms, but the logic in
+// PIR_OnEverySecond only runs once per second. Reacting to the change here
+// means two things: the lamp follows motion immediately instead of up to a
+// second late, and short PIR pulses that fall between two one-second ticks
+// are no longer missed entirely.
+// The per-second poll is still needed for the opposite case: while the input
+// stays high there is no channel *change*, so no callback arrives.
 void PIR_OnChannelChanged(int ch, int value) {
-
+	if (g_mode != 1)
+		return;
+	if (ch_motion == -1 || ch != ch_motion)
+		return;
+	if (value == 0)
+		return;
+	// The light level may only gate switching ON. Once the lamp is lit, our own
+	// light falls back onto the sensor, so motion has to extend the on time
+	// regardless of g_isDark - same rule as in PIR_OnEverySecond.
+	if (g_isDark == 0 && g_timeLeft <= 0)
+		return;
+	g_timeLeft = g_onTime;
+	// someone is still there - abort a running switch-off warning
+	PIR_StopBlink();
+	LED_SetEnableAll(true);
 }
 
 void PIR_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState) {
