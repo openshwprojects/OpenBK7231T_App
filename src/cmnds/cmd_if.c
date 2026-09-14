@@ -555,7 +555,7 @@ const constant_t g_constants[] = {
 	//cnstdetail:"descr":"Random unsigned value",
 	//cnstdetail:"requires":""}
 	{ "$rand", &getRand },
-#ifdef PLATFORM_BEKEN
+#if defined(PLATFORM_BEKEN) || defined(PLATFORM_ARMINO)
 	//cnstdetail:{"name":"$rebootReason",
 	//cnstdetail:"title":"$rebootReason",
 	//cnstdetail:"descr":"Reboot reason",

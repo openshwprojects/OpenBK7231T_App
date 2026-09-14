@@ -534,6 +534,10 @@ static commandResult_t CMD_DeepSleep(const void* context, const char* cmd, const
 	return CMD_RES_OK;
 #elif defined(PLATFORM_BEKEN_NEW)
 	PS_DEEP_CTRL_PARAM params;
+	// see PINS_BeginDeepSleepWithPinWakeUp() - the struct must be zeroed, or the
+	// SDK gets stack garbage for the GPIO maps and for lpo_32k_src (the RTC
+	// clock source), and the device wakes at a random time or not at all
+	memset(&params, 0, sizeof(params));
 	params.sleep_mode = MANUAL_MODE_IDLE;
 	params.wake_up_way = PS_DEEP_WAKEUP_RTC;
 	params.sleep_time = timeMS;
@@ -628,6 +632,18 @@ static commandResult_t CMD_DeepSleep(const void* context, const char* cmd, const
 		remaining -= chunk;
 	}
 	HAL_RebootModule();
+#elif PLATFORM_ARMINO
+	alarm_info_t deep_sleep_alarm = {
+		"deep_ps",
+		(rtc_tick_t)((uint32_t)(timeMS * 1000) * AON_RTC_MS_TICK_CNT),
+		1,
+		NULL,
+		NULL
+	};
+	bk_alarm_unregister(AON_RTC_ID_1, deep_sleep_alarm.name);
+	bk_alarm_register(AON_RTC_ID_1, &deep_sleep_alarm);
+	bk_pm_wakeup_source_set(PM_WAKEUP_SOURCE_INT_RTC, NULL);
+	bk_pm_sleep_mode_set(PM_MODE_DEEP_SLEEP);
 #endif
 
 	return CMD_RES_OK;
@@ -729,7 +745,7 @@ static commandResult_t CMD_ClearAll(const void* context, const char* cmd, const 
 	CMD_ClearAllHandlers(0, 0, 0, 0);
 	RepeatingEvents_Cmd_ClearRepeatingEvents(0, 0, 0, 0);
 #if defined(WINDOWS) || defined(PLATFORM_BL602) || defined(PLATFORM_BEKEN) || defined(PLATFORM_LN882H) \
- || defined(PLATFORM_ESPIDF) || defined(PLATFORM_TR6260) || defined(PLATFORM_REALTEK)
+ || defined(PLATFORM_ESPIDF) || defined(PLATFORM_TR6260) || defined(PLATFORM_REALTEK) || defined(PLATFORM_ARMINO)
 	CMD_resetSVM(0, 0, 0, 0);
 #endif
 
@@ -893,14 +909,14 @@ static commandResult_t CMD_SafeMode(const void* context, const char* cmd, const 
 
 
 void CMD_UARTConsole_Init() {
-#if PLATFORM_BEKEN
+#if PLATFORM_BEKEN || PLATFORM_ARMINO
 	UART_InitUART(115200, 0, false);
 	cmd_uartInitIndex = get_g_uart_init_counter();
 	UART_InitReceiveRingBuffer(512);
 #endif
 }
 void CMD_UARTConsole_Run() {
-#if PLATFORM_BEKEN
+#if PLATFORM_BEKEN || PLATFORM_ARMINO
 	char a;
 	int i;
 	int totalSize;
@@ -936,7 +952,7 @@ void CMD_UARTConsole_Run() {
 #endif
 }
 void CMD_RunUartCmndIfRequired() {
-#if PLATFORM_BEKEN
+#if PLATFORM_BEKEN || PLATFORM_ARMINO
 	if (CFG_HasFlag(OBK_FLAG_CMD_ACCEPT_UART_COMMANDS)) {
 		if (cmd_uartInitIndex && cmd_uartInitIndex == get_g_uart_init_counter()) {
 			CMD_UARTConsole_Run();
@@ -1383,7 +1399,7 @@ void CMD_Init_Delayed() {
 	}
 #endif
 #if PLATFORM_BEKEN || WINDOWS || PLATFORM_BL602 || PLATFORM_ESPIDF || PLATFORM_ESP8266 \
-	|| PLATFORM_REALTEK || PLATFORM_ECR6600 || PLATFORM_XRADIO
+	|| PLATFORM_REALTEK || PLATFORM_ECR6600 || PLATFORM_XRADIO || PLATFORM_ARMINO
 	UART_AddCommands();
 #endif
 #if ENABLE_BL_TWIN

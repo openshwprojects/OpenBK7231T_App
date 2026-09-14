@@ -61,7 +61,7 @@ struct altcp_tls_config {
 #endif
 #endif
 
-#ifdef PLATFORM_BEKEN
+#if defined(PLATFORM_BEKEN) || defined(PLATFORM_ARMINO)
 #include <tcpip.h>
 // from hal_main_bk7231.c
 // triggers a one-shot timer to cause read.
@@ -178,7 +178,10 @@ static void MQTT_Mutex_Free()
 // system can use it to spoof MQTT packets to check if MQTT commands
 // are working...
 int MQTT_Post_Received(const char *topic, int topiclen, const unsigned char *data, int datalen){
-	MQTT_Mutex_Take(100);
+	// resolution for mutex ownership race condition - added return 0;
+	if (!MQTT_Mutex_Take(100)) {
+		return 0;
+	}
 	if ((MQTT_RX_BUFFER_MAX - 1 - mqtt_rx_buffer_count) < topiclen + datalen + 2 + 2){
 		addLogAdv(LOG_ERROR, LOG_FEATURE_MQTT, "MQTT_rx buffer overflow for topic %s", topic);
 	} else {
@@ -188,7 +191,7 @@ int MQTT_Post_Received(const char *topic, int topiclen, const unsigned char *dat
 	MQTT_Mutex_Free();
 
 
-#ifdef PLATFORM_BEKEN
+#if defined(PLATFORM_BEKEN) || defined(PLATFORM_ARMINO)
 	MQTT_TriggerRead();
 #endif
 	return 1;
@@ -198,7 +201,10 @@ int MQTT_Post_Received_Str(const char *topic, const char *data) {
 }
 int get_received(char **topic, int *topiclen, unsigned char **data, int *datalen){
 	int res = 0;
-	MQTT_Mutex_Take(100);
+	// resolution for mutex ownership race condition - added return 0;
+	if (!MQTT_Mutex_Take(100)) {
+		return 0;
+	}
 	if (mqtt_rx_buffer_tail != mqtt_rx_buffer_head){
 		getLenData(topiclen, temp_topic, sizeof(temp_topic)-1);
 		temp_topic[*topiclen] = 0;
@@ -2360,11 +2366,12 @@ int MQTT_RunEverySecondUpdate()
 							break;
 						}
 					}
-					// OBK_PUBLISH_MUTEX_FAIL - MQTT is busy
+					// Stop on transient failures instead of hammering every remaining item.
 					if (publishRes == OBK_PUBLISH_MUTEX_FAIL
-						|| publishRes == OBK_PUBLISH_WAS_DISCONNECTED)
+						|| publishRes == OBK_PUBLISH_WAS_DISCONNECTED
+						|| publishRes == OBK_PUBLISH_MEM_FAIL)
 					{
-						// retry the same later
+						// Leave this item pending while MQTT has time to drain its queue.
 						break;
 					}
 					// OBK_PUBLISH_WAS_NOT_REQUIRED

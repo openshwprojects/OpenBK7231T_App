@@ -8,7 +8,13 @@ Although this repository is named `OpenBK7231T_App`, it has evolved into a multi
 -   [BK7231M](https://www.elektroda.com/rtvforum/topic4058227.html), this is a non-Tuya version of BK7231N with `00000000` keys, sometimes labelled as Belon BL2028. [example1](https://www.elektroda.com/rtvforum/topic4056377.html) [example2](https://www.elektroda.com/rtvforum/topic4086986.html)
 -   T34 (flash as if [standard BK7231N](https://developer.tuya.com/en/docs/iot/t34-module-datasheet?id=Ka0l4h5zvg6j8)), see [flashing trick](https://www.elektroda.com/rtvforum/topic4036975.html)
 -   BL2028N ([BL2028N is a Belon version of BK7231N](https://www.elektroda.com/rtvforum/viewtopic.php?p=20262533#20262533))
+-   BK7236
 -   BK7238 (eg XH-CB3S) (see [tutorial for 1$ board](https://www.elektroda.com/rtvforum/topic4106397.html#21440428))
+-   BK7239N (eg HLK-B300)
+-   T1 (eg T1-3S, T1-U), see BK7238
+-   T2 (eg T2-U), see BK7231N
+-   T3 (eg T3-3S, T3-U), see BK7236
+-   T7 (eg T7-U), see BK7239N
 -   BK7231S/BK7231U - BK7231S is the original non-Tuya version of BK7231T. BK7231U is a version intended for cameras/displays. Usually comes with 00000000 keys. If flashing via SPI, can be updated to use BK7231T firmware built with zero keys. (eg C-8133U [LED driver boards](https://www.elektroda.com/rtvforum/topic4071547.html), HLK-B30 [Dev Board](https://fccid.io/2AD56HLK-B30/User-Manual/User-Manual-4894335.pdf))
 -   [XR809](https://www.elektroda.com/rtvforum/topic3806769.html) (eg [XR3](https://developer.tuya.com/en/docs/iot/xr3-datasheet?id=K98s9168qi49g)) ([Example](https://www.elektroda.com/rtvforum/topic4063735.html))
 -   XR806 (eg T103C-HL, [WXU](https://developer.tuya.com/en/docs/iot/wxu-module-datasheet?id=Kc2xk9qlk04so), Allwinner [Dev Board](https://www.elektroda.com/rtvforum/topic4109971.html), see [development thread](https://www.elektroda.com/rtvforum/topic4118139.html))
@@ -123,7 +129,7 @@ There is also a bit more outdated [WIKI](https://github.com/openshwprojects/Open
 
 # Building
 
-OpenBeken supports [online builds](https://www.elektroda.com/rtvforum/viewtopic.php?p=20946719#20946719) for all platforms (BK7231T, BK7231N, BK7238, XR809, BL602, W600, W800, ESP32, RTL8710A, RTL8710B, RTL87X0C, RTL8720D/CS, TR6260, ECR6600, LN882H), but if you want to compile it yourself, see [BUILDING.md](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/BUILDING.md)
+OpenBeken supports [online builds](https://www.elektroda.com/rtvforum/viewtopic.php?p=20946719#20946719) for all platforms, but if you want to compile it yourself, see [BUILDING.md](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/BUILDING.md)
 
 # Developer Guides
 
@@ -135,7 +141,7 @@ OpenBeken supports [online builds](https://www.elektroda.com/rtvforum/viewtopic.
 
 # Flashing
 
-See our [GUI easy flash tool](https://github.com/openshwprojects/BK7231GUIFlashTool) for BK7231N, BK7231T, BK7231M, BK7238, BK7252N, BK7252U, BL2028N, T34, BL602, ECR6600, LN882H, RDA5981, RTL8710B, RTL8710C, RTL8720D / RTL8720CS, W800, and W600 (write-only). Also see [FLASHING.md](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/FLASHING.md)
+See our [GUI easy flash tool](https://github.com/openshwprojects/BK7231GUIFlashTool) for BK7231N, BK7231T, BK7231M, BK7231U, BK7236, BK7238, BK7239N, BK7252N, BK7252U, BL602, BL616, ECR6600, ESP32 (and variants), ESP8266, GD32VW553, LN882H, LN8825, RDA5981, RTL8710B, RTL87x0C, RTL8720D, RTL87x1DA, RTL87x0E, TR6260, W800, W600 (write-only), XR806, XR809, XR872. Also see [FLASHING.md](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/FLASHING.md)
 
 Repository of flash tools for [all other supported platforms](https://github.com/openshwprojects/FlashTools/tree/main)
 

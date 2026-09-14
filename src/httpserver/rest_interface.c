@@ -227,6 +227,10 @@ static int http_rest_post(http_request_t* request) {
 		r = http_rest_post_flash(request, 0, -1);
 #elif PLATFORM_GD32VW553
 		r = http_rest_post_flash(request, 0, -1);
+#elif PLATFORM_ARMINO
+		extern uint32_t g_ota_start_addr;
+		extern uint32_t g_ota_end_addr;
+		r = http_rest_post_flash(request, g_ota_start_addr, g_ota_end_addr);
 #else
 		// TODO
 		ADDLOG_ERROR(LOG_FEATURE_API, "No OTA");
@@ -244,6 +248,8 @@ static int http_rest_post(http_request_t* request) {
 
 
 #if ENABLE_LITTLEFS
+	// FIXME: this is beken (non-armino) only
+#if PLATFORM_BEKEN
 	if (!strcmp(request->url, "api/fsblock")) {
 		if (lfs_present()) {
 			release_lfs();
@@ -270,6 +276,7 @@ static int http_rest_post(http_request_t* request) {
 		init_lfs(0);
 		return res;
 	}
+#endif
 	if (!strncmp(request->url, "api/lfs/", 8)) {
 		return http_rest_post_lfs_file(request);
 	}
@@ -292,6 +299,8 @@ static int http_rest_post(http_request_t* request) {
 
 static int http_rest_app(http_request_t* request) {
 	const char* webhost = CFG_GetWebappRoot();
+	const char* webhostSeparator = "/";
+	size_t webhostLen;
 //	const char* ourip = HAL_GetMyIPString(); //CFG_GetOurIP();
 	http_setup(request, httpMimeTypeHTML);
 //	if (webhost && ourip) {
@@ -300,6 +309,11 @@ static int http_rest_app(http_request_t* request) {
 // know our ip (and port) inside the browser (JS "location").
 // Knowing/using the port from location.host is very usefull e.g. in simulator ;-) 
 	if (webhost) {
+		webhostLen = strlen(webhost);
+		if (webhostLen > 0 && webhost[webhostLen - 1] == '/') {
+			webhostSeparator = "";
+		}
+
 		poststr(request, htmlDoctype);
 
 		poststr(request, "<head><title>");
@@ -308,8 +322,8 @@ static int http_rest_app(http_request_t* request) {
 
 		poststr(request, htmlShortcutIcon);
 		poststr(request, htmlHeadMeta);
-		hprintf255(request, "<script>var root='%s',device='http://'+location.host;</script>", webhost);
-		hprintf255(request, "<script src='%s/startup.js'></script>", webhost);
+		hprintf255(request, "<script>var root='%s%s',device='http://'+location.host;</script>", webhost, webhostSeparator);
+		hprintf255(request, "<script src='%s%sstartup.js'></script>", webhost, webhostSeparator);
 		poststr(request, "</head><body></body></html>");
 	}
 	else {
