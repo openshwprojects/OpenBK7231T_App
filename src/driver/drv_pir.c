@@ -106,14 +106,17 @@ void PIR_OnEverySecond() {
 		// "Value seems to go down if MORE light is here and UP is LESS light is here"
 		// If no light sensor is mapped, don't ask for channel -1, just assume it's dark
 		int lightLevel = (ch_lightAdc != -1) ? CHANNEL_Get(ch_lightAdc) : (g_lightLevelMargin + 1);
+		int motion = (ch_motion != -1) ? CHANNEL_Get(ch_motion) : 0;
 		g_isDark = lightLevel > g_lightLevelMargin;
-		if (g_isDark) {
-			// auto mode
-			int motion = (ch_motion != -1) ? CHANNEL_Get(ch_motion) : 0;
-			if (motion) {
-				g_timeLeft = g_onTime;
-				LED_SetEnableAll(true);
-			}
+		// The light level only decides whether the lamp may turn ON in the first
+		// place. Once it is lit, our own light falls back onto the sensor and
+		// g_isDark goes false - so re-checking it here would stop motion from
+		// extending the timer: the lamp would switch off with someone still in
+		// the room, go dark, re-trigger, switch on again, and keep blinking.
+		// While the lamp is already on, motion alone extends the on time.
+		if (motion && (g_isDark || g_timeLeft > 0)) {
+			g_timeLeft = g_onTime;
+			LED_SetEnableAll(true);
 		}
 		if (g_timeLeft > 0) {
 			g_timeLeft--;
