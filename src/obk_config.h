@@ -33,6 +33,7 @@
 #define ENABLE_HTTP_FLAGS						1
 #define ENABLE_HTTP_STARTUP						1
 #define ENABLE_HTTP_PING						1
+#define ENABLE_PING_WATCHDOG					1
 #define ENABLE_LED_BASIC						1
 
 // for debugging: Enable logging startup to LFS (only if LFS is present)
