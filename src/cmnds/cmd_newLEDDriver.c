@@ -1652,6 +1652,11 @@ static commandResult_t ctRange(const void *context, const char *cmd, const char 
 
 	led_temperature_min = Tokenizer_GetArgFloat(0);
 	led_temperature_max = Tokenizer_GetArgFloat(1);
+	// update the warm/cool split that was computed against the old range
+	LED_SetTemperature(led_temperature_current, false);
+	if (g_lightMode == Light_Temperature) {
+		apply_smart_light();
+	}
 
 	return CMD_RES_OK;
 }
