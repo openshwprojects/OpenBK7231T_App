@@ -821,9 +821,14 @@ void Test_HassDiscovery_TuyaMCU_LED() {
 	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant", true, 0, 0, "rgb_stat_t", "~/led_basecolor_rgb/get");
 	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant", true, 0, 0, "clr_temp_stat_t", "~/led_temperature/get");
 
-	// ...and no light may be bound to the raw channel topics.
+	// ...and no LIGHT may be bound to the raw channel topics. A light carrying
+	// brightness on a channel topic is the exact signature of #2218.
 	SELFTEST_ASSERT_HAS_NOT_MQTT_JSON_SENT_ANY("homeassistant", true, 0, 0, "bri_stat_t", "~/2/get");
-	SELFTEST_ASSERT_HAS_NOT_MQTT_JSON_SENT_ANY("homeassistant", true, 0, 0, "stat_t", "~/1/get");
+	SELFTEST_ASSERT_HAS_NOT_MQTT_JSON_SENT_ANY("homeassistant", true, 0, 0, "bri_cmd_t", "~/2/set");
+
+	// The toggle channel still gets its own entity on its own topic - suppressing
+	// the toggle/dimmer LIGHT pairing must not suppress ordinary channel entities.
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant", true, 0, 0, "stat_t", "~/1/get");
 
 	// The TuyaMCU LED config lives in file-static globals that are not cleared by
 	// SIM_ClearOBK, so reset it or every later test runs with an LED attached.
