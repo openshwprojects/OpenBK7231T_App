@@ -2435,9 +2435,11 @@ void MQTT_QueuePublishWithCommand(const char* topic, const char* channel, const 
 		return;
 	}
 
-	if ((strlen(topic) > MQTT_PUBLISH_ITEM_TOPIC_LENGTH) ||
-		(strlen(channel) > MQTT_PUBLISH_ITEM_CHANNEL_LENGTH) ||
-		(strlen(value) > MQTT_PUBLISH_ITEM_VALUE_LENGTH)) {
+	//strcpy below writes strlen + 1 bytes, so a string of exactly the buffer
+	//length overflows by its terminator into the following field.
+	if ((strlen(topic) >= MQTT_PUBLISH_ITEM_TOPIC_LENGTH) ||
+		(strlen(channel) >= MQTT_PUBLISH_ITEM_CHANNEL_LENGTH) ||
+		(strlen(value) >= MQTT_PUBLISH_ITEM_VALUE_LENGTH)) {
 		addLogAdv(LOG_ERROR, LOG_FEATURE_MQTT, "Unable to queue! Topic (%i), channel (%i) or value (%i) exceeds size limit",
 			strlen(topic), strlen(channel), strlen(value));
 		return;
@@ -2513,11 +2515,16 @@ OBK_Publish_Result PublishQueuedItems() {
 		if (!MQTT_QUEUE_ITEM_IS_REUSABLE(head)) {  //Skip reusable entries
 			count++;
 			result = MQTT_PublishTopicToClient(mqtt_client, head->topic, head->channel, head->value, head->flags, false);
+
+			//Stop if last publish failed. The slot must NOT be released here:
+			//MQTT_QUEUE_ITEM_SET_REUSABLE() clears topic[0], which is also how
+			//find_queue_reusable_item() decides a slot is free. Releasing a slot
+			//whose publish failed both loses the payload and lets the next
+			//MQTT_QueuePublish() strcpy over an entry we are still referencing.
+			if (result != OBK_PUBLISH_OK) break;
+
 			MQTT_QUEUE_ITEM_SET_REUSABLE(head); //Flag item as reusable
 			g_MqttPublishItemsQueued--;   //decrement queued count
-
-			//Stop if last publish failed
-			if (result != OBK_PUBLISH_OK) break;
 
 			switch (head->command) {
 			case None:
