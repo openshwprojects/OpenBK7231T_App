@@ -2155,6 +2155,7 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 	int dInputCount;
 	int excludedCount = 0;
 	bool ledDriverChipRunning;
+	bool tuyaMCULedRunning;
 	HassDeviceInfo* dev_info = NULL;
 	bool measuringPower = false;
 	bool measuringBattery = false;
@@ -2194,6 +2195,15 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 	ledDriverChipRunning = 0;
 #endif
 
+#if ENABLE_DRIVER_TUYAMCU
+	// A TuyaMCU LED (see tuyaMcu_setupLED) is driven over the serial link to the
+	// MCU. It has no PWM pins and no channel bindings at all, so neither the
+	// channel-pairing code below nor CFG_CountLEDRemapChannels() can see it.
+	tuyaMCULedRunning = TuyaMCU_IsLEDRunning();
+#else
+	tuyaMCULedRunning = false;
+#endif
+
 #if PLATFORM_TXW81X || PLATFORM_BL_NEW
 	hooks.malloc_fn = _os_malloc;
 	hooks.free_fn = _os_free;
@@ -2210,7 +2220,10 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 	// try to pair toggles with dimmers. This is needed only for TuyaMCU, 
 	// where custom channel types are used. This is NOT used for simple
 	// CW/RGB/RGBCW/etc lights.
-	if (CFG_HasFlag(OBK_FLAG_DISCOVERY_DONT_MERGE_LIGHTS) == false) {
+	// Skip when a TuyaMCU LED is running: the light is not driven by channels,
+	// so pairing a toggle with a dimmer here would publish a light bound to raw
+	// channel topics that control nothing. See issue #2218.
+	if (tuyaMCULedRunning == false && CFG_HasFlag(OBK_FLAG_DISCOVERY_DONT_MERGE_LIGHTS) == false) {
 		while (true) {
 			// find first dimmer
 			dimmer = -1;
@@ -2266,6 +2279,12 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 #if ENABLE_LED_BASIC
 	if (ledDriverChipRunning) {
 		pwmCount = CFG_CountLEDRemapChannels();
+		// TuyaMCU LEDs have no remap channels, so the count above is 0 and the
+		// light would never be published. They support RGB plus CW (separate
+		// dpIDs for colour, brightness and temperature), so advertise RGBCW.
+		if (pwmCount == 0 && tuyaMCULedRunning) {
+			pwmCount = 5;
+		}
 	}
 	if (pwmCount == 5 || (pwmCount == 4 && CFG_HasFlag(OBK_FLAG_LED_EMULATE_COOL_WITH_RGB))) {
 		if (dev_info == NULL) {

@@ -782,6 +782,54 @@ void Test_HassDiscovery_ReadOnlyEnum() {
 
 }
 
+
+// https://github.com/openshwprojects/OpenBK7231T_App/issues/2218
+// A TuyaMCU LED (tuyaMcu_setupLED) is driven over the serial link to the MCU.
+// It has no PWM pins and no channel bindings, so:
+//  - CFG_CountLEDRemapChannels() returns 0 and the LED light was never published
+//  - the toggle/dimmer pairing code published a light bound to raw channel
+//    topics (~/1/get, ~/2/get) which control nothing on such a device
+// This test pins both halves of that behaviour.
+void Test_HassDiscovery_TuyaMCU_LED() {
+	const char *shortName = "TuyaLEDShort";
+	const char *fullName = "WinTuyaMCULED";
+	const char *mqttName = "testTuyaLED";
+
+	SIM_ClearOBK(shortName);
+	SIM_ClearAndPrepareForMQTTTesting(mqttName, "bekens");
+
+	CFG_SetShortDeviceName(shortName);
+	CFG_SetDeviceName(fullName);
+
+	CMD_ExecuteCommand("startDriver TuyaMCU", 0);
+	// dpID 24 = colour, format 1. Power/brightness/temperature default to 20/22/23.
+	CMD_ExecuteCommand("tuyaMcu_setupLED 24 1", 0);
+
+	// These channel types would previously be paired into a bogus light.
+	CHANNEL_SetType(1, ChType_Toggle);
+	CHANNEL_SetType(2, ChType_Dimmer);
+
+	SIM_ClearMQTTHistory();
+	CMD_ExecuteCommand("scheduleHADiscovery 1", 0);
+	Sim_RunSeconds(10, false);
+
+	// The LED-driver light must be published, using the led_* command topics
+	// that the TuyaMCU LED driver actually listens on.
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant", true, 0, 0, "bri_stat_t", "~/led_dimmer/get");
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant", true, 0, 0, "bri_cmd_t", "cmnd/testTuyaLED/led_dimmer");
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant", true, 0, 0, "stat_t", "~/led_enableAll/get");
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant", true, 0, 0, "rgb_stat_t", "~/led_basecolor_rgb/get");
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant", true, 0, 0, "clr_temp_stat_t", "~/led_temperature/get");
+
+	// ...and no light may be bound to the raw channel topics.
+	SELFTEST_ASSERT_HAS_NOT_MQTT_JSON_SENT_ANY("homeassistant", true, 0, 0, "bri_stat_t", "~/2/get");
+	SELFTEST_ASSERT_HAS_NOT_MQTT_JSON_SENT_ANY("homeassistant", true, 0, 0, "stat_t", "~/1/get");
+
+	// The TuyaMCU LED config lives in file-static globals that are not cleared by
+	// SIM_ClearOBK, so reset it or every later test runs with an LED attached.
+	CMD_ExecuteCommand("tuyaMcu_setupLED -1 0", 0);
+}
+
 void Test_HassDiscovery_Ext() {
 	Test_HassDiscovery_TuyaMCU_VoltageCurrentPower();
 	Test_HassDiscovery_TuyaMCU_Power10();
@@ -795,6 +843,7 @@ void Test_HassDiscovery_Ext() {
 	Test_HassDiscovery_Channel_Toggle_2x();
 	Test_HassDiscovery_Channel_DimmerLightDetection();
 	Test_HassDiscovery_Channel_DimmerLightDetection_Dual();
+	Test_HassDiscovery_TuyaMCU_LED();
 	Test_HassDiscovery_Channel_Motion();
 	Test_HassDiscovery_Channel_Motion_With_dInput();
 	Test_HassDiscovery_Channel_Motion_longName();
