@@ -73,6 +73,10 @@ ifdef GITHUB_ACTIONS
 	git config user.email github-actions@github.com
 endif
 
+.PHONY: docs-enabled-features
+docs-enabled-features:
+	node scripts/generate_enabled_features_doc.js
+
 .PHONY: berry_init berry
 berry_init:
 	git submodule update --init --recursive libraries/berry
