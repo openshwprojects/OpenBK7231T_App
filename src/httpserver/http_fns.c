@@ -478,6 +478,15 @@ int http_fn_index(http_request_t* request) {
 	for (i = 0; i < CHANNEL_MAX; i++) {
 		const char **types;
 		int numTypes;
+		const char *channelPrefix = "Channel ";
+		const char *enumSuffix = " Enum";
+
+#if ENABLE_DRIVER_XIAOMI_COMPACT4
+		if (XiaomiCompact4_ShouldUseCompactIndexLabels(i)) {
+			channelPrefix = "";
+			enumSuffix = "";
+		}
+#endif
 
 		// check ability to hide given channel from gui
 		if (BIT_CHECK(g_hiddenChannels, i)) {
@@ -512,10 +521,10 @@ int http_fn_index(http_request_t* request) {
 			iValue = CHANNEL_Get(i);
 			poststr(request, "<tr><td>");
 			if (iValue >= 0 && iValue <= 2) {
-				hprintf255(request, "Channel %s = %s", CHANNEL_GetLabel(i), types[iValue]);
+				hprintf255(request, "%s%s = %s", channelPrefix, CHANNEL_GetLabel(i), types[iValue]);
 			}
 			else {
-				hprintf255(request, "Channel %s = %i", CHANNEL_GetLabel(i), iValue);
+				hprintf255(request, "%s%s = %i", channelPrefix, CHANNEL_GetLabel(i), iValue);
 			}
 			poststr(request, "</td></tr>");
 		} else if (channelType == ChType_Enum) {
@@ -527,7 +536,7 @@ int http_fn_index(http_request_t* request) {
 			if (g_enums == NULL || g_enums[i]->numOptions == 0 ) {
 				//en = g_enums[i];
 				poststr(request, "<tr><td>");
-				hprintf255(request, "<p>Change channel %s enum:</p><form action=\"index\">", CHANNEL_GetLabel(i));
+				hprintf255(request, "<p>Change %s%s%s:</p><form action=\"index\">", channelPrefix, CHANNEL_GetLabel(i), enumSuffix);
 				hprintf255(request, "<input type=\"hidden\" name=\"setIndex\" value=\"%i\">", i);
 				hprintf255(request, "<input type=\"number\" name=\"set\" value=\"%i\" onblur=\"this.form.submit()\">", iValue);
 				hprintf255(request, "<input type=\"submit\" value=\"Set!\"/></form>");
@@ -537,7 +546,7 @@ int http_fn_index(http_request_t* request) {
 				en = g_enums[i];
 
 				poststr(request, "<tr><td>");
-				hprintf255(request, "<form action=\"index\"><label for=\"select%i\">Channel %s Enum:</label>", i, CHANNEL_GetLabel(i));
+				hprintf255(request, "<form action=\"index\"><label for=\"select%i\">%s%s%s:</label>", i, channelPrefix, CHANNEL_GetLabel(i), enumSuffix);
 				hprintf255(request, "<input type=\"hidden\" name=\"setIndex\" value=\"%i\">", i);
 				hprintf255(request, "<select id=\"select%i\" name=\"set\" onchange=\"this.form.submit()\">", i);
 
@@ -566,7 +575,11 @@ int http_fn_index(http_request_t* request) {
 				oLabel = CMD_FindChannelEnumLabel(g_enums[i], iValue);
 
 			poststr(request, "<tr><td>");
-			hprintf255(request, "Channel %s = %s [%i]", CHANNEL_GetLabel(i), oLabel, iValue);
+			if (channelPrefix[0] == '\0') {
+				hprintf255(request, "%s = %s", CHANNEL_GetLabel(i), oLabel);
+			} else {
+				hprintf255(request, "%s%s = %s [%i]", channelPrefix, CHANNEL_GetLabel(i), oLabel, iValue);
+			}
 			poststr(request, "</td></tr>");
 		}
 		else if ((types = Channel_GetOptionsForChannelType(channelType, &numTypes)) != 0) {
@@ -614,7 +627,7 @@ int http_fn_index(http_request_t* request) {
 			iValue = CHANNEL_Get(i);
 
 			poststr(request, "<tr><td>");
-			hprintf255(request, "Channel %s = %i", CHANNEL_GetLabel(i), iValue);
+			hprintf255(request, "%s%s = %i", channelPrefix, CHANNEL_GetLabel(i), iValue);
 			poststr(request, "</td></tr>");
 		}
 		else if (channelType == ChType_Motion || channelType == ChType_Motion_n) {
@@ -675,7 +688,7 @@ int http_fn_index(http_request_t* request) {
 			}
 			pwmValue = CHANNEL_Get(i);
 			poststr(request, "<tr><td>");
-			hprintf255(request, "Channel %s: <span id=\"sliderValue%i\">%i</span><br><form action=\"index\" id=\"form%i\">", CHANNEL_GetLabel(i), i, pwmValue, i);
+			hprintf255(request, "%s%s: <span id=\"sliderValue%i\">%i</span><br><form action=\"index\" id=\"form%i\">", channelPrefix, CHANNEL_GetLabel(i), i, pwmValue, i);
 			hprintf255(request, "<input type=\"range\" min=\"0\" max=\"%i\" name=\"%s\" id=\"slider%i\" value=\"%i\" data-value-id=\"sliderValue%i\" oninput=\"updateSliderValue(this)\" onchange=\"submitSlider(this)\">", maxValue, inputName, i, pwmValue, i);
 			hprintf255(request, "<input type=\"hidden\" name=\"%sIndex\" value=\"%i\">", inputName, i);
 			hprintf255(request, "<input type=\"submit\" class='disp-none' value=\"Toggle %s\"/></form>", CHANNEL_GetLabel(i));
@@ -2219,6 +2232,12 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 				if (BIT_CHECK(flagsChannelPublished, i)) {
 					continue;
 				}
+#if ENABLE_DRIVER_XIAOMI_COMPACT4
+				if (XiaomiCompact4_ShouldSkipGenericHassDiscovery(i)) {
+					BIT_SET(flagsChannelPublished, i);
+					continue;
+				}
+#endif
 				if (type == ChType_Dimmer) {
 					brightness_scale = 100;
 					dimmer = i;
@@ -2242,6 +2261,12 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 				if (BIT_CHECK(flagsChannelPublished, i)) {
 					continue;
 				}
+#if ENABLE_DRIVER_XIAOMI_COMPACT4
+				if (XiaomiCompact4_ShouldSkipGenericHassDiscovery(i)) {
+					BIT_SET(flagsChannelPublished, i);
+					continue;
+				}
+#endif
 				if (type == ChType_Toggle) {
 					toggle = i;
 					break;
@@ -2401,6 +2426,12 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 		if (BIT_CHECK(flagsChannelPublished, i)) {
 			continue;
 		}
+#if ENABLE_DRIVER_XIAOMI_COMPACT4
+		if (XiaomiCompact4_ShouldSkipGenericHassDiscovery(i)) {
+			BIT_SET(flagsChannelPublished, i);
+			continue;
+		}
+#endif
 		dev_info = 0;
 		switch (type)
 		{
