@@ -706,6 +706,13 @@ commandResult_t Cmd_TuyaMCU_SendColor(const void* context, const char* cmd, cons
 
 	return CMD_RES_OK;
 }
+// True once tuyaMcu_setupLED has configured an LED on this device.
+// Used by HA discovery: the light lives on led_dimmer / led_basecolor_rgb, so
+// the raw on/off + dimmer channel pair must not be advertised as a light too.
+bool TuyaMCU_HasLED() {
+	return g_tuyaMCUled_id_color >= 0;
+}
+
 // tuyaMCU_setupLED dpIDColor TasFormat dpIDPower
 commandResult_t Cmd_TuyaMCU_SetupLED(const void* context, const char* cmd, const char* args, int cmdFlags) {
 
