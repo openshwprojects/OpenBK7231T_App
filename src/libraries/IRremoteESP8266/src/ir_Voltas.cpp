@@ -423,7 +423,7 @@ uint16_t IRVoltas::getOnTime(void) const {
 /// 0 disables the timer. Max is 23 hrs & 59 mins (1439 mins)
 void IRVoltas::setOnTime(const uint16_t nr_of_mins) {
   // Cap the total number of mins.
-  uint16_t mins = ::min(nr_of_mins, (uint16_t)(23 * 60 + 59));
+  uint16_t mins = ::min(nr_of_mins, static_cast<uint16_t>(23 * 60 + 59));
   uint16_t hrs = (mins / 60) + 1;
   _.OnTimerMins = mins % 60;
   _.OnTimer12Hr = hrs / 12;
@@ -443,7 +443,7 @@ uint16_t IRVoltas::getOffTime(void) const {
 /// 0 disables the timer. Max is 23 hrs & 59 mins (1439 mins)
 void IRVoltas::setOffTime(const uint16_t nr_of_mins) {
   // Cap the total number of mins.
-  uint16_t mins = ::min(nr_of_mins, (uint16_t)(23 * 60 + 59));
+  uint16_t mins = ::min(nr_of_mins, static_cast<uint16_t>(23 * 60 + 59));
   uint16_t hrs = (mins / 60) + 1;
   _.OffTimerMins = mins % 60;
   _.OffTimer12Hr = hrs / 12;

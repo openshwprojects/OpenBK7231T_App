@@ -179,13 +179,35 @@ void Beken_Interrupt(unsigned char pinNum) {
 	if (g_handlers[pinNum]) {
 		g_handlers[pinNum](pinNum);
 	}
+	if (g_modes[pinNum] == INTERRUPT_CHANGE) {
+		// Re-arm the opposite edge because BK7231 has no both-edge mode.
+		uint32_t mode = bk_gpio_input((GPIO_INDEX)pinNum) ?
+			IRQ_TRIGGER_FALLING_EDGE : IRQ_TRIGGER_RISING_EDGE;
+		if (pinNum < 16) {
+			uint32_t shift = pinNum << 1;
+			*(volatile uint32_t *)REG_GPIO_INTLV0 =
+				(*(volatile uint32_t *)REG_GPIO_INTLV0 & ~(0x03U << shift)) |
+				(mode << shift);
+		}
+		else {
+			uint32_t shift = (pinNum - 16) << 1;
+			*(volatile uint32_t *)REG_GPIO_INTLV1 =
+				(*(volatile uint32_t *)REG_GPIO_INTLV1 & ~(0x03U << shift)) |
+				(mode << shift);
+		}
+	}
 }
 
 void HAL_AttachInterrupt(int pinIndex, OBKInterruptType mode, OBKInterruptHandler function) {
 	g_handlers[pinIndex] = function;
+	g_modes[pinIndex] = mode;
 	int bk_mode;
 	if (mode == INTERRUPT_RISING) {
 		bk_mode = IRQ_TRIGGER_RISING_EDGE;
+	}
+	else if (mode == INTERRUPT_CHANGE) {
+		bk_mode = bk_gpio_input((GPIO_INDEX)pinIndex) ?
+			IRQ_TRIGGER_FALLING_EDGE : IRQ_TRIGGER_RISING_EDGE;
 	}
 	else {
 		bk_mode = IRQ_TRIGGER_FALLING_EDGE;
@@ -198,5 +220,6 @@ void HAL_DetachInterrupt(int pinIndex) {
 	}
 	gpio_int_disable(pinIndex);
 	g_handlers[pinIndex] = 0;
+	g_modes[pinIndex] = INTERRUPT_STUB;
 }
 

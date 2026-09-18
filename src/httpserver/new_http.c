@@ -619,6 +619,7 @@ const char *htmlPinRoleNames[] = {
 	"BL0939_SCLK",
 	"BL0939_MOSI",
 	"BL0939_MISO",
+	"IRLearn",
 	"error",
 	"error",
 };
