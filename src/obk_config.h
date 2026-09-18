@@ -590,7 +590,7 @@
 #if PLATFORM_RTL87X0C
 // LiftMaster/Chamberlain commercial door operator: the logic board's own WiFi
 // module is an RTL8720C, so the driver is only useful on this platform.
-#define ENABLE_DRIVER_LIFTMASTER				1
+//#define ENABLE_DRIVER_LIFTMASTER				1
 #endif
 
 #if PLATFORM_RTL8720E
