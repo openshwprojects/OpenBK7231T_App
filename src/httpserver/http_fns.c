@@ -2257,6 +2257,11 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 			dev_info = hass_init_light_singleColor_onChannels(toggle, dimmer, brightness_scale);
 			MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
 			hass_free_device_info(dev_info);
+			// hass_free_device_info() takes the pointer by value and cannot clear
+			// this variable. The LED block below guards on "dev_info == NULL", so
+			// leaving it dangling makes that guard fail and the block then reads
+			// and re-frees freed memory. See issue #2230.
+			dev_info = NULL;
 			discoveryQueued = true;
 		}
 	}
