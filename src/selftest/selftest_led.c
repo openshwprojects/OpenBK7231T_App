@@ -1018,12 +1018,36 @@ void Test_LEDDriver_RGB(int firstChannel) {
 	//SELFTEST_ASSERT_CHANNEL(firstChannel+2, 666);
 
 }
+void Test_LEDDriver_CW_SingleValueRange() {
+	// reset whole device
+	SIM_ClearOBK(0);
+
+	// CW bulb with only one white LED fitted, described by a single value CTRange
+	PIN_SetPinRoleForPinIndex(24, IOR_PWM);
+	PIN_SetPinChannelForPinIndex(24, 3);
+	PIN_SetPinRoleForPinIndex(26, IOR_PWM);
+	PIN_SetPinChannelForPinIndex(26, 4);
+
+	CMD_ExecuteCommand("led_enableAll 1", 0);
+	CMD_ExecuteCommand("CTRange 500 500", 0);
+
+	// a single white point drives both white channels, so whichever one has the LED lights up
+	CMD_ExecuteCommand("led_temperature 500", 0);
+	SELFTEST_ASSERT_CHANNEL(3, 100);
+	SELFTEST_ASSERT_CHANNEL(4, 100);
+
+	// a request outside the range lands on the same point instead of dividing by zero
+	CMD_ExecuteCommand("led_temperature 154", 0);
+	SELFTEST_ASSERT_CHANNEL(3, 100);
+	SELFTEST_ASSERT_CHANNEL(4, 100);
+}
 void Test_LEDDriver() {
 
 	Test_LEDDriver_SingleColor();
 	Test_LEDDriver_CW_Alternate();
 	Test_LEDDriver_CW();
 	Test_LEDDriver_CW_OtherChannels();
+	Test_LEDDriver_CW_SingleValueRange();
 	// support both indexing from 0 and 1
 	Test_LEDDriver_RGB(0);
 	Test_LEDDriver_RGB(1);

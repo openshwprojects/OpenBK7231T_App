@@ -856,6 +856,14 @@ void LED_SetTemperature0to1Range(float f) {
 float LED_GetTemperature0to1Range() {
 	float f;
 
+	// A single value CTRange is one point, so return an even warm/cool split.
+	// There are three cases this covers:
+	//   only a cool LED - the cool channel lights it, the warm channel drives nothing
+	//   only a warm LED - the warm channel lights it, the cool channel drives nothing
+	//   both LEDs       - both light, and the single point is the blend of the two
+	if (led_temperature_max == led_temperature_min)
+		return 0.5f;
+
 	f = (led_temperature_current - led_temperature_min);
 	f = f / (led_temperature_max - led_temperature_min);
 	if(f<0)
