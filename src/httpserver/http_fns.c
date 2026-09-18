@@ -2251,6 +2251,22 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 			if (toggle == -1 || dimmer == -1) {
 				break;
 			}
+#if ENABLE_DRIVER_TUYAMCU
+			// On a TuyaMCU LED these raw channels are not the light. Real state
+			// lives in led_dimmer / led_basecolor_rgb, which the ENABLE_LED_BASIC
+			// block below already publishes. Advertising this pair as well gives
+			// HA a second light entity that is permanently stuck at 0. See #2218.
+			//
+			// Mark them published rather than just breaking out: otherwise the
+			// relay loop further down picks the unclaimed toggle up and exposes
+			// it as a switch instead, which is the same dead channel wearing a
+			// different hat.
+			if (TuyaMCU_HasLED()) {
+				BIT_SET(flagsChannelPublished, toggle);
+				BIT_SET(flagsChannelPublished, dimmer);
+				break;
+			}
+#endif
 
 			BIT_SET(flagsChannelPublished, toggle);
 			BIT_SET(flagsChannelPublished, dimmer);
