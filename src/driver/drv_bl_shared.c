@@ -1265,23 +1265,23 @@ void BL_Shared_Init(void) {
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("VCPPublishIntervals", BL09XX_VCPPublishIntervals, NULL);
 #if ENABLE_BL_POWER_LIMIT
-	//cmddetail:{"name":"PowerLimit","args":"[Channel][MaxCurrentA][MaxPowerW][DelaySeconds]",
+	//cmddetail:{"name":"PowerLimit","args":"[Channel][MaxCurrentA][MaxPowerW][OptionalDelaySeconds-default is 0]",
 	//cmddetail:"descr":"Configures runtime current/power protection. Zero current or power disables that threshold. The target channel is turned off and latched when the limit is exceeded.",
 	//cmddetail:"fn":"BL_PowerLimit_Setup","file":"driver/drv_bl_shared.c","requires":"ENABLE_BL_POWER_LIMIT",
-	//cmddetail:"examples":"`PowerLimit 1 10 2300 3`"}
+	//cmddetail:"examples":"`PowerLimit 1 10 2000 3`"}
 	CMD_RegisterCommand("PowerLimit", BL_PowerLimit_Setup, NULL);
 	//cmddetail:{"name":"PowerLimitReset","args":"",
-	//cmddetail:"descr":"Clears the runtime power limit latch.",
+	//cmddetail:"descr":"Clears the runtime power limit trip latch.",
 	//cmddetail:"fn":"BL_PowerLimit_Reset","file":"driver/drv_bl_shared.c","requires":"ENABLE_BL_POWER_LIMIT",
-	//cmddetail:"examples":""}
+	//cmddetail:"examples":"`PowerLimitReset`"}
 	CMD_RegisterCommand("PowerLimitReset", BL_PowerLimit_Reset, NULL);
 	//cmddetail:{"name":"PowerLimitStatus","args":"",
 	//cmddetail:"descr":"Logs the current runtime power limit setup, latch, override, and trip count state.",
 	//cmddetail:"fn":"BL_PowerLimit_Status","file":"driver/drv_bl_shared.c","requires":"ENABLE_BL_POWER_LIMIT",
-	//cmddetail:"examples":""}
+	//cmddetail:"examples":"`PowerLimitStatus`"}
 	CMD_RegisterCommand("PowerLimitStatus", BL_PowerLimit_Status, NULL);
 	//cmddetail:{"name":"PowerLimitOverride","args":"[0or1]",
-	//cmddetail:"descr":"Sets runtime power limit service override. Override allows the target channel to stay on while preserving trip latch and trip count history.",
+	//cmddetail:"descr":"Sets the runtime power limit service override. Override allows the target channel to stay on while preserving the trip latch and trip count history.",
 	//cmddetail:"fn":"BL_PowerLimit_Override","file":"driver/drv_bl_shared.c","requires":"ENABLE_BL_POWER_LIMIT",
 	//cmddetail:"examples":"`PowerLimitOverride 1`"}
 	CMD_RegisterCommand("PowerLimitOverride", BL_PowerLimit_Override, NULL);
