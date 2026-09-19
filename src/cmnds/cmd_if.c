@@ -745,6 +745,19 @@ const char *CMD_ExpandConstantString(const char *s, const char *stop, char *out,
 		strcpy_safe(out, res, outLen);
 		return ret;
 	}
+	ret = strCompareBound(s, "$ip", stop, false);
+	if (ret) {
+		const char *res = HAL_GetMyIPString();
+		strcpy_safe(out, res, outLen);
+		return ret;
+	}
+	ret = strCompareBound(s, "$mac", stop, false);
+	if (ret) {
+		char tmpStr[19];	// will be used for MAC string 6*3 chars (18 would be o.k, since last hex has no ":" ...)
+		HAL_GetMACStr(tmpStr);
+		strcpy_safe(out, tmpStr, outLen);
+		return ret;
+	}
 	return false;
 }
 
