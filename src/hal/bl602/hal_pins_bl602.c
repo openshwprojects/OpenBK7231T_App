@@ -45,6 +45,11 @@ void HAL_PIN_Setup_Output(int index) {
 	bl_gpio_enable_output(index, 1,0);
 	bl_gpio_output_set(index, 0);
 }
+void HAL_PIN_Setup_Output_Initial(int index, int value) {
+	// Preload the output latch before switching the pin from its current function to GPIO.
+	bl_gpio_output_set(index, value ? 1 : 0);
+	bl_gpio_enable_output(index, 1, 0);
+}
 
 void HAL_PIN_PWM_Stop(int index) {
 	int pwm;
