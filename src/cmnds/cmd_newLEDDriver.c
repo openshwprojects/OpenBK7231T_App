@@ -856,6 +856,14 @@ void LED_SetTemperature0to1Range(float f) {
 float LED_GetTemperature0to1Range() {
 	float f;
 
+	// A single value CTRange is one point, so return an even warm/cool split.
+	// There are three cases this covers:
+	//   only a cool LED - the cool channel lights it, the warm channel drives nothing
+	//   only a warm LED - the warm channel lights it, the cool channel drives nothing
+	//   both LEDs       - both light, and the single point is the blend of the two
+	if (led_temperature_max == led_temperature_min)
+		return 0.5f;
+
 	f = (led_temperature_current - led_temperature_min);
 	f = f / (led_temperature_max - led_temperature_min);
 	if(f<0)
@@ -1652,6 +1660,11 @@ static commandResult_t ctRange(const void *context, const char *cmd, const char 
 
 	led_temperature_min = Tokenizer_GetArgFloat(0);
 	led_temperature_max = Tokenizer_GetArgFloat(1);
+	// flag 12 restores a temperature before this runs, so it can be outside the new range
+	if (led_temperature_current < led_temperature_min)
+		led_temperature_current = led_temperature_min;
+	if (led_temperature_current > led_temperature_max)
+		led_temperature_current = led_temperature_max;
 	// update the warm/cool split that was computed against the old range
 	LED_SetTemperature(led_temperature_current, false);
 	if (g_lightMode == Light_Temperature) {
