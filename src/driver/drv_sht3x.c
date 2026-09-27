@@ -371,7 +371,7 @@ commandResult_t SHT3X_SetAlertCmd(const void* context, const char* cmd, const ch
 {
 	float temperatureLowSet, temperatureLowClear, temperatureHighClear, temperatureHighSet;
 	float humidityLowSet, humidityLowClear, humidityHighClear, humidityHighSet;
-	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_DONT_EXPAND);
+	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES);
 	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 4)) {
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
@@ -455,10 +455,10 @@ void SHT3X_Init() {
 	//cmddetail:{"name":"SHT_MeasurePer","args":"",
 	//cmddetail:"descr":"Retrieve Periodical measurement for SHT",
 	//cmddetail:"fn":"SHT3X_MeasurePer","file":"driver/drv_sht3x.c","requires":"",
-	//cmddetail:"examples":"SHT_Measure"}
+	//cmddetail:"examples":"SHT_MeasurePer"}
 	CMD_RegisterCommand("SHT_MeasurePer", SHT3X_MeasurePer, NULL);
 	//cmddetail:{"name":"SHT_LaunchPer","args":"[msb][lsb]",
-	//cmddetail:"descr":"Launch/Change periodical capture for SHT Sensor",
+	//cmddetail:"descr":"Launch/Change periodical capture for SHT Sensor. SHT_SetAlert needs this: the sensor only compares readings against its alert limits while measuring periodically.",
 	//cmddetail:"fn":"SHT3X_ChangePer","file":"driver/drv_sht3x.c","requires":"",
 	//cmddetail:"examples":"SHT_LaunchPer 0x23 0x22"}
 	CMD_RegisterCommand("SHT_LaunchPer", SHT3X_ChangePer, NULL);
@@ -480,22 +480,22 @@ void SHT3X_Init() {
 	//cmddetail:{"name":"SHT_GetStatus","args":"",
 	//cmddetail:"descr":"Get Sensor Status",
 	//cmddetail:"fn":"SHT3X_GetStatusCmd","file":"driver/drv_sht3x.c","requires":"",
-	//cmddetail:"examples":"SHT_GetStatusCmd"}
+	//cmddetail:"examples":"SHT_GetStatus"}
 	CMD_RegisterCommand("SHT_GetStatus", SHT3X_GetStatusCmd, NULL);
 	//cmddetail:{"name":"SHT_ClearStatus","args":"",
-	//cmddetail:"descr":"Clear Sensor Status",
+	//cmddetail:"descr":"Clear Sensor Status. The sensor powers on with an alert pending, so run this after SHT_SetAlert or ALERT stays high.",
 	//cmddetail:"fn":"SHT3X_ClearStatusCmd","file":"driver/drv_sht3x.c","requires":"",
-	//cmddetail:"examples":"SHT_ClearStatusCmd"}
+	//cmddetail:"examples":"SHT_ClearStatus"}
 	CMD_RegisterCommand("SHT_ClearStatus", SHT3X_ClearStatusCmd, NULL);
 	//cmddetail:{"name":"SHT_ReadAlert","args":"",
 	//cmddetail:"descr":"Get Sensor alert configuration",
 	//cmddetail:"fn":"SHT3X_ReadAlertCmd","file":"driver/drv_sht3x.c","requires":"",
-	//cmddetail:"examples":"SHT_ReadAlertCmd"}
+	//cmddetail:"examples":"SHT_ReadAlert"}
 	CMD_RegisterCommand("SHT_ReadAlert", SHT3X_ReadAlertCmd, NULL);
 	//cmddetail:{"name":"SHT_SetAlert","args":"[temp_high, temp_low, hum_high, hum_low]",
-	//cmddetail:"descr":"Set Sensor alert configuration",
+	//cmddetail:"descr":"Set Sensor alert configuration. Clear limits are set 0.5 C and 2% inside the given ones. Arguments accept expressions and channel variables. Needs SHT_LaunchPer running, then SHT_ClearStatus.",
 	//cmddetail:"fn":"SHT3X_SetAlertCmd","file":"driver/drv_sht3x.c","requires":"all",
-	//cmddetail:"examples":"SHT_SetAlertCmd"}
+	//cmddetail:"examples":"SHT_SetAlert 30 10 80 20"}
 	CMD_RegisterCommand("SHT_SetAlert", SHT3X_SetAlertCmd, NULL);
 }
 void SHT3X_OnEverySecond()
