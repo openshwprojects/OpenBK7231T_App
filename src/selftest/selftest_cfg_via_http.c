@@ -137,6 +137,14 @@ void Test_CFG_Via_HTTP() {
 	SELFTEST_ASSERT(strlen(g_savedArgs) == strlen(g_loremIpsum3));
 	SELFTEST_ASSERT_STRING(g_savedArgs, g_loremIpsum3);
 
+	// a /cm command over 123 chars takes the malloc path, which used to run it twice
+	strcpy(tmp, "cm?cmnd=addChannel%205%201");
+	while (strlen(tmp) < 450)
+		strcat(tmp, "%20");
+	CMD_ExecuteCommand("setChannel 5 0", 0);
+	Test_FakeHTTPClientPacket_JSON(tmp);
+	SELFTEST_ASSERT_CHANNEL(5, 1);
+
 }
 
 #endif
