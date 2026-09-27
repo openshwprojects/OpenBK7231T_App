@@ -1035,6 +1035,56 @@ void MQTT_OBK_Printf(char* s) {
 }
 
 ////////////////////////////////////////
+// lwip hands over a PUBLISH that outgrows its rx buffer (MQTT_VAR_HEADER_BUFFER_LEN: 256 in mqtt_patched.c
+// and on RTL87X0C, 1024 on BK7231T/N) in pieces, with MQTT_DATA_FLAG_LAST on the last piece only
+static u8_t* g_inpub_buf = NULL;
+static u32_t g_inpub_total = 0;
+static u32_t g_inpub_len = 0;
+static bool g_inpub_dropped = false;
+
+static void mqtt_inpub_reset(u32_t total)
+{
+	if (g_inpub_buf) {
+		os_free(g_inpub_buf);
+		g_inpub_buf = NULL;
+	}
+	g_inpub_total = total;
+	g_inpub_len = 0;
+	g_inpub_dropped = false;
+}
+
+// true once the whole payload is in - data and len then point at all of it
+static bool mqtt_inpub_collect(const u8_t** data, u16_t* len, u8_t flags)
+{
+	// the whole payload in one piece - the usual case, no copy
+	if (g_inpub_len == 0 && !g_inpub_dropped && (flags & MQTT_DATA_FLAG_LAST))
+		return true;
+	// get_received cuts anything past sizeof(temp_data) - 1, so don't collect more than that
+	if (g_inpub_total > sizeof(temp_data) - 1 || g_inpub_len + *len > g_inpub_total)
+		g_inpub_dropped = true;
+	if (!g_inpub_dropped && g_inpub_buf == NULL) {
+		g_inpub_buf = (u8_t*)os_malloc(g_inpub_total);
+		if (g_inpub_buf == NULL)
+			g_inpub_dropped = true;
+	}
+	if (!g_inpub_dropped) {
+		memcpy(g_inpub_buf + g_inpub_len, *data, *len);
+		g_inpub_len += *len;
+	}
+	if (!(flags & MQTT_DATA_FLAG_LAST))
+		return false;
+	if (g_inpub_dropped) {
+		// dropped, not run in pieces - a backlog cut mid-command runs fragments of commands
+		addLogAdv(LOG_ERROR, LOG_FEATURE_MQTT, "MQTT: dropped a %u byte payload on %s, too big to reassemble",
+			(unsigned int)g_inpub_total, g_mqtt_request.topic);
+		mqtt_inpub_reset(0);
+		return false;
+	}
+	*data = g_inpub_buf;
+	*len = (u16_t)g_inpub_len;
+	return true;
+}
+
 // called from tcp_thread context.
 // we should do callbacks from one of our threads?
 static void mqtt_incoming_data_cb(void* arg, const u8_t* data, u16_t len, u8_t flags)
@@ -1046,6 +1096,9 @@ static void mqtt_incoming_data_cb(void* arg, const u8_t* data, u16_t len, u8_t f
 	// if we stored a topic in g_mqtt_request, then we found a matching callback, so use it.
 	if (g_mqtt_request.topic[0])
 	{
+		if (!mqtt_inpub_collect(&data, &len, flags))
+			return;
+
 		// note: data is NOT terminated (it may be binary...).
 		g_mqtt_request.received = data;
 		g_mqtt_request.receivedLen = len;
@@ -1072,6 +1125,8 @@ static void mqtt_incoming_data_cb(void* arg, const u8_t* data, u16_t len, u8_t f
 			}
 		}
 		//addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "MQTT topic not handled: %s", g_mqtt_request.topic);
+		// MQTT_Post_Received copied it
+		mqtt_inpub_reset(0);
 	}
 }
 
@@ -1121,6 +1176,9 @@ static void mqtt_incoming_publish_cb(void* arg, const char* topic, u32_t tot_len
 	// unused - left here as example
 	//const struct mqtt_connect_client_info_t* client_info = (const struct mqtt_connect_client_info_t*)arg;
 
+	// a new message - drop anything half-collected from the last one
+	mqtt_inpub_reset(tot_len);
+
 	// look for a callback with this URL and method, or HTTP_ANY
 	g_mqtt_request.topic[0] = '\0';
 	for (i = 0; i < numCallbacks; i++)
@@ -1135,6 +1193,22 @@ static void mqtt_incoming_publish_cb(void* arg, const char* topic, u32_t tot_len
 	}
 	addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "MQTT client in mqtt_incoming_publish_cb topic %s", topic);
 }
+
+#ifdef WINDOWS
+// selftest hook - the simulator's lwip stub has an 8 KB rx buffer, so it never splits a payload itself
+void MQTT_Test_ReceiveInPieces(const char* topic, const char* payload, int pieceLen)
+{
+	int len = strlen(payload);
+	int ofs = 0;
+
+	mqtt_incoming_publish_cb(NULL, topic, len);
+	do {
+		int n = len - ofs < pieceLen ? len - ofs : pieceLen;
+		mqtt_incoming_data_cb(NULL, (const u8_t*)payload + ofs, n, ofs + n >= len ? MQTT_DATA_FLAG_LAST : 0);
+		ofs += n;
+	} while (ofs < len);
+}
+#endif
 
 static void mqtt_request_cb(void* arg, err_t err)
 {
