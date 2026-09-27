@@ -213,6 +213,11 @@ void HAL_PIN_Setup_Output(int index) {
 	g_pinModes[index] = SIM_PIN_OUTPUT;
 }
 
+void HAL_PIN_Setup_Output_Initial(int index, int value) {
+	HAL_PIN_Setup_Output(index);
+	HAL_PIN_SetOutputValue(index, value);
+}
+
 
 void HAL_PIN_PWM_Stop(int pinIndex) {
 }
