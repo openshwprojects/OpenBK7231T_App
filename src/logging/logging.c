@@ -7,6 +7,9 @@
 #include "../logging/logging.h"
 // Commands register, execution API and cmd tokenizer
 #include "../cmnds/cmd_public.h"
+#if PLATFORM_BL602
+#include <vfs.h>
+#endif
 #if ENABLE_LITTLEFS && ENABLE_LOG2LFS
 #include "../littlefs/our_lfs.h"
 #include "../new_cfg.h"	// we will use CFG_Set_log2lfs();
@@ -162,7 +165,40 @@ static int tcpLogStarted = 0;
 
 commandResult_t log_command(const void* context, const char* cmd, const char* args, int cmdFlags);
 
-#if PLATFORM_BEKEN || PLATFORM_LN882H || PLATFORM_GD32VW553
+#if PLATFORM_BL602
+static int g_bl602_log_port = 1;
+static int g_bl602_log_fd_uart1 = -1;
+
+static int bl602_log_open_uart1(void)
+{
+	if (g_bl602_log_fd_uart1 < 0) {
+		g_bl602_log_fd_uart1 = aos_open("/dev/ttyS1", 0);
+	}
+	return g_bl602_log_fd_uart1;
+}
+
+static void bl602_log_write(const char *msg)
+{
+	int len;
+	int pos = 0;
+
+	if (g_bl602_log_port != 2) {
+		bk_printf("%s", msg);
+		return;
+	}
+
+	len = strlen(msg);
+	while (pos < len) {
+		int written = aos_write(g_bl602_log_fd_uart1, msg + pos, len - pos);
+		if (written <= 0) {
+			return;
+		}
+		pos += written;
+	}
+}
+#endif
+
+#if PLATFORM_BEKEN || PLATFORM_LN882H || PLATFORM_GD32VW553 || PLATFORM_BL602
 
 commandResult_t log_port(const void* context, const char* cmd, const char* args, int cmdFlags)
 {
@@ -231,6 +267,14 @@ commandResult_t log_port(const void* context, const char* cmd, const char* args,
 	}
 	uart_config(usart_periph, baud > 0 ? baud : 1500000, false, false, false);
 	log_uart_change(usart_periph);
+#elif PLATFORM_BL602
+	if (idx != 1 && idx != 2) {
+		return CMD_RES_BAD_ARGUMENT;
+	}
+	if (idx == 2 && bl602_log_open_uart1() < 0) {
+		return CMD_RES_ERROR;
+	}
+	g_bl602_log_port = idx;
 #endif
 
 	return CMD_RES_OK;
@@ -319,9 +363,9 @@ static void initLog(void)
 	//cmddetail:"examples":"logStartup2lfs 15"}
 	CMD_RegisterCommand("logStartup2lfs", CMD_logStartup2lfs, NULL);
 #endif
-#if PLATFORM_BEKEN || PLATFORM_LN882H || PLATFORM_GD32VW553
+#if PLATFORM_BEKEN || PLATFORM_LN882H || PLATFORM_GD32VW553 || PLATFORM_BL602
 	//cmddetail:{"name":"logport","args":"[Index]",
-	//cmddetail:"descr":"Allows you to change log output port. On Beken, the UART1 is used for flashing and for TuyaMCU/BL0942, while UART2 is for log. Sometimes it might be easier for you to have log on UART1, so now you can just use this command like backlog uartInit 115200; logport 1 to enable logging on UART1..",
+	//cmddetail:"descr":"Selects the UART used for log output; valid indices are platform-specific. Beken: 1 = UART1, 2 = UART2. BL602: 1 = UART0 (default), 2 = UART1.",
 	//cmddetail:"fn":"log_port","file":"logging/logging.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("logport", log_port, NULL);
@@ -465,7 +509,11 @@ void addLogAdv(int level, int feature, const char* fmt, ...)
 	}
 
 	if (direct_serial_log == LOGTYPE_DIRECT) {
+#if PLATFORM_BL602
+		bl602_log_write(tmp);
+#else
 		bk_printf("%s", tmp);
+#endif
 		if (taken == pdTRUE) {
 			xSemaphoreGive(logMemory.mutex);
 		}
@@ -940,7 +988,11 @@ static void log_serial_thread(beken_thread_arg_t arg)
 		int count = getSerial(seriallogbuf, SERIALLOGBUFSIZE);
 		if (count) {
 			if (direct_serial_log == LOGTYPE_THREAD) {
+#if PLATFORM_BL602
+				bl602_log_write(seriallogbuf);
+#else
 				bk_printf("%s", seriallogbuf);
+#endif
 			}
 		}
 		rtos_delay_milliseconds(10);
