@@ -7,6 +7,14 @@
 #ifndef MACSTR
 #define MACSTR "%02x:%02x:%02x:%02x:%02x:%02x"
 #endif
+#ifndef AP_STA_CLIENTS
+#define AP_STA_CLIENTS 3
+#endif
+#include "../new_common.h"
+
+#include <stdint.h>
+//extern uint8_t HAL_AP_Wifi_Channel; 	// defined and inintialized in hal_wifi_generic.c
+// let's use (existing) g_wifi_channel - we can only be AP or STA, so we can share it ...
 
 typedef enum HALWifiStatus {
 	WIFI_UNDEFINED,
@@ -44,6 +52,7 @@ typedef struct
 } obkFastConnectData_t;
 
 int HAL_SetupWiFiOpenAccessPoint(const char* ssid);
+int HAL_SetupWiFiAccessPoint(const char* ssid, const char* key);
 void HAL_ConnectToWiFi(const char* oob_ssid, const char* connect_key, obkStaticIP_t *ip);
 void HAL_FastConnectToWiFi(const char* oob_ssid, const char* connect_key, obkStaticIP_t* ip);
 void HAL_DisableEnhancedFastConnect();
