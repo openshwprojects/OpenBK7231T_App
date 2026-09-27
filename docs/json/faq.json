@@ -20,6 +20,10 @@
         "answer": "First type 'loglevel x' in console, where x is 0 to 7, default value is 3 (log all up to info), value 4 will also log debug logs, and value 5 will include 'extradebug'. Then, on online panel, also switch filter to 'All' (both steps must be done for logs to show up)"
     },
     {
+        "question": "Why are lines missing when I read the log from /logs or /lograw?",
+        "answer": "Reading drains them. Both pages read the same 4 KB log buffer through one shared read position, and each read moves it forward, so whatever one reader gets, the next never sees. The Web App's Logs tab polls /lograw every half second, so a script reading /lograw while that tab is open gets only part of the log. Keep one reader, or use the TCP log on port 9000, which has its own read position."
+    },
+    {
         "question": "How to change baud rate for TuyaMCU?",
         "answer": "Just search for 'baud' in our commands list. The command is tuyaMcu_setBaudRate. Remember that it must be run after you do startDriver TuyaMCU. The baud setting is not kept after reboot, so put that command in autoexec.bat. Common bauds are 9600 and 115200"
     },
@@ -86,6 +90,14 @@
     {
         "question": "How to enter multiple startup commands? For example, to start both NTP and BL0942 drivers?",
         "answer": "Use backlog - like in Tasmota. Open Config->Short startup command, and enter, for example: backlog startDriver BL0942; startDriver NTP; ntp_setServer 217.147.223.78.<br> Second option would to be open the Web Application, go to LittleFS tab, and just create autoexec.bat and enter commands there, each in new line."
+    },
+    {
+        "question": "Some lines of my autoexec.bat do nothing. Why?",
+        "answer": "Check these first:<br>- Comments go on their own line. Text after a command is read as more arguments, so `linkTuyaMCUOutputToChannel 2 val 2 // brightness` passes `//` and `brightness` on as obkFlags and mult.<br>- Save the file as UTF-8 without a BOM. On firmware that doesn't strip it, a BOM sticks to the first command, so `startDriver TuyaMCU` is not found, and neither is anything that driver registers.<br>- Quote arguments that contain spaces. `FriendlyName Kitchen Dimmer` sets the name to Kitchen, `FriendlyName \"Kitchen Dimmer\"` sets the whole name.<br>- Look in the log for 'cmd ... NOT found' lines."
+    },
+    {
+        "question": "How do I change autoexec.bat without the web panel?",
+        "answer": "Use lfs_writeLine and lfs_appendLine, which work over MQTT and HTTP like any other command. `lfs_writeLine autoexec.bat [first line]` replaces the file with that line, then `lfs_appendLine autoexec.bat [next line]` adds each line after it. Both end the line with CRLF. Send one line per command, then reboot to run the new file."
     },
     {
         "question": "How to do OTA in OpenBeken? How to update firmware?",
