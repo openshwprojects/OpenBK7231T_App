@@ -251,7 +251,7 @@ static int connect_wifi_demo(char* ssid, char* pwd, obkStaticIP_t *ip)
 		(channel_list == 0 || (channel_list & 0xC000)))
 	{
 		channel_list = 0x3FFF;
-		tls_param_set(TLS_PARAM_ID_CHANNEL_LIST, (void*)&channel_list, TRUE);
+		tls_param_set(TLS_PARAM_ID_CHANNEL_LIST, (void*)&channel_list, FALSE);
 	}
 #endif
 
