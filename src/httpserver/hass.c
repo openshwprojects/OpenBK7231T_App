@@ -277,9 +277,9 @@ HassDeviceInfo* hass_createSelectEntity(const char* state_topic, const char* com
 	// Initialize device info for a single select entity
 	HassDeviceInfo* info = hass_init_device_info(HASS_SELECT, 0, NULL, NULL, 0, title);
 
-	// Set entity properties
-	cJSON_AddStringToObject(info->root, "name", title);
-	cJSON_AddStringToObject(info->root, "unique_id", title); // Using title as unique_id for simplicity; adjust if needed
+	// Set entity properties. `name` and `uniq_id` already exist, so replace the
+	// name rather than adding a second one, and leave identity to uniq_id.
+	cJSON_ReplaceItemInObject(info->root, "name", cJSON_CreateString(title));
 	cJSON_AddStringToObject(info->root, "state_topic", state_topic);
 	cJSON_AddStringToObject(info->root, "command_topic", command_topic);
 
@@ -290,10 +290,8 @@ HassDeviceInfo* hass_createSelectEntity(const char* state_topic, const char* com
 	}
 	cJSON_AddItemToObject(info->root, "options", select_options);
 
-	// Set availability
-	cJSON_AddStringToObject(info->root, "availability_topic", "~/status");
-	cJSON_AddStringToObject(info->root, "payload_available", "online");
-	cJSON_AddStringToObject(info->root, "payload_not_available", "offline");
+	// Availability is published by hass_init_device_info as avty_t (~/connected,
+	// the MQTT will topic). ~/status is not a topic this firmware ever publishes.
 
 	// Set configuration channel for select entity
 	sprintf(info->channel, "select/%s/config", info->unique_id);
@@ -325,7 +323,7 @@ static void generate_command_template(int numoptions, const char* options[], cha
 	snprintf(buffer + len, bufsize - len, "} [value] }}");
 }
 
-HassDeviceInfo* hass_createSelectEntityIndexed(const char* state_topic, const char* command_topic, int numoptions,
+HassDeviceInfo* hass_createSelectEntityIndexed(int index, const char* state_topic, const char* command_topic, int numoptions,
 	const char* options[], const char* title) {
 
 	char value_template[512];
@@ -334,7 +332,7 @@ HassDeviceInfo* hass_createSelectEntityIndexed(const char* state_topic, const ch
 	char command_template[512];
 	generate_command_template(numoptions, options, command_template, sizeof(command_template));
 
-	return hass_createSelectEntityIndexedCustom(state_topic, command_topic, numoptions, options, title,
+	return hass_createSelectEntityIndexedCustom(index, state_topic, command_topic, numoptions, options, title,
 		value_template, command_template);
 }
 
@@ -363,12 +361,15 @@ HassDeviceInfo* hass_createGarageEntity(const char* state_topic, const char* com
 	return info;
 }
 
-HassDeviceInfo* hass_createSelectEntityIndexedCustom(const char* state_topic, const char* command_topic, int numoptions,
+HassDeviceInfo* hass_createSelectEntityIndexedCustom(int index, const char* state_topic, const char* command_topic, int numoptions,
 	const char* options[], const char* title, char* value_template, char* command_template) {
-	HassDeviceInfo* info = hass_init_device_info(HASS_SELECT, 0, NULL, NULL, 0, title);
+	HassDeviceInfo* info = hass_init_device_info(HASS_SELECT, index, NULL, NULL, 0, title);
 
-	cJSON_AddStringToObject(info->root, "name", title);
-	cJSON_AddStringToObject(info->root, "unique_id", title);
+	// hass_init_device_info already wrote `name` (as "<channel label>_<title>")
+	// and `uniq_id`. Replace the name with just the title so the payload carries
+	// one `name`, and do not re-add unique_id - Home Assistant derives it from
+	// uniq_id and would overwrite anything added here anyway.
+	cJSON_ReplaceItemInObject(info->root, "name", cJSON_CreateString(title));
 	cJSON_AddStringToObject(info->root, "state_topic", state_topic);
 	cJSON_AddStringToObject(info->root, "command_topic", command_topic);
 
@@ -381,11 +382,9 @@ HassDeviceInfo* hass_createSelectEntityIndexedCustom(const char* state_topic, co
 	cJSON_AddStringToObject(info->root, "value_template", value_template);
 	cJSON_AddStringToObject(info->root, "command_template", command_template);
 
-	if (!CFG_HasFlag(OBK_FLAG_NOT_PUBLISH_AVAILABILITY)) {
-		cJSON_AddStringToObject(info->root, "availability_topic", "~/connected");
-		cJSON_AddStringToObject(info->root, "payload_available", "online");
-		cJSON_AddStringToObject(info->root, "payload_not_available", "offline");
-	}
+	// Availability is already published by hass_init_device_info as avty_t, which
+	// Home Assistant expands to availability_topic. Re-adding it here duplicated
+	// the field and bypassed the deep-sleep checks that guard the original.
 
 	sprintf(info->channel, "select/%s/config", info->unique_id);
 
@@ -400,8 +399,8 @@ HassDeviceInfo* hass_createHVAC(float min, float max, float step, const char **f
 	const char **swingOptions, int numSwingOptions, const char **swingHOptions, int numSwingHOptions) {
 	HassDeviceInfo* info = hass_init_device_info(HASS_HVAC, 0, NULL, NULL, 0, 0);
 
-	// Set the name for the HVAC device
-	cJSON_AddStringToObject(info->root, "name", "Smart Thermostat");
+	// Set the name for the HVAC device. A `name` already exists, so replace it.
+	cJSON_ReplaceItemInObject(info->root, "name", cJSON_CreateString("Smart Thermostat"));
 
 	// Set temperature unit
 	cJSON_AddStringToObject(info->root, "temperature_unit", "C");
@@ -472,10 +471,9 @@ HassDeviceInfo* hass_createHVAC(float min, float max, float step, const char **f
 		cJSON_AddItemToObject(info->root, "swing_modes", swing_modes);
 
 	}
-	// Set availability topic
-	cJSON_AddStringToObject(info->root, "availability_topic", "~/status");
-	cJSON_AddStringToObject(info->root, "payload_available", "online");
-	cJSON_AddStringToObject(info->root, "payload_not_available", "offline");
+	// Availability is published by hass_init_device_info as avty_t (~/connected,
+	// the MQTT will topic). ~/status is not a topic this firmware ever publishes,
+	// so whenever avty_t is suppressed this left the entity permanently offline.
 
 	// Update device configuration channel for HVAC
 	sprintf(info->channel, "climate/%s/config", info->unique_id);
