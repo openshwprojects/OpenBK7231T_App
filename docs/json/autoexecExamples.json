@@ -112,6 +112,10 @@
 "file": "autoexecs/deep_sleep_temp_sensor_http.bat"
 },
 {
+"title": "Deep sleep with SHT30 alert wake, reporting when temperature or humidity changes",
+"file": "autoexecs/deep_sleep_temp_sensor_alert.bat"
+},
+{
 "title": "[Deep sleep usage for water sensor with PWM buzzer](https://www.elektroda.com/rtvforum/viewtopic.php?p=21096228#21096228)",
 "file": "autoexecs/deep_sleep_water_sensor_withBuzzer.bat"
 },

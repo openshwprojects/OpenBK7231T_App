@@ -842,7 +842,10 @@ int http_fn_index(http_request_t* request) {
 
 			//(KELVIN_TEMPERATURE_MAX - KELVIN_TEMPERATURE_MIN) / (HASS_TEMPERATURE_MAX - HASS_TEMPERATURE_MIN) = 13
 			hprintf255(request, "<input type=\"range\" step='13' min=\"%ld\" max=\"%ld\" ", pwmKelvinMin, pwmKelvinMax);
-			hprintf255(request, "value=\"%ld\" data-value-id=\"sliderValue%i\" oninput=\"updateSliderValue(this)\" onchange=\"submitTemperature(this);\"/>", pwmKelvin, SPECIAL_CHANNEL_TEMPERATURE);
+			// a single value CTRange leaves no travel, so onchange can never fire and only a
+			// click can set it. Normal ranges are left alone, they would submit twice
+			const char *clickHandler = (pwmKelvinMin == pwmKelvinMax) ? " onclick=\"submitTemperature(this);\"" : "";
+			hprintf255(request, "value=\"%ld\" data-value-id=\"sliderValue%i\" oninput=\"updateSliderValue(this)\" onchange=\"submitTemperature(this);\"%s/>", pwmKelvin, SPECIAL_CHANNEL_TEMPERATURE, clickHandler);
 
 			hprintf255(request, "<input type=\"hidden\" name=\"%sIndex\" value=\"%i\"/>", inputName, SPECIAL_CHANNEL_TEMPERATURE);
 			hprintf255(request, "<input id=\"kelvin%i\" type=\"hidden\" name=\"%s\" />", SPECIAL_CHANNEL_TEMPERATURE, inputName);
@@ -2251,6 +2254,22 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 			if (toggle == -1 || dimmer == -1) {
 				break;
 			}
+#if ENABLE_DRIVER_TUYAMCU
+			// On a TuyaMCU LED these raw channels are not the light. Real state
+			// lives in led_dimmer / led_basecolor_rgb, which the ENABLE_LED_BASIC
+			// block below already publishes. Advertising this pair as well gives
+			// HA a second light entity that is permanently stuck at 0. See #2218.
+			//
+			// Mark them published rather than just breaking out: otherwise the
+			// relay loop further down picks the unclaimed toggle up and exposes
+			// it as a switch instead, which is the same dead channel wearing a
+			// different hat.
+			if (TuyaMCU_HasLED()) {
+				BIT_SET(flagsChannelPublished, toggle);
+				BIT_SET(flagsChannelPublished, dimmer);
+				break;
+			}
+#endif
 
 			BIT_SET(flagsChannelPublished, toggle);
 			BIT_SET(flagsChannelPublished, dimmer);
