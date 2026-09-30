@@ -2030,7 +2030,7 @@ void TuyaMCU_ProcessIncoming(const byte* data, int len) {
 		return;
 	}
 	version = data[2];
-	checkLen = data[5] | data[4] >> 8;
+	checkLen = data[5] | data[4] << 8;
 	checkLen = checkLen + 2 + 1 + 1 + 2 + 1;
 	if (checkLen != len) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "ProcessIncoming: discarding packet bad expected len, expected %i and got len %i", checkLen, len);
