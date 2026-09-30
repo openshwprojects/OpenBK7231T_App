@@ -423,7 +423,7 @@ int UART_TryToGetNextTuyaPacket(byte* out, int maxSize) {
 	command = UART_GetByte(3);
 	lena = UART_GetByte(4); // hi
 	lenb = UART_GetByte(5); // lo
-	len = lenb | lena >> 8;
+	len = lenb | lena << 8;
 	// now check if we have received whole packet
 	len += 2 + 1 + 1 + 2 + 1; // header 2 bytes, version, command, lenght, chekcusm
 	if (cs >= len) {
@@ -2030,7 +2030,7 @@ void TuyaMCU_ProcessIncoming(const byte* data, int len) {
 		return;
 	}
 	version = data[2];
-	checkLen = data[5] | data[4] >> 8;
+	checkLen = data[5] | data[4] << 8;
 	checkLen = checkLen + 2 + 1 + 1 + 2 + 1;
 	if (checkLen != len) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "ProcessIncoming: discarding packet bad expected len, expected %i and got len %i", checkLen, len);
