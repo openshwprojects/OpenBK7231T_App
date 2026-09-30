@@ -67,6 +67,8 @@ uint8_t HAL_GetWiFiChannel(uint8_t *chan);
 
 void WiFI_GetMacAddress(char* mac);
 int WiFI_SetMacAddress(char* mac);
+// Same, but safe to call before the WiFi stack has been started.
+int WiFI_SetMacAddressAtBoot(char* mac);
 void HAL_PrintNetworkInfo();
 int HAL_GetWifiStrength();
 
