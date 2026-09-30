@@ -8,13 +8,23 @@ set OBK_VARIANT=2
 set ESP_FSIZE=4MB
 set TARGET=esp32
 set ACTION=build
+set BUILD_VARIANT=4M
 
 :: Check for target argument
 if not "%~1"=="" set TARGET=%~1
 if not "%~2"=="" set ACTION=%~2
+if not "%~3"=="" set BUILD_VARIANT=%~3
+
+if "%BUILD_VARIANT%"=="xiaomiCompact4" (
+	set OBK_VARIANT=10
+)
 
 if "%TARGET%"=="esp32" (
-    set BUILD_DIR=platforms\ESP-IDF\build-32
+	if "%BUILD_VARIANT%"=="xiaomiCompact4" (
+		set BUILD_DIR=platforms\ESP-IDF\build-32-xiaomi
+	) else (
+		set BUILD_DIR=platforms\ESP-IDF\build-32
+	)
     set BOOTLOADER_ADDR=0x1000
 ) else if "%TARGET%"=="esp32c3" (
     set BUILD_DIR=platforms\ESP-IDF\build-c3
@@ -47,6 +57,7 @@ echo Building OpenBeken ESP32 on Windows natively
 echo Target: %TARGET%
 echo Size: %ESP_FSIZE%
 echo Variant (2=tuyaMCU/4MB): %OBK_VARIANT%
+echo Build Variant: %BUILD_VARIANT%
 echo Bootloader Addr: %BOOTLOADER_ADDR%
 echo Build Directory: %BUILD_DIR%
 echo Action: %ACTION%

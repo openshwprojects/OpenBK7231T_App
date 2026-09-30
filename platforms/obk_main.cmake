@@ -161,6 +161,7 @@ set(OBKM_SRC
 	${OBK_SRCS}driver/drv_vkl060.c
 	${OBK_SRCS}driver/drv_wemo.c
 	${OBK_SRCS}driver/drv_widget.c
+	${OBK_SRCS}driver/drv_xiaomi_compact4.c
 	${OBK_SRCS}i2c/drv_i2c_ads1115.c
 	${OBK_SRCS}i2c/drv_i2c_lcd_pcf8574t.c
 	${OBK_SRCS}i2c/drv_i2c_main.c
