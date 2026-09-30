@@ -22,6 +22,9 @@ https://developer.tuya.com/en/docs/iot/tuyacloudlowpoweruniversalserialaccesspro
 #include "../mqtt/new_mqtt.h"
 #include "drv_public.h"
 #include "drv_tuyaMCU.h"
+#if ENABLE_TUYAMCU_OTA
+#include "drv_tuyaMCU_ota.h"
+#endif
 #include "drv_uart.h"
 #include "drv_public.h"
 #include <time.h>
@@ -2046,6 +2049,13 @@ void TuyaMCU_ProcessIncoming(const byte* data, int len) {
 	}
 	cmd = data[3];
 	addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "ProcessIncoming[v=%i]: cmd %i (%s) len %i", version, cmd, TuyaMCU_GetCommandTypeLabel(cmd), len);
+#if ENABLE_TUYAMCU_OTA
+	// Replies to a running MCU firmware update (0x0A/0x0B) go to the OTA code
+	if (TuyaMCU_OTA_OnPacket(cmd, data + 6, len - 7)) {
+		EventHandlers_FireEvent(CMD_EVENT_TUYAMCU_PARSED, cmd);
+		return;
+	}
+#endif
 	switch (cmd)
 	{
 	case TUYA_CMD_HEARTBEAT:
@@ -2593,6 +2603,9 @@ void TuyaMCU_RunStateMachine_BatteryPowered() {
 int timer_send = 0;
 void TuyaMCU_RunFrame() {
 	TuyaMCU_RunReceive();
+#if ENABLE_TUYAMCU_OTA
+	TuyaMCU_OTA_RunFrame();
+#endif
 
 
 	if (timer_send > 0) {
@@ -2707,6 +2720,10 @@ bool TuyaMCU_IsLEDRunning() {
 void TuyaMCU_Shutdown() {
 	tuyaMCUMapping_t *tmp, *nxt;
 	tuyaMCUPacket_t *packet, *next_packet;
+
+#if ENABLE_TUYAMCU_OTA
+	TuyaMCU_OTA_Shutdown();
+#endif
 
 	// free the tuyaMCUMapping_t linked list
 	tmp = g_tuyaMappings;
@@ -2882,6 +2899,10 @@ void TuyaMCU_Init()
 	//cmddetail:"fn":"Cmd_TuyaMCU_BatteryPoweredMode","file":"driver/drv_tuyaMCU.c","requires":"",
 	//cmddetail:"examples":"tuyaMcu_batteryPoweredMode"}
 	CMD_RegisterCommand("tuyaMcu_batteryPoweredMode", Cmd_TuyaMCU_BatteryPoweredMode, NULL);
+
+#if ENABLE_TUYAMCU_OTA
+	TuyaMCU_OTA_Init();
+#endif
 }
 
 
