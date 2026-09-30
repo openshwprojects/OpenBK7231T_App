@@ -82,6 +82,7 @@
     <ClCompile Include="src\driver\drv_tm1638.c" />
     <ClCompile Include="src\driver\drv_tm_gn_display_shared.c" />
     <ClCompile Include="src\driver\drv_tuyaMCU.c" />
+    <ClCompile Include="src\driver\drv_tuyaMCU_ota.c" />
     <ClCompile Include="src\driver\drv_tuyaMCUSensor.c" />
     <ClCompile Include="src\driver\drv_wemo.c" />
     <ClCompile Include="src\driver\drv_uart.c" />
@@ -286,6 +287,7 @@
     <ClCompile Include="src\selftest\selftest_tokenizer.c" />
     <ClCompile Include="src\selftest\selftest_tuyaMCU.c" />
     <ClCompile Include="src\selftest\selftest_tuyaMCU_batteryPowered.c" />
+    <ClCompile Include="src\selftest\selftest_tuyaMCU_ota.c" />
     <ClCompile Include="src\selftest\selftest_twoPWMsOneChannel.c" />
     <ClCompile Include="src\selftest\selftest_util_mqtt.c" />
     <ClCompile Include="src\selftest\selftest_util_mqtt_json.c" />
@@ -659,6 +661,7 @@
     <CustomBuild Include="src\driver\drv_public.h" />
     <CustomBuild Include="src\driver\drv_sm2135.h" />
     <CustomBuild Include="src\driver\drv_tuyaMCU.h" />
+    <CustomBuild Include="src\driver\drv_tuyaMCU_ota.h" />
     <CustomBuild Include="src\driver\drv_uart.h" />
     <CustomBuild Include="src\httpclient\http_client.h" />
     <CustomBuild Include="src\httpclient\iot_export_errno.h" />

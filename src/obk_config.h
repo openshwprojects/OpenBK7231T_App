@@ -826,6 +826,11 @@
 #undef ENABLE_LOG2LFS
 #endif
 
+// TuyaMCU firmware update (tuyaMcu_otaStart) reads the image from LittleFS
+#if ENABLE_DRIVER_TUYAMCU && ENABLE_LITTLEFS && !defined(ENABLE_TUYAMCU_OTA)
+#define ENABLE_TUYAMCU_OTA						1
+#endif
+
 
 // closing OBK_CONFIG_H
 #endif
