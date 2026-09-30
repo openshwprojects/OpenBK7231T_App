@@ -1606,7 +1606,8 @@ void Main_Init_After_Delay()
 	}
 
 	ADDLOGF_INFO("Using SSID [%s]", wifi_ssid);
-	ADDLOGF_INFO("Using Pass [%s]", wifi_pass);
+	// do not log sensitive data (same as mqtt_pass) - this line ends up in /logs, the tcp log port and pasted bug reports
+	ADDLOGF_INFO("Using Pass [%s]", *wifi_pass ? "********" : "");
 
 	// NOT WORKING, I done it other way, see ethernetif.c
 	//net_dhcp_hostname_set(g_shortDeviceName);
