@@ -16,6 +16,9 @@
 #include "drv_ssdp.h"
 #include "drv_test_drivers.h"
 #include "drv_tuyaMCU.h"
+#if ENABLE_TUYAMCU_OTA
+#include "drv_tuyaMCU_ota.h"
+#endif
 #include "drv_girierMCU.h"
 #include "drv_uart.h"
 #include "drv_gaitekAC.h"
@@ -59,7 +62,11 @@ static driver_t g_drivers[] = {
 	{ "TuyaMCU",                             // Driver Name
 	TuyaMCU_Init,                            // Init
 	TuyaMCU_RunEverySecond,                  // onEverySecond
+#if ENABLE_TUYAMCU_OTA
+	TuyaMCU_OTA_AppendInformationToHTTPIndexPage, // appendInformationToHTTPIndexPage
+#else
 	NULL,                                    // appendInformationToHTTPIndexPage
+#endif
 	TuyaMCU_RunFrame,                        // runQuickTick
 	TuyaMCU_Shutdown,                        // stopFunction
 	NULL,                                    // onChannelChanged
