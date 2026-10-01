@@ -45,6 +45,15 @@ extern "C" {
 
 #include "drv_ir.h"
 
+#if PLATFORM_BK7231N || PLATFORM_BK7238
+#define OBK_IR_BK_EDGE_RX 1
+extern "C" void IRrecv_BK_ResetEdgeCapture(uint32_t now_us);
+extern "C" void IRrecv_BK_RecordEdge(uint32_t now_us);
+extern "C" bool IRrecv_BK_CompleteIfQuiet(uint32_t now_us);
+#else
+#define OBK_IR_BK_EDGE_RX 0
+#endif
+
 //#define USE_IRREMOTE_HPP_AS_PLAIN_INCLUDE 1
 #undef read
 #undef write
@@ -123,10 +132,31 @@ extern void IR_ISR(float period_us);
 
 static int8_t ir_chan = -1;
 static float ir_periodus = 50;
-
-void timerConfigForReceive() {
-	// nothing here`
-}
+static bool ir_timer_running;
+static bool ir_tx_active;
+#if OBK_IR_BK_EDGE_RX
+static int ir_recv_pin = -1;
+static bool ir_continuous_receive;
+static bool ir_learning_available;
+static bool ir_learning_active;
+static uint32_t ir_learning_deadline_ms;
+static const int IR_LEARN_DEFAULT_SECONDS = 15;
+static const int IR_LEARN_DEFAULT_TOLERANCE = 30;
+static int ir_learning_seconds = IR_LEARN_DEFAULT_SECONDS;
+static int ir_learning_tolerance = IR_LEARN_DEFAULT_TOLERANCE;
+static char ir_learning_status[96] = "Idle";
+static char ir_learning_command[192];
+static char ir_learning_detail[160];
+static volatile uint32_t ir_edge_isr_count;
+static uint32_t ir_edge_capture_count;
+static uint32_t ir_edge_decode_count;
+static uint32_t ir_edge_named_count;
+static uint32_t ir_edge_unknown_count;
+static uint16_t ir_edge_last_rawlen;
+static bool ir_edge_last_overflow;
+static uint16_t ir_edge_last_raw[1024];
+static uint16_t ir_edge_last_raw_count;
+#endif
 
 void _timerConfigForReceive() {
 	ir_counter = 0;
@@ -135,32 +165,18 @@ void _timerConfigForReceive() {
 	ADDLOG_INFO(LOG_FEATURE_IR, (char *)"ir timer %u, %.2f us period", ir_chan, ir_periodus);
 }
 
-static void timer_enable() {
-}
-static void timer_disable() {
-}
 static void _timer_enable() {
+	if (ir_chan < 0) return;
 	HAL_HWTimerStart(ir_chan);
+	ir_timer_running = true;
 	ADDLOG_INFO(LOG_FEATURE_IR, (char *)"ir timer enabled %u", ir_chan);
 }
 static void _timer_disable() {
+	if (ir_chan < 0) return;
 	HAL_HWTimerStop(ir_chan);
+	ir_timer_running = false;
 	ADDLOG_INFO(LOG_FEATURE_IR, (char *)"ir timer disabled %u", ir_chan);
 }
-
-#define TIMER_ENABLE_RECEIVE_INTR timer_enable();
-#define TIMER_DISABLE_RECEIVE_INTR timer_disable();
-
-//////////////////////////////////////////
-
-class SpoofIrReceiver {
-public:
-	static void restartAfterSend() {
-
-	}
-};
-
-SpoofIrReceiver IrReceiver;
 
 #include "../libraries/IRremoteESP8266/src/IRremoteESP8266.h"
 #include "../libraries/IRremoteESP8266/src/IRsend.h"
@@ -172,12 +188,8 @@ SpoofIrReceiver IrReceiver;
 #include "../libraries/IRremoteESP8266/src/IRproto.h"
 #include "../libraries/IRremoteESP8266/src/digitalWriteFast.h"
 
-// override aspects of sending for our own interrupt driven sends
-// basically, IRsend calls mark(us) and space(us) to send.
-// we simply note the numbers into a rolling buffer, assume the first is a mark()
-// and then every 50us service the rolling buffer, changing the PWM from 0 duty to 50% duty
-// appropriately.
-#define SEND_MAXBITS 128
+// Queue a mark or space duration for ISR transmit.
+#define IR_SEND_QUEUE_BITS 512
 
 class myIRsend : public IRsend {
 public:
@@ -201,7 +213,7 @@ public:
 
 	uint16_t mark(uint16_t aMarkMicros) {
 		// sends a high for aMarkMicros
-		uint32_t newtimein = (timein + 1) % (SEND_MAXBITS * 2);
+		uint32_t newtimein = (timein + 1) % (IR_SEND_QUEUE_BITS * 2);
 		if (newtimein != timeout) {
 			// store mark bits in highest +ve bit of count
 			times[timein] = aMarkMicros | 0x10000000;
@@ -217,7 +229,7 @@ public:
 
 	void space(uint32_t aMarkMicros) {
 		// sends a low for aMarkMicros
-		uint32_t newtimein = (timein + 1) % (SEND_MAXBITS * 2);
+		uint32_t newtimein = (timein + 1) % (IR_SEND_QUEUE_BITS * 2);
 		if (newtimein != timeout) {
 			times[timein] = aMarkMicros;
 			timein = newtimein;
@@ -251,7 +263,7 @@ public:
 		currentbitval = 0;
 		timecounttotal = 0;
 	}
-	int32_t times[SEND_MAXBITS * 2]; // enough for 128 bits
+	int32_t times[IR_SEND_QUEUE_BITS * 2];
 	unsigned short timein;
 	unsigned short timeout;
 	unsigned short timecount;
@@ -262,7 +274,7 @@ public:
 		int32_t val = 0;
 		if (timein != timeout) {
 			val = times[timeout];
-			timeout = (timeout + 1) % (SEND_MAXBITS * 2);
+			timeout = (timeout + 1) % (IR_SEND_QUEUE_BITS * 2);
 			timecount--;
 		}
 		return val;
@@ -281,6 +293,201 @@ public:
 // our send/receive instances
 myIRsend *pIRsend = NULL;
 IRrecv *ourReceiver = NULL;
+
+#if OBK_IR_BK_EDGE_RX
+static void DRV_IR_BK_EdgeISR(int gpio) {
+	(void)gpio;
+	if (ir_recv_pin < 0 || ir_tx_active || (!ir_continuous_receive && !ir_learning_active)) return;
+	ir_edge_isr_count++;
+	IRrecv_BK_RecordEdge(HAL_GetMicroseconds());
+}
+
+static void DRV_IR_BK_ArmEdgeCapture() {
+	if (!ourReceiver || ir_recv_pin < 0 || ir_tx_active || (!ir_continuous_receive && !ir_learning_active)) return;
+	HAL_DetachInterrupt(ir_recv_pin);
+	IRrecv_BK_ResetEdgeCapture(HAL_GetMicroseconds());
+	HAL_AttachInterrupt(ir_recv_pin, INTERRUPT_CHANGE, DRV_IR_BK_EdgeISR);
+}
+
+static void DRV_IR_BK_StopEdgeCapture() {
+	if (ir_recv_pin >= 0) HAL_DetachInterrupt(ir_recv_pin);
+	if (ourReceiver) ourReceiver->pause();
+}
+
+static void DRV_IR_LearnStop(const char *status) {
+	ir_learning_active = false;
+	DRV_IR_BK_StopEdgeCapture();
+	if (status) {
+		strncpy(ir_learning_status, status, sizeof(ir_learning_status) - 1);
+		ir_learning_status[sizeof(ir_learning_status) - 1] = 0;
+	}
+}
+
+static commandResult_t DRV_IR_LearnStart(int seconds, int tolerance) {
+	if (!ir_learning_available || !ourReceiver || ir_recv_pin < 0) return CMD_RES_BAD_ARGUMENT;
+	if (ir_tx_active || (pIRsend && pIRsend->timecount)) {
+		strcpy(ir_learning_status, "Cannot learn while transmitting");
+		return CMD_RES_ERROR;
+	}
+	if (seconds < 3) seconds = 3;
+	if (seconds > 60) seconds = 60;
+	if (tolerance < 10) tolerance = 10;
+	if (tolerance > 49) tolerance = 49;
+	ir_learning_seconds = seconds;
+	ir_learning_tolerance = tolerance;
+	ir_learning_command[0] = 0;
+	ir_learning_detail[0] = 0;
+	snprintf(ir_learning_status, sizeof(ir_learning_status), "Waiting for IR signal (%d seconds)", seconds);
+	ourReceiver->setTolerance((uint8_t)tolerance);
+	ir_learning_deadline_ms = g_timeMs + (uint32_t)seconds * 1000U;
+	ir_learning_active = true;
+	DRV_IR_BK_ArmEdgeCapture();
+	ADDLOG_INFO(LOG_FEATURE_IR, "IR learning started timeout=%ds tolerance=%d%%", seconds, tolerance);
+	return CMD_RES_OK;
+}
+
+static commandResult_t DRV_IR_LearnCmd(const void *context, const char *cmd, const char *args, int cmdFlags) {
+	(void)context;
+	(void)cmd;
+	(void)cmdFlags;
+	Tokenizer_TokenizeString(args ? args : "", 0);
+	return DRV_IR_LearnStart(
+		Tokenizer_GetArgIntegerDefault(0, IR_LEARN_DEFAULT_SECONDS),
+		Tokenizer_GetArgIntegerDefault(1, IR_LEARN_DEFAULT_TOLERANCE));
+}
+
+static commandResult_t DRV_IR_LearnCancelCmd(const void *context, const char *cmd, const char *args, int cmdFlags) {
+	(void)context;
+	(void)cmd;
+	(void)args;
+	(void)cmdFlags;
+	DRV_IR_LearnStop("Cancelled");
+	ADDLOG_INFO(LOG_FEATURE_IR, "IR learning cancelled");
+	return CMD_RES_OK;
+}
+
+static commandResult_t DRV_IR_LearnStatusCmd(const void *context, const char *cmd, const char *args, int cmdFlags) {
+	(void)context;
+	(void)cmd;
+	(void)args;
+	(void)cmdFlags;
+	ADDLOG_INFO(LOG_FEATURE_IR, "IR learning active=%u status=%s command=%s",
+		ir_learning_active ? 1U : 0U, ir_learning_status,
+		ir_learning_command[0] ? ir_learning_command : "-");
+	return CMD_RES_OK;
+}
+
+static commandResult_t DRV_IR_RxStatsCmd(const void *context, const char *cmd, const char *args, int cmdFlags) {
+	(void)context;
+	(void)cmd;
+	(void)args;
+	(void)cmdFlags;
+	ADDLOG_INFO(LOG_FEATURE_IR,
+		"IR edge stats pin=%d mode=%s isr=%u captures=%u decodes=%u named=%u unknown=%u last_raw=%u overflow=%u tolerance=%u max_skip=%u",
+		ir_recv_pin, ir_continuous_receive ? "receive" : "learn",
+		(unsigned int)ir_edge_isr_count, (unsigned int)ir_edge_capture_count,
+		(unsigned int)ir_edge_decode_count, (unsigned int)ir_edge_named_count,
+		(unsigned int)ir_edge_unknown_count, (unsigned int)ir_edge_last_rawlen,
+		ir_edge_last_overflow ? 1U : 0U,
+		ourReceiver ? (unsigned int)ourReceiver->getTolerance() : 0U,
+		ir_learning_active ? 1U : 0U);
+	return CMD_RES_OK;
+}
+
+static commandResult_t DRV_IR_RxDumpCmd(const void *context, const char *cmd, const char *args, int cmdFlags) {
+	(void)context;
+	(void)cmd;
+	(void)cmdFlags;
+	Tokenizer_TokenizeString(args ? args : "", 0);
+	int start = Tokenizer_GetArgIntegerDefault(0, 0);
+	int count = Tokenizer_GetArgIntegerDefault(1, 64);
+	if (start < 0) start = 0;
+	if (count < 1) count = 1;
+	if (count > 128) count = 128;
+	if (start >= ir_edge_last_raw_count) {
+		ADDLOG_INFO(LOG_FEATURE_IR, "IR edge dump empty start=%d rawlen=%u",
+			start, (unsigned int)ir_edge_last_raw_count);
+		return CMD_RES_OK;
+	}
+	int end = start + count;
+	if (end > ir_edge_last_raw_count) end = ir_edge_last_raw_count;
+	ADDLOG_INFO(LOG_FEATURE_IR, "IR edge dump rawlen=%u range=%d..%d units=us",
+		(unsigned int)ir_edge_last_raw_count, start, end - 1);
+	for (int i = start; i < end; i += 8) {
+		char line[160];
+		int pos = snprintf(line, sizeof(line), "%d:", i);
+		for (int j = i; j < end && j < i + 8 && pos < (int)sizeof(line); j++) {
+			pos += snprintf(line + pos, sizeof(line) - pos, " %u",
+				(unsigned int)ir_edge_last_raw[j] * kRawTick);
+		}
+		ADDLOG_INFO(LOG_FEATURE_IR, "%s", line);
+	}
+	return CMD_RES_OK;
+}
+#endif
+
+static void DRV_IR_StartQueuedSend() {
+	if (!pIRsend || !pIRsend->timecount || ir_chan < 0) return;
+#if OBK_IR_BK_EDGE_RX
+	DRV_IR_BK_StopEdgeCapture();
+#endif
+	ir_tx_active = true;
+	if (!ir_timer_running) _timer_enable();
+}
+
+static int DRV_IR_HexNibble(char c) {
+	if (c >= '0' && c <= '9') return c - '0';
+	if (c >= 'a' && c <= 'f') return c - 'a' + 10;
+	if (c >= 'A' && c <= 'F') return c - 'A' + 10;
+	return -1;
+}
+
+extern "C" commandResult_t IR_SendState_Cmd(const void *context, const char *cmd, const char *args_in, int cmdFlags) {
+	(void)context;
+	(void)cmd;
+	(void)cmdFlags;
+	if (!args_in || !args_in[0]) return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	if (!pIRsend || ir_tx_active || pIRsend->timecount) return CMD_RES_ERROR;
+
+	char protocol_name[32];
+	int protocol_len = 0;
+	const char *p = args_in;
+	while (*p && *p != ',' && *p != ' ' && protocol_len < (int)sizeof(protocol_name) - 1) {
+		protocol_name[protocol_len++] = *p++;
+	}
+	protocol_name[protocol_len] = 0;
+	while (*p == ',' || *p == ' ') p++;
+	if (p[0] == '0' && (p[1] == 'x' || p[1] == 'X')) p += 2;
+
+	decode_type_t protocol = strToDecodeType(protocol_name);
+	if (protocol == decode_type_t::UNKNOWN || !hasACState(protocol)) {
+		ADDLOG_ERROR(LOG_FEATURE_IR, "IRSendState unsupported AC protocol %s", protocol_name);
+		return CMD_RES_BAD_ARGUMENT;
+	}
+
+	uint8_t state[kStateSizeMax];
+	uint16_t nbytes = 0;
+	while (*p) {
+		while (*p == ' ' || *p == ':' || *p == '-') p++;
+		if (!*p) break;
+		int high = DRV_IR_HexNibble(*p++);
+		if (high < 0 || !*p) return CMD_RES_BAD_ARGUMENT;
+		int low = DRV_IR_HexNibble(*p++);
+		if (low < 0 || nbytes >= sizeof(state)) return CMD_RES_BAD_ARGUMENT;
+		state[nbytes++] = (uint8_t)((high << 4) | low);
+	}
+	if (!nbytes) return CMD_RES_BAD_ARGUMENT;
+
+	pIRsend->resetsendqueue();
+	if (!pIRsend->send(protocol, state, nbytes) || pIRsend->overflows) {
+		pIRsend->resetsendqueue();
+		return CMD_RES_ERROR;
+	}
+	pIRsend->delay(100);
+	DRV_IR_StartQueuedSend();
+	ADDLOG_INFO(LOG_FEATURE_IR, "IRSendState protocol=%s bytes=%u", protocol_name, (unsigned int)nbytes);
+	return CMD_RES_OK;
+}
 
 // this is our ISR.
 // it is called every 50us, so we need to work on making it as efficient as possible.
@@ -350,7 +557,7 @@ extern "C" void DRV_IR_ISR(void* arg)
 	}
 
 	// don't receive if we are currently sending
-	if (ourReceiver && !sending){
+	if (ourReceiver && !sending && !OBK_IR_BK_EDGE_RX) {
 		IR_ISR(ir_periodus);
 	}
 	ir_counter++;
@@ -403,6 +610,7 @@ extern "C" commandResult_t IR_Send_Cmd(const void *context, const char *cmd, con
 						if( pIRsend->send(protocol,data,bits,repeats) )
 						{
 							pIRsend->delay(100);
+							DRV_IR_StartQueuedSend();
 							ADDLOG_INFO(LOG_FEATURE_IR, (char *)"IR send %s: protocol %d bits %d data 0x%llX repeats %d", args, (int)protocol, (int)bits, (long long int)data, (int)repeats);
 							return CMD_RES_OK;
 						} else {
@@ -445,8 +653,6 @@ extern "C" commandResult_t IR_Send_Cmd(const void *context, const char *cmd, con
 	}
 
 	if (pIRsend) {
-		bool success = true;  // Assume success.
-
 		switch(protocol)
 		{
 			case decode_type_t::RC5:
@@ -479,6 +685,7 @@ extern "C" commandResult_t IR_Send_Cmd(const void *context, const char *cmd, con
 		// add a 100ms delay after command
 		// NOTE: this is NOT a delay here.  it adds 100ms 'space' in the TX queue
 		pIRsend->delay(100);
+		DRV_IR_StartQueuedSend();
 
 		ADDLOG_INFO(LOG_FEATURE_IR, (char *)"IR send %s protocol %d addr 0x%X cmd 0x%X repeats %d", args, (int)protocol, (int)addr, (int)command, (int)repeats);
 		return CMD_RES_OK;
@@ -591,7 +798,7 @@ extern "C" commandResult_t IR_Param(const void *context, const char *cmd, const 
 	// should be sending a message.
 	// Set lower if you are sure your setup is working, but it doesn't see messages
 	// from your device. (e.g. Other IR remotes work.)
-	// NOTE: Set this value very high to effectively turn off UNKNOWN detection.	
+	// NOTE: Set this value very high to effectively turn off UNKNOWN detection.
 	int kMinUnknownSize = 12;
 
 	// How much percentage lee way do we give to incoming signals in order to match
@@ -614,7 +821,7 @@ extern "C" commandResult_t IR_Param(const void *context, const char *cmd, const 
 	ourReceiver->setUnknownThreshold(kMinUnknownSize);
 	ourReceiver->setTolerance(kTolerancePercentage);
 
-	ADDLOG_INFO(LOG_FEATURE_IR, (char *)"IRParam MinUnknownSize: %d  Noice tolerance: %d%%", kMinUnknownSize,kTolerancePercentage);
+	ADDLOG_INFO(LOG_FEATURE_IR, (char *)"IRParam MinUnknownSize: %d  Noise tolerance: %d%%", kMinUnknownSize,kTolerancePercentage);
 	return CMD_RES_OK;
 }
 
@@ -647,22 +854,33 @@ extern "C" commandResult_t IR_AC_Cmd(const void *context, const char *cmd, const
 #endif //ENABLE_IRAC
 
 
-// test routine to start IR RX and TX
-// currently fixed pins for testing.
 extern "C" void DRV_IR_Init() {
-	ADDLOG_INFO(LOG_FEATURE_IR, (char *)"Log from extern C CPP");
 
-	int pin = -1; //9;// PWM3/25
-	int txpin = -1; //24;// PWM3/25
+	int pin = -1;
+	int learnpin = -1;
+	int txpin = -1;
 	bool pup = true;
 
-	// allow user to change them
 	pin = PIN_FindPinIndexForRole(IOR_IRRecv, pin);
 	if(pin == -1)
 	{
 		pin = PIN_FindPinIndexForRole(IOR_IRRecv_nPup, pin);
 		if(pin >= 0) pup = false;
 	}
+	learnpin = PIN_FindPinIndexForRole(IOR_IRLearn, -1);
+#if !OBK_IR_BK_EDGE_RX
+	if (learnpin >= 0) {
+		ADDLOG_ERROR(LOG_FEATURE_IR, "IRLearn is not supported on this platform");
+		learnpin = -1;
+	}
+#endif
+	if (pin >= 0 && learnpin >= 0) {
+		ADDLOG_ERROR(LOG_FEATURE_IR,
+			"IRRecv P%d and IRLearn P%d cannot share the receiver; IRLearn disabled",
+			pin, learnpin);
+		learnpin = -1;
+	}
+	if (pin < 0) pin = learnpin;
 	txpin = PIN_FindPinIndexForRole(IOR_IRSend, txpin);
 
 	if (ourReceiver){
@@ -671,19 +889,49 @@ extern "C" void DRV_IR_Init() {
 	     delete temp;
 	 }
 	ADDLOG_INFO(LOG_FEATURE_IR, (char *)"DRV_IR_Init: recv pin %i", pin);
-	if ((pin >= 0) || (txpin >= 0)) {
-	}
-	else {
-		_timer_disable();
-	}
+	if (pin < 0 && txpin < 0) _timer_disable();
 
 	if (pin >= 0) {
-		// setup IRrecv pin as input
-		//bk_gpio_config_input_pup((GPIO_INDEX)pin); // enabled by enableIRIn
-
-		//TODO: we should specify buffer size (now set to 1024), timeout (now 90ms) and tolerance 
-		 ourReceiver = new IRrecv(pin);
-		 ourReceiver->enableIRIn(pup);
+		ourReceiver = new IRrecv(pin);
+		ourReceiver->enableIRIn(pup);
+#if OBK_IR_BK_EDGE_RX
+		ir_recv_pin = pin;
+		ir_continuous_receive = learnpin < 0;
+		ir_learning_available = learnpin >= 0;
+		ourReceiver->pause();
+		//cmddetail:{"name":"IRRxStats","args":"",
+		//cmddetail:"descr":"Print ISR receive counters, last frame length, overflow state, timing tolerance, and receive mode.",
+		//cmddetail:"fn":"DRV_IR_RxStatsCmd","file":"driver/drv_ir_new.cpp","requires":"ENABLE_DRIVER_IRREMOTEESP with Beken ISR receive",
+		//cmddetail:"examples":"IRRxStats"}
+		CMD_RegisterCommand("IRRxStats", DRV_IR_RxStatsCmd, NULL);
+		//cmddetail:{"name":"IRRxDump","args":"[Start] [Count]",
+		//cmddetail:"descr":"Print a bounded range of timings from the most recently captured ISR receive frame in microseconds.",
+		//cmddetail:"fn":"DRV_IR_RxDumpCmd","file":"driver/drv_ir_new.cpp","requires":"ENABLE_DRIVER_IRREMOTEESP with Beken ISR receive",
+		//cmddetail:"examples":"IRRxDump 0 64"}
+		CMD_RegisterCommand("IRRxDump", DRV_IR_RxDumpCmd, NULL);
+		if (ir_learning_available) {
+			strcpy(ir_learning_status, "Idle");
+			ir_learning_command[0] = 0;
+			ir_learning_detail[0] = 0;
+			ourReceiver->setTolerance(IR_LEARN_DEFAULT_TOLERANCE);
+			//cmddetail:{"name":"IRLearnStart","args":"[Seconds] [TimingTolerancePercent]",
+			//cmddetail:"descr":"Start an on-demand IR learning window. Seconds are clamped to 3-60 and timing tolerance to 10-49 percent.",
+			//cmddetail:"fn":"DRV_IR_LearnCmd","file":"driver/drv_ir_new.cpp","requires":"ENABLE_DRIVER_IRREMOTEESP and an IRLearn pin role",
+			//cmddetail:"examples":"IRLearnStart 15 30"}
+			CMD_RegisterCommand("IRLearnStart", DRV_IR_LearnCmd, NULL);
+			//cmddetail:{"name":"IRLearnCancel","args":"",
+			//cmddetail:"descr":"Cancel the active IR learning window and stop ISR capture.",
+			//cmddetail:"fn":"DRV_IR_LearnCancelCmd","file":"driver/drv_ir_new.cpp","requires":"ENABLE_DRIVER_IRREMOTEESP and an IRLearn pin role",
+			//cmddetail:"examples":"IRLearnCancel"}
+			CMD_RegisterCommand("IRLearnCancel", DRV_IR_LearnCancelCmd, NULL);
+			//cmddetail:{"name":"IRLearnStatus","args":"",
+			//cmddetail:"descr":"Print learning state, status text, and the most recently generated IRSend or IRSendState command.",
+			//cmddetail:"fn":"DRV_IR_LearnStatusCmd","file":"driver/drv_ir_new.cpp","requires":"ENABLE_DRIVER_IRREMOTEESP and an IRLearn pin role",
+			//cmddetail:"examples":"IRLearnStatus"}
+			CMD_RegisterCommand("IRLearnStatus", DRV_IR_LearnStatusCmd, NULL);
+			ADDLOG_INFO(LOG_FEATURE_IR, "IR learning idle on P%d", pin);
+		}
+#endif
 	}
 
 	if (pIRsend) {
@@ -707,6 +955,11 @@ extern "C" void DRV_IR_Init() {
 			//cmddetail:"fn":"IR_Send_Cmd","file":"driver/drv_ir_new.cpp","requires":"ENABLE_DRIVER_IRREMOTEESP (IRremoteESP8266)",
 			//cmddetail:"examples":""}
 			CMD_RegisterCommand("IRSend", IR_Send_Cmd, NULL);
+			//cmddetail:{"name":"IRSendState","args":"[Protocol],[HexState]",
+			//cmddetail:"descr":"Send a recognized state-based IR protocol, including supported air-conditioner protocols.",
+			//cmddetail:"fn":"IR_SendState_Cmd","file":"driver/drv_ir_new.cpp","requires":"ENABLE_DRIVER_IRREMOTEESP (IRremoteESP8266)",
+			//cmddetail:"examples":"IRSendState WHIRLPOOL_AC,8306049200008A3700000000002B00010000281039"}
+			CMD_RegisterCommand("IRSendState", IR_SendState_Cmd, NULL);
 			//cmddetail:{"name":"IRAC","args":"[TODO]",
 			//cmddetail:"descr":"Sends IR commands for HVAC control (TODO)",
 			//cmddetail:"fn":"IR_AC_Cmd","file":"driver/drv_ir_new.cpp","requires":"ENABLE_DRIVER_IRREMOTEESP (IRremoteESP8266)",
@@ -719,25 +972,68 @@ extern "C" void DRV_IR_Init() {
 			//cmddetail:"fn":"IR_Enable","file":"driver/drv_ir_new.cpp","requires":"ENABLE_DRIVER_IRREMOTEESP (IRremoteESP8266)",
 			//cmddetail:"examples":""}
 			CMD_RegisterCommand("IREnable",IR_Enable, NULL);
-			//cmddetail:{"name":"IRParam","args":"[MinSize] [Noise Threshold]",
-			//cmddetail:"descr":"Set minimal size of the message and noise threshold",
+			//cmddetail:{"name":"IRParam","args":"[MinUnknownSize] [TimingTolerancePercent]",
+			//cmddetail:"descr":"Set the minimum UNKNOWN frame size and receive timing tolerance percentage.",
 			//cmddetail:"fn":"IR_Param","file":"driver/drv_ir_new.cpp","requires":"ENABLE_DRIVER_IRREMOTEESP (IRremoteESP8266)",
 			//cmddetail:"examples":""}
 			CMD_RegisterCommand("IRParam",IR_Param, NULL);
 		}
 	}
-	if ((pin >= 0) || (txpin >= 0)) {
-		// both tx and rx need the interrupt
+	if (txpin >= 0 || (pin >= 0 && !OBK_IR_BK_EDGE_RX)) {
+		// Use the hardware timer for transmit or polling receive.
 		_timerConfigForReceive();
 		delay_ms(10);
+	#if OBK_IR_BK_EDGE_RX
+		_timer_disable();
+	#else
 		_timer_enable();
+	#endif
 	}
+#if OBK_IR_BK_EDGE_RX
+	if (ir_continuous_receive) DRV_IR_BK_ArmEdgeCapture();
+#endif
 }
 
 extern "C" void DRV_IR_Deinit()
 {
+	#if OBK_IR_BK_EDGE_RX
+	DRV_IR_BK_StopEdgeCapture();
+	ir_recv_pin = -1;
+	ir_continuous_receive = false;
+	ir_learning_available = false;
+	ir_learning_active = false;
+	#endif
 	_timer_disable();
-	HAL_HWTimerDeinit(ir_chan);
+	if (ir_chan >= 0) HAL_HWTimerDeinit(ir_chan);
+	ir_chan = -1;
+}
+
+extern "C" void DRV_IR_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState) {
+#if OBK_IR_BK_EDGE_RX
+	if (bPreState || !ir_learning_available || !ourReceiver || ir_recv_pin < 0) return;
+
+	poststr(request, "<h3>IR Remote Learning</h3><table>");
+	hprintf255(request, "<tr><td>Status: %s</td></tr>", ir_learning_status);
+	if (ir_learning_detail[0]) hprintf255(request, "<tr><td>%s</td></tr>", ir_learning_detail);
+	hprintf255(request, "<tr><td><label for='irLearnSeconds'>Learning time (3-60s):</label><input id='irLearnSeconds' type='number' min='3' max='60' value='%d'></td></tr>", ir_learning_seconds);
+	hprintf255(request, "<tr><td><label for='irLearnTolerance'>Receive tolerance (10-49%%):</label><input id='irLearnTolerance' type='number' min='10' max='49' value='%d'></td></tr>", ir_learning_tolerance);
+	poststr(request, "<tr><td><form onsubmit='irLearnStart();return false'><input type='submit' value='Learn remote'></form></td></tr>");
+	poststr(request, "<tr><td><form onsubmit=\"irLearnCommand('IRLearnCancel');return false\"><input class='bred' type='submit' value='Stop learning'></form></td></tr>");
+	poststr(request, "<tr><td><label for='irLearnedCommand'>Learned command:</label><input id='irLearnedCommand' type='text' readonly value='");
+	poststr(request, ir_learning_command);
+	poststr(request, "'></td></tr>");
+	poststr(request, "<tr><td><form onsubmit='irLearnCopy();return false'><input type='submit' value='Copy command'></form></td></tr>");
+	poststr(request, "<tr><td><form onsubmit='irLearnTest();return false'><input type='submit' value='Test command'></form></td></tr>");
+	poststr(request, "</table><script>");
+	poststr(request, "function irLearnCommand(c){fetch('/cm?cmnd='+encodeURIComponent(c),{cache:'no-store'})}");
+	poststr(request, "function irLearnStart(){let se=document.getElementById('irLearnSeconds'),te=document.getElementById('irLearnTolerance'),s=Math.max(3,Math.min(60,parseInt(se.value)||15)),t=Math.max(10,Math.min(49,parseInt(te.value)||30));se.value=s;te.value=t;irLearnCommand('IRLearnStart '+s+' '+t)}");
+	poststr(request, "function irLearnCopy(){let e=document.getElementById('irLearnedCommand');if(!e.value)return;e.focus();e.select();e.setSelectionRange(0,e.value.length);if(window.isSecureContext&&navigator.clipboard)navigator.clipboard.writeText(e.value);else document.execCommand('copy')}");
+	poststr(request, "function irLearnTest(){let c=document.getElementById('irLearnedCommand').value;if(c)irLearnCommand(c)}");
+	poststr(request, "</script>");
+#else
+	(void)request;
+	(void)bPreState;
+#endif
 }
 
 void dump(decode_results *results) {
@@ -758,6 +1054,18 @@ void dump(decode_results *results) {
 ////////////////////////////////////////////////////
 // this polls the IR receive to see if there was any IR received
 extern "C" void DRV_IR_RunFrame() {
+	#if OBK_IR_BK_EDGE_RX
+	if (ir_tx_active && pIRsend && pIRsend->timecount == 0 &&
+		pIRsend->currentsendtime == 0) {
+		ir_tx_active = false;
+		if (ir_timer_running) _timer_disable();
+		DRV_IR_BK_ArmEdgeCapture();
+	}
+	if (ir_learning_active && (int32_t)(g_timeMs - ir_learning_deadline_ms) >= 0) {
+		DRV_IR_LearnStop("Timed out - no valid decode");
+		ADDLOG_INFO(LOG_FEATURE_IR, "IR learning timed out");
+	}
+	#endif
 	// Debug-only check to see if the timer interrupt is running
 	if (ir_counter) {
 		//ADDLOG_INFO(LOG_FEATURE_IR, (char *)"IR counter: %u", ir_counter);
@@ -773,11 +1081,82 @@ extern "C" void DRV_IR_RunFrame() {
 	}
 
 
-	if (ourReceiver) {
+	bool receive_frame_ready = true;
+	#if OBK_IR_BK_EDGE_RX
+	receive_frame_ready = !ir_tx_active &&
+		IRrecv_BK_CompleteIfQuiet(HAL_GetMicroseconds());
+	if (receive_frame_ready) ir_edge_capture_count++;
+	#endif
+	bool receive_enabled = true;
+	#if OBK_IR_BK_EDGE_RX
+	receive_enabled = ir_continuous_receive || ir_learning_active;
+	#endif
+	if (ourReceiver && receive_enabled && receive_frame_ready) {
 		decode_results results;
-		if (ourReceiver->decode(&results)) {
+		uint8_t max_skip = 0;
+		#if OBK_IR_BK_EDGE_RX
+		max_skip = ir_learning_active ? 1 : 0;
+		#endif
+		bool decoded = ourReceiver->decode(&results, NULL, max_skip);
+		#if OBK_IR_BK_EDGE_RX
+		if (decoded) {
+			ir_edge_decode_count++;
+			ir_edge_last_rawlen = results.rawlen;
+			ir_edge_last_overflow = results.overflow;
+			ir_edge_last_raw_count = results.rawlen;
+			const uint16_t raw_capacity = sizeof(ir_edge_last_raw) / sizeof(ir_edge_last_raw[0]);
+			if (ir_edge_last_raw_count > raw_capacity)
+				ir_edge_last_raw_count = raw_capacity;
+			for (uint16_t i = 0; i < ir_edge_last_raw_count; i++)
+				ir_edge_last_raw[i] = results.rawbuf[i];
+		}
+		#endif
+		if (decoded && results.decode_type != decode_type_t::UNKNOWN &&
+			(results.bits == 0 || results.overflow)) {
+			ADDLOG_INFO(LOG_FEATURE_IR,
+				"IR rejected invalid named decode protocol=%s bits=%u overflow=%u rawlen=%u",
+				typeToString(results.decode_type, results.repeat).c_str(),
+				(unsigned int)results.bits, results.overflow ? 1U : 0U,
+				(unsigned int)results.rawlen);
+			decoded = false;
+		}
+		if (decoded) {
+			#if OBK_IR_BK_EDGE_RX
+			if (results.decode_type == decode_type_t::UNKNOWN) ir_edge_unknown_count++;
+			else ir_edge_named_count++;
+			#endif
 			// TODO: find a better way?
 			String proto_name = typeToString(results.decode_type, results.repeat).c_str();
+
+			#if OBK_IR_BK_EDGE_RX
+			if (ir_learning_active && results.decode_type != decode_type_t::UNKNOWN &&
+				results.bits > 0 && !results.overflow) {
+				if (hasACState(results.decode_type)) {
+					int pos = snprintf(ir_learning_command, sizeof(ir_learning_command),
+						"IRSendState %s,", proto_name.c_str());
+					uint16_t state_bytes = (results.bits + 7U) / 8U;
+					if (state_bytes > kStateSizeMax) state_bytes = kStateSizeMax;
+					for (uint16_t i = 0; i < state_bytes && pos < (int)sizeof(ir_learning_command) - 2; i++) {
+						pos += snprintf(ir_learning_command + pos, sizeof(ir_learning_command) - pos,
+							"%02X", results.state[i]);
+					}
+					snprintf(ir_learning_detail, sizeof(ir_learning_detail),
+						"Protocol %s, %u bits, %u state bytes", proto_name.c_str(),
+						(unsigned int)results.bits, (unsigned int)state_bytes);
+				} else {
+					String data = resultToHexidecimal(&results);
+					snprintf(ir_learning_command, sizeof(ir_learning_command),
+						"IRSend %s,%u,%s,0", proto_name.c_str(),
+						(unsigned int)results.bits, data.c_str());
+					snprintf(ir_learning_detail, sizeof(ir_learning_detail),
+						"Protocol %s, %u bits, address 0x%lX, command 0x%lX",
+						proto_name.c_str(), (unsigned int)results.bits,
+						(unsigned long)results.address, (unsigned long)results.command);
+				}
+				DRV_IR_LearnStop("Learned successfully");
+				ADDLOG_INFO(LOG_FEATURE_IR, "IR learned command: %s", ir_learning_command);
+			}
+			#endif
 
 			#if 0 // TODO: implement different masking
 			if (!(gIRProtocolEnable & (1 << (int)results.decode_type))) {
@@ -850,7 +1229,7 @@ extern "C" void DRV_IR_RunFrame() {
 				}
 
 				if (results.decode_type != decode_type_t::UNKNOWN) {
-					snprintf(out, sizeof(out), "%X", results.command);
+					snprintf(out, sizeof(out), "%X", (unsigned int)results.command);
 					int tgType = 0;
 					switch (results.decode_type)
 					{
@@ -890,8 +1269,13 @@ extern "C" void DRV_IR_RunFrame() {
 			* !!!Important!!! Enable receiving of the next value,
 			* since receiving has stopped after the end of the current received data packet.
 			*/
+			#if !OBK_IR_BK_EDGE_RX
 			ourReceiver->resume(); // Enable receiving of the next value
+			#endif
 		}
+		#if OBK_IR_BK_EDGE_RX
+		if (ir_continuous_receive || ir_learning_active) DRV_IR_BK_ArmEdgeCapture();
+		#endif
 	}
 }
 
