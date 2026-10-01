@@ -522,12 +522,70 @@ void CFG_Save_IfThereArePendingChanges() {
 		g_cfg_pendingChanges = 0;
 	}
 }
-void CFG_DeviceGroups_SetName(const char *s) {
+#define DGR_CFG_EXTENSION_MAGIC 0x34524744UL /* DGR4 */
+typedef struct dgrConfigExtension_s {
+	uint32_t magic;
+	char names[CFG_DEVICE_GROUP_MAX - 1][16];
+	byte ties[CFG_DEVICE_GROUP_MAX];
+} dgrConfigExtension_t;
+typedef char dgrConfigExtensionMustFitInReservedConfig[
+	(sizeof(dgrConfigExtension_t) <= sizeof(((mainConfig_t *)0)->unused)) ? 1 : -1];
+
+static dgrConfigExtension_t *CFG_DeviceGroups_GetExtension(void) {
+	return (dgrConfigExtension_t *)g_cfg.unused;
+}
+
+static dgrConfigExtension_t *CFG_DeviceGroups_EnsureExtension(void) {
+	dgrConfigExtension_t *extension = CFG_DeviceGroups_GetExtension();
+	if (extension->magic != DGR_CFG_EXTENSION_MAGIC) {
+		memset(extension, 0, sizeof(*extension));
+		extension->magic = DGR_CFG_EXTENSION_MAGIC;
+		g_cfg_pendingChanges++;
+	}
+	return extension;
+}
+
+void CFG_DeviceGroups_SetNameByIndex(int index, const char *s) {
+	char *destination;
+	if (index < 0 || index >= CFG_DEVICE_GROUP_MAX || s == 0) return;
+	destination = index == 0 ? g_cfg.dgr_name : CFG_DeviceGroups_EnsureExtension()->names[index - 1];
 	// this will return non-zero if there were any changes
-	if(strcpy_safe_checkForChanges(g_cfg.dgr_name, s,sizeof(g_cfg.dgr_name))) {
+	if(strcpy_safe_checkForChanges(destination, s, 16)) {
 		// mark as dirty (value has changed)
 		g_cfg_pendingChanges++;
 	}
+}
+void CFG_DeviceGroups_SetName(const char *s) { CFG_DeviceGroups_SetNameByIndex(0, s); }
+const char *CFG_DeviceGroups_GetNameByIndex(int index) {
+	dgrConfigExtension_t *extension;
+	if (index == 0) return g_cfg.dgr_name;
+	if (index < 0 || index >= CFG_DEVICE_GROUP_MAX) return "";
+	extension = CFG_DeviceGroups_GetExtension();
+	if (extension->magic != DGR_CFG_EXTENSION_MAGIC) return "";
+	return extension->names[index - 1];
+}
+void CFG_DeviceGroups_SetTie(int index, int relay) {
+	dgrConfigExtension_t *extension;
+	if (index < 0 || index >= CFG_DEVICE_GROUP_MAX || relay < 0 || relay > 24) return;
+	extension = CFG_DeviceGroups_EnsureExtension();
+	if (extension->ties[index] != relay) {
+		extension->ties[index] = relay;
+		g_cfg_pendingChanges++;
+	}
+}
+int CFG_DeviceGroups_GetTie(int index) {
+	dgrConfigExtension_t *extension;
+	if (index < 0 || index >= CFG_DEVICE_GROUP_MAX) return 0;
+	extension = CFG_DeviceGroups_GetExtension();
+	return extension->magic == DGR_CFG_EXTENSION_MAGIC ? extension->ties[index] : 0;
+}
+int CFG_DeviceGroups_GetCount(void) {
+	int count = CFG_DeviceGroups_GetNameByIndex(0)[0] ? 1 : 0;
+	int i;
+	for (i = 1; i < CFG_DEVICE_GROUP_MAX; i++) {
+		if (CFG_DeviceGroups_GetNameByIndex(i)[0]) count = i + 1;
+	}
+	return count;
 }
 void CFG_DeviceGroups_SetSendFlags(int newSendFlags) {
 	if(g_cfg.dgr_sendFlags != newSendFlags) {
@@ -542,7 +600,7 @@ void CFG_DeviceGroups_SetRecvFlags(int newRecvFlags) {
 	}
 }
 const char *CFG_DeviceGroups_GetName() {
-	return g_cfg.dgr_name;
+	return CFG_DeviceGroups_GetNameByIndex(0);
 }
 int CFG_DeviceGroups_GetSendFlags() {
 	return g_cfg.dgr_sendFlags;
