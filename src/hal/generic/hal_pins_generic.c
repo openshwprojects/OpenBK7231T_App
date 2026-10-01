@@ -49,6 +49,12 @@ void __attribute__((weak)) HAL_PIN_Setup_Output(int index)
 	return;
 }
 
+void __attribute__((weak)) HAL_PIN_Setup_Output_Initial(int index, int value)
+{
+	HAL_PIN_Setup_Output(index);
+	HAL_PIN_SetOutputValue(index, value);
+}
+
 void __attribute__((weak)) HAL_PIN_PWM_Stop(int index)
 {
 	return;
