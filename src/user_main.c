@@ -124,6 +124,8 @@ void Main_ForceUnsafeInit();
 #elif PLATFORM_BL602 || PLATFORM_REALTEK || PLATFORM_XRADIO || PLATFORM_W600 || PLATFORM_RDA5981 || PLATFORM_LN8825 \
 	|| PLATFORM_LN882H || PLATFORM_BL_NEW || PLATFORM_GD32VW553 || PLATFORM_ARMINO
 #define WFI_FUNC() __asm volatile("wfi")
+#elif PLATFORM_TR6260 || PLATFORM_ECR6600
+#define WFI_FUNC() __asm volatile("standby no_wake_grant")
 #elif PLATFORM_W800
 #define WFI_FUNC __WFI
 #endif
@@ -1613,7 +1615,8 @@ void Main_Init_After_Delay()
 	}
 
 	ADDLOGF_INFO("Using SSID [%s]", wifi_ssid);
-	ADDLOGF_INFO("Using Pass [%s]", wifi_pass);
+	// do not log sensitive data (same as mqtt_pass) - this line ends up in /logs, the tcp log port and pasted bug reports
+	ADDLOGF_INFO("Using Pass [%s]", *wifi_pass ? "********" : "");
 
 	// NOT WORKING, I done it other way, see ethernetif.c
 	//net_dhcp_hostname_set(g_shortDeviceName);
