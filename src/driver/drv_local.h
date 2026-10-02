@@ -162,6 +162,11 @@ void SHT3X_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreSta
 void SHT3X_OnEverySecond();
 void SHT3X_StopDriver();
 
+void SHTC3_Init();
+void SHTC3_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState);
+void SHTC3_OnEverySecond();
+void SHTC3_StopDriver();
+
 void AHT2X_Init();
 void AHT2X_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState);
 void AHT2X_OnEverySecond();
@@ -357,3 +362,17 @@ void TinyIR_NEC_RunFrame();
 void DRV_ESPHome_API_Init();
 void DRV_ESPHome_API_Deinit();
 void DRV_ESPHome_API_OnEverySecond();
+
+void HWSPI_Init();
+void HWSPI_Stop();
+
+void st7789_Init();
+void st7789_AppendInformationToHTTPIndexPage(http_request_t* request, int bPreState);
+void st7789_Stop();
+
+void MicroUI_Init();
+void MicroUI_OnEverySecond();
+void MicroUI_AppendInformationToHTTPIndexPage(http_request_t* request, int bPreState);
+void MicroUI_QuickFrame();
+void MicroUI_OnChannelChanged(int ch, int value);
+void MicroUI_Stop();

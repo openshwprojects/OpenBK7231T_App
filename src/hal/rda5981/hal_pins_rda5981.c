@@ -204,7 +204,7 @@ void HAL_PIN_PWM_Update(int index, float value)
 	pwmout_write(pin->pwm, value / 100);
 }
 
-unsigned int HAL_GetGPIOPin(int index)
+signed int HAL_GetGPIOPin(int index)
 {
 	return index;
 }

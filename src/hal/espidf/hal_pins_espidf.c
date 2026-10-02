@@ -8,6 +8,7 @@
 #include "driver/ledc.h"
 #include "../hal_pins.h"
 
+
 #ifdef CONFIG_IDF_TARGET_ESP32C3
 
 espPinMapping_t g_pins[] = {
@@ -440,7 +441,7 @@ void HAL_PIN_Setup_Output(int index)
 	if(!pin->isConfigured)
 	{
 		pin->isConfigured = true;
-		ESP_ConfigurePin(pin->pin, GPIO_MODE_OUTPUT, true, false, GPIO_INTR_DISABLE);
+		ESP_ConfigurePin(pin->pin, GPIO_MODE_OUTPUT, false, false, GPIO_INTR_DISABLE);
 		return;
 	}
 	gpio_set_direction(pin->pin, GPIO_MODE_OUTPUT);
@@ -605,9 +606,13 @@ void HAL_PIN_PWM_Update(int index, float value)
 
 #endif
 
-unsigned int HAL_GetGPIOPin(int index)
+signed int HAL_GetGPIOPin(int index)
 {
-	return index;
+	//return index;
+	if(index >= g_numPins)
+		return -1;
+	espPinMapping_t* pin = g_pins + index;
+	return pin->pin;
 }
 
 
@@ -653,6 +658,17 @@ void HAL_DetachInterrupt(int pinIndex) {
 	gpio_isr_handler_remove(esp_cf->pin);
 	///gpio_uninstall_isr_service();
 	g_handlers[pinIndex] = 0;
+}
+
+int HAL_PIN_Find(const char *name){
+	if (name == NULL) return -1;
+
+	for (int i = 0; i < PLATFORM_GPIO_MAX; i++) {
+		espPinMapping_t* pin = g_pins + i;
+		if (strcmp(pin->name,name) == 0) return i;
+	}
+	return -1;
+	
 }
 
 #endif // PLATFORM_ESPIDF

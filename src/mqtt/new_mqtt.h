@@ -72,6 +72,7 @@ enum OBK_Publish_Result_e {
 // do not add anything to given topic
 #define OBK_PUBLISH_FLAG_RAW_TOPIC_NAME			8
 #define OBK_PUBLISH_FLAG_QOS_ZERO				16
+#define OBK_PUBLISH_FLAG_NOREUSE				32
 
 
 #include "new_mqtt_deduper.h"
@@ -164,6 +165,7 @@ OBK_Publish_Result MQTT_PublishStat(const char* statName, const char* statValue)
 OBK_Publish_Result MQTT_PublishTele(const char* teleName, const char* teleValue);
 void MQTT_InvokeCommandAtEnd(PostPublishCommands command);
 bool MQTT_IsReady();
+int MQTT_QueueSize(void);
 extern int g_mqtt_bBaseTopicDirty;
 extern int mqtt_reconnect;
 extern int mqtt_loopsWithDisconnected;

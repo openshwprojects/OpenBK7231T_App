@@ -64,7 +64,7 @@ void __attribute__((weak)) HAL_PIN_PWM_Update(int index, float value)
 	return;
 }
 
-unsigned int __attribute__((weak)) HAL_GetGPIOPin(int index)
+signed int __attribute__((weak)) HAL_GetGPIOPin(int index)
 {
 	return index;
 }
@@ -76,4 +76,8 @@ void __attribute__((weak)) HAL_AttachInterrupt(int pinIndex, OBKInterruptType mo
 void __attribute__((weak)) HAL_DetachInterrupt(int pinIndex)
 {
 
+}
+int __attribute__((weak)) HAL_PIN_Find(const char *name)
+{
+	return -1;
 }

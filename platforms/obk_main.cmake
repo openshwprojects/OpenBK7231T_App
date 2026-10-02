@@ -34,6 +34,7 @@ set(OBKM_SRC
 	${OBK_SRCS}hal/generic/hal_pins_generic.c
 	${OBK_SRCS}hal/generic/hal_wifi_generic.c
 	${OBK_SRCS}hal/generic/hal_uart_generic.c
+	${OBK_SRCS}hal/generic/hal_spi_generic.c
 	${OBK_SRCS}httpserver/hass.c
 	${OBK_SRCS}httpserver/http_basic_auth.c
 	${OBK_SRCS}httpserver/http_fns.c
@@ -44,6 +45,7 @@ set(OBKM_SRC
 	${OBK_SRCS}httpserver/rest_interface.c
 	${OBK_SRCS}mqtt/new_mqtt_deduper.c
 	${OBK_SRCS}jsmn/jsmn.c
+	${OBK_SRCS}jsmn/jsmn_stream.c
 	${OBK_SRCS}logging/logging.c
 	${OBK_SRCS}mqtt/new_mqtt.c
 	${OBK_SRCS}new_cfg.c
@@ -125,6 +127,7 @@ set(OBKM_SRC
 	${OBK_SRCS}driver/drv_sgp.c
 	${OBK_SRCS}driver/drv_shiftRegister.c
 	${OBK_SRCS}driver/drv_sht3x.c
+	${OBK_SRCS}driver/drv_shtc3.c
 	${OBK_SRCS}driver/drv_sm2135.c
 	${OBK_SRCS}driver/drv_sm2235.c
 	${OBK_SRCS}driver/drv_soft_i2c.c
@@ -161,6 +164,12 @@ set(OBKM_SRC
 	${OBK_SRCS}driver/drv_vkl060.c
 	${OBK_SRCS}driver/drv_wemo.c
 	${OBK_SRCS}driver/drv_widget.c
+	${OBK_SRCS}driver/drv_spibus.c
+	${OBK_SRCS}driver/drv_st7789.c
+	${OBK_SRCS}driver/drv_idisplay.c
+	${OBK_SRCS}driver/drv_microui.c
+	${OBK_SRCS}driver/drv_microui_core.c
+	${OBK_SRCS}driver/drv_microui_renderer.c
 	${OBK_SRCS}i2c/drv_i2c_ads1115.c
 	${OBK_SRCS}i2c/drv_i2c_lcd_pcf8574t.c
 	${OBK_SRCS}i2c/drv_i2c_main.c
@@ -172,7 +181,7 @@ set(OBKM_SRC
 
 
 if(NOT DEFINED SDK_CJSON)
-	set(OBKM_SRC ${OBKM_SRC} ${OBK_SRCS}cJSON/cJSON.c)
+	set(OBKM_SRC ${OBKM_SRC} ${OBK_SRCS}cJSON/cJSON.c)	
 endif()
 
 if(NOT DEFINED SDK_LFS)

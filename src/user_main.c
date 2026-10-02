@@ -11,6 +11,7 @@
 //#include "driver/drv_ir.h"
 #include "driver/drv_public.h"
 #include "driver/drv_bl_shared.h"
+#include "driver/drv_hlw8112.h"
 //#include "ir/ir_local.h"
 
 #include "driver/drv_deviceclock.h"
@@ -1082,6 +1083,9 @@ void Main_OnEverySecond()
 			}
 #endif       
 			DRV_SavePowerMeterDriverStatistics();
+#if ENABLE_DRIVER_HLW8112SPI
+			HLW8112_Save_Statistics();
+#endif 
 			ADDLOGF_INFO("Rebooting...");
 			// call disconnect so that fast connect wouldn't fail
 			HAL_DisconnectFromWifi();
@@ -1443,6 +1447,9 @@ void Main_Init_BeforeDelay_Unsafe(bool bAutoRunScripts) {
 			}
 			if (PIN_FindPinIndexForRole(IOR_SHT3X_CLK, -1) != -1 && PIN_FindPinIndexForRole(IOR_SHT3X_DAT, -1) != -1) {
 				DRV_StartDriver("SHT3X");
+			}
+			if (PIN_FindPinIndexForRole(IOR_SHTC3_CLK, -1) != -1 && PIN_FindPinIndexForRole(IOR_SHTC3_DAT, -1) != -1) {
+				DRV_StartDriver("SHTC3");
 			}
 			if (PIN_FindPinIndexForRole(IOR_SGP_CLK, -1) != -1 && PIN_FindPinIndexForRole(IOR_SGP_DAT, -1) != -1) {
 				DRV_StartDriver("SGP");

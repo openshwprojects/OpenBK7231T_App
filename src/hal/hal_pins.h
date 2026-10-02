@@ -30,8 +30,8 @@ void HAL_DetachInterrupt(int pinIndex);
 
 /// @brief Get the actual GPIO pin for the pin index.
 /// @param index 
-/// @return 
-unsigned int HAL_GetGPIOPin(int index);
+/// @return actual GPIO pin or -1
+signed int HAL_GetGPIOPin(int index);
 
 #endif
 

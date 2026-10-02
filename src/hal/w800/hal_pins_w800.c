@@ -235,7 +235,7 @@ void HAL_PIN_PWM_Update(int index, float value) {
 	}
 }
 
-unsigned int HAL_GetGPIOPin(int index) {
+signed int HAL_GetGPIOPin(int index) {
 	return g_pins[index].code;
 }
 

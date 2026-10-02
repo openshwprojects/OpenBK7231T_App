@@ -13,8 +13,10 @@ set(PROJ_ALL_SRC
 	${OBK_SRCS}hal/espidf/hal_main_espidf.c
 	${OBK_SRCS}hal/espidf/hal_pins_espidf.c
 	${OBK_SRCS}hal/espidf/hal_wifi_espidf.c
+	${OBK_SRCS}hal/espidf/hal_spi_espidf.c
 	${OBK_SRCS}hal/espidf/hal_uart_espidf.c
 	${OBK_SRCS}hal/espidf/hal_ota_espidf.c
+	${OBK_SRCS}hal/espidf/hal_os_wrapper_espidf.c
 	${OBKM_SRC}
 	${BERRY_SRC_C}
 	../../../sdk/OpenESP8266/components/lwip/lwip/src/apps/mdns/mdns.c
