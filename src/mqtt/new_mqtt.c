@@ -2454,6 +2454,22 @@ MqttPublishItem_t* find_queue_reusable_item(MqttPublishItem_t* head) {
 	return head;
 }
 
+void del_queue_item(MqttPublishItem_t** head, MqttPublishItem_t* item) {
+	if ((head == NULL) || (item == NULL)) { return; }
+	MqttPublishItem_t* _head = *head;
+	if (_head == item) {
+		*head = NULL;
+		return;
+	}
+	while (_head->next != NULL) {
+		if (_head->next == item) {
+			_head->next = item->next;
+			return;
+		}
+		_head = _head->next;
+	}
+}
+
 /// @brief Queue an entry for publish and execute a command after the publish.
 /// @param topic 
 /// @param channel 
@@ -2537,21 +2553,30 @@ OBK_Publish_Result PublishQueuedItems() {
 
 	int count = 0;
 	MqttPublishItem_t* head = g_MqttPublishQueueHead;
+	MqttPublishItem_t* next;
 
 	//The next actionable item might not be at the front. The queue size is limited to MQTT_QUEUED_ITEMS_PUBLISHED_AT_ONCE
 	//so this traversal is fast.
 	//addLogAdv(LOG_INFO,LOG_FEATURE_MQTT,"PublishQueuedItems g_MqttPublishItemsQueued=%i",g_MqttPublishItemsQueued );
 	while ((head != NULL) && (count < MQTT_QUEUED_ITEMS_PUBLISHED_AT_ONCE) && (g_MqttPublishItemsQueued > 0)) {
+		next = head->next;
 		if (!MQTT_QUEUE_ITEM_IS_REUSABLE(head)) {  //Skip reusable entries
 			count++;
+			int _command = head->command;			
 			result = MQTT_PublishTopicToClient(mqtt_client, head->topic, head->channel, head->value, head->flags, false);
-			MQTT_QUEUE_ITEM_SET_REUSABLE(head); //Flag item as reusable
+			if (!(head->flags&OBK_PUBLISH_FLAG_NOREUSE)) {
+				MQTT_QUEUE_ITEM_SET_REUSABLE(head); //Flag item as reusable				
+			} else {
+				/* remove queue item */
+				del_queue_item(&g_MqttPublishQueueHead, head);
+				os_free(head);
+			}
 			g_MqttPublishItemsQueued--;   //decrement queued count
 
 			//Stop if last publish failed
 			if (result != OBK_PUBLISH_OK) break;
 
-			switch (head->command) {
+			switch (_command) {
 			case None:
 				break;
 			case PublishAll:
@@ -2565,8 +2590,7 @@ OBK_Publish_Result PublishQueuedItems() {
 		else {
 			//addLogAdv(LOG_INFO,LOG_FEATURE_MQTT,"PublishQueuedItems item skipped reusable");
 		}
-
-		head = head->next;
+		head = next;		
 	}
 
 	return result;
@@ -2583,6 +2607,11 @@ bool MQTT_IsReady() {
 		UNLOCK_TCPIP_CORE();
 	}
 	return mqtt_client && res;
+}
+/// @brief Return MQTT queue size
+/// @return 
+int MQTT_QueueSize(void) {
+	return g_MqttPublishItemsQueued;
 }
 
 #endif // ENABLE_MQTT

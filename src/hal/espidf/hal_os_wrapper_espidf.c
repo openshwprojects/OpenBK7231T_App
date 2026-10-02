@@ -61,7 +61,7 @@ void obk_delay_ms( uint32_t delay ) {
   */
 obk_err_t obk_init_mutex( obk_mutex_t* mutex )
 {
-	if (mutex != 0) return OBK_ERROR;
+	if (!mutex) return OBK_ERROR;
 	*(xSemaphoreHandle*) mutex = xSemaphoreCreateMutex();
 	return OBK_EOK;
 }
@@ -78,12 +78,14 @@ obk_err_t obk_init_mutex( obk_mutex_t* mutex )
   */
 obk_err_t obk_lock_mutex( obk_mutex_t* mutex, uint32_t timeout_ms)
 {	
+	return OBK_EOK;
+    if (!mutex || !(*mutex)) return OBK_ERROR;
 	TickType_t xTicksToWait = portMAX_DELAY;
 	if (timeout_ms != 0) {
 		xTicksToWait = timeout_ms / portTICK_PERIOD_MS;
 	}			
     // Try lock mutex
-    if (xSemaphoreTake(*(xSemaphoreHandle*)mutex, timeout_ms) == pdTRUE) {
+    if (xSemaphoreTake(*(xSemaphoreHandle*)mutex, xTicksToWait) == pdTRUE) {
 		return OBK_EOK;
 	} else return OBK_ERROR;
 }
@@ -98,7 +100,9 @@ obk_err_t obk_lock_mutex( obk_mutex_t* mutex, uint32_t timeout_ms)
   * @return   OBK_ERROR      : if an error occurred
   */
 obk_err_t obk_unlock_mutex( obk_mutex_t* mutex )
-{
+{	
+	return OBK_EOK;
+	if (!mutex || !(*mutex)) return OBK_ERROR;
 	xSemaphoreGive(*(xSemaphoreHandle*)mutex);
 	return OBK_EOK;
 }
