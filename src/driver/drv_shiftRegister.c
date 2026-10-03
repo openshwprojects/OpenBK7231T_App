@@ -8,28 +8,34 @@
 #include "drv_local.h"
 #include "../hal/hal_pins.h"
 
-// GPIO index of Data
-static byte g_data;
-// GPIO index of Latch
-static byte g_latch;
-// GPIO index of Clk
-static byte g_clk;
-// First index of channel that is mapped to shift register.
-static byte g_firstChannel;
-// Current value on shift register
-// This is a 32-bit integer, so up to 4 shift registers (32 bits) are supported 
-static int g_currentValue;
-// MSBFirst or LSBFirst
-static byte g_order;
-// how many 8 bit registers you have chained together
-static byte g_totalRegisters;
-// invert or not
-static byte g_invert;
+#define MAX_SHIFT_REGISTERS 4
+
+// Create a structure to hold the state for each chip
+typedef struct {
+    byte data;
+    byte latch;
+    byte clk;
+    short firstChannel;
+    int currentValue;
+    byte order;
+    byte totalRegisters;
+    byte invert;
+    byte inUse;
+} shiftReg_t;
+
+static shiftReg_t g_shiftRegs[MAX_SHIFT_REGISTERS];
 
 /*
 
+Multiple independent shift registers are now supported!
+
 // startDriver ShiftRegister [DataPin] [LatchPin] [ClkPin] [FirstChannel] [Order] [TotalRegisters] [Invert]
-startDriver ShiftRegister 24 6 7 10 1 1 0
+// Each call automatically finds the next available slot (supports up to 4 independent chips)
+
+Example with 2 separate 74HC595 chips:
+startDriver ShiftRegister 2 3 4 10 1 1 0
+startDriver ShiftRegister 19 20 21 18 1 1 0
+
 // If given argument is not present, default value is used
 // First channel is a first channel that is mapped to first output of shift register.
 // The total number of channels mapped is equal to TotalRegisters * 8, because every register has 8 pins.
@@ -48,20 +54,33 @@ setChannelType 17 Toggle
 
 */
 void Shift_Init() {
-	// NOTE: this is called by "startDriver ShiftRegister" command,
-	// which means that Tokenizer has already tokenized the command,
-	// and that argument 0 is "ShiftRegister" driver name
-	g_data = Tokenizer_GetArgIntegerDefault(1, 24);
-	g_latch = Tokenizer_GetArgIntegerDefault(2, 6);
-	g_clk = Tokenizer_GetArgIntegerDefault(3, 7);
-	g_firstChannel = Tokenizer_GetArgIntegerDefault(4, 10);
-	g_order = Tokenizer_GetArgIntegerDefault(5, 1);
-	g_totalRegisters = Tokenizer_GetArgIntegerDefault(6, 1);
-	g_invert = Tokenizer_GetArgIntegerDefault(7, 0);
+	shiftReg_t *reg = 0;
+	
+	// Find an empty slot
+	for(int i = 0; i < MAX_SHIFT_REGISTERS; i++) {
+		if(!g_shiftRegs[i].inUse) {
+			reg = &g_shiftRegs[i];
+			break;
+		}
+	}
+	
+	if(!reg) {
+		addLogAdv(LOG_ERROR, LOG_FEATURE_MAIN, "ShiftRegister: Max instances reached");
+		return;
+	}
 
-	HAL_PIN_Setup_Output(g_latch);
-	HAL_PIN_Setup_Output(g_data);
-	HAL_PIN_Setup_Output(g_clk);
+	reg->data = Tokenizer_GetArgIntegerDefault(1, 24);
+	reg->latch = Tokenizer_GetArgIntegerDefault(2, 6);
+	reg->clk = Tokenizer_GetArgIntegerDefault(3, 7);
+	reg->firstChannel = Tokenizer_GetArgIntegerDefault(4, 10);
+	reg->order = Tokenizer_GetArgIntegerDefault(5, 1);
+	reg->totalRegisters = Tokenizer_GetArgIntegerDefault(6, 1);
+	reg->invert = Tokenizer_GetArgIntegerDefault(7, 0);
+	reg->inUse = 1;
+
+	HAL_PIN_Setup_Output(reg->latch);
+	HAL_PIN_Setup_Output(reg->data);
+	HAL_PIN_Setup_Output(reg->clk);
 }
 
 void PORT_shiftOut(int dataPin, int clockPin, int bitOrder, int val, int totalRegisters);
@@ -85,26 +104,32 @@ void Shift_OnEverySecond() {
 #endif
 }
 void Shift_OnChannelChanged(int ch, int value) {
-	int totalChannelsMapped = g_totalRegisters * 8;
+	// Loop through all active shift registers
+	for(int i = 0; i < MAX_SHIFT_REGISTERS; i++) {
+		shiftReg_t *reg = &g_shiftRegs[i];
+		if(!reg->inUse) continue;
 
-	ch -= g_firstChannel;
-	if (ch < 0) {
-		return;
+		int totalChannelsMapped = reg->totalRegisters * 8;
+		int localCh = ch - reg->firstChannel;
+
+		// Check if the changed channel belongs to this specific chip
+		if (localCh < 0 || localCh >= totalChannelsMapped) {
+			continue; 
+		}
+
+		int valToSet = value;
+		if (reg->invert) {
+			valToSet = !valToSet;
+		}
+
+		if (valToSet) {
+			BIT_SET(reg->currentValue, localCh);
+		} else {
+			BIT_CLEAR(reg->currentValue, localCh);
+		}
+
+		PORT_shiftOutLatch(reg->data, reg->clk, reg->latch, reg->order, reg->currentValue, reg->totalRegisters);
 	}
-	if (ch >= totalChannelsMapped) {
-		return;
-	}
-	if (g_invert) {
-		value = !value;
-	}
-	if (value) {
-		BIT_SET(g_currentValue, ch);
-	}
-	else {
-		BIT_CLEAR(g_currentValue, ch);
-	}
-	addLogAdv(LOG_INFO, LOG_FEATURE_MAIN, "Will send value %i", g_currentValue);
-	PORT_shiftOutLatch(g_data, g_clk, g_latch, g_order, g_currentValue, g_totalRegisters);
 }
 
 
