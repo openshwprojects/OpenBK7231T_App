@@ -5,6 +5,8 @@
 
 #if !PLATFORM_ARMINO
 #include "../../beken378/app/config/param_config.h"
+#else
+uint32_t ms_to_tick_ratio = portTICK_RATE_MS;
 #endif
 
 // main timer tick every 1s

@@ -18,6 +18,7 @@ list(APPEND srcs
 	${BERRY_SRC_C}
 	${OBK_SRCS}hal/bk7231/hal_main_bk7231.c
 	${OBK_SRCS}hal/bk7231/hal_flashVars_bk7231.c
+	${OBK_SRCS}hal/bk_armino/hal_adc_bk_armino.c
 	${OBK_SRCS}hal/bk_armino/hal_generic_bk_armino.c
 	${OBK_SRCS}hal/bk_armino/hal_hwtimer_bk_armino.c
 	${OBK_SRCS}hal/bk_armino/hal_main_bk_armino.c
