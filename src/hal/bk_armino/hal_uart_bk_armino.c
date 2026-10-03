@@ -11,6 +11,7 @@
 
 extern bk_err_t uart_write_byte(uart_id_t id, uint8_t data);
 extern int uart_read_byte(uart_id_t id);
+extern int UART_PORT_INDEX;
 
 static void uart_isr(uart_id_t port, void* param)
 {
@@ -28,6 +29,12 @@ void HAL_UART_SendByteEx(int auartindex, byte b)
 
 int HAL_UART_InitEx(int auartindex, int baud, int parity, bool hwflowc, int txOverride, int rxOverride)
 {
+	if(auartindex == UART_PORT_INDEX)
+	{
+		bk_set_printf_enable(0);
+		UART_PORT_INDEX = -1;
+		rtos_delay_milliseconds(1);
+	}
 	uart_config_t config = { 0 };
 
 	config.baud_rate = baud;

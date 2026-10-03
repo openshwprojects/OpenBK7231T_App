@@ -1251,6 +1251,62 @@ void SPIDMA_Deinit(void)
 	rcu_periph_clock_disable(RCU_DMA);
 }
 
+#elif PLATFORM_ARMINO
+
+#include "drv_spidma.h"
+#include <driver/dma.h>
+#include <driver/gpio.h>
+#include <driver/spi.h>
+static spi_id_t spi = SPI_ID_0;
+extern int spidma_led_pin;
+
+void SPIDMA_Init(struct spi_message* msg)
+{
+#if PLATFORM_BK7236
+	switch(spidma_led_pin)
+	{
+		case 4:
+			spi = SPI_ID_1;
+			break;
+		case 16:
+		case 35:
+		case 46:
+			spi = SPI_ID_0;
+			break;
+		default:
+			return;
+	}
+#endif
+	spi_config_t scfg = { 0 };
+	scfg.role = SPI_ROLE_MASTER;
+	scfg.bit_width = SPI_BIT_WIDTH_8BITS;
+	scfg.polarity = SPI_POLARITY_LOW;
+	scfg.phase = SPI_PHASE_1ST_EDGE;
+	scfg.wire_mode = SPI_4WIRE_MODE;
+	scfg.baud_rate = 3000000;
+	scfg.bit_order = SPI_MSB_FIRST;
+#if CONFIG_SPI_BYTE_INTERVAL
+	scfg.byte_interval = 0;
+#endif
+	scfg.dma_mode = 1;
+	scfg.spi_tx_dma_chan = bk_dma_alloc(DMA_DEV_GSPI0);
+	scfg.spi_rx_dma_chan = bk_dma_alloc(DMA_DEV_GSPI0_RX);
+	scfg.spi_tx_dma_width = DMA_DATA_WIDTH_8BITS;
+	scfg.spi_rx_dma_width = DMA_DATA_WIDTH_8BITS;
+	bk_spi_init(spi, &scfg);
+	bk_gpio_map_dev_to_pin(spidma_led_pin, GPIO_DEV_SPI0_MOSI);
+}
+
+void SPIDMA_StartTX(struct spi_message* msg)
+{
+	bk_spi_dma_write_bytes(spi, msg->send_buf, msg->send_len);
+}
+
+void SPIDMA_Deinit(void)
+{
+	bk_spi_deinit(spi);
+}
+
 #else
 
 #include "drv_spidma.h"

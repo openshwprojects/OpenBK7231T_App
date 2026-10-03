@@ -12,11 +12,17 @@
 #include "../hal/hal_adc.h"
 #include "drv_battery.h"
 
+#if PLATFORM_BK7239N || PLATFORM_BK7236N
+#define ADC_RESOLUTION_BITS 14
+#else
+#define ADC_RESOLUTION_BITS 12
+#endif
+
 static int g_pin_adc = 0, channel_adc = 0, g_pin_rel = 0, g_battcycle = 1, g_battcycleref = 10;
 //static int channel_rel = 0;
 static float g_battvoltage = 0.0, g_battlevel = 0.0;
 static int g_lastbattvoltage = 0, g_lastbattlevel = 0;
-static float g_vref = 2400, g_vdivider = 2.29, g_maxbatt = 3000, g_minbatt = 2000, g_adcbits = 4096;
+static float g_vref = 2400, g_vdivider = 2.29, g_maxbatt = 3000, g_minbatt = 2000, g_adcbits = 1 << ADC_RESOLUTION_BITS;
 static bool g_vdividerFromUser = false;
 
 static void Batt_Measure() {
