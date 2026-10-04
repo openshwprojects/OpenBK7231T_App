@@ -153,6 +153,7 @@ void HAL_PIN_PWM_Start(int index, int freq)
 	if((g_active_pwm & ((1 << PWM_ID_MAX) - 1)) == ((1 << PWM_ID_MAX) - 1)) return;
 	uint8_t freech;
 	for(freech = 0; freech < PWM_ID_MAX; freech++) if(!BIT_CHECK(g_active_pwm, freech)) break;
+	//bk_pm_module_vote_sleep_ctrl(PM_SLEEP_MODULE_NAME_PWM_1, 0x0, 0x0);
 #if PLATFORM_BK7236
 	switch(index)
 	{

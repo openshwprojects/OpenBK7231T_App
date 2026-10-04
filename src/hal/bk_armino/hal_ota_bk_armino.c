@@ -80,7 +80,7 @@ void add_otadata(unsigned char* data, int len)
 		}
 		else
 		{
-			rtos_delay_milliseconds(10);
+			rtos_delay_milliseconds(1);
 		}
 	}
 }
@@ -90,6 +90,7 @@ static void store_sector(unsigned int addr, unsigned char* data)
 	addLogAdv(LOG_INFO, LOG_FEATURE_OTA, "%x", addr);
 	//HAL_FlashEraseSector(addr);
 	//HAL_FlashWrite((char *)data , SECTOR_SIZE, addr);
+	// do unprotect once for both erase and write
 	flash_protect_type_t protect_type = bk_flash_get_protect_type();
 	if(FLASH_PROTECT_NONE != protect_type)
 	{
@@ -114,18 +115,18 @@ int http_rest_post_flash(http_request_t* request, int startaddr, int maxaddr)
 
 	ADDLOG_DEBUG(LOG_FEATURE_OTA, "OTA post len %d", request->contentLength);
 
-	init_ota(startaddr);
-
 	if (request->contentLength >= 0)
 	{
 		towrite = request->contentLength;
 	}
 
-	if (writelen < 0 || (startaddr + writelen > maxaddr))
+	if (writelen < 0 || towrite <= 0 || startaddr < 0 || startaddr > maxaddr || towrite > maxaddr - startaddr)
 	{
-		ADDLOG_DEBUG(LOG_FEATURE_OTA, "ABORTED: %d bytes to write", writelen);
-		return http_rest_error(request, -20, "writelen < 0 or end > limit");
+		ADDLOG_DEBUG(LOG_FEATURE_OTA, "ABORTED: %d bytes to write", towrite);
+		return http_rest_error(request, -20, "invalid length, or end beyond maxaddr");
 	}
+
+	init_ota(startaddr);
 
 	do
 	{
