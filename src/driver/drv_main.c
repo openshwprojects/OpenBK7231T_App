@@ -1636,6 +1636,22 @@ static driver_t g_drivers[] = {
 	false,                                   // loaded
 	}
 #endif
+#if ENABLE_DRIVER_IR_PROXY
+	//drvdetail:{"name":"MQTT IR Proxy",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"MQTT IR Proxy for Home Assistant",
+	//drvdetail:"requires":""}
+	{ "IR_Proxy",          // Driver Name
+	IR_Proxy_Init,         // Init
+	NULL,                  // onEverySecond
+	NULL,                  // appendInformationToHTTPIndexPage
+	IR_Proxy_RunFrame,     // runQuickTick
+	IR_Proxy_Deinit,       // stopFunction
+	NULL,                  // onChannelChanged
+	IR_Proxy_HA_Discovery, // onHassDiscovery
+	false,                 // loaded
+	},
+#endif
 	//{ "", NULL, NULL, NULL, NULL, NULL, NULL, NULL, false },
 };
 

@@ -357,3 +357,8 @@ void TinyIR_NEC_RunFrame();
 void DRV_ESPHome_API_Init();
 void DRV_ESPHome_API_Deinit();
 void DRV_ESPHome_API_OnEverySecond();
+
+void IR_Proxy_Init();
+void IR_Proxy_Deinit();
+void IR_Proxy_RunFrame();
+void IR_Proxy_HA_Discovery(const char* topic);

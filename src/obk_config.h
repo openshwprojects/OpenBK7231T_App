@@ -4,6 +4,10 @@
 #ifndef OBK_CONFIG_H
 #define OBK_CONFIG_H
 
+#if !WINDOWS
+#define ENABLE_DRIVER_IR_PROXY 1
+#endif
+
 #define OBK_VARIANT_DEFAULT						0
 #define OBK_VARIANT_BERRY						1
 #define OBK_VARIANT_TUYAMCU						2
