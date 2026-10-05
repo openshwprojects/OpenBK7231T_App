@@ -350,12 +350,17 @@ void Test_TuyaMCU_BatteryPowered_QuerySignalStrength() {
 	SELFTEST_ASSERT_HAS_SENT_UART_STRING("55 AA 00 01 00 00 00");
 	// nothing is sent by OBK at that point
 	SELFTEST_ASSERT_HAS_UART_EMPTY();
+	// Respond to QueryInfo so state machine leaves TM0_STATE_AWAITING_INFO
+	CMD_ExecuteCommand("uartFakeHex 55 AA 00 01 00 01 58 59", 0);
+	Sim_RunFrames(1, false);
+	SELFTEST_ASSERT_HAS_UART_EMPTY();
 	
 	CMD_ExecuteCommand("uartFakeHex 55 AA 00 0B 00 00 0A", 0);
 	Sim_RunSeconds(0.1f, false);
 	
 	SELFTEST_ASSERT_HAS_SENT_UART_STRING("55 AA 00 0B 00 02 01 50 5D");
-	// nothing is sent by OBK at that point
+	// Consume periodic WiFi state packet if Main_OnEverySecond fired during the window
+	SIM_UART_ExpectAndConsumeHexStr("55 AA 00 02 00 01 03 05");
 	SELFTEST_ASSERT_HAS_UART_EMPTY();
 }
 void Test_TuyaMCU_BatteryPowered() {
