@@ -108,6 +108,8 @@ unsigned char temp_topic[128];
 unsigned char temp_data[2048];
 static bool mqtt_partial = false;
 static int mqtt_len_pos = 0;
+static int mqtt_partial_bytes = 0;
+static int mqtt_partial_start_head;
 
 int addLenData(int len, const unsigned char* data, bool add_len)
 {
@@ -229,19 +231,26 @@ int MQTT_Post_Received(const char *topic, int topiclen, const unsigned char *dat
 
 	if(!mqtt_partial)
 	{
-		addLenData(topiclen, (unsigned char*)topic, true);
+		mqtt_partial_bytes = 0;
+		mqtt_partial_start_head = mqtt_rx_buffer_head;
+
+		int written = addLenData(topiclen, (unsigned char*)topic, true);
+		if(written == -1) goto fail;
+		mqtt_partial_bytes += written;
+
 		mqtt_len_pos = mqtt_rx_buffer_head;
-		addLenData(datalen, data, true);
+
+		written = addLenData(datalen, data, true);
+		if(written == -1) goto fail;
+		mqtt_partial_bytes += written;
 	}
 	else
 	{
 		int written = addLenData(datalen, data, false);
 		if(written == -1)
-		{
-			mqtt_partial = false;
-			MQTT_RX_Mutex_Free();
-			return 0;
-		}
+			goto fail;
+		mqtt_partial_bytes += written;
+
 		int total = ((int)mqtt_rx_buffer[mqtt_len_pos] << 8) | mqtt_rx_buffer[(mqtt_len_pos + 1) % MQTT_RX_BUFFER_MAX];
 		total += datalen;
 		mqtt_rx_buffer[mqtt_len_pos] = (total >> 8) & 0xff;
@@ -257,6 +266,15 @@ int MQTT_Post_Received(const char *topic, int topiclen, const unsigned char *dat
 	if(complete) MQTT_TriggerRead();
 #endif
 	return 1;
+fail:
+	if(mqtt_partial_bytes > 0)
+	{
+		mqtt_rx_buffer_head = mqtt_partial_start_head;
+		mqtt_rx_buffer_count -= mqtt_partial_bytes;
+	}
+	mqtt_partial = false;
+	MQTT_RX_Mutex_Free();
+	return 0;
 }
 int MQTT_Post_Received_Str(const char *topic, const char *data) {
 	return MQTT_Post_Received(topic, strlen(topic), (const unsigned char*)data, strlen(data), true);
@@ -266,7 +284,7 @@ int get_received(char **topic, int *topiclen, unsigned char **data, int *datalen
 	if (!MQTT_RX_Mutex_Take(100)) {
 		return 0;
 	}
-	if (mqtt_rx_buffer_tail != mqtt_rx_buffer_head){
+	if (!mqtt_partial && mqtt_rx_buffer_tail != mqtt_rx_buffer_head){
 		getLenData(topiclen, temp_topic, sizeof(temp_topic)-1);
 		temp_topic[*topiclen] = 0;
 		getLenData(datalen, temp_data, sizeof(temp_data)-1);
@@ -559,6 +577,7 @@ int MQTT_RegisterCallback(const char* basetopic, const char* subscriptiontopic, 
 	}
 
 	callbacks[index]->callback = callback;
+	callbacks[index]->ID = ID;
 	if (index == numCallbacks) {
 		numCallbacks++;
 	}
@@ -1259,6 +1278,20 @@ static void mqtt_connection_cb(mqtt_client_t* client, void* arg, mqtt_connection
 	}
 	else {
 		addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "mqtt_connection_cb: Disconnected, reason: %d(%s)", status, get_callback_error(status));
+		if(mqtt_partial && MQTT_RX_Mutex_Take(100))
+		{
+			mqtt_rx_buffer_head = (mqtt_rx_buffer_head - mqtt_partial_bytes + MQTT_RX_BUFFER_MAX) % MQTT_RX_BUFFER_MAX;
+
+			if(mqtt_partial_bytes <= mqtt_rx_buffer_count)
+				mqtt_rx_buffer_count -= mqtt_partial_bytes;
+			else
+				mqtt_rx_buffer_count = 0;
+
+			mqtt_partial = false;
+			mqtt_partial_bytes = 0;
+			mqtt_len_pos = 0;
+			MQTT_RX_Mutex_Free();
+		}
 	}
 }
 

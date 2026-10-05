@@ -43,6 +43,7 @@ static portMUX_TYPE mux = portMUX_INITIALIZER_UNLOCKED;
 #define IR_TIMING_CAP 4096U
 #define IR_MAX_FRAME_TIMINGS (IR_TIMING_CAP - 1U)
 #define IR_FRAME_QUEUE_CAP 8U
+#define IR_SEND_TIMINGS_CAP 512U
 #define IR_IDLE_LEVEL 1U
 #define IR_FRAME_GAP_US 8000.0f
 #define IR_MODULATION_HZ 38000U
@@ -406,8 +407,9 @@ int IRSendMQTTMessage(obk_mqtt_request_t* request)
 		return 0;
 	}
 	int count = cJSON_GetArraySize(timings);
-	if(count <= 0 || count > IR_MAX_FRAME_TIMINGS)
+	if(count > IR_SEND_TIMINGS_CAP)
 	{
+		ADDLOG_ERROR(LOG_FEATURE_MQTT, "IR message is too long! %i entries, max %i", count, IR_SEND_TIMINGS_CAP);
 		cJSON_Delete(root);
 		return 1;
 	}
@@ -463,7 +465,7 @@ void IR_Proxy_Init(void)
 		ir_last_level = digitalReadFast(recvpin);
 
 		ir_timing = os_malloc(sizeof(ir_tick_t) * IR_TIMING_CAP);
-		mqtt_publish_buffer = os_malloc(IR_TIMING_CAP + 1);
+		mqtt_publish_buffer = os_malloc(IR_TIMING_CAP);
 
 		if(!ir_timing || !mqtt_publish_buffer)
 		{
@@ -473,13 +475,14 @@ void IR_Proxy_Init(void)
 	}
 	if(sendpin >= 0)
 	{
-		ir_send_buffer = os_malloc(sizeof(int32_t) * (IR_TIMING_CAP / IR_FRAME_QUEUE_CAP));
+		ir_send_buffer = os_malloc(sizeof(int32_t) * IR_SEND_TIMINGS_CAP);
 
 		ir_send_index = 0;
 		ir_send_count = 0;
 		ir_send_ticks = 0;
 		if(!ir_send_buffer)
 		{
+			sendpin = -1;
 			IR_Proxy_Deinit();
 			return;
 		}
@@ -501,8 +504,14 @@ void IR_Proxy_Deinit(void)
 	HAL_HWTimerDeinit(ir_chan);
 	ir_chan = -1;
 	os_free(ir_timing);
-	os_free(ir_send_buffer);
 	os_free(mqtt_publish_buffer);
+	if(sendpin >= 0)
+	{
+		MQTT_RemoveCallback(0);
+		os_free(ir_send_buffer);
+		HAL_PIN_PWM_Update(sendpin, 0);
+		HAL_PIN_PWM_Stop(sendpin);
+	}
 }
 
 void IR_Proxy_RunFrame(void)
