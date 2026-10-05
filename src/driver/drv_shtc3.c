@@ -9,14 +9,13 @@
 #include "drv_uart.h"
 #include "../httpserver/new_http.h"
 #include "../hal/hal_pins.h"
-#include "../hal/hal_os_wrapper.h"
 
 #include "drv_shtc3.h"
 
 static byte channel_temp = 0, channel_humid = 0;
-// TODO static byte g_sht_secondsUntilNextMeasurement = 1, g_sht_secondsBetweenMeasurements = 10;
+static byte g_sht_secondsUntilNextMeasurement = 1, g_sht_secondsBetweenMeasurements = 10;
 static float g_temp = 0.0, g_humid = 0.0;
-// TODO ? static float g_caltemp = 0.0, g_calhum = 0.0;
+static float g_caltemp = 0.0, g_calhum = 0.0;
 static softI2C_t g_softI2C;
 static int8_t g_pin_power = -1;
 static int    g_error_channel = -1;
@@ -56,8 +55,8 @@ void SHTC3_Measure()
 	if (g_pin_power != -1) {
 		HAL_PIN_SetOutputValue(g_pin_power&0x7F, ~(g_pin_power&0x80) >> 7); // power off
 	}	
-	CHANNEL_Set(channel_temp, (int)(g_temp * 10), 0);
-	CHANNEL_Set(channel_humid, (int)(g_humid), 0);
+	CHANNEL_Set(channel_temp, (int)((g_temp+g_caltemp) * 10), 0);
+	CHANNEL_Set(channel_humid, (int)(g_humid+g_calhum), 0);
 	
 	//addLogAdv(LOG_INFO, LOG_FEATURE_SENSOR,  "SHTC3: Temperature:%fC Humidity:%f%%", g_temp, g_humid);
 }
@@ -70,9 +69,9 @@ void SHTC3_StopDriver() {
 }
 
 void Soft_I2C_Init(void) {
-    uint8_t i;
 	/*
-    //taskENTER_CRITICAL();
+    uint8_t i;	
+    rtos_enter_critical();
     i2c_user_setDC(1, 0);
     i2c_user_wait(i2s_clk_delay);
     // when SCL = 0, toggle SDA to clear up
@@ -87,11 +86,42 @@ void Soft_I2C_Init(void) {
         i2c_user_setDC(1, 1);
         i2c_user_wait(i2s_clk_delay); // sda 1, scl 1
     }
-    //taskEXIT_CRITICAL();
+    rtos_exit_critical();
     // reset all
     i2c_user_stop();
 	*/
     return;
+}
+
+commandResult_t SHTC3_Calibrate(const void* context, const char* cmd, const char* args, int cmdFlags) {
+
+	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_DONT_EXPAND);
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 2))
+	{
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+	g_caltemp = Tokenizer_GetArgFloat(0);
+	g_calhum = Tokenizer_GetArgFloat(1);
+
+	ADDLOG_INFO(LOG_FEATURE_SENSOR, "Calibrate SHTC3: Calibration done temp %f and humidity %f", g_caltemp, g_calhum);
+
+	return CMD_RES_OK;
+}
+
+commandResult_t SHTC3_cycle(const void* context, const char* cmd, const char* args, int cmdFlags) {
+
+	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_DONT_EXPAND);
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+	g_sht_secondsBetweenMeasurements = Tokenizer_GetArgInteger(0);
+
+	ADDLOG_INFO(LOG_FEATURE_CMD, "Measurement will run every %i seconds", g_sht_secondsBetweenMeasurements);
+
+	return CMD_RES_OK;
 }
 
 static commandResult_t SHTC3_SetErrorOutput(const void *context, const char *cmd, const char *args, int cmdFlags) {
@@ -111,12 +141,13 @@ static commandResult_t SHTC3_SetErrorOutput(const void *context, const char *cmd
 		if ((ch_type == ChType_Error) || (ch_type == ChType_Default)) {
 			CHANNEL_SetType(g_error_channel, ChType_Error);
 		} else {
-			addLogAdv(LOG_WARN, LOG_FEATURE_SENSOR, "SHTC3: Error channel has not appropriet type"); 
+			addLogAdv(LOG_ERROR, LOG_FEATURE_SENSOR, "SHTC3: Channel for sensor error has not appropriate type."); 
 		}
 	}
 
 	return CMD_RES_OK;
 }
+
 // startDriver SHTC3
 void SHTC3_Init() {
 
@@ -159,6 +190,18 @@ void SHTC3_Init() {
 	CHANNEL_SetType(channel_temp, ChType_Temperature_div10);
 	CHANNEL_SetType(channel_humid, ChType_Humidity);
 	
+	SHTC3_Measure();	
+	
+	//cmddetail:{"name":"SHTC3_Cycle","args":"[int]",
+	//cmddetail:"descr":"This is the interval between measurements in seconds, by default 10. Max is 255.",
+	//cmddetail:"fn":"SHTC3_Cycle","file":"driver/drv_shtc3.c","requires":"",
+	//cmddetail:"examples":"SHTC3_cycle 60"}
+	CMD_RegisterCommand("SHTC3_Cycle", SHTC3_cycle, NULL);
+	//cmddetail:{"name":"SHTC3_Calibrate","args":"[DeltaTemp][DeltaHumidity]",
+	//cmddetail:"descr":"Calibrate the SHT Sensor as Tolerance is +/-2 degrees C.",
+	//cmddetail:"fn":"SHTC3_Calibrate","file":"driver/drv_shtc3.c","requires":"",
+	//cmddetail:"examples":"SHTC3_Calibrate -4 10"}
+	CMD_RegisterCommand("SHTC3_Calibrate", SHTC3_Calibrate, NULL);
 	//cmddetail:{"name":"SHTC3_SetErrorOutput","args":"CHANNEL",
 	//cmddetail:"descr":"",
 	//cmddetail:"fn":"SHTC3_SetErrorOutput","file":"drivers/drv_shtc3.c","requires":"",
@@ -171,25 +214,15 @@ void SHTC3_Init() {
 											 HAL_GetGPIOPin(g_pin_power&0x7F));
 }
 void SHTC3_OnEverySecond()
-{
-	addLogAdv(LOG_INFO, LOG_FEATURE_SENSOR, "SHTC3: Measure");
-    SHTC3_Measure();
-    /*
+{    
 	if (g_sht_secondsUntilNextMeasurement <= 0) {
-		if (g_shtper)
-		{
-			SHTC3_MeasurePercmd();
-		}
-		else
-		{
-			SHTC3_Measurecmd();
-		}
+		//addLogAdv(LOG_INFO, LOG_FEATURE_SENSOR, "SHTC3: Measure");
+		SHTC3_Measure();
 		g_sht_secondsUntilNextMeasurement = g_sht_secondsBetweenMeasurements;
 	}
 	if (g_sht_secondsUntilNextMeasurement > 0) {
 		g_sht_secondsUntilNextMeasurement--;
-	}
-	*/
+	}	
 }
 
 void SHTC3_AppendInformationToHTTPIndexPage(http_request_t* request, int bPreState)
@@ -330,48 +363,40 @@ int shtc3_soft_reset()
  */
 static int8_t shtc3_reg_read(uint8_t *data, uint32_t data_len)
 {
-	obk_enter_critical();
 	//Transmit SHTC3 Address + read
 	bool ack = Soft_I2C_Start(&g_softI2C, SHTC3_I2C_ADDR | 0x1);
 	if(ack == false) {
-		Soft_I2C_Stop(&g_softI2C);
-		obk_exit_critical();
+		Soft_I2C_Stop(&g_softI2C);		
 		return -1;
 	}
 	//Receive data
 	Soft_I2C_ReadBytes(&g_softI2C, data, data_len);
 	Soft_I2C_Stop(&g_softI2C);
-	obk_exit_critical();
 	return 0;
 }
 /**
  * @brief Function that implements the default I2C write transaction
  */
 static int8_t shtc3_reg_write(uint16_t data)
-{
-	obk_enter_critical();
+{	
 	//Transmit SHTC3 Address 	
 	bool ack = Soft_I2C_Start(&g_softI2C, SHTC3_I2C_ADDR);
 	if(ack == false) {
 		Soft_I2C_Stop(&g_softI2C);
-		obk_exit_critical();
 		return -1;
 	}
 	//Send data
 	ack = Soft_I2C_WriteByte(&g_softI2C, (uint8_t)((data >> 8) & 0xFF));
 	if(ack == false) {
-		Soft_I2C_Stop(&g_softI2C);
-		obk_exit_critical();
+		Soft_I2C_Stop(&g_softI2C);		
 		return -1;
 	}	
 	ack = Soft_I2C_WriteByte(&g_softI2C, (uint8_t)(data        & 0xFF)); 	
 	if(ack == false) {
-		Soft_I2C_Stop(&g_softI2C);
-		obk_exit_critical();
+		Soft_I2C_Stop(&g_softI2C);		
 		return -1;
 	}
-	Soft_I2C_Stop(&g_softI2C);
-	obk_exit_critical();
+	Soft_I2C_Stop(&g_softI2C);	
 	return 0;
 }
 
