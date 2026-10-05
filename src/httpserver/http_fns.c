@@ -2718,6 +2718,7 @@ static void doHomeAssistantDiscovery_thread(void* param) {
 					sprintf(stateTopic, "~/%i/get", i);
 					sprintf(cmdTopic, "~/%i/set", i);
 					dev_info = hass_createSelectEntityIndexed(
+					    i,
 						stateTopic,
 						cmdTopic,
 						numOptions,
