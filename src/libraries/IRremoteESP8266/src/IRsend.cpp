@@ -734,6 +734,8 @@ uint16_t IRsend::defaultBits(const decode_type_t protocol) {
       return kDaikin64Bits;
     case ELECTRA_AC:
       return kElectraAcBits;
+    case EUROM:
+      return kEuromBits;
     case GREE:
       return kGreeBits;
     case HAIER_AC:
@@ -811,6 +813,10 @@ uint16_t IRsend::defaultBits(const decode_type_t protocol) {
       return kWhirlpoolAcBits;
     case XMP:
       return kXmpBits;
+    case YORK:
+      return kYorkBits;
+    case BLUESTARHEAVY:
+      return kBluestarHeavyBits;
     // No default amount of bits.
     case FUJITSU_AC:
     case MWM:
@@ -1254,6 +1260,11 @@ bool IRsend::send(const decode_type_t type, const uint8_t *state,
       sendElectraAC(state, nbytes);
       break;
 #endif  // SEND_ELECTRA_AC
+#if SEND_EUROM
+    case EUROM:
+      sendEurom(state, nbytes);
+      break;
+#endif  // SEND_EUROM
 #if SEND_FUJITSU_AC
     case FUJITSU_AC:
       sendFujitsuAC(state, nbytes);
@@ -1442,6 +1453,16 @@ bool IRsend::send(const decode_type_t type, const uint8_t *state,
       sendWhirlpoolAC(state, nbytes);
       break;
 #endif  // SEND_WHIRLPOOL_AC
+#if SEND_YORK
+    case YORK:
+      sendYork(state, nbytes);
+      break;
+#endif  // SEND_YORK
+#if SEND_BLUESTARHEAVY
+    case BLUESTARHEAVY:
+      sendBluestarHeavy(state, nbytes);
+      break;
+#endif  // SEND_BLUESTARHEAVY
     default:
       return false;
   }
