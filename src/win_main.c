@@ -251,6 +251,7 @@ void Win_DoUnitTests()
 	Test_TuyaMCU_Robustness();
 	Test_Battery();
 	Test_TuyaMCU_BatteryPowered();
+	Test_TuyaMCU_OTA();
 	Test_JSON_Lib();
 #if ENABLE_LED_BASIC
 	Test_MQTT_Get_LED_EnableAll();

@@ -6,6 +6,7 @@ void TuyaMCU_Shutdown();
 void TuyaMCU_Send(byte *data, int size);
 void TuyaMCU_OnChannelChanged(int channel,int iVal);
 void TuyaMCU_Send_RawBuffer(byte *data, int len);
+void TuyaMCU_SendCommandWithData(byte cmdType, byte* data, int payload_len);
 bool TuyaMCU_IsChannelUsedByTuyaMCU(int channelIndex);
 void TuyaMCU_ForcePublishChannelValues();
 void TuyaMCU_EnableAutomaticSending(bool enable);
