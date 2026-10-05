@@ -2129,10 +2129,11 @@ HassDeviceInfo *hass_createEnumChannelInfo(int i) {
 		CMD_GenEnumValueTemplate(en, value_tmp, sizeof(value_tmp));
 		CMD_GenEnumCommandTemplate(en, command_tmp, sizeof(command_tmp));
 
-		strcpy(title, CHANNEL_GetLabel(i));
+		snprintf(title, sizeof(title), "%s", CHANNEL_GetLabel(i));
 		sprintf(stateTopic, "~/%i/get", i);
 		sprintf(cmdTopic, "~/%i/set", i);
 		dev_info = hass_createSelectEntityIndexedCustom(
+			i,
 			stateTopic,
 			cmdTopic,
 			en->numOptions,
@@ -3392,15 +3393,20 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 					// backlog setChannelType 3 OpenStopClose; scheduleHADiscovery 1
 					char stateTopic[16];
 					char cmdTopic[16];
-					// TODO: lengths
+					// CHANNEL_GetLabel returns a pointer to a shared static buffer
+					// for unlabelled channels, and hass_init_device_info calls it
+					// again internally - so copy the label before passing it on.
+					char title[64];
+					snprintf(title, sizeof(title), "%s", CHANNEL_GetLabel(i));
 					sprintf(stateTopic, "~/%i/get", i);
 					sprintf(cmdTopic, "~/%i/set", i);
 					dev_info = hass_createSelectEntityIndexed(
+						i,
 						stateTopic,
 						cmdTopic,
 						numOptions,
 						options,
-						CHANNEL_GetLabel(i)
+						title
 					);
 				}
 			}

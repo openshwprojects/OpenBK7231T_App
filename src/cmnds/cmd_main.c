@@ -359,6 +359,20 @@ static commandResult_t CMD_PowerSave(const void* context, const char* cmd, const
 	{
 		wifi_netlink_ps_mode_set(0, 0);
 	}
+#elif PLATFORM_ARMINO
+	if(bOn)
+	{
+		bk_wifi_ps_cmd_open(); // it's already on by default
+		if(bOn > 1) bk_wifi_send_listen_interval_req(10); // dtim 10
+		else bk_wifi_send_listen_interval_req(1);
+		if(bOn > 2) bk_pm_sleep_mode_set(PM_MODE_LOW_VOLTAGE);
+		//bk_wifi_send_sleep_mode_req(bOn); // 0, 1 or 2
+	}
+	else
+	{
+		bk_wifi_ps_cmd_close();
+		//bk_wifi_send_sleep_mode_req(0);
+	}
 #else
 	ADDLOG_INFO(LOG_FEATURE_CMD, "PowerSave is not implemented on this platform");
 #endif
@@ -1037,6 +1051,12 @@ static commandResult_t CMD_PowerSave_WFI(const void* context, const char* cmd, c
 	return CMD_RES_OK;
 }
 
+static commandResult_t CMD_Disconnect(const void *context, const char *cmd, const char *args, int cmdFlags)
+{
+	HAL_DisconnectFromWifi();
+	return CMD_RES_OK;
+}
+
 #if MQTT_USE_TLS
 static commandResult_t CMD_WebServer(const void* context, const char* cmd, const char* args, int cmdFlags) {	
 	int arg_count;
@@ -1204,6 +1224,12 @@ void CMD_Init_Early() {
 	//cmddetail:"fn":"CMD_IndexRefreshInterval","file":"cmnds/cmd_main.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("IndexRefreshInterval", CMD_IndexRefreshInterval, NULL);
+
+	// cmddetail:{"name":"Disconnect","args":"",
+	// cmddetail:"descr":"WiFi disconnect",
+	// cmddetail:"fn":"CMD_Disconnect","file":"cmnds/cmd_main.c","requires":"",
+	// cmddetail:"examples":""}
+	CMD_RegisterCommand("Disconnect", CMD_Disconnect, NULL);
 
 #if MQTT_USE_TLS
 	//cmddetail:{"name":"WebServer","args":"[0 - Stop / 1 - Start]",

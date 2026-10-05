@@ -5,6 +5,7 @@
 #include <os/os.h>
 #include <components/shell_task.h>
 #include <driver/flash_partition.h>
+#include <driver/gpio.h>
 
 extern void rtos_set_user_app_entry(beken_thread_function_t entry);
 extern void user_main(void);

@@ -1213,17 +1213,18 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 		{
 			int channelIndex;
 			int channelValue;
+			int outputValue;
 
 			channelIndex = PIN_GetPinChannelForPinIndex(index);
 			channelValue = g_channelValues[channelIndex];
 
-			HAL_PIN_Setup_Output(index);
 			if (role == IOR_LED_n || role == IOR_Relay_n || role == IOR_BAT_Relay_n) {
-				HAL_PIN_SetOutputValue(index, !channelValue);
+				outputValue = !channelValue;
 			}
 			else {
-				HAL_PIN_SetOutputValue(index, channelValue);
+				outputValue = channelValue;
 			}
+			HAL_PIN_Setup_Output_Initial(index, outputValue);
 		}
 		break;
 #if ENABLE_LED_BASIC
