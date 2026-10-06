@@ -1444,6 +1444,9 @@ void Main_Init_BeforeDelay_Unsafe(bool bAutoRunScripts) {
 			if (PIN_FindPinIndexForRole(IOR_SHT3X_CLK, -1) != -1 && PIN_FindPinIndexForRole(IOR_SHT3X_DAT, -1) != -1) {
 				DRV_StartDriver("SHT3X");
 			}
+			if (PIN_FindPinIndexForRole(IOR_SHTC3_CLK, -1) != -1 && PIN_FindPinIndexForRole(IOR_SHTC3_DAT, -1) != -1) {
+				DRV_StartDriver("SHTC3");
+			}
 			if (PIN_FindPinIndexForRole(IOR_SGP_CLK, -1) != -1 && PIN_FindPinIndexForRole(IOR_SGP_DAT, -1) != -1) {
 				DRV_StartDriver("SGP");
 			}

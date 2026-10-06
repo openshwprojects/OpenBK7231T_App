@@ -1245,6 +1245,22 @@ static driver_t g_drivers[] = {
 	false,                                   // loaded
 	},
 #endif
+#if ENABLE_DRIVER_SHTC3
+	//drvdetail:{"name":"SHTC3",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"[Humidity/temperature sensor](https://sensirion.com/products/catalog/SHTC3). Communication via the I2C bus. Pin support for sensor power management. Lines SHTC3_SCK, SHTC3_SDA, SHTC3_PWR (or SHTC3_PWR_n) have assiged via WEB Config Module. Driver starts automaticaly. Additional error channel can be assigned for sensor state signaling thought command line: SHTC3_SetErrorOutput <channel>. Cycle of read measure can be set thought command SHTC3_Cycle <period in sec>. Values can be corrected thought command SHTC3_Calibration <dTemp> <dHumid>.",
+	//drvdetail:"requires":""}
+	{ "SHTC3",                               // Driver Name
+	SHTC3_Init,                              // Init
+	SHTC3_OnEverySecond,                     // onEverySecond
+	SHTC3_AppendInformationToHTTPIndexPage,  // appendInformationToHTTPIndexPage
+	NULL,                                    // runQuickTick
+	SHTC3_StopDriver,                        // stopFunction
+	NULL,                                    // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
+	},
+#endif
 #if ENABLE_DRIVER_SGP
 	//drvdetail:{"name":"SGP",
 	//drvdetail:"title":"TODO",

@@ -162,6 +162,11 @@ void SHT3X_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreSta
 void SHT3X_OnEverySecond();
 void SHT3X_StopDriver();
 
+void SHTC3_Init();
+void SHTC3_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState);
+void SHTC3_OnEverySecond();
+void SHTC3_StopDriver();
+
 void AHT2X_Init();
 void AHT2X_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState);
 void AHT2X_OnEverySecond();
