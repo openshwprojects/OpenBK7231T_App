@@ -43,7 +43,7 @@ static portMUX_TYPE mux = portMUX_INITIALIZER_UNLOCKED;
 #define IR_TIMING_CAP 4096U
 #define IR_MAX_FRAME_TIMINGS (IR_TIMING_CAP - 1U)
 #define IR_FRAME_QUEUE_CAP 8U
-#define IR_SEND_TIMINGS_CAP 512U
+#define IR_SEND_TIMINGS_CAP 700U
 #define IR_IDLE_LEVEL 1U
 #define IR_FRAME_GAP_US 8000.0f
 #define IR_MODULATION_HZ 38000U
@@ -84,9 +84,9 @@ static volatile uint16_t ir_send_count;
 static volatile uint32_t ir_send_ticks;
 static volatile uint16_t ir_send_repeats;
 
-static ir_tick_t* ir_timing;
-static int32_t* ir_send_buffer;
-static char* mqtt_publish_buffer;
+static ir_tick_t* ir_timing = NULL;
+static int32_t* ir_send_buffer = NULL;
+static char* mqtt_publish_buffer = NULL;
 
 static inline uint16_t IR_TimingNext(uint16_t index)
 {
@@ -338,7 +338,7 @@ static void DRV_IR_Proxy_ISR(void* arg)
 
 static bool IR_Proxy_Send(uint16_t count, uint16_t repeat_count)
 {
-	if(count == 0 || count > IR_MAX_FRAME_TIMINGS)
+	if(count == 0 || count > IR_SEND_TIMINGS_CAP)
 		return false;
 
 	if(ir_sending)
@@ -389,7 +389,6 @@ static inline bool IR_GetNextFrame(ir_frame_desc_t* frame)
 	return available;
 }
 
-// FIXME: it can be received in parts
 int IRSendMQTTMessage(obk_mqtt_request_t* request)
 {
 	while(ir_sending) rtos_delay_milliseconds(5);
@@ -491,7 +490,7 @@ void IR_Proxy_Init(void)
 		const char* clientId = CFG_GetMQTTClientId();
 		snprintf(cbtopicbase, sizeof(cbtopicbase), "%s/infrared/send", clientId);
 		snprintf(cbtopicsub, sizeof(cbtopicsub), "%s/infrared/send", clientId);
-		MQTT_RegisterCallback(cbtopicbase, cbtopicsub, 0, IRSendMQTTMessage); // FIXME: ID 0 because otherwise mqtt message will be caught by channelSet handler
+		MQTT_RegisterCallback(cbtopicbase, cbtopicsub, 0, IRSendMQTTMessage); // FIXME: ID 0 because otherwise mqtt message will be caught by channelGet handler
 		HAL_PIN_PWM_Start(sendpin, IR_MODULATION_HZ);
 	}
 
@@ -503,8 +502,10 @@ void IR_Proxy_Deinit(void)
 	HAL_HWTimerStop(ir_chan);
 	HAL_HWTimerDeinit(ir_chan);
 	ir_chan = -1;
-	os_free(ir_timing);
-	os_free(mqtt_publish_buffer);
+	if(ir_timing) os_free(ir_timing);
+	ir_timing = NULL;
+	if(mqtt_publish_buffer) os_free(mqtt_publish_buffer);
+	mqtt_publish_buffer = NULL;
 	if(sendpin >= 0)
 	{
 		MQTT_RemoveCallback(0);

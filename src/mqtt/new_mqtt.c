@@ -2312,6 +2312,13 @@ int MQTT_RunEverySecondUpdate()
 		addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "MQTT base topic is dirty, will reinit callbacks and reconnect");
 		MQTT_InitCallbacks();
 		mqtt_reconnect = 5;
+#if PLATFORM_IR_PROXY
+		if(DRV_IsRunning("IR_Proxy"))
+		{
+			DRV_StopDriver("IR_Proxy");
+			DRV_StartDriver("IR_Proxy");
+		}
+#endif
 	}
 
 	// reconnect if went into MQTT library ERR_MEM forever loop
