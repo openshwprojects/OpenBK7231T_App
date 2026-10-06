@@ -146,7 +146,7 @@ const char* MQTT_RemoveClientFromTopic(const char* topic, const char *prefix);
 // NOTE: this function is now public, but only because my unit tests
 // system can use it to spoof MQTT packets to check if MQTT commands
 // are working...
-int MQTT_Post_Received(const char *topic, int topiclen, const unsigned char *data, int datalen);
+int MQTT_Post_Received(const char *topic, int topiclen, const unsigned char *data, int datalen, bool complete);
 int MQTT_Post_Received_Str(const char *topic, const char *data);
 
 void MQTT_GetStats(int* outUsed, int* outMax, int* outFreeMem);

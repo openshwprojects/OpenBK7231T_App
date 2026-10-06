@@ -106,20 +106,37 @@ int mqtt_rx_buffer_tail;
 int mqtt_rx_buffer_count;
 unsigned char temp_topic[128];
 unsigned char temp_data[2048];
+static bool mqtt_partial = false;
+static int mqtt_len_pos = 0;
+static int mqtt_partial_bytes = 0;
+static int mqtt_partial_start_head;
 
-int addLenData(int len, const unsigned char *data){
-	mqtt_rx_buffer[mqtt_rx_buffer_head] = (len >> 8) & 0xff;
-	mqtt_rx_buffer_head = (mqtt_rx_buffer_head + 1) % MQTT_RX_BUFFER_MAX;
-	mqtt_rx_buffer_count++;
-	mqtt_rx_buffer[mqtt_rx_buffer_head] = (len) & 0xff;
-	mqtt_rx_buffer_head = (mqtt_rx_buffer_head + 1) % MQTT_RX_BUFFER_MAX;
-	mqtt_rx_buffer_count++;
-	for (int i = 0; i < len; i++){
+int addLenData(int len, const unsigned char* data, bool add_len)
+{
+	int required = len + (add_len ? 2 : 0);
+
+	if(required > (MQTT_RX_BUFFER_MAX - 1) - mqtt_rx_buffer_count)
+		return -1;
+
+	if(add_len)
+	{
+		mqtt_rx_buffer[mqtt_rx_buffer_head] = (len >> 8) & 0xff;
+		mqtt_rx_buffer_head = (mqtt_rx_buffer_head + 1) % MQTT_RX_BUFFER_MAX;
+		mqtt_rx_buffer_count++;
+
+		mqtt_rx_buffer[mqtt_rx_buffer_head] = len & 0xff;
+		mqtt_rx_buffer_head = (mqtt_rx_buffer_head + 1) % MQTT_RX_BUFFER_MAX;
+		mqtt_rx_buffer_count++;
+	}
+
+	for(int i = 0; i < len; i++)
+	{
 		mqtt_rx_buffer[mqtt_rx_buffer_head] = data[i];
 		mqtt_rx_buffer_head = (mqtt_rx_buffer_head + 1) % MQTT_RX_BUFFER_MAX;
 		mqtt_rx_buffer_count++;
 	}
-	return len + 2;
+
+	return required;
 }
 
 int getLenData(int *len, unsigned char *data, int maxlen){
@@ -204,34 +221,70 @@ static void MQTT_RX_Mutex_Free()
 // NOTE: this function is now public, but only because my unit tests
 // system can use it to spoof MQTT packets to check if MQTT commands
 // are working...
-int MQTT_Post_Received(const char *topic, int topiclen, const unsigned char *data, int datalen){
+int MQTT_Post_Received(const char *topic, int topiclen, const unsigned char *data, int datalen, bool complete)
+{
 	// The TCP/IP callback only shares this ring buffer with our command task.
-	if (!MQTT_RX_Mutex_Take(100)) {
+	if(!MQTT_RX_Mutex_Take(100))
+	{
 		return 0;
 	}
-	if ((MQTT_RX_BUFFER_MAX - 1 - mqtt_rx_buffer_count) < topiclen + datalen + 2 + 2){
-		addLogAdv(LOG_ERROR, LOG_FEATURE_MQTT, "MQTT_rx buffer overflow for topic %s", topic);
-	} else {
-		addLenData(topiclen, (unsigned char *)topic);
-		addLenData(datalen, data);
+
+	if(!mqtt_partial)
+	{
+		mqtt_partial_bytes = 0;
+		mqtt_partial_start_head = mqtt_rx_buffer_head;
+
+		int written = addLenData(topiclen, (unsigned char*)topic, true);
+		if(written == -1) goto fail;
+		mqtt_partial_bytes += written;
+
+		mqtt_len_pos = mqtt_rx_buffer_head;
+
+		written = addLenData(datalen, data, true);
+		if(written == -1) goto fail;
+		mqtt_partial_bytes += written;
 	}
+	else
+	{
+		int written = addLenData(datalen, data, false);
+		if(written == -1)
+			goto fail;
+		mqtt_partial_bytes += written;
+
+		int total = ((int)mqtt_rx_buffer[mqtt_len_pos] << 8) | mqtt_rx_buffer[(mqtt_len_pos + 1) % MQTT_RX_BUFFER_MAX];
+		total += datalen;
+		mqtt_rx_buffer[mqtt_len_pos] = (total >> 8) & 0xff;
+
+		mqtt_rx_buffer[(mqtt_len_pos + 1) % MQTT_RX_BUFFER_MAX] = total & 0xff;
+	}
+
+	mqtt_partial = !complete;
+
 	MQTT_RX_Mutex_Free();
 
-
 #if defined(PLATFORM_BEKEN) || defined(PLATFORM_ARMINO)
-	MQTT_TriggerRead();
+	if(complete) MQTT_TriggerRead();
 #endif
 	return 1;
+fail:
+	if(mqtt_partial_bytes > 0)
+	{
+		mqtt_rx_buffer_head = mqtt_partial_start_head;
+		mqtt_rx_buffer_count -= mqtt_partial_bytes;
+	}
+	mqtt_partial = false;
+	MQTT_RX_Mutex_Free();
+	return 0;
 }
 int MQTT_Post_Received_Str(const char *topic, const char *data) {
-	return MQTT_Post_Received(topic, strlen(topic), (const unsigned char*)data, strlen(data));
+	return MQTT_Post_Received(topic, strlen(topic), (const unsigned char*)data, strlen(data), true);
 }
 int get_received(char **topic, int *topiclen, unsigned char **data, int *datalen){
 	int res = 0;
 	if (!MQTT_RX_Mutex_Take(100)) {
 		return 0;
 	}
-	if (mqtt_rx_buffer_tail != mqtt_rx_buffer_head){
+	if (!mqtt_partial && mqtt_rx_buffer_tail != mqtt_rx_buffer_head){
 		getLenData(topiclen, temp_topic, sizeof(temp_topic)-1);
 		temp_topic[*topiclen] = 0;
 		getLenData(datalen, temp_data, sizeof(temp_data)-1);
@@ -524,6 +577,7 @@ int MQTT_RegisterCallback(const char* basetopic, const char* subscriptiontopic, 
 	}
 
 	callbacks[index]->callback = callback;
+	callbacks[index]->ID = ID;
 	if (index == numCallbacks) {
 		numCallbacks++;
 	}
@@ -1060,7 +1114,7 @@ static void mqtt_incoming_data_cb(void* arg, const u8_t* data, u16_t len, u8_t f
 			char* cbtopic = callbacks[i]->topic;
 			if (!strncmp(g_mqtt_request.topic, cbtopic, strlen(cbtopic)))
 			{
-				MQTT_Post_Received(g_mqtt_request.topic, strlen(g_mqtt_request.topic), data, len);
+				MQTT_Post_Received(g_mqtt_request.topic, strlen(g_mqtt_request.topic), data, len, flags & MQTT_DATA_FLAG_LAST);
 				// if ANYONE is interested, store it.
 				break;
 				// note - callback must return 1 to say it ate the mqtt, else further processing can be performed.
@@ -1224,6 +1278,20 @@ static void mqtt_connection_cb(mqtt_client_t* client, void* arg, mqtt_connection
 	}
 	else {
 		addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "mqtt_connection_cb: Disconnected, reason: %d(%s)", status, get_callback_error(status));
+		if(mqtt_partial && MQTT_RX_Mutex_Take(100))
+		{
+			mqtt_rx_buffer_head = (mqtt_rx_buffer_head - mqtt_partial_bytes + MQTT_RX_BUFFER_MAX) % MQTT_RX_BUFFER_MAX;
+
+			if(mqtt_partial_bytes <= mqtt_rx_buffer_count)
+				mqtt_rx_buffer_count -= mqtt_partial_bytes;
+			else
+				mqtt_rx_buffer_count = 0;
+
+			mqtt_partial = false;
+			mqtt_partial_bytes = 0;
+			mqtt_len_pos = 0;
+			MQTT_RX_Mutex_Free();
+		}
 	}
 }
 
@@ -2244,6 +2312,13 @@ int MQTT_RunEverySecondUpdate()
 		addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "MQTT base topic is dirty, will reinit callbacks and reconnect");
 		MQTT_InitCallbacks();
 		mqtt_reconnect = 5;
+#if PLATFORM_IR_PROXY
+		if(DRV_IsRunning("IR_Proxy"))
+		{
+			DRV_StopDriver("IR_Proxy");
+			DRV_StartDriver("IR_Proxy");
+		}
+#endif
 	}
 
 	// reconnect if went into MQTT library ERR_MEM forever loop

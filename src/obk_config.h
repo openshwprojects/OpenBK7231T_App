@@ -59,6 +59,7 @@
 #define ENABLE_DRIVER_WEMO						1
 #define ENABLE_DRIVER_HUE						1
 #define ENABLE_DRIVER_TINYIR_NEC				1
+#define ENABLE_DRIVER_IR_PROXY					1
 
 #if PLATFORM_XR809
 #define ENABLE_DRIVER_BATTERY					1
@@ -105,6 +106,7 @@
 //#define ENABLE_DRIVER_PIXELANIM					1
 #undef ENABLE_HTTP_MAC
 //#define ENABLE_DRIVER_DCF77					1
+#define ENABLE_DRIVER_IR_PROXY					1
 
 #elif PLATFORM_W800
 
@@ -139,6 +141,7 @@
 #define ENABLE_DRIVER_TINYIR_NEC				1
 // allow testing, remove before merging
 //#define ENABLE_DRIVER_DCF77					1
+#define ENABLE_DRIVER_IR_PROXY					1
 
 #elif WINDOWS
 
@@ -272,6 +275,7 @@
 #define ENABLE_DRIVER_TINYIR_NEC				1
 // allow testing, remove before merging
 //#define ENABLE_DRIVER_DCF77					1
+#define ENABLE_DRIVER_IR_PROXY					1
 
 #elif PLATFORM_BEKEN
 
@@ -360,6 +364,7 @@
 //#define ENABLE_DRIVER_NEO6M					1
 //#define ENABLE_DRIVER_ARISTON					1
 //#define ENABLE_DRIVER_ROOMBA				    1
+#define ENABLE_DRIVER_IR_PROXY					1
 
 // ENABLE_I2C_ is a syntax for
 // our I2C system defines for drv_i2c_main.c
@@ -478,6 +483,7 @@
 #define ENABLE_DRIVER_TINYIR_NEC				1
 // allow testing, remove before merging
 //#define ENABLE_DRIVER_DCF77					1
+#define ENABLE_DRIVER_IR_PROXY					1
 
 #if (OBK_VARIANT == OBK_VARIANT_BTPROXY)
 #define ENABLE_BT_PROXY							1
@@ -518,6 +524,7 @@
 #define ENABLE_DRIVER_SM16703P					1
 #define ENABLE_DRIVER_PIXELANIM					1
 #define ENABLE_DRIVER_TINYIR_NEC				1
+#define ENABLE_DRIVER_IR_PROXY					1
 
 #if (OBK_VARIANT == OBK_VARIANT_ESP4M || OBK_VARIANT == OBK_VARIANT_ESP2M_BERRY)
 #define ENABLE_OBK_BERRY						1
@@ -552,6 +559,7 @@
 #define ENABLE_PING_WATCHDOG					1
 //#define ENABLE_OBK_BERRY						1
 //#define ENABLE_DRIVER_DCF77					1
+#define ENABLE_DRIVER_IR_PROXY					1
 
 #elif PLATFORM_REALTEK
 
@@ -586,6 +594,7 @@
 #define ENABLE_DRIVER_SM16703P					1
 #define ENABLE_DRIVER_PIXELANIM					1
 #define ENABLE_DRIVER_TINYIR_NEC				1
+#define ENABLE_DRIVER_IR_PROXY					1
 
 //#define ENABLE_DRIVER_DCF77					1
 
@@ -640,6 +649,7 @@
 #define ENABLE_DRIVER_BL0942					1
 #define ENABLE_DRIVER_BL0937					1
 #define ENABLE_OBK_BERRY						1
+#define ENABLE_DRIVER_IR_PROXY					1
 
 //#define ENABLE_DRIVER_DCF77					1
 
@@ -724,6 +734,7 @@
 #define ENABLE_ADVANCED_CHANNELTYPES_DISCOVERY	1
 #define ENABLE_DRIVER_IRREMOTEESP				1
 #define ENABLE_DRIVER_TINYIR_NEC				1
+#define ENABLE_DRIVER_IR_PROXY					1
 
 #elif PLATFORM_BL616
 
@@ -741,6 +752,7 @@
 #define ENABLE_DRIVER_TINYIR_NEC				1
 #define ENABLE_DRIVER_SM16703P					1
 #define ENABLE_DRIVER_PIXELANIM					1
+#define ENABLE_DRIVER_IR_PROXY					1
 
 #elif PLATFORM_GD32VW553
 
@@ -763,6 +775,7 @@
 #define ENABLE_DRIVER_TUYAMCU					1
 //#define ENABLE_BT_PROXY							1
 //#define ENABLE_DRIVER_ESPHOME_API				1
+#define ENABLE_DRIVER_IR_PROXY					1
 
 #elif PLATFORM_ARMINO
 
@@ -792,6 +805,7 @@
 #define ENABLE_DRIVER_BMPI2C					1
 #define ENABLE_DRIVER_DS1820					1
 #define ENABLE_DRIVER_DHT						1
+#define ENABLE_DRIVER_IR_PROXY					1
 
 #else
 
