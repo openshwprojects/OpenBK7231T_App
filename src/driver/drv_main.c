@@ -202,7 +202,7 @@ static driver_t g_drivers[] = {
 	PIR_Init,                                // Init
 	PIR_OnEverySecond,                       // onEverySecond
 	PIR_AppendInformationToHTTPIndexPage,    // appendInformationToHTTPIndexPage
-	NULL,                                    // runQuickTick
+	PIR_OnQuickTick,                         // runQuickTick
 	NULL,                                    // stopFunction
 	PIR_OnChannelChanged,                    // onChannelChanged
 	NULL,                                    // onHassDiscovery
