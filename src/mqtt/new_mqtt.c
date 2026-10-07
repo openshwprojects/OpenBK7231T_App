@@ -251,6 +251,7 @@ int get_received(char **topic, int *topiclen, unsigned char **data, int *datalen
 
 MqttPublishItem_t* g_MqttPublishQueueHead = NULL;
 int g_MqttPublishItemsQueued = 0;   //Items in the queue waiting to be published. This is not the queue length.
+static SemaphoreHandle_t g_queue_mutex = 0;
 
 // from mqtt.c
 extern void mqtt_disconnect(mqtt_client_t* client);
@@ -1974,7 +1975,9 @@ void MQTT_init()
 		g_rx_mutex = xSemaphoreCreateMutex();
 	}
 #endif
-
+	if (g_queue_mutex == 0) {
+		g_queue_mutex = xSemaphoreCreateMutex();
+	}
 	MQTT_InitCallbacks();
 
 	mqtt_initialised = 1;
@@ -2454,6 +2457,22 @@ MqttPublishItem_t* find_queue_reusable_item(MqttPublishItem_t* head) {
 	return head;
 }
 
+void del_queue_item(MqttPublishItem_t** head, MqttPublishItem_t* item) {
+	if ((head == NULL) || (item == NULL)) { return; }
+	MqttPublishItem_t* _head = *head;
+	if (_head == item) {
+		*head = NULL;
+		return;
+	}
+	while (_head->next != NULL) {
+		if (_head->next == item) {
+			_head->next = item->next;
+			return;
+		}
+		_head = _head->next;
+	}
+}
+
 /// @brief Queue an entry for publish and execute a command after the publish.
 /// @param topic 
 /// @param channel 
@@ -2461,8 +2480,15 @@ MqttPublishItem_t* find_queue_reusable_item(MqttPublishItem_t* head) {
 /// @param flags
 /// @param command Command to execute after the publish
 void MQTT_QueuePublishWithCommand(const char* topic, const char* channel, const char* value, int flags, PostPublishCommands command) {
-	MqttPublishItem_t* newItem;
-	if (g_MqttPublishItemsQueued >= MQTT_MAX_QUEUE_SIZE) {
+	MqttPublishItem_t* newItem = NULL;
+	int _g_MqttPublishItemsQueued;
+	if (xSemaphoreTake(g_queue_mutex, pdMS_TO_TICKS(500)) == pdTRUE) {
+		_g_MqttPublishItemsQueued = g_MqttPublishItemsQueued;
+		xSemaphoreGive(g_queue_mutex);
+	} else {
+		return;
+	}
+	if (_g_MqttPublishItemsQueued >= MQTT_MAX_QUEUE_SIZE) {
 		addLogAdv(LOG_ERROR, LOG_FEATURE_MQTT, "Unable to queue! %i items already present", g_MqttPublishItemsQueued);
 		return;
 	}
@@ -2475,27 +2501,81 @@ void MQTT_QueuePublishWithCommand(const char* topic, const char* channel, const 
 		return;
 	}
 
-	//Queue data for publish. This might be a new item in the queue or an existing item. This is done to prevent
-	//memory fragmentation. The total queue length is limited to MQTT_MAX_QUEUE_SIZE.
+	// New Queue data for publish.
+	// wait, while previous N queue items will be actually send
+	do {
+		if (xSemaphoreTake(g_queue_mutex, pdMS_TO_TICKS(500)) == pdTRUE) {
+			_g_MqttPublishItemsQueued = g_MqttPublishItemsQueued;
+			xSemaphoreGive(g_queue_mutex);
+			if (_g_MqttPublishItemsQueued <= MQTT_MAX_QUEUE_SIZE_TO_WAIT) break;
+			// TODO: MQTT_MAX_QUEUE_SIZE_TO_WAIT may be variable and will be set by command, because it depend not only platform memory size, but and qauntity of startted drivers
 
-	if (g_MqttPublishQueueHead == NULL) {
-		g_MqttPublishQueueHead = newItem = os_malloc(sizeof(MqttPublishItem_t));
-		newItem->next = NULL;
-	}
-	else {
-		newItem = find_queue_reusable_item(g_MqttPublishQueueHead);
-
-		if (newItem == NULL) {
-			newItem = os_malloc(sizeof(MqttPublishItem_t));
-			if(newItem == NULL)
-			{
-				//addLogAdv(LOG_ERROR, LOG_FEATURE_MQTT, "os_malloc failed for MqttPublishItem_t");
-				return;
-			}
-			newItem->next = NULL;
-			get_queue_tail(g_MqttPublishQueueHead)->next = newItem; //Append new item
+			//vTaskDelay(pdMS_TO_TICKS(10));
+			// IMPORTANT: check for other platform, it should be like vTaskDelay to be able pass the control to another task/thread
+			//rtos_delay_milliseconds(500);
+		} else {
+			// TODO: timeguard ?
 		}
+	} while  (1);
+
+	if (xSemaphoreTake(g_queue_mutex, pdMS_TO_TICKS(500)) == pdTRUE) {
+			newItem = find_queue_reusable_item(g_MqttPublishQueueHead);
+			xSemaphoreGive(g_queue_mutex);
 	}
+	// create new item
+	if (newItem == NULL) {
+		newItem = os_malloc(sizeof(MqttPublishItem_t));
+		if (!newItem) {
+			addLogAdv(LOG_ERROR, LOG_FEATURE_MQTT, "os_malloc failed for MqttPublishItem_t.");
+			return;
+		}
+		newItem->next = NULL;
+		// because queue items can be accessed from different tasks/threads
+		if (xSemaphoreTake(g_queue_mutex, pdMS_TO_TICKS(500)) == pdTRUE) {
+			if (g_MqttPublishQueueHead == NULL) {
+				g_MqttPublishQueueHead = newItem;
+			} else {
+				get_queue_tail(g_MqttPublishQueueHead)->next = newItem; //Append new item
+			}
+			g_MqttPublishItemsQueued++;
+			_g_MqttPublishItemsQueued = g_MqttPublishItemsQueued;
+			xSemaphoreGive(g_queue_mutex);
+		} else {
+			os_free(newItem);
+			addLogAdv(LOG_ERROR, LOG_FEATURE_MQTT, "MqttPublishItem_t not queueed.");
+			return;
+		}
+	} else {
+
+	}
+	// IMHO, It seems, that old algorithm with reusable item not properly prevent memory fragmentation, because in whole we have next sequence:
+	// hass_init_sensor_device_info (=os_malloc(sizeof(HassDeviceInfo)) and many (cJSON*)hooks->allocate(sizeof(cJSON))) ->
+	// MQTT_QueuePublish(=os_malloc(sizeof(MqttPublishItem_t))) ->
+	// hass_free_device_info(os_free(info) and cJSON_Delete(info->root))
+	// and no warranty that cJson and it content like a string with a different length will be place between HassDeviceInfo and MqttPublishItem_t.
+	// At the same time, function will be used not often, but the allocated memory may be free only after reboot.
+
+//	//Queue data for publish. This might be a new item in the queue or an existing item. This is done to prevent
+//	//memory fragmentation. The total queue length is limited to MQTT_MAX_QUEUE_SIZE.
+//
+//	if (g_MqttPublishQueueHead == NULL) {
+//		g_MqttPublishQueueHead = newItem = os_malloc(sizeof(MqttPublishItem_t));
+//		newItem->next = NULL;
+//	}
+//	else {
+//		newItem = find_queue_reusable_item(g_MqttPublishQueueHead);
+//
+//		if (newItem == NULL) {
+//			newItem = os_malloc(sizeof(MqttPublishItem_t));
+//			if(newItem == NULL)
+//			{
+//				//addLogAdv(LOG_ERROR, LOG_FEATURE_MQTT, "os_malloc failed for MqttPublishItem_t");
+//				return;
+//			}
+//			newItem->next = NULL;
+//			get_queue_tail(g_MqttPublishQueueHead)->next = newItem; //Append new item
+//		}
+//	}
 
 	//strcpy does copy ending null character.
 	strcpy(newItem->topic, topic);
@@ -2504,19 +2584,24 @@ void MQTT_QueuePublishWithCommand(const char* topic, const char* channel, const 
 	newItem->command = command;
 	newItem->flags = flags;
 
-	g_MqttPublishItemsQueued++;
-	addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "Queued topic=%s/%s, %i items in queue", newItem->topic, newItem->channel, g_MqttPublishItemsQueued);
+	addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "Queued topic=%s/%s, %i items in queue", newItem->topic, newItem->channel, _g_MqttPublishItemsQueued);
 }
 
 /// @brief Add the specified command to the last entry in the queue.
 /// @param command 
 void MQTT_InvokeCommandAtEnd(PostPublishCommands command) {
-	MqttPublishItem_t* tail = get_queue_tail(g_MqttPublishQueueHead);
-	if (tail == NULL){
-		addLogAdv(LOG_ERROR, LOG_FEATURE_MQTT, "InvokeCommandAtEnd invoked but queue is empty");
-	}
-	else {
-		tail->command = command;
+	// because queue items can be accessed from different tasks/threads
+	if (xSemaphoreTake(g_queue_mutex, pdMS_TO_TICKS(500)) == pdTRUE) {
+		MqttPublishItem_t* tail = get_queue_tail(g_MqttPublishQueueHead);
+		if (tail == NULL){
+			addLogAdv(LOG_ERROR, LOG_FEATURE_MQTT, "InvokeCommandAtEnd invoked but queue is empty");
+		}
+		else {
+			tail->command = command;
+		}
+		xSemaphoreGive(g_queue_mutex);
+	} else {
+
 	}
 }
 
@@ -2536,22 +2621,55 @@ OBK_Publish_Result PublishQueuedItems() {
 	OBK_Publish_Result result = OBK_PUBLISH_WAS_NOT_REQUIRED;
 
 	int count = 0;
-	MqttPublishItem_t* head = g_MqttPublishQueueHead;
+	MqttPublishItem_t* head;
+	MqttPublishItem_t* next = NULL;
+
+	// because queue items can be accessed from different tasks/threads
+	if (xSemaphoreTake(g_queue_mutex, pdMS_TO_TICKS(500)) == pdTRUE) {
+		head = g_MqttPublishQueueHead;
+		xSemaphoreGive(g_queue_mutex);
+	} else {
+		result = OBK_PUBLISH_MUTEX_FAIL;
+		return result;
+	}
 
 	//The next actionable item might not be at the front. The queue size is limited to MQTT_QUEUED_ITEMS_PUBLISHED_AT_ONCE
 	//so this traversal is fast.
 	//addLogAdv(LOG_INFO,LOG_FEATURE_MQTT,"PublishQueuedItems g_MqttPublishItemsQueued=%i",g_MqttPublishItemsQueued );
 	while ((head != NULL) && (count < MQTT_QUEUED_ITEMS_PUBLISHED_AT_ONCE) && (g_MqttPublishItemsQueued > 0)) {
+		// because queue items can be accessed from different tasks/threads
+		if (xSemaphoreTake(g_queue_mutex, pdMS_TO_TICKS(500)) == pdTRUE) {
+			next = head->next;
+			xSemaphoreGive(g_queue_mutex);
+		} else {
+			head = NULL;
+		}
 		if (!MQTT_QUEUE_ITEM_IS_REUSABLE(head)) {  //Skip reusable entries
 			count++;
+			int _command = head->command;
 			result = MQTT_PublishTopicToClient(mqtt_client, head->topic, head->channel, head->value, head->flags, false);
-			MQTT_QUEUE_ITEM_SET_REUSABLE(head); //Flag item as reusable
-			g_MqttPublishItemsQueued--;   //decrement queued count
+			//MQTT_QUEUE_ITEM_SET_REUSABLE(head); //Flag item as reusable
+			do {
+				// because queue items can be accessed from different tasks/threads
+				if (xSemaphoreTake(g_queue_mutex, pdMS_TO_TICKS(500)) == pdTRUE) {
+					/* remove queue item */
+					del_queue_item(&g_MqttPublishQueueHead, head);
+					os_free(head);
+
+					g_MqttPublishItemsQueued--;   //decrement queued count
+					xSemaphoreGive(g_queue_mutex);
+					break;
+				} else {
+					// TODO: timequard + error
+					MQTT_QUEUE_ITEM_SET_REUSABLE(head); //Flag item as reusable
+					break;
+				}
+			} while (1);
 
 			//Stop if last publish failed
 			if (result != OBK_PUBLISH_OK) break;
 
-			switch (head->command) {
+			switch (_command) {
 			case None:
 				break;
 			case PublishAll:
@@ -2566,7 +2684,7 @@ OBK_Publish_Result PublishQueuedItems() {
 			//addLogAdv(LOG_INFO,LOG_FEATURE_MQTT,"PublishQueuedItems item skipped reusable");
 		}
 
-		head = head->next;
+		head = next;
 	}
 
 	return result;

@@ -2152,7 +2152,11 @@ extern void* _os_malloc(size_t size);
 extern void _os_free(void* ptr);
 #endif
 
-void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
+static xTaskHandle s_hadiscovery_thread = NULL;
+/*
+*/
+static void doHomeAssistantDiscovery_thread(void* param) {
+	const char *topic = (const char *)param;
 	int i;
 	int relayCount;
 	int pwmCount;
@@ -2752,16 +2756,59 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 	}
 	if (discoveryQueued) {
 		MQTT_InvokeCommandAtEnd(PublishChannels);
+		addLogAdv(LOG_INFO, LOG_FEATURE_HTTP, "HA discovery complete.");
 	}
 	else {
 		const char* msg = "No relay, PWM, sensor or power driver running.";
+		addLogAdv(LOG_ERROR, LOG_FEATURE_HTTP, "HA discovery: %s", msg);
+	}
+
+	os_free(topic);
+	s_hadiscovery_thread = 0;
+
+	vTaskDelete(NULL);
+}
+
+
+void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
+	/* check if task already run */
+	if (s_hadiscovery_thread!=NULL) {
+		const char* msg = "HA discovery already started. Please wait...";
+		addLogAdv(LOG_INFO, LOG_FEATURE_HTTP, msg);
 		if (request) {
 			poststr(request, msg);
 			poststr(request, NULL);
 		}
-		else {
-			addLogAdv(LOG_ERROR, LOG_FEATURE_HTTP, "HA discovery: %s", msg);
+		return;
+	}
+	/* make copy topis-string */
+	if (topic == 0 || *topic == 0) {
+		topic = "homeassistant";
+	}
+	char *_topic = (char*)os_malloc(strlen(topic));
+	strcpy(_topic, topic);
+	OSStatus err = rtos_create_thread(&s_hadiscovery_thread, BEKEN_APPLICATION_PRIORITY - 1,
+		"HADiscovery",
+		(beken_thread_function_t)doHomeAssistantDiscovery_thread,
+		1024,
+		(beken_thread_arg_t)_topic);
+
+	if(err != kNoErr) {
+		const char* msg_had_error = "HA discovery failed (error=%d)";
+		addLogAdv(LOG_ERROR, LOG_FEATURE_HTTP, msg_had_error, err);
+		if (_topic) os_free(_topic);
+		if (request) {
+			poststr(request, msg_had_error);
+			poststr(request, NULL);
 		}
+		return;
+	} else {
+		const char* msg_had_ok = "HA discovery started";
+		if (request) {
+			poststr(request, msg_had_ok);
+			poststr(request, NULL);
+		} else
+			addLogAdv(LOG_INFO, LOG_FEATURE_HTTP, msg_had_ok);
 	}
 }
 
