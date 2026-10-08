@@ -357,6 +357,34 @@ typedef enum ioRole_e {
 	//iodetail:"file":"new_pins.h",
 	//iodetail:"driver":""}
 	IOR_SHT3X_CLK,
+	//iodetail:{"name":"SHTC3_DAT",
+	//iodetail:"title":"TODO",	
+	//iodetail:"descr":"Humidity/temperature sensor DATA pin. Driver will autostart if both required pins are set.",
+	//iodetail:"enum":"IOR_SHTC3_DAT",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
+	IOR_SHTC3_DAT,
+	//iodetail:{"name":"SHTC3_CLK",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"Humidity/temperature sensor CLOCK pin. Driver will autostart if both required pins are set.",
+	//iodetail:"enum":"IOR_SHTC3_CLK",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
+	IOR_SHTC3_CLK,
+	//iodetail:{"name":"SHTC3_PWR",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"Humidity/temperature sensor POWER control pin. Optional.",
+	//iodetail:"enum":"IOR_SHTC3_PWR",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
+	IOR_SHTC3_PWR,
+	//iodetail:{"name":"SHTC3_PWR_n",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"Humidity/temperature sensor POWER control pin (inversed). Optional.",
+	//iodetail:"enum":"IOR_SHTC3_PWR_n",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
+	IOR_SHTC3_PWR_n,
 	//iodetail:{"name":"SOFT_SDA",
 	//iodetail:"title":"TODO",
 	//iodetail:"descr":"Generic software SDA pin for our more advanced, scriptable I2C driver. This allows you to even connect a I2C display to OBK.",
@@ -710,7 +738,7 @@ typedef enum ioRole_e {
 } ioRole_t;
 
 #define IS_PIN_DHT_ROLE(role) (((role)>=IOR_DHT11) && ((role)<=IOR_DHT22))
-#define IS_PIN_TEMP_HUM_SENSOR_ROLE(role) (((role)==IOR_SHT3X_DAT) || ((role)==IOR_CHT83XX_DAT))
+#define IS_PIN_TEMP_HUM_SENSOR_ROLE(role) (((role)==IOR_SHT3X_DAT) || ((role)==IOR_SHTC3_DAT) || ((role)==IOR_CHT83XX_DAT))
 #define IS_PIN_AIR_SENSOR_ROLE(role) (((role)==IOR_SGP_DAT))
 
 typedef enum channelType_e {
@@ -1285,6 +1313,8 @@ typedef enum channelType_e {
 #define SPECIAL_CHANNEL_BASECOLOR_WARM	137
 #define SPECIAL_CHANNEL_BASECOLOR_LAST	137
 #define SPECIAL_CHANNEL_OBK_FREQUENCY	138
+#define SPECIAL_CHANNEL_WIFICONNECTED   139
+#define SPECIAL_CHANNEL_MQTTCONNECTED   140
 
 // note: real limit here is MAX_RETAIN_CHANNELS
 #define SPECIAL_CHANNEL_FLASHVARS_FIRST	200

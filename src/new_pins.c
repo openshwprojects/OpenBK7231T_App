@@ -502,7 +502,7 @@ int PIN_IOR_NofChan(int test){
 			return 2;
 	}
 	// Some roles don't need any channels
-	if (test == IOR_SGP_CLK || test == IOR_SHT3X_CLK || test == IOR_CHT83XX_CLK || test == IOR_Button_ToggleAll || test == IOR_Button_ToggleAll_n
+	if (test == IOR_SGP_CLK || test == IOR_SHT3X_CLK || test == IOR_SHTC3_CLK || test == IOR_SHTC3_PWR || test == IOR_CHT83XX_CLK || test == IOR_Button_ToggleAll || test == IOR_Button_ToggleAll_n
 			|| test == IOR_BL0937_CF || test == IOR_BL0937_CF1 || test == IOR_BL0937_SEL
 			|| test == IOR_LED_WIFI || test == IOR_LED_WIFI_n || test == IOR_BL0937_SEL_n
 			|| test == IOR_RCRecv || test == IOR_RCRecv_nPup || test == IOR_IRRecv_nPup
@@ -1656,6 +1656,12 @@ int CHANNEL_Get(int ch) {
 	if (ch >= SPECIAL_CHANNEL_FLASHVARS_FIRST && ch <= SPECIAL_CHANNEL_FLASHVARS_LAST) {
 		return HAL_FlashVars_GetChannelValue(ch - SPECIAL_CHANNEL_FLASHVARS_FIRST);
 	}
+	if (ch == SPECIAL_CHANNEL_MQTTCONNECTED) {
+		return Main_HasMQTTConnected();
+	}
+	if (ch == SPECIAL_CHANNEL_WIFICONNECTED) {
+		return Main_HasWiFiConnected();
+	}
 	if (ch < 0 || ch >= CHANNEL_MAX) {
 		addLogAdv(LOG_ERROR, LOG_FEATURE_GENERAL, "CHANNEL_Get: Channel index %i is out of range <0,%i)", ch, CHANNEL_MAX);
 		return 0;
@@ -1981,7 +1987,7 @@ bool CHANNEL_ShouldBePublished(int ch) {
 			if (role == IOR_Relay || role == IOR_Relay_n
 				|| role == IOR_LED || role == IOR_LED_n
 				|| role == IOR_ADC || role == IOR_BAT_ADC
-				|| role == IOR_CHT83XX_DAT || role == IOR_SHT3X_DAT || role == IOR_SGP_DAT
+				|| role == IOR_CHT83XX_DAT || role == IOR_SHT3X_DAT || role == IOR_SHTC3_DAT || role == IOR_SGP_DAT
 				|| role == IOR_DigitalInput || role == IOR_DigitalInput_n
 				|| role == IOR_DoorSensorWithDeepSleep || role == IOR_DoorSensorWithDeepSleep_NoPup
 				|| role == IOR_DoorSensorWithDeepSleep_pd
@@ -1995,7 +2001,7 @@ bool CHANNEL_ShouldBePublished(int ch) {
 				return true;
 			}
 			// SGP, CHT8305 and SHT3X uses secondary channel for humidity
-			if (role == IOR_CHT83XX_DAT || role == IOR_SHT3X_DAT || role == IOR_SGP_DAT) {
+			if (role == IOR_CHT83XX_DAT || role == IOR_SHT3X_DAT || role == IOR_SHTC3_DAT || role == IOR_SGP_DAT) {
 				return true;
 			}
 		}

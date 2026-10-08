@@ -1,0 +1,251 @@
+{
+  "driver": "MicroUI",
+  "style": {
+    "font": "",
+    "font_size": 2,
+    "size": [
+      30,
+      130
+    ],
+    "padding": 5,
+    "spacing": 4,
+    "indent": 24,
+    "title_height": 26,
+    "scrollbar_size": 12,
+    "thumb_size": 8,
+    "color_text": {
+      "a": 255,
+      "b": 255,
+      "g": 255,
+      "r": 255
+    },
+    "color_border": {
+      "a": 255,
+      "b": 255,
+      "g": 100,
+      "r": 100
+    },
+    "color_windowbg": {
+      "a": 255,
+      "b": 50,
+      "g": 0,
+      "r": 0
+    },
+    "color_titlebg": {
+      "a": 255,
+      "b": 25,
+      "g": 0,
+      "r": 0
+    },
+    "color_titletext": {
+      "a": 255,
+      "b": 255,
+      "g": 255,
+      "r": 255
+    },
+    "color_panelbg": {
+      "a": 0,
+      "b": 0,
+      "g": 0,
+      "r": 0
+    },
+    "color_button": {
+      "a": 255,
+      "b": 115,
+      "g": 0,
+      "r": 0
+    },
+    "color_buttonhover": {
+      "a": 255,
+      "b": 95,
+      "g": 0,
+      "r": 0
+    },
+    "color_buttonfocus": {
+      "a": 255,
+      "b": 255,
+      "g": 0,
+      "r": 0
+    },
+    "color_base": {
+      "a": 255,
+      "b": 30,
+      "g": 0,
+      "r": 0
+    },
+    "color_basehover": {
+      "a": 255,
+      "b": 35,
+      "g": 0,
+      "r": 0
+    },
+    "color_basefocus": {
+      "a": 255,
+      "b": 40,
+      "g": 0,
+      "r": 0
+    },
+    "color_scrollbase": {
+      "a": 255,
+      "b": 43,
+      "g": 0,
+      "r": 0
+    },
+    "color_scrollthumb": {
+      "a": 255,
+      "b": 30,
+      "g": 0,
+      "r": 0
+    }
+  },
+  "gui": [
+    {
+      "window": {
+        "title": "",
+        "opt": [
+          "notitle"
+        ],
+        "rect": {
+          "h": 237,
+          "w": 130,
+          "x": 2,
+          "y": 2
+        },
+        "items": [
+          {
+            "layout": {
+              "row": [
+                27,
+                27,
+                27
+              ],
+              "height": 27
+            }
+          },
+          {
+            "icon": {
+              "on": {
+                "icon": 6
+              },
+              "off": {
+                "icon": 7
+              },
+              "state": "CH139"
+            }
+          },
+          {
+            "icon": {
+              "on": {
+                "icon": 6
+              },
+              "off": {
+                "icon": 7
+              },
+              "state": "CH140"
+            }
+          },
+          {
+            "icon": {
+              "on": {
+                "icon": 9
+              },
+              "off": {
+                "icon": 8
+              },
+              "state": "CH10"
+            }
+          },
+          {
+            "header": {
+              "title": "T,oC:",
+              "opt": [
+                "expanded"
+              ],
+              "items": [
+                {
+                  "layout": {
+                    "height": 50
+                  }
+                },
+                {
+                  "label": {
+                    "align": "center",
+                    "size": 4,
+                    "text": "%0.1f",
+                    "arguments": [
+                      "CH0"
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "header": {
+              "title": "H,%:",
+              "opt": [
+                "expanded"
+              ],
+              "items": [
+                {
+                  "layout": {
+                    "height": 50
+                  }
+                },
+                {
+                  "label": {
+                    "align": "center",
+                    "size": 4,
+                    "text": "%0.1f",
+                    "arguments": [
+                      "CH1"
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "layout": {
+              "row": [
+                27,
+                27,
+                27,
+                27
+              ],
+              "height": 27
+            }
+          },
+          {
+            "button": {
+              "title": "",
+              "icon": 5,
+              "command": "restart"
+            }
+          },
+          {
+            "button": {
+              "title": "",
+              "icon": 11,
+              "command": "restart"
+            }
+          },
+          {
+            "button": {
+              "title": "",
+              "icon": 9,
+              "command": "restart"
+            }
+          },
+          {
+            "button": {
+              "title": "",
+              "icon": 10,
+              "command": "restart"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

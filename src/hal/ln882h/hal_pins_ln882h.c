@@ -109,7 +109,7 @@ int HAL_PIN_CanThisPinBePWM(int index)
 	else return 1;
 }
 
-unsigned int HAL_GetGPIOPin(int index)
+signed int HAL_GetGPIOPin(int index)
 {
 	return index;
 }
