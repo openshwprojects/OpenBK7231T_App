@@ -15,6 +15,7 @@ typedef struct BRIDGE_CONTROL {
     int channel;                      // assigned channel (General Config)
     bool current_state;               // Current state
     bool new_state;                   // New state
+    bool initial_state_pending;       // Initial physical state still needs to be applied
     int pulseCnt;                     // Pulse Counter
     int pulseLen;                     // Pulse length
 } BRIDGE_CONTROL;
@@ -84,6 +85,7 @@ void Bridge_driver_Init()
             br_ctrl[ch].channel = -1;
             br_ctrl[ch].current_state = 0;
             br_ctrl[ch].new_state = -1;
+            br_ctrl[ch].initial_state_pending = true;
             br_ctrl[ch].pulseCnt = 0;
             br_ctrl[ch].pulseLen = bridge_pulse_len;
         }
@@ -164,6 +166,24 @@ void Bridge_driver_QuickFrame()
                     HAL_PIN_SetOutputValue(br_ctrl[ch].GPIO_HLW_REV, 0);
                 }
             } 
+            else if (br_ctrl[ch].initial_state_pending)
+            {
+                /* A bistable relay retains its physical state across MCU restart. */
+                br_ctrl[ch].initial_state_pending = false;
+                br_ctrl[ch].pulseLen = bridge_pulse_len;
+                br_ctrl[ch].pulseCnt = br_ctrl[ch].pulseLen;
+                br_ctrl[ch].current_state = br_ctrl[ch].new_state;
+                if (br_ctrl[ch].current_state)
+                {
+                    addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "Bridge Driver: %lu : INITIAL FORWARD PULSE", (unsigned long)xTaskGetTickCount());
+                    HAL_PIN_SetOutputValue(br_ctrl[ch].GPIO_HLW_FWD, 1);
+                }
+                else
+                {
+                    addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "Bridge Driver: %lu : INITIAL REVERSE PULSE", (unsigned long)xTaskGetTickCount());
+                    HAL_PIN_SetOutputValue(br_ctrl[ch].GPIO_HLW_REV, 1);
+                }
+            }
             else if (br_ctrl[ch].current_state < br_ctrl[ch].new_state)
             {
                 /* Detected change in state - Forward Move */
