@@ -2485,7 +2485,7 @@ MqttPublishItem_t* del_queue_item(MqttPublishItem_t** head, MqttPublishItem_t* i
 void MQTT_QueuePublishWithCommand(const char* topic, const char* channel, const char* value, int flags, PostPublishCommands command) {
 	MqttPublishItem_t* newItem = NULL;
 	int _g_MqttPublishItemsQueued;
-	if (xSemaphoreTake(g_queue_mutex, pdMS_TO_TICKS(500)) == pdTRUE) {
+	if (xSemaphoreTake(g_queue_mutex, 500) == pdTRUE) {
 		_g_MqttPublishItemsQueued = g_MqttPublishItemsQueued;
 		xSemaphoreGive(g_queue_mutex);
 	} else {
@@ -2508,14 +2508,17 @@ void MQTT_QueuePublishWithCommand(const char* topic, const char* channel, const 
 	// wait, while previous N queue items will be actually send
 	int wait = 0;
 	do {
-		if (xSemaphoreTake(g_queue_mutex, pdMS_TO_TICKS(500)) == pdTRUE) {
+		if (xSemaphoreTake(g_queue_mutex, 500) == pdTRUE) {
 			_g_MqttPublishItemsQueued = g_MqttPublishItemsQueued;
 			xSemaphoreGive(g_queue_mutex);
+#if WINDOWS
+			break;
+#else
 			if (_g_MqttPublishItemsQueued < MQTT_MAX_QUEUE_SIZE_TO_WAIT) break;
+#endif
 			// TODO: MQTT_MAX_QUEUE_SIZE_TO_WAIT may be variable and will be set by command, because it depend not only platform memory size, but and qauntity of startted drivers
 			wait++;
 			addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "Queue item count exceeds MQTT_MAX_QUEUE_SIZE_TO_WAIT. Waiting (%d)...", wait);
-			//vTaskDelay(pdMS_TO_TICKS(10));
 			// IMPORTANT: check for other platform, it should be like vTaskDelay to be able pass the control to another task/thread
 			rtos_delay_milliseconds(500);
 		} else {
@@ -2523,7 +2526,7 @@ void MQTT_QueuePublishWithCommand(const char* topic, const char* channel, const 
 		}
 	} while  (1);
 
-	if (xSemaphoreTake(g_queue_mutex, pdMS_TO_TICKS(500)) == pdTRUE) {
+	if (xSemaphoreTake(g_queue_mutex, 500) == pdTRUE) {
 			newItem = find_queue_reusable_item(g_MqttPublishQueueHead);
 			xSemaphoreGive(g_queue_mutex);
 	}
@@ -2536,7 +2539,7 @@ void MQTT_QueuePublishWithCommand(const char* topic, const char* channel, const 
 		}
 		newItem->next = NULL;
 		// because queue items can be accessed from different tasks/threads
-		if (xSemaphoreTake(g_queue_mutex, pdMS_TO_TICKS(500)) == pdTRUE) {
+		if (xSemaphoreTake(g_queue_mutex, 500) == pdTRUE) {
 			if (g_MqttPublishQueueHead == NULL) {
 				g_MqttPublishQueueHead = newItem;
 			} else {
@@ -2596,7 +2599,7 @@ void MQTT_QueuePublishWithCommand(const char* topic, const char* channel, const 
 /// @param command
 void MQTT_InvokeCommandAtEnd(PostPublishCommands command) {
 	// because queue items can be accessed from different tasks/threads
-	if (xSemaphoreTake(g_queue_mutex, pdMS_TO_TICKS(500)) == pdTRUE) {
+	if (xSemaphoreTake(g_queue_mutex, 500) == pdTRUE) {
 		MqttPublishItem_t* tail = get_queue_tail(g_MqttPublishQueueHead);
 		if (tail == NULL){
 			addLogAdv(LOG_ERROR, LOG_FEATURE_MQTT, "InvokeCommandAtEnd invoked but queue is empty");
@@ -2631,7 +2634,7 @@ OBK_Publish_Result PublishQueuedItems() {
 	MqttPublishItem_t* next = NULL;
 
 	// because queue items can be accessed from different tasks/threads
-	if (xSemaphoreTake(g_queue_mutex, pdMS_TO_TICKS(10)) == pdTRUE) {
+	if (xSemaphoreTake(g_queue_mutex, 10) == pdTRUE) {
 		head = g_MqttPublishQueueHead;
 		_g_MqttPublishItemsQueued = g_MqttPublishItemsQueued;
 		xSemaphoreGive(g_queue_mutex);
@@ -2645,7 +2648,7 @@ OBK_Publish_Result PublishQueuedItems() {
 	//addLogAdv(LOG_INFO,LOG_FEATURE_MQTT,"PublishQueuedItems g_MqttPublishItemsQueued=%i",g_MqttPublishItemsQueued );
 	while ((head != NULL) && (count < MQTT_QUEUED_ITEMS_PUBLISHED_AT_ONCE) && (_g_MqttPublishItemsQueued > 0)) {
 		// because queue items can be accessed from different tasks/threads
-		if (xSemaphoreTake(g_queue_mutex, pdMS_TO_TICKS(10)) == pdTRUE) {
+		if (xSemaphoreTake(g_queue_mutex, 10) == pdTRUE) {
 			next = head->next;
 			_g_MqttPublishItemsQueued = g_MqttPublishItemsQueued;
 			xSemaphoreGive(g_queue_mutex);
@@ -2657,10 +2660,10 @@ OBK_Publish_Result PublishQueuedItems() {
 			count++;
 			int _command = head->command;
 			result = MQTT_PublishTopicToClient(mqtt_client, head->topic, head->channel, head->value, head->flags, false);
-			
+
 			do {
 				// because queue items can be accessed from different tasks/threads
-				if (xSemaphoreTake(g_queue_mutex, pdMS_TO_TICKS(10)) == pdTRUE) {
+				if (xSemaphoreTake(g_queue_mutex, 10) == pdTRUE) {
 					/* remove queue item */
 					next = del_queue_item(&g_MqttPublishQueueHead, head);
 					os_free(head);
@@ -2693,6 +2696,7 @@ OBK_Publish_Result PublishQueuedItems() {
 		else {
 			//addLogAdv(LOG_INFO,LOG_FEATURE_MQTT,"PublishQueuedItems item skipped reusable");
 		}
+
 		head = next;
 	}
 

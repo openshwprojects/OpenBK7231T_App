@@ -92,7 +92,7 @@ const char **Channel_GetOptionsForChannelType(int type, int *numTypes) {
 	ADD_OPTION(ChType_LowMidHigh, g_typeLowMidHigh);
 	ADD_OPTION(ChType_OpenStopClose, g_typeOpenStopClose);
 	ADD_OPTION(ChType_StopUpDown, g_typeStopUpDown);
-	
+
 	*numTypes = 0;
 	return 0;
 }
@@ -125,10 +125,10 @@ void poststr_h4(http_request_t* request, const char* content) {
 }
 
 /// @brief Generate a pair of label and field elements for Name type entry. The field is limited to entry of a-zA-Z0-9_- characters.
-/// @param request 
-/// @param label 
+/// @param request
+/// @param label
 /// @param fieldId This also gets used as the field name
-/// @param value 
+/// @param value
 /// @param preContent
 void add_label_name_field(http_request_t* request, char* label, char* fieldId, const char* value, char* preContent) {
 	if (strlen(preContent) > 0) {
@@ -141,11 +141,11 @@ void add_label_name_field(http_request_t* request, char* label, char* fieldId, c
 }
 
 /// @brief Generate a pair of label and field elements.
-/// @param request 
-/// @param label 
+/// @param request
+/// @param label
 /// @param fieldId This also gets used as the field name
-/// @param value 
-/// @param preContent 
+/// @param value
+/// @param preContent
 void add_label_input(http_request_t* request, char* inputType, char* label, char* fieldId, const char* value, char* preContent) {
 	if (strlen(preContent) > 0) {
 		poststr(request, preContent);
@@ -158,7 +158,7 @@ void add_label_input(http_request_t* request, char* inputType, char* label, char
 }
 
 /// @brief Generates a pair of label and text field elements.
-/// @param request 
+/// @param request
 /// @param label Label for the field
 /// @param fieldId Field id, this also gets used as the name
 /// @param value String value
@@ -168,7 +168,7 @@ void add_label_text_field(http_request_t* request, char* label, char* fieldId, c
 }
 
 /// @brief Generates a pair of label and text field elements.
-/// @param request 
+/// @param request
 /// @param label Label for the field
 /// @param fieldId Field id, this also gets used as the name
 /// @param value String value
@@ -178,7 +178,7 @@ void add_label_password_field(http_request_t* request, char* label, char* fieldI
 }
 
 /// @brief Generate a pair of label and numeric field elements.
-/// @param request 
+/// @param request
 /// @param label Label for the field
 /// @param fieldId Field id, this also gets used as the name
 /// @param value Integer value
@@ -205,18 +205,18 @@ int http_fn_pmntp(http_request_t* request) {
 	if (http_getArg(request->url, "EPOCH", tmpA, sizeof(tmpA))) {
 		actepoch = (uint32_t)strtoul(tmpA,0,10);
 		TIME_setDeviceTime(actepoch);
-		addLogAdv(LOG_DEBUG, LOG_FEATURE_HTTP,"Set clock to %u!",actepoch);	
+		addLogAdv(LOG_DEBUG, LOG_FEATURE_HTTP,"Set clock to %u!",actepoch);
 	}
 #if ENABLE_TIME_DST
 	if (! IsDST_initialized()) {
 #endif
 		if (http_getArg(request->url, "OFFSET", tmpA, sizeof(tmpA)) && actepoch != 0 ) {
-		// if actual time is during DST period, javascript will return 
-		// an offset including the one additional hour of DST  
+		// if actual time is during DST period, javascript will return
+		// an offset including the one additional hour of DST
 		// if we don't handle DST, simply accept this as "offset"
 		TIME_setDeviceTimeOffset(atoi(tmpA));
 		addLogAdv(LOG_DEBUG, LOG_FEATURE_HTTP,"Clock - set g_UTCoffset to %i!",
-			atoi(tmpA));	
+			atoi(tmpA));
 		}
 #if ENABLE_TIME_DST
 	// ignore JS offset, if we can/will calculate DST on our own
@@ -580,7 +580,7 @@ int http_fn_index(http_request_t* request) {
 			else {
 				what = "speed";
 			}
-			
+
 			iValue = CHANNEL_Get(i);
 
 			poststr(request, "<tr><td>");
@@ -756,7 +756,7 @@ int http_fn_index(http_request_t* request) {
 		}
 		if (bForceShowSingleDimmer) {
 			c_pwms = 1;
-		} 
+		}
 		else if (bForceShowRGBCW) {
 			c_pwms = 5;
 		}
@@ -1119,18 +1119,18 @@ typedef enum {
 		hprintf255(request, "</h5>");
 	}
 
-#if ENABLE_DRIVER_CHARTS		
+#if ENABLE_DRIVER_CHARTS
 /*	// moved from drv_charts.c:
 	// on every "state" request, JS code will be loaded and canvas is redrawn
 	// this leads to a flickering graph
 	// so put this right below the "state" div
-	// with a "#ifdef 
+	// with a "#ifdef
 	// drawback : We need to take care, if driver is loaded and canvas will be displayed only on a reload of the page
 	// or we might try and hide/unhide it ...
 */
 	// since we can't simply stop showing the graph in updated status, we need to "hide" it if driver was stopped
 	if (! DRV_IsRunning("Charts")) {
-		poststr(request, "<style onload=\"document.getElementById('obkChart').style.display='none'\"></style>");		
+		poststr(request, "<style onload=\"document.getElementById('obkChart').style.display='none'\"></style>");
 	};
 
 #endif
@@ -1148,12 +1148,12 @@ typedef enum {
 	// for normal page loads, show the rest of the HTML
 	if (!http_getArg(request->url, "state", tmpA, sizeof(tmpA))) {
 		poststr(request, "</div>"); // end div#state
-#if ENABLE_DRIVER_CHARTS		
+#if ENABLE_DRIVER_CHARTS
 /*	// moved from drv_charts.c:
 	// on every "state" request, JS code will be loaded and canvas is redrawn
 	// this leads to a flickering graph
 	// so put this right below the "state" div
-	// with a "#ifdef 
+	// with a "#ifdef
 	// drawback : We need to take care, if driver is loaded and canvas will be displayed only on a reload of the page
 	// or we might try and hide/unhide it ...
 */
@@ -1165,7 +1165,7 @@ typedef enum {
 #endif
 
 
-		// Shared UI elements 
+		// Shared UI elements
 		poststr(request, "<form action=\"cfg\"><input type=\"submit\" value=\"Config\"/></form>");
 
 		poststr(request, "<form action=\"/index\">"
@@ -2152,7 +2152,10 @@ extern void* _os_malloc(size_t size);
 extern void _os_free(void* ptr);
 #endif
 
-static xTaskHandle s_hadiscovery_thread = NULL;
+#if WINDOWS
+#else
+static beken_thread_t s_hadiscovery_thread = NULL;
+#endif
 /*
 */
 static void doHomeAssistantDiscovery_thread(void* param) {
@@ -2183,7 +2186,7 @@ static void doHomeAssistantDiscovery_thread(void* param) {
 			excludedCount++;
 		}
 	}
-	
+
 	if (topic == 0 || *topic == 0) {
 		topic = "homeassistant";
 	}
@@ -2215,7 +2218,7 @@ static void doHomeAssistantDiscovery_thread(void* param) {
 	EventHandlers_FireEvent(CMD_EVENT_ON_DISCOVERY, 0);
 
 #if ENABLE_ADVANCED_CHANNELTYPES_DISCOVERY
-	// try to pair toggles with dimmers. This is needed only for TuyaMCU, 
+	// try to pair toggles with dimmers. This is needed only for TuyaMCU,
 	// where custom channel types are used. This is NOT used for simple
 	// CW/RGB/RGBCW/etc lights.
 	if (CFG_HasFlag(OBK_FLAG_DISCOVERY_DONT_MERGE_LIGHTS) == false) {
@@ -2643,7 +2646,7 @@ static void doHomeAssistantDiscovery_thread(void* param) {
 			}
 			break;
 			case ChType_Enum:
-			{			
+			{
 				dev_info = hass_createEnumChannelInfo(i);
 			}
 			break;
@@ -2761,16 +2764,25 @@ static void doHomeAssistantDiscovery_thread(void* param) {
 	else {
 		const char* msg = "No relay, PWM, sensor or power driver running.";
 		addLogAdv(LOG_ERROR, LOG_FEATURE_HTTP, "HA discovery: %s", msg);
-	}
-
+	}	
+#if WINDOWS
+#else
 	os_free(topic);
 	s_hadiscovery_thread = 0;
-
-	vTaskDelete(NULL);
+	rtos_delete_thread(NULL);
+#endif
 }
 
 
 void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
+#if WINDOWS
+	doHomeAssistantDiscovery_thread(topic);
+	const char* msg_had_ok = "HA discovery complete. ";
+	if (request) {
+		poststr(request, msg_had_ok);
+		poststr(request, NULL);
+	}
+#else
 	/* check if task already run */
 	if (s_hadiscovery_thread!=NULL) {
 		const char* msg = "HA discovery already started. Please wait...";
@@ -2792,7 +2804,6 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 		(beken_thread_function_t)doHomeAssistantDiscovery_thread,
 		1024,
 		(beken_thread_arg_t)_topic);
-
 	if(err != kNoErr) {
 		const char* msg_had_error = "HA discovery failed (error=%d)";
 		addLogAdv(LOG_ERROR, LOG_FEATURE_HTTP, msg_had_error, err);
@@ -2810,11 +2821,12 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 		} else
 			addLogAdv(LOG_INFO, LOG_FEATURE_HTTP, msg_had_ok);
 	}
+#endif
 }
 
 /// @brief Sends HomeAssistant discovery MQTT messages.
-/// @param request 
-/// @return 
+/// @param request
+/// @return
 int http_fn_ha_discovery(http_request_t* request) {
 	char topic[32];
 
@@ -3239,7 +3251,7 @@ int http_fn_cfg_pins(http_request_t* request) {
 		// Anecdotally, if pins are configured badly, the
 		// second-timer breaks. To reconfigure, force
 		// saving the configuration instead of waiting.
-		//CFG_Save_SetupTimer(); 
+		//CFG_Save_SetupTimer();
 		CFG_Save_IfThereArePendingChanges();
 
 		// Invoke Hass discovery if configuration has changed and not in safe mode.
@@ -3265,7 +3277,7 @@ int http_fn_cfg_pins(http_request_t* request) {
 	poststr(request, "];");
 
 	poststr(request, "var  sr = r.map((e,i)=>{return e[0]+'#'+i}).sort(Intl.Collator().compare).map(e=>e.split('#'));");
-	
+
 	poststr(request, "function hide_show() {"
 		"n=this.name;"
 		"er=getElement('r'+n);"
@@ -3431,7 +3443,7 @@ const char* g_obk_flagNames[] = {
 	"error",
 	"error",
 	"error",
-}; 
+};
 
 void uint64_to_str(uint64_t num, char* str) {
 	char temp[21];  // uint64_t 20 numbers + \0
@@ -3783,7 +3795,7 @@ int http_fn_ota(http_request_t* request) {
 <input type=\"submit\" value=\"Submit\" onclick=\"return confirm('Are you sure?')\">\
 </form>");
 
-	const char htmlOTA[] = "<script>var o=document.getElementById('otafile'),d=document.querySelector('dialog'),h=document.getElementById('hint'),D='OTA started! Please wait ',R=/" DEVICENAME_PREFIX_FULL "_.*" 
+	const char htmlOTA[] = "<script>var o=document.getElementById('otafile'),d=document.querySelector('dialog'),h=document.getElementById('hint'),D='OTA started! Please wait ',R=/" DEVICENAME_PREFIX_FULL "_.*"
 #ifdef OBK_OTA_NAME_EXTENSION
 	OBK_OTA_NAME_EXTENSION
 #endif
