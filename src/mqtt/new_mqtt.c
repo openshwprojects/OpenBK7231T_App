@@ -1,7 +1,7 @@
 
 #include "../obk_config.h"
 
-#if ENABLE_MQTT 
+#if ENABLE_MQTT
 
 #include "new_mqtt.h"
 #include "../new_common.h"
@@ -24,7 +24,7 @@
 #include <lwip/tcpip.h>
 #endif
 
-#define BUILD_AND_VERSION_FOR_MQTT "Open" PLATFORM_MCU_NAME " " USER_SW_VER " " __DATE__ " " __TIME__ 
+#define BUILD_AND_VERSION_FOR_MQTT "Open" PLATFORM_MCU_NAME " " USER_SW_VER " " __DATE__ " " __TIME__
 
 #if MQTT_USE_TLS
 #include "lwip/altcp_tls.h"
@@ -88,7 +88,7 @@ static int g_secondsBeforeNextFullBroadcast = 30;
 // constant value, how much interval between self state broadcast (enabled by flag)
 // You can change it with command: mqtt_broadcastInterval 60
 static int g_intervalBetweenMQTTBroadcasts = 60;
-// While doing self state broadcast, it limits the number of publishes 
+// While doing self state broadcast, it limits the number of publishes
 // per second in order not to overload LWIP
 static int g_maxBroadcastItemsPublishedPerSecond = 1;
 // interval for automatic publish of tasmota tele/sensor and tele/state
@@ -251,6 +251,7 @@ int get_received(char **topic, int *topiclen, unsigned char **data, int *datalen
 
 MqttPublishItem_t* g_MqttPublishQueueHead = NULL;
 int g_MqttPublishItemsQueued = 0;   //Items in the queue waiting to be published. This is not the queue length.
+static SemaphoreHandle_t g_queue_mutex = 0;
 
 // from mqtt.c
 extern void mqtt_disconnect(mqtt_client_t* client);
@@ -723,7 +724,7 @@ int channelSet(obk_mqtt_request_t* request) {
 
 
 // this accepts cmnd/<clientId>/<xxx> to execute any supported console command
-// Example 1: 
+// Example 1:
 // Topic: cmnd/obk8C112233/power
 // Payload: toggle
 // this will toggle power
@@ -955,7 +956,7 @@ static OBK_Publish_Result MQTT_PublishTopicToClient(mqtt_client_t* client, const
 		{
 			strcpy(pub_topic, sChannel);
 		}
-		else 
+		else
 		{
 			sprintf(pub_topic, "%s/%s%s", sTopic, sChannel, (appendGet == true ? "/get" : ""));
 		}
@@ -1020,11 +1021,11 @@ OBK_Publish_Result MQTT_PublishStat(const char* statName, const char* statValue)
 	return MQTT_PublishTopicToClient(mqtt_client, topic, statName, statValue, 0, false);
 }
 /// @brief Publish a MQTT message immediately.
-/// @param sTopic 
-/// @param sChannel 
-/// @param sVal 
+/// @param sTopic
+/// @param sChannel
+/// @param sVal
 /// @param flags
-/// @return 
+/// @return
 OBK_Publish_Result MQTT_Publish(const char* sTopic, const char* sChannel, const char* sVal, int flags)
 {
 	return MQTT_PublishTopicToClient(mqtt_client, sTopic, sChannel, sVal, flags, false);
@@ -1230,8 +1231,8 @@ static void mqtt_connection_cb(mqtt_client_t* client, void* arg, mqtt_connection
 static ip_addr_t mqtt_ip_resolved;
 static volatile int dns_in_progress_time;
 static volatile bool dns_resolved;
-void dnsFound(const char *name, ip_addr_t *ipaddr, void *arg) 
-{       
+void dnsFound(const char *name, ip_addr_t *ipaddr, void *arg)
+{
 
 	if (NULL != ipaddr)
 	{
@@ -1322,7 +1323,7 @@ static int MQTT_do_connect(mqtt_client_t* client)
 			}
 			memcpy(&mqtt_ip, hostEntry->h_addr_list[0], len);
 		}
-		else 
+		else
 #endif
 		{
 			addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "mqtt_host resolves no addresses?");
@@ -1390,7 +1391,7 @@ static int MQTT_do_connect(mqtt_client_t* client)
 				free(ca);
 				ca = NULL;
 			}
-			if (mqtt_client_info.tls_config) {				
+			if (mqtt_client_info.tls_config) {
 #if ALTCP_MBEDTLS_DEBUG
 				mbedtls_ssl_conf_verify(&mqtt_client_info.tls_config->conf, mbedtls_verify_cb, NULL);
 #if MBEDTLS_DEBUG_C
@@ -1400,7 +1401,7 @@ static int MQTT_do_connect(mqtt_client_t* client)
 				if (mqtt_client_info.tls_config->ca){
 					mbedtls_dump_conf(&mqtt_client_info.tls_config->conf, NULL);
 				}
-#endif				
+#endif
 
 				if (mqtt_verify_tls_cert) {
 					mbedtls_ssl_conf_authmode(&mqtt_client_info.tls_config->conf, MBEDTLS_SSL_VERIFY_REQUIRED);
@@ -1908,7 +1909,7 @@ void MQTT_InitCallbacks() {
 	// note: this may REPLACE an existing entry with the same ID.  ID 1 !!!
 	MQTT_RegisterCallback(cbtopicbase, cbtopicsub, 1, channelSet);
 
-	// so-called "Group topic", a secondary topic that can be set on multiple devices 
+	// so-called "Group topic", a secondary topic that can be set on multiple devices
 	// to control them together
 	// register the TAS cmnd callback
 	if (*groupId) {
@@ -1926,7 +1927,7 @@ void MQTT_InitCallbacks() {
 	// note: this may REPLACE an existing entry with the same ID.  ID 3 !!!
 	MQTT_RegisterCallback(cbtopicbase, cbtopicsub, 3, tasCmnd);
 
-	// so-called "Group topic", a secondary topic that can be set on multiple devices 
+	// so-called "Group topic", a secondary topic that can be set on multiple devices
 	// to control them together
 	// register the TAS cmnd callback
 	if (*groupId) {
@@ -1974,7 +1975,9 @@ void MQTT_init()
 		g_rx_mutex = xSemaphoreCreateMutex();
 	}
 #endif
-
+	if (g_queue_mutex == 0) {
+		g_queue_mutex = xSemaphoreCreateMutex();
+	}
 	MQTT_InitCallbacks();
 
 	mqtt_initialised = 1;
@@ -2118,7 +2121,7 @@ OBK_Publish_Result MQTT_DoItemPublish(int idx)
 		if (DRV_IsRunning("NTP")) {
 */
 #ifdef PLATFORM_ESP8266
-		// while all other platforms will accept uint32_t as long unsigned, ESP8266 needs %u 
+		// while all other platforms will accept uint32_t as long unsigned, ESP8266 needs %u
 		// biuild fails otherwise because of -Werror=format
 		// src/mqtt/new_mqtt.c:2036:24: error: format '%ld' expects argument of type 'long int', but argument 3 has type 'uint32_t' {aka 'unsigned int'} [-Werror=format=]
 		// al other ESP:
@@ -2471,14 +2474,21 @@ void del_queue_item(MqttPublishItem_t** head, MqttPublishItem_t* item) {
 }
 
 /// @brief Queue an entry for publish and execute a command after the publish.
-/// @param topic 
-/// @param channel 
-/// @param value 
+/// @param topic
+/// @param channel
+/// @param value
 /// @param flags
 /// @param command Command to execute after the publish
 void MQTT_QueuePublishWithCommand(const char* topic, const char* channel, const char* value, int flags, PostPublishCommands command) {
-	MqttPublishItem_t* newItem;
-	if (g_MqttPublishItemsQueued >= MQTT_MAX_QUEUE_SIZE) {
+	MqttPublishItem_t* newItem = NULL;
+	int _g_MqttPublishItemsQueued;
+	if (xSemaphoreTake(g_queue_mutex, pdMS_TO_TICKS(500)) == pdTRUE) {
+		_g_MqttPublishItemsQueued = g_MqttPublishItemsQueued;
+		xSemaphoreGive(g_queue_mutex);
+	} else {
+		return;
+	}
+	if (_g_MqttPublishItemsQueued >= MQTT_MAX_QUEUE_SIZE) {
 		addLogAdv(LOG_ERROR, LOG_FEATURE_MQTT, "Unable to queue! %i items already present", g_MqttPublishItemsQueued);
 		return;
 	}
@@ -2491,27 +2501,81 @@ void MQTT_QueuePublishWithCommand(const char* topic, const char* channel, const 
 		return;
 	}
 
-	//Queue data for publish. This might be a new item in the queue or an existing item. This is done to prevent
-	//memory fragmentation. The total queue length is limited to MQTT_MAX_QUEUE_SIZE.
+	// New Queue data for publish.
+	// wait, while previous N queue items will be actually send
+	do {
+		if (xSemaphoreTake(g_queue_mutex, pdMS_TO_TICKS(500)) == pdTRUE) {
+			_g_MqttPublishItemsQueued = g_MqttPublishItemsQueued;
+			xSemaphoreGive(g_queue_mutex);
+			if (_g_MqttPublishItemsQueued <= MQTT_MAX_QUEUE_SIZE_TO_WAIT) break;
+			// TODO: MQTT_MAX_QUEUE_SIZE_TO_WAIT may be variable and will be set by command, because it depend not only platform memory size, but and qauntity of startted drivers
 
-	if (g_MqttPublishQueueHead == NULL) {
-		g_MqttPublishQueueHead = newItem = os_malloc(sizeof(MqttPublishItem_t));
-		newItem->next = NULL;
-	}
-	else {
-		newItem = find_queue_reusable_item(g_MqttPublishQueueHead);
-
-		if (newItem == NULL) {
-			newItem = os_malloc(sizeof(MqttPublishItem_t));
-			if(newItem == NULL)
-			{
-				//addLogAdv(LOG_ERROR, LOG_FEATURE_MQTT, "os_malloc failed for MqttPublishItem_t");
-				return;
-			}
-			newItem->next = NULL;
-			get_queue_tail(g_MqttPublishQueueHead)->next = newItem; //Append new item
+			//vTaskDelay(pdMS_TO_TICKS(10));
+			// IMPORTANT: check for other platform, it should be like vTaskDelay to be able pass the control to another task/thread
+			//rtos_delay_milliseconds(500);
+		} else {
+			// TODO: timeguard ?
 		}
+	} while  (1);
+
+	if (xSemaphoreTake(g_queue_mutex, pdMS_TO_TICKS(500)) == pdTRUE) {
+			newItem = find_queue_reusable_item(g_MqttPublishQueueHead);
+			xSemaphoreGive(g_queue_mutex);
 	}
+	// create new item
+	if (newItem == NULL) {
+		newItem = os_malloc(sizeof(MqttPublishItem_t));
+		if (!newItem) {
+			addLogAdv(LOG_ERROR, LOG_FEATURE_MQTT, "os_malloc failed for MqttPublishItem_t.");
+			return;
+		}
+		newItem->next = NULL;
+		// because queue items can be accessed from different tasks/threads
+		if (xSemaphoreTake(g_queue_mutex, pdMS_TO_TICKS(500)) == pdTRUE) {
+			if (g_MqttPublishQueueHead == NULL) {
+				g_MqttPublishQueueHead = newItem;
+			} else {
+				get_queue_tail(g_MqttPublishQueueHead)->next = newItem; //Append new item
+			}
+			g_MqttPublishItemsQueued++;
+			_g_MqttPublishItemsQueued = g_MqttPublishItemsQueued;
+			xSemaphoreGive(g_queue_mutex);
+		} else {
+			os_free(newItem);
+			addLogAdv(LOG_ERROR, LOG_FEATURE_MQTT, "MqttPublishItem_t not queueed.");
+			return;
+		}
+	} else {
+
+	}
+	// IMHO, It seems, that old algorithm with reusable item not properly prevent memory fragmentation, because in whole we have next sequence:
+	// hass_init_sensor_device_info (=os_malloc(sizeof(HassDeviceInfo)) and many (cJSON*)hooks->allocate(sizeof(cJSON))) ->
+	// MQTT_QueuePublish(=os_malloc(sizeof(MqttPublishItem_t))) ->
+	// hass_free_device_info(os_free(info) and cJSON_Delete(info->root))
+	// and no warranty that cJson and it content like a string with a different length will be place between HassDeviceInfo and MqttPublishItem_t.
+	// At the same time, function will be used not often, but the allocated memory may be free only after reboot.
+
+//	//Queue data for publish. This might be a new item in the queue or an existing item. This is done to prevent
+//	//memory fragmentation. The total queue length is limited to MQTT_MAX_QUEUE_SIZE.
+//
+//	if (g_MqttPublishQueueHead == NULL) {
+//		g_MqttPublishQueueHead = newItem = os_malloc(sizeof(MqttPublishItem_t));
+//		newItem->next = NULL;
+//	}
+//	else {
+//		newItem = find_queue_reusable_item(g_MqttPublishQueueHead);
+//
+//		if (newItem == NULL) {
+//			newItem = os_malloc(sizeof(MqttPublishItem_t));
+//			if(newItem == NULL)
+//			{
+//				//addLogAdv(LOG_ERROR, LOG_FEATURE_MQTT, "os_malloc failed for MqttPublishItem_t");
+//				return;
+//			}
+//			newItem->next = NULL;
+//			get_queue_tail(g_MqttPublishQueueHead)->next = newItem; //Append new item
+//		}
+//	}
 
 	//strcpy does copy ending null character.
 	strcpy(newItem->topic, topic);
@@ -2520,26 +2584,31 @@ void MQTT_QueuePublishWithCommand(const char* topic, const char* channel, const 
 	newItem->command = command;
 	newItem->flags = flags;
 
-	g_MqttPublishItemsQueued++;
-	addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "Queued topic=%s/%s, %i items in queue", newItem->topic, newItem->channel, g_MqttPublishItemsQueued);
+	addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "Queued topic=%s/%s, %i items in queue", newItem->topic, newItem->channel, _g_MqttPublishItemsQueued);
 }
 
 /// @brief Add the specified command to the last entry in the queue.
-/// @param command 
+/// @param command
 void MQTT_InvokeCommandAtEnd(PostPublishCommands command) {
-	MqttPublishItem_t* tail = get_queue_tail(g_MqttPublishQueueHead);
-	if (tail == NULL){
-		addLogAdv(LOG_ERROR, LOG_FEATURE_MQTT, "InvokeCommandAtEnd invoked but queue is empty");
-	}
-	else {
-		tail->command = command;
+	// because queue items can be accessed from different tasks/threads
+	if (xSemaphoreTake(g_queue_mutex, pdMS_TO_TICKS(500)) == pdTRUE) {
+		MqttPublishItem_t* tail = get_queue_tail(g_MqttPublishQueueHead);
+		if (tail == NULL){
+			addLogAdv(LOG_ERROR, LOG_FEATURE_MQTT, "InvokeCommandAtEnd invoked but queue is empty");
+		}
+		else {
+			tail->command = command;
+		}
+		xSemaphoreGive(g_queue_mutex);
+	} else {
+
 	}
 }
 
 /// @brief Queue an entry for publish.
-/// @param topic 
-/// @param channel 
-/// @param value 
+/// @param topic
+/// @param channel
+/// @param value
 /// @param flags
 void MQTT_QueuePublish(const char* topic, const char* channel, const char* value, int flags) {
 	MQTT_QueuePublishWithCommand(topic, channel, value, flags, None);
@@ -2547,31 +2616,55 @@ void MQTT_QueuePublish(const char* topic, const char* channel, const char* value
 
 
 /// @brief Publish MQTT_QUEUED_ITEMS_PUBLISHED_AT_ONCE queued items.
-/// @return 
+/// @return
 OBK_Publish_Result PublishQueuedItems() {
 	OBK_Publish_Result result = OBK_PUBLISH_WAS_NOT_REQUIRED;
 
 	int count = 0;
-	MqttPublishItem_t* head = g_MqttPublishQueueHead;
-	MqttPublishItem_t* next;
+	MqttPublishItem_t* head;
+	MqttPublishItem_t* next = NULL;
+
+	// because queue items can be accessed from different tasks/threads
+	if (xSemaphoreTake(g_queue_mutex, pdMS_TO_TICKS(500)) == pdTRUE) {
+		head = g_MqttPublishQueueHead;
+		xSemaphoreGive(g_queue_mutex);
+	} else {
+		result = OBK_PUBLISH_MUTEX_FAIL;
+		return result;
+	}
 
 	//The next actionable item might not be at the front. The queue size is limited to MQTT_QUEUED_ITEMS_PUBLISHED_AT_ONCE
 	//so this traversal is fast.
 	//addLogAdv(LOG_INFO,LOG_FEATURE_MQTT,"PublishQueuedItems g_MqttPublishItemsQueued=%i",g_MqttPublishItemsQueued );
 	while ((head != NULL) && (count < MQTT_QUEUED_ITEMS_PUBLISHED_AT_ONCE) && (g_MqttPublishItemsQueued > 0)) {
-		next = head->next;
+		// because queue items can be accessed from different tasks/threads
+		if (xSemaphoreTake(g_queue_mutex, pdMS_TO_TICKS(500)) == pdTRUE) {
+			next = head->next;
+			xSemaphoreGive(g_queue_mutex);
+		} else {
+			head = NULL;
+		}
 		if (!MQTT_QUEUE_ITEM_IS_REUSABLE(head)) {  //Skip reusable entries
 			count++;
-			int _command = head->command;			
+			int _command = head->command;
 			result = MQTT_PublishTopicToClient(mqtt_client, head->topic, head->channel, head->value, head->flags, false);
-			if (!(head->flags&OBK_PUBLISH_FLAG_NOREUSE)) {
-				MQTT_QUEUE_ITEM_SET_REUSABLE(head); //Flag item as reusable				
-			} else {
-				/* remove queue item */
-				del_queue_item(&g_MqttPublishQueueHead, head);
-				os_free(head);
-			}
-			g_MqttPublishItemsQueued--;   //decrement queued count
+			//MQTT_QUEUE_ITEM_SET_REUSABLE(head); //Flag item as reusable
+			do {
+				// because queue items can be accessed from different tasks/threads
+				if (xSemaphoreTake(g_queue_mutex, pdMS_TO_TICKS(500)) == pdTRUE) {
+					/* remove queue item */
+					del_queue_item(&g_MqttPublishQueueHead, head);
+					os_free(head);
+
+					g_MqttPublishItemsQueued--;   //decrement queued count
+					xSemaphoreGive(g_queue_mutex);
+					break;
+				} else {
+					// TODO: timequard + error
+					MQTT_QUEUE_ITEM_SET_REUSABLE(head); //Flag item as reusable
+					break;
+				}
+			} while (1);
 
 			//Stop if last publish failed
 			if (result != OBK_PUBLISH_OK) break;
@@ -2590,7 +2683,7 @@ OBK_Publish_Result PublishQueuedItems() {
 		else {
 			//addLogAdv(LOG_INFO,LOG_FEATURE_MQTT,"PublishQueuedItems item skipped reusable");
 		}
-		head = next;		
+		head = next;
 	}
 
 	return result;
@@ -2598,7 +2691,7 @@ OBK_Publish_Result PublishQueuedItems() {
 
 
 /// @brief Is MQTT sub system ready and connected?
-/// @return 
+/// @return
 bool MQTT_IsReady() {
 	int res = 0;
 	if (mqtt_client){
@@ -2609,7 +2702,7 @@ bool MQTT_IsReady() {
 	return mqtt_client && res;
 }
 /// @brief Return MQTT queue size
-/// @return 
+/// @return
 int MQTT_QueueSize(void) {
 	return g_MqttPublishItemsQueued;
 }
@@ -2661,13 +2754,13 @@ struct tm* cvt_date(char const* date, char const* time, struct tm* t)
 struct tm* mbedtls_platform_gmtime_r(const mbedtls_time_t* tt, struct tm* tm_buf) {
 	// If time not synced return compile time
 	struct tm* ltm;
-	if (!TIME_IsTimeSynced()) {	
+	if (!TIME_IsTimeSynced()) {
 		ltm = cvt_date(__DATE__, __TIME__, tm_buf);
 		if (log_gmtime_alt) {
 			addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "MBEDTLS: TIME not synchronized. Using compile time: %04d/%02d/%02d %02d:%02d:%02d",
 				ltm->tm_year + 1900, ltm->tm_mon + 1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min, ltm->tm_sec);
-			log_gmtime_alt = false; 
-		}			
+			log_gmtime_alt = false;
+		}
 		return ltm;
 	}
 	time_t devTime;
@@ -2720,45 +2813,45 @@ void mbedtls_dump_conf(mbedtls_ssl_config* conf, mbedtls_ssl_context* ssl) {
 		addLogAdv(LOG_DEBUG, LOG_FEATURE_MQTT, "HANDSHAKE CIPHER SUITE: %s", ssl->handshake->ciphersuite_info->name);
 		switch (ssl->handshake->ciphersuite_info->key_exchange)
 		{
-			case MBEDTLS_KEY_EXCHANGE_NONE: 
+			case MBEDTLS_KEY_EXCHANGE_NONE:
 				addLogAdv(LOG_DEBUG, LOG_FEATURE_MQTT, "HANDSHAKE KEY EXCHANGE: MBEDTLS_KEY_EXCHANGE_NONE");
 				break;
-			case MBEDTLS_KEY_EXCHANGE_RSA: 
+			case MBEDTLS_KEY_EXCHANGE_RSA:
 				addLogAdv(LOG_DEBUG, LOG_FEATURE_MQTT, "HANDSHAKE KEY EXCHANGE: MBEDTLS_KEY_EXCHANGE_RSA");
 				break;
-			case MBEDTLS_KEY_EXCHANGE_DHE_RSA: 
+			case MBEDTLS_KEY_EXCHANGE_DHE_RSA:
 				addLogAdv(LOG_DEBUG, LOG_FEATURE_MQTT, "HANDSHAKE KEY EXCHANGE: MBEDTLS_KEY_EXCHANGE_DHE_RSA");
 				break;
-			case MBEDTLS_KEY_EXCHANGE_ECDHE_RSA: 
+			case MBEDTLS_KEY_EXCHANGE_ECDHE_RSA:
 				addLogAdv(LOG_DEBUG, LOG_FEATURE_MQTT, "HANDSHAKE KEY EXCHANGE: MBEDTLS_KEY_EXCHANGE_ECDHE_RSA");
 				break;
-			case MBEDTLS_KEY_EXCHANGE_ECDHE_ECDSA: 
+			case MBEDTLS_KEY_EXCHANGE_ECDHE_ECDSA:
 				addLogAdv(LOG_DEBUG, LOG_FEATURE_MQTT, "HANDSHAKE KEY EXCHANGE: MBEDTLS_KEY_EXCHANGE_ECDHE_ECDSA");
 				break;
-			case MBEDTLS_KEY_EXCHANGE_PSK: 
+			case MBEDTLS_KEY_EXCHANGE_PSK:
 				addLogAdv(LOG_DEBUG, LOG_FEATURE_MQTT, "HANDSHAKE KEY EXCHANGE: MBEDTLS_KEY_EXCHANGE_PSK");
 				break;
-			case MBEDTLS_KEY_EXCHANGE_DHE_PSK: 
+			case MBEDTLS_KEY_EXCHANGE_DHE_PSK:
 				addLogAdv(LOG_DEBUG, LOG_FEATURE_MQTT, "HANDSHAKE KEY EXCHANGE: MBEDTLS_KEY_EXCHANGE_DHE_PSK");
 				break;
-			case MBEDTLS_KEY_EXCHANGE_RSA_PSK: 
+			case MBEDTLS_KEY_EXCHANGE_RSA_PSK:
 				addLogAdv(LOG_DEBUG, LOG_FEATURE_MQTT, "HANDSHAKE KEY EXCHANGE: MBEDTLS_KEY_EXCHANGE_RSA_PSK");
 				break;
-			case MBEDTLS_KEY_EXCHANGE_ECDHE_PSK: 
+			case MBEDTLS_KEY_EXCHANGE_ECDHE_PSK:
 				addLogAdv(LOG_DEBUG, LOG_FEATURE_MQTT, "HANDSHAKE KEY EXCHANGE: MBEDTLS_KEY_EXCHANGE_ECDHE_PSK");
 				break;
-			case MBEDTLS_KEY_EXCHANGE_ECDH_RSA: 
+			case MBEDTLS_KEY_EXCHANGE_ECDH_RSA:
 				addLogAdv(LOG_DEBUG, LOG_FEATURE_MQTT, "HANDSHAKE KEY EXCHANGE: MBEDTLS_KEY_EXCHANGE_ECDH_RSA");
 				break;
-			case MBEDTLS_KEY_EXCHANGE_ECDH_ECDSA: 
+			case MBEDTLS_KEY_EXCHANGE_ECDH_ECDSA:
 				addLogAdv(LOG_DEBUG, LOG_FEATURE_MQTT, "HANDSHAKE KEY EXCHANGE: MBEDTLS_KEY_EXCHANGE_ECDH_ECDSA");
 				break;
-			case MBEDTLS_KEY_EXCHANGE_ECJPAKE: 
+			case MBEDTLS_KEY_EXCHANGE_ECJPAKE:
 				addLogAdv(LOG_DEBUG, LOG_FEATURE_MQTT, "HANDSHAKE KEY EXCHANGE: MBEDTLS_KEY_EXCHANGE_ECJPAKE");
 				break;
 		}
 	}
-	
+
 	if (conf) {
 		addLogAdv(LOG_DEBUG, LOG_FEATURE_MQTT, "AVAILABLE CIPHERS:");
 		int len = sizeof(conf->ciphersuite_list) / (sizeof(conf->ciphersuite_list[0]));
@@ -2772,46 +2865,46 @@ void mbedtls_dump_conf(mbedtls_ssl_config* conf, mbedtls_ssl_context* ssl) {
 		for (; *c; c++) {
 			switch (*c)
 			{
-			case MBEDTLS_ECP_DP_NONE: 
+			case MBEDTLS_ECP_DP_NONE:
 				addLogAdv(LOG_DEBUG, LOG_FEATURE_MQTT, "     MBEDTLS_ECP_DP_NONE");
 				break;
-			case MBEDTLS_ECP_DP_SECP192R1: 
+			case MBEDTLS_ECP_DP_SECP192R1:
 				addLogAdv(LOG_DEBUG, LOG_FEATURE_MQTT, "     MBEDTLS_ECP_DP_SECP192R1");
 				break;
-			case MBEDTLS_ECP_DP_SECP224R1: 
+			case MBEDTLS_ECP_DP_SECP224R1:
 				addLogAdv(LOG_DEBUG, LOG_FEATURE_MQTT, "     MBEDTLS_ECP_DP_SECP224R1");
 				break;
-			case MBEDTLS_ECP_DP_SECP256R1: 
+			case MBEDTLS_ECP_DP_SECP256R1:
 				addLogAdv(LOG_DEBUG, LOG_FEATURE_MQTT, "     MBEDTLS_ECP_DP_SECP256R1");
 				break;
-			case MBEDTLS_ECP_DP_SECP384R1: 
+			case MBEDTLS_ECP_DP_SECP384R1:
 				addLogAdv(LOG_DEBUG, LOG_FEATURE_MQTT, "     MBEDTLS_ECP_DP_SECP384R1");
 				break;
-			case MBEDTLS_ECP_DP_SECP521R1: 
+			case MBEDTLS_ECP_DP_SECP521R1:
 				addLogAdv(LOG_DEBUG, LOG_FEATURE_MQTT, "     MBEDTLS_ECP_DP_SECP521R1");
 				break;
-			case MBEDTLS_ECP_DP_BP256R1: 
+			case MBEDTLS_ECP_DP_BP256R1:
 				addLogAdv(LOG_DEBUG, LOG_FEATURE_MQTT, "     MBEDTLS_ECP_DP_BP256R1");
 				break;
-			case MBEDTLS_ECP_DP_BP384R1: 
+			case MBEDTLS_ECP_DP_BP384R1:
 				addLogAdv(LOG_DEBUG, LOG_FEATURE_MQTT, "     MBEDTLS_ECP_DP_BP384R1");
 				break;
-			case MBEDTLS_ECP_DP_BP512R1: 
+			case MBEDTLS_ECP_DP_BP512R1:
 				addLogAdv(LOG_DEBUG, LOG_FEATURE_MQTT, "     MBEDTLS_ECP_DP_BP512R1");
 				break;
-			case MBEDTLS_ECP_DP_CURVE25519: 
+			case MBEDTLS_ECP_DP_CURVE25519:
 				addLogAdv(LOG_DEBUG, LOG_FEATURE_MQTT, "     MBEDTLS_ECP_DP_CURVE25519");
 				break;
-			case MBEDTLS_ECP_DP_SECP192K1: 
+			case MBEDTLS_ECP_DP_SECP192K1:
 				addLogAdv(LOG_DEBUG, LOG_FEATURE_MQTT, "     MBEDTLS_ECP_DP_SECP192K1");
 				break;
-			case MBEDTLS_ECP_DP_SECP224K1: 
+			case MBEDTLS_ECP_DP_SECP224K1:
 				addLogAdv(LOG_DEBUG, LOG_FEATURE_MQTT, "     MBEDTLS_ECP_DP_SECP224K1");
 				break;
-			case MBEDTLS_ECP_DP_SECP256K1: 
+			case MBEDTLS_ECP_DP_SECP256K1:
 				addLogAdv(LOG_DEBUG, LOG_FEATURE_MQTT, "     MBEDTLS_ECP_DP_SECP256K1");
 				break;
-			case MBEDTLS_ECP_DP_CURVE448: 
+			case MBEDTLS_ECP_DP_CURVE448:
 				addLogAdv(LOG_DEBUG, LOG_FEATURE_MQTT, "     MBEDTLS_ECP_DP_CURVE448");
 				break;
 			}

@@ -118,6 +118,12 @@ typedef struct MqttPublishItem
 // so I bumped MAX to 32
 #define MQTT_MAX_QUEUE_SIZE	                32
 
+#ifdef PLATFORM_ESP8266
+	#define MQTT_MAX_QUEUE_SIZE_TO_WAIT         3
+#else
+	#define MQTT_MAX_QUEUE_SIZE_TO_WAIT         32
+#endif
+
 // callback function for mqtt.
 // return 0 to allow the incoming topic/data to be processed by others/channel set.
 // return 1 to 'eat the packet and terminate further processing.
