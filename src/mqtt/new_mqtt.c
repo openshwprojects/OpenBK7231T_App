@@ -2457,20 +2457,23 @@ MqttPublishItem_t* find_queue_reusable_item(MqttPublishItem_t* head) {
 	return head;
 }
 
-void del_queue_item(MqttPublishItem_t** head, MqttPublishItem_t* item) {
-	if ((head == NULL) || (item == NULL)) { return; }
+MqttPublishItem_t* del_queue_item(MqttPublishItem_t** head, MqttPublishItem_t* item) {
+	if ((head == NULL) || (item == NULL)) { return NULL; }
 	MqttPublishItem_t* _head = *head;
 	if (_head == item) {
-		*head = NULL;
-		return;
+		*head = item->next;
+		if (*head) { return (*head)->next; }
+		else       { return NULL; }
 	}
 	while (_head->next != NULL) {
 		if (_head->next == item) {
 			_head->next = item->next;
-			return;
+			if (_head->next) { return _head->next->next; }
+			else             { return NULL; }
 		}
 		_head = _head->next;
 	}
+	return NULL;
 }
 
 /// @brief Queue an entry for publish and execute a command after the publish.
@@ -2503,16 +2506,18 @@ void MQTT_QueuePublishWithCommand(const char* topic, const char* channel, const 
 
 	// New Queue data for publish.
 	// wait, while previous N queue items will be actually send
+	int wait = 0;
 	do {
 		if (xSemaphoreTake(g_queue_mutex, pdMS_TO_TICKS(500)) == pdTRUE) {
 			_g_MqttPublishItemsQueued = g_MqttPublishItemsQueued;
 			xSemaphoreGive(g_queue_mutex);
-			if (_g_MqttPublishItemsQueued <= MQTT_MAX_QUEUE_SIZE_TO_WAIT) break;
+			if (_g_MqttPublishItemsQueued < MQTT_MAX_QUEUE_SIZE_TO_WAIT) break;
 			// TODO: MQTT_MAX_QUEUE_SIZE_TO_WAIT may be variable and will be set by command, because it depend not only platform memory size, but and qauntity of startted drivers
-
+			wait++;
+			addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "Queue item count exceeds MQTT_MAX_QUEUE_SIZE_TO_WAIT. Waiting (%d)...", wait);
 			//vTaskDelay(pdMS_TO_TICKS(10));
 			// IMPORTANT: check for other platform, it should be like vTaskDelay to be able pass the control to another task/thread
-			//rtos_delay_milliseconds(500);
+			rtos_delay_milliseconds(500);
 		} else {
 			// TODO: timeguard ?
 		}
@@ -2621,12 +2626,14 @@ OBK_Publish_Result PublishQueuedItems() {
 	OBK_Publish_Result result = OBK_PUBLISH_WAS_NOT_REQUIRED;
 
 	int count = 0;
+	int _g_MqttPublishItemsQueued;
 	MqttPublishItem_t* head;
 	MqttPublishItem_t* next = NULL;
 
 	// because queue items can be accessed from different tasks/threads
-	if (xSemaphoreTake(g_queue_mutex, pdMS_TO_TICKS(500)) == pdTRUE) {
+	if (xSemaphoreTake(g_queue_mutex, pdMS_TO_TICKS(10)) == pdTRUE) {
 		head = g_MqttPublishQueueHead;
+		_g_MqttPublishItemsQueued = g_MqttPublishItemsQueued;
 		xSemaphoreGive(g_queue_mutex);
 	} else {
 		result = OBK_PUBLISH_MUTEX_FAIL;
@@ -2636,30 +2643,33 @@ OBK_Publish_Result PublishQueuedItems() {
 	//The next actionable item might not be at the front. The queue size is limited to MQTT_QUEUED_ITEMS_PUBLISHED_AT_ONCE
 	//so this traversal is fast.
 	//addLogAdv(LOG_INFO,LOG_FEATURE_MQTT,"PublishQueuedItems g_MqttPublishItemsQueued=%i",g_MqttPublishItemsQueued );
-	while ((head != NULL) && (count < MQTT_QUEUED_ITEMS_PUBLISHED_AT_ONCE) && (g_MqttPublishItemsQueued > 0)) {
+	while ((head != NULL) && (count < MQTT_QUEUED_ITEMS_PUBLISHED_AT_ONCE) && (_g_MqttPublishItemsQueued > 0)) {
 		// because queue items can be accessed from different tasks/threads
-		if (xSemaphoreTake(g_queue_mutex, pdMS_TO_TICKS(500)) == pdTRUE) {
+		if (xSemaphoreTake(g_queue_mutex, pdMS_TO_TICKS(10)) == pdTRUE) {
 			next = head->next;
+			_g_MqttPublishItemsQueued = g_MqttPublishItemsQueued;
 			xSemaphoreGive(g_queue_mutex);
 		} else {
-			head = NULL;
+			next = NULL;
+			continue;
 		}
 		if (!MQTT_QUEUE_ITEM_IS_REUSABLE(head)) {  //Skip reusable entries
 			count++;
 			int _command = head->command;
 			result = MQTT_PublishTopicToClient(mqtt_client, head->topic, head->channel, head->value, head->flags, false);
-			//MQTT_QUEUE_ITEM_SET_REUSABLE(head); //Flag item as reusable
+			
 			do {
 				// because queue items can be accessed from different tasks/threads
-				if (xSemaphoreTake(g_queue_mutex, pdMS_TO_TICKS(500)) == pdTRUE) {
+				if (xSemaphoreTake(g_queue_mutex, pdMS_TO_TICKS(10)) == pdTRUE) {
 					/* remove queue item */
-					del_queue_item(&g_MqttPublishQueueHead, head);
+					next = del_queue_item(&g_MqttPublishQueueHead, head);
 					os_free(head);
 
 					g_MqttPublishItemsQueued--;   //decrement queued count
+					_g_MqttPublishItemsQueued = g_MqttPublishItemsQueued;
 					xSemaphoreGive(g_queue_mutex);
 					break;
-				} else {
+				} else { // ???
 					// TODO: timequard + error
 					MQTT_QUEUE_ITEM_SET_REUSABLE(head); //Flag item as reusable
 					break;

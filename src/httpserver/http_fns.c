@@ -2803,7 +2803,7 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 		}
 		return;
 	} else {
-		const char* msg_had_ok = "HA discovery started";
+		const char* msg_had_ok = "HA discovery started. ";
 		if (request) {
 			poststr(request, msg_had_ok);
 			poststr(request, NULL);

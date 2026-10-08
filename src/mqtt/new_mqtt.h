@@ -119,7 +119,7 @@ typedef struct MqttPublishItem
 #define MQTT_MAX_QUEUE_SIZE	                32
 
 #ifdef PLATFORM_ESP8266
-	#define MQTT_MAX_QUEUE_SIZE_TO_WAIT         3
+	#define MQTT_MAX_QUEUE_SIZE_TO_WAIT         1
 #else
 	#define MQTT_MAX_QUEUE_SIZE_TO_WAIT         32
 #endif
