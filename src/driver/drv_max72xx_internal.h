@@ -27,3 +27,8 @@ void MAX72XX_init(max72XX_t *led);
 void MAX72XX_setupPins(max72XX_t *led, int csi, int clki, int mosii, int maxD);
 max72XX_t *MAX72XX_alloc();
 void MAX_FreeBuffer();
+// "printing" the matrix given in char array "p" with tength "l"
+// e.g. an array "char text[64]" can represent the common display with 4 x 8 x 8 points 
+// MAX72XX_printRaw(g_max, text, int 64)
+void MAX72XX_printRaw(const char *p, int l);
+void MAX72XX_printRawAnimated(const char *o, const char *p, int l, int delay);

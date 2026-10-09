@@ -187,8 +187,11 @@ commandResult_t DS3231_GetEpochCmd(const void* context, const char* cmd, const c
 commandResult_t DS3231_SetEpochCmd(const void* context, const char* cmd, const char* args, int cmdFlags)
 {
     Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_DONT_EXPAND);
-    if(Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) return CMD_RES_NOT_ENOUGH_ARGUMENTS;
-    time_t epoch = (time_t)Tokenizer_GetArgInteger(0);
+//    if(Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+    time_t epoch;
+//    time_t epoch = (time_t)Tokenizer_GetArgInteger(0);
+    if (Tokenizer_GetArgsCount()) epoch = (time_t)atol(Tokenizer_GetArg(0));
+    else epoch = (time_t)TIME_GetCurrentTime();
     if (DS3231_SetEpoch(epoch)) {
         ADDLOG_INFO(LOG_FEATURE_RAW, "DS3231_SetEpochCmd: Set time to epoch %lu", (unsigned long)epoch);
         return CMD_RES_OK;
