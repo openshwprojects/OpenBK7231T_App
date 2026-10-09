@@ -86,6 +86,25 @@ void WiFI_GetMacAddress(char* mac)
 	wifi_get_mac_address((char*)mac, CONFIG_ROLE_STA);
 }
 
+// The SDK's wifi_set_mac_address() ends with bk_wlan_stop_scan() and
+// bk_wlan_stop(BK_STATION). That is fine once WiFi is running, but at boot it
+// stops a station that was never started, and the driver is left in a state
+// where deep sleep and reboot stop working - the device then only comes back
+// on a power cycle.
+//
+// At boot we do not need any of that teardown, only the value: everything
+// reads system_mac, and cfg_load_mac() fills it exactly once, on the first
+// wifi_get_mac_address() call. So force that load, then overwrite it.
+extern uint8_t system_mac[];
+
+int WiFI_SetMacAddressAtBoot(char* mac)
+{
+	char current[6];
+	wifi_get_mac_address(current, CONFIG_ROLE_STA);
+	memcpy(system_mac, mac, 6);
+	return 1;
+}
+
 const char* HAL_GetMACStr(char* macstr)
 {
 	unsigned char mac[6];

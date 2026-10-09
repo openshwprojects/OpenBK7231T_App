@@ -22,6 +22,12 @@ const char* __attribute__((weak)) HAL_GetMyMaskString()
 	return "error";;
 }
 
+// Platforms that need no special handling at boot just use the normal setter.
+int __attribute__((weak)) WiFI_SetMacAddressAtBoot(char* mac)
+{
+	return WiFI_SetMacAddress(mac);
+}
+
 int __attribute__((weak)) WiFI_SetMacAddress(char* mac)
 {
 
