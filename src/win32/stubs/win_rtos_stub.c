@@ -31,7 +31,8 @@ int xSemaphoreTake(int semaphore, int blockTime) {
 	return 1;
 }
 int xSemaphoreCreateMutex() {
-	return 0;
+	/* FreeRTOS returns NULL on failure and a non-NULL handle on success. */
+	return 1;
 }
 int xSemaphoreGive(int semaphore) {
 	return 0;
