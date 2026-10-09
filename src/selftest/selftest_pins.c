@@ -50,6 +50,15 @@ const char *HAL_PIN_GetPinNameAlias(int index) {
 	SELFTEST_ASSERT_INTCOMPARE(PIN_FindIndexFromString("RXD"), -1);
 	SELFTEST_ASSERT_INTCOMPARE(PIN_FindIndexFromString("PWM"), -1);
 	SELFTEST_ASSERT_INTCOMPARE(PIN_FindIndexFromString("TDX2"),-1);
+
+	// SetPinRole takes the role by name or by index
+	CMD_ExecuteCommand("SetPinRole 9 Rel", 0);
+	SELFTEST_ASSERT_INTCOMPARE(PIN_GetPinRoleForPinIndex(9), IOR_Relay);
+	CMD_ExecuteCommand("SetPinRole 9 3", 0);
+	SELFTEST_ASSERT_INTCOMPARE(PIN_GetPinRoleForPinIndex(9), IOR_Button);
+	SELFTEST_ASSERT(CMD_ExecuteCommand("SetPinRole 9 9999", 0) == CMD_RES_BAD_ARGUMENT);
+	SELFTEST_ASSERT_INTCOMPARE(PIN_GetPinRoleForPinIndex(9), IOR_Button);
+	CMD_ExecuteCommand("SetPinRole 9 None", 0);
 //	printf("################################################################## End Selftest PIN_FindIndexFromString() ##################################################################\r\n");
 }
 
