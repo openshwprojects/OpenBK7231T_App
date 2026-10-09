@@ -114,7 +114,8 @@ const char* strcasestr(const char* str1, const char* str2)
 // where is buffer with [64] bytes?
 // 2022-11-02 update: It was also causing crash on OpenBL602. Original strdup was crashing while my strdup works.
 // Let's just rename test_strdup to strdup and let it be our main correct strdup
-#if !defined(PLATFORM_W600) && !defined(PLATFORM_W800) && !defined(WINDOWS) && !defined(PLATFORM_ECR6600) && !PLATFORM_REALTEK_NEW && !PLATFORM_BL_NEW
+// 2026-10-9 update -- W600: the SDK's strdup allocates with tls_mem_alloc, but OBK frees with free(), which corrupts the heap. Use OBK's strdup (renamed to obk_strdup in new_common.h).
+#if !defined(PLATFORM_W800) && !defined(WINDOWS) && !defined(PLATFORM_ECR6600) && !PLATFORM_REALTEK_NEW && !PLATFORM_BL_NEW
 // W600 and W800 already seem to have a strdup?
 char *strdup(const char *s)
 {
