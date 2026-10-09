@@ -828,6 +828,37 @@ void Test_MQTT_Average() {
 	SIM_ClearMQTTHistory();
 }
 
+extern int MQTT_process_received();
+
+void Test_MQTT_Backlog_In_Pieces() {
+	char payload[2400];
+	int i;
+
+	SIM_ClearOBK(0);
+	SIM_ClearAndPrepareForMQTTTesting("piecesDevice", "bekens");
+
+	// 352 bytes in 100 byte pieces - a cut lands mid-command, like lwip past a 256 byte rx buffer
+	strcpy(payload, "setChannel 1 11");
+	for (i = 0; i < 20; i++)
+		strcat(payload, "; addChannel 3 1");
+	strcat(payload, "; setChannel 2 22");
+	MQTT_Test_ReceiveInPieces("cmnd/piecesDevice/backlog", payload, 100);
+	// not Sim_RunFrames - moving the sim clock breaks Test_TuyaMCU_BatteryPowered_QuerySignalStrength later on
+	MQTT_process_received();
+	SELFTEST_ASSERT_CHANNEL(1, 11);
+	SELFTEST_ASSERT_CHANNEL(2, 22);
+	SELFTEST_ASSERT_CHANNEL(3, 20);
+
+	// too big to hold - dropped whole rather than run in pieces
+	strcpy(payload, "setChannel 4 44");
+	while (strlen(payload) < 2100)
+		strcat(payload, "; addChannel 5 1");
+	MQTT_Test_ReceiveInPieces("cmnd/piecesDevice/backlog", payload, 100);
+	MQTT_process_received();
+	SELFTEST_ASSERT_CHANNEL(4, 0);
+	SELFTEST_ASSERT_CHANNEL(5, 0);
+}
+
 void Test_MQTT(){
 	Test_MQTT_Misc();
 	Test_MQTT_Get_And_Reply();
@@ -840,6 +871,7 @@ void Test_MQTT(){
 	Test_MQTT_Topic_With_Slash();
 	Test_MQTT_Topic_With_Slashes();
 	Test_MQTT_Average();
+	Test_MQTT_Backlog_In_Pieces();
 }
 
 #endif
