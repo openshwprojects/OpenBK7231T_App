@@ -1238,6 +1238,10 @@ typedef unsigned char byte;
 int wal_stricmp(const char *a, const char *b) ;
 #undef stricmp
 #define stricmp wal_stricmp
+#if PLATFORM_W600
+// Rename OBK's strdup on W600 to avoid a duplicate-symbol clash with the SDK's strdup (see new_common.c).
+#define strdup obk_strdup
+#endif
 char *strdup(const char *s);
 
 #endif
