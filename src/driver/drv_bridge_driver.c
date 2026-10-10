@@ -63,18 +63,20 @@ void Bridge_driver_Init()
 
     addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "Bridge Driver Init.");	
    
+    if (br_ctrl != NULL)
+        Bridge_driver_DeInit();
+
     ch_count = PIN_CountPinsWithRole(IOR_BridgeForward);
     if (ch_count != PIN_CountPinsWithRole(IOR_BridgeReverse))
     {
         addLogAdv(LOG_WARN, LOG_FEATURE_DRV, "Bridge Driver Pins mismatched ");
+        ch_count = 0;
     }
 
     if (ch_count>0)
     {
         /* Bridge channel detected */
         addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "Detected %i bridge channels", ch_count);
-        if (br_ctrl != NULL)
-            os_free(br_ctrl);
         /* Allocate memeory */
         br_ctrl = (BRIDGE_CONTROL *)os_malloc(sizeof(BRIDGE_CONTROL)*ch_count);
         /* Reset settings */
@@ -124,8 +126,6 @@ void Bridge_driver_Init()
         }
     } else {
         /* No Bridge drivers defined */
-        if (br_ctrl != NULL)
-            os_free(br_ctrl);
         br_ctrl = NULL;
     }
 
@@ -141,7 +141,15 @@ void Bridge_driver_Init()
 /***************************************************************************************/
 void Bridge_driver_DeInit()
 {
-    os_free(br_ctrl);
+    if (br_ctrl != NULL)
+    {
+        for (int ch = 0; ch < ch_count; ch++)
+        {
+            HAL_PIN_SetOutputValue(br_ctrl[ch].GPIO_HLW_FWD, 0);
+            HAL_PIN_SetOutputValue(br_ctrl[ch].GPIO_HLW_REV, 0);
+        }
+        os_free(br_ctrl);
+    }
     br_ctrl = NULL;
     ch_count = 0;
 }
