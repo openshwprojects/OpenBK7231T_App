@@ -2824,7 +2824,7 @@ static void XiaomiCompact4_HassPublishSelect(const char *topic, int ch, const ch
 	char commandTopic[16];
 	snprintf(stateTopic, sizeof(stateTopic), "~/%i/get", ch);
 	snprintf(commandTopic, sizeof(commandTopic), "~/%i/set", ch);
-	HassDeviceInfo *dev_info = hass_createSelectEntityIndexed(stateTopic, commandTopic, optionCount, options, name);
+	HassDeviceInfo *dev_info = hass_createSelectEntityIndexed(ch, stateTopic, commandTopic, optionCount, options, name);
 	if (dev_info == NULL) {
 		return;
 	}
