@@ -22,6 +22,10 @@ bool TuyaMCU_OTA_OnPacket(byte cmd, const byte *payload, int len);
 // True while an update is being sent
 bool TuyaMCU_OTA_IsActive();
 
+// True while the update needs the UART to itself (starting and sending data);
+// the TuyaMCU driver then sends nothing else and pauses its state machine
+bool TuyaMCU_OTA_OwnsUART();
+
 // "idle", "starting", "sending", "waiting for MCU restart", "done" or "failed"
 const char *TuyaMCU_OTA_GetStateName();
 

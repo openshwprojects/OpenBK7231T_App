@@ -29,6 +29,7 @@
 #include "drv_public.h"
 #include "drv_tuyaMCU.h"
 #include "drv_tuyaMCU_ota.h"
+#include "drv_uart.h"
 
 #define TUYA_CMD_HEARTBEAT         0x00
 #define TUYA_CMD_UPGRADE_START     0x0A
@@ -41,6 +42,11 @@
 #define OTA_MAX_RETRIES            3
 #define OTA_REBOOT_TIMEOUT_MS      20000
 #define OTA_MAX_PACKET_SIZE        1024
+// Frames are written a few bytes per quick tick, paced to the baud rate, so
+// the UART never makes the caller wait (QuickTick must not block: on Beken it
+// runs as a timer callback, and stalling it starves the rest of the system)
+#define OTA_MAX_BYTES_PER_TICK     32
+#define OTA_FRAME_OVERHEAD         7     // 55 AA ver cmd lenH lenL ... sum
 
 typedef enum {
 	OTA_IDLE,
@@ -68,6 +74,10 @@ static int g_packetSize;
 static int g_retries;
 static int g_timerMS;
 static char g_message[96];
+static byte *g_frame = NULL;        // frame being written to the UART
+static int g_frameLen;
+static int g_framePos;
+static int g_txBudget;              // bytes the UART can take now, x1000
 
 static void put_u32_be(byte *p, uint32_t v) {
 	p[0] = (byte)(v >> 24);
@@ -85,6 +95,12 @@ static void OTA_Release() {
 		free(g_buffer);
 		g_buffer = NULL;
 	}
+	if (g_frame) {
+		free(g_frame);
+		g_frame = NULL;
+	}
+	g_frameLen = 0;
+	g_framePos = 0;
 }
 
 static void OTA_Finish(tuyaOtaState_t state, const char *message) {
@@ -103,10 +119,62 @@ const char *TuyaMCU_OTA_GetStateName() {
 	return g_stateNames[g_state];
 }
 
+bool TuyaMCU_OTA_OwnsUART() {
+	return g_state == OTA_WAIT_START || g_state == OTA_SEND || g_state == OTA_WAIT_ACK ||
+		g_framePos < g_frameLen;
+}
+
+// Build a TuyaMCU frame; OTA_PumpFrame() writes it out over the next ticks
+static void OTA_QueueFrame(byte cmd, const byte *payload, int len) {
+	int i;
+	byte sum = 0;
+
+	g_frame[0] = 0x55;
+	g_frame[1] = 0xAA;
+	g_frame[2] = 0x00;
+	g_frame[3] = cmd;
+	g_frame[4] = (byte)(len >> 8);
+	g_frame[5] = (byte)len;
+	if (len) {
+		memcpy(g_frame + 6, payload, len);
+	}
+	for (i = 0; i < 6 + len; i++) {
+		sum += g_frame[i];
+	}
+	g_frame[6 + len] = sum;
+	g_frameLen = len + OTA_FRAME_OVERHEAD;
+	g_framePos = 0;
+	g_txBudget = OTA_MAX_BYTES_PER_TICK * 1000;
+}
+
+// Write as much of the frame as the UART can take without waiting.
+// Returns true while bytes are left.
+static bool OTA_PumpFrame() {
+	int n;
+
+	if (g_framePos >= g_frameLen) {
+		return false;
+	}
+	// 10 bits per byte (8N1)
+	g_txBudget += (int)g_deltaTimeMS * TuyaMCU_GetBaudRate() / 10;
+	if (g_txBudget > OTA_MAX_BYTES_PER_TICK * 1000) {
+		g_txBudget = OTA_MAX_BYTES_PER_TICK * 1000;
+	}
+	n = g_txBudget / 1000;
+	if (n > g_frameLen - g_framePos) {
+		n = g_frameLen - g_framePos;
+	}
+	g_txBudget -= n * 1000;
+	while (n-- > 0) {
+		UART_SendByte(g_frame[g_framePos++]);
+	}
+	return g_framePos < g_frameLen;
+}
+
 static void OTA_SendStart() {
 	byte payload[4];
 	put_u32_be(payload, g_size);
-	TuyaMCU_SendCommandWithData(TUYA_CMD_UPGRADE_START, payload, sizeof(payload));
+	OTA_QueueFrame(TUYA_CMD_UPGRADE_START, payload, sizeof(payload));
 	g_timerMS = OTA_START_TIMEOUT_MS;
 	g_state = OTA_WAIT_START;
 }
@@ -122,7 +190,7 @@ static void OTA_SendPacket() {
 		return;
 	}
 	put_u32_be(g_buffer, g_offset);
-	TuyaMCU_SendCommandWithData(TUYA_CMD_UPGRADE_DATA, g_buffer, 4 + n);
+	OTA_QueueFrame(TUYA_CMD_UPGRADE_DATA, g_buffer, 4 + n);
 	g_inFlight = n;
 	g_timerMS = OTA_ACK_TIMEOUT_MS;
 	g_state = OTA_WAIT_ACK;
@@ -133,7 +201,7 @@ static void OTA_SendPacket() {
 static void OTA_SendEnd() {
 	byte payload[4];
 	put_u32_be(payload, g_size);
-	TuyaMCU_SendCommandWithData(TUYA_CMD_UPGRADE_DATA, payload, sizeof(payload));
+	OTA_QueueFrame(TUYA_CMD_UPGRADE_DATA, payload, sizeof(payload));
 	g_timerMS = OTA_REBOOT_TIMEOUT_MS;
 	g_state = OTA_WAIT_REBOOT;
 }
@@ -192,6 +260,10 @@ bool TuyaMCU_OTA_OnPacket(byte cmd, const byte *payload, int len) {
 }
 
 void TuyaMCU_OTA_RunFrame() {
+	// Timeouts start once the current frame has left the UART
+	if (OTA_PumpFrame()) {
+		return;
+	}
 	switch (g_state) {
 	case OTA_WAIT_START:
 		g_timerMS -= (int)g_deltaTimeMS;
@@ -260,6 +332,13 @@ static commandResult_t CMD_TuyaMCU_OTA_Start(const void *context, const char *cm
 	if (g_size <= 0) {
 		OTA_Release();
 		addLogAdv(LOG_ERROR, LOG_FEATURE_TUYAMCU, "MCU OTA: %s is empty", fname);
+		return CMD_RES_ERROR;
+	}
+
+	g_frame = (byte *)malloc(OTA_FRAME_OVERHEAD + 4 + OTA_MAX_PACKET_SIZE);
+	if (g_frame == NULL) {
+		OTA_Release();
+		addLogAdv(LOG_ERROR, LOG_FEATURE_TUYAMCU, "MCU OTA: out of memory");
 		return CMD_RES_ERROR;
 	}
 

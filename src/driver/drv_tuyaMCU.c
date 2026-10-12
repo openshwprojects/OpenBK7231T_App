@@ -204,6 +204,10 @@ static int g_dimmerRangeMax = 100;
 // common baud rates are 9600 bit/s and 115200 bit/s
 static int g_baudRate = 9600;
 
+int TuyaMCU_GetBaudRate() {
+	return g_baudRate;
+}
+
 // global mcu time
 static int g_tuyaNextRequestDelay;
 static bool g_sensorMode = 0;
@@ -454,6 +458,15 @@ int UART_TryToGetNextTuyaPacket(byte* out, int maxSize) {
 // append header, len, everything, checksum
 void TuyaMCU_SendCommandWithData(byte cmdType, byte* data, int payload_len) {
 	int i;
+
+#if ENABLE_TUYAMCU_OTA
+	// The MCU update sends its own frames a few bytes per tick; another frame
+	// written now would be interleaved with them
+	if (TuyaMCU_OTA_OwnsUART()) {
+		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "MCU update in progress, not sending cmd %i", cmdType);
+		return;
+	}
+#endif
 	
 	byte check_sum = (0xFF + cmdType + (payload_len >> 8) + (payload_len & 0xFF));
 
@@ -2611,6 +2624,11 @@ void TuyaMCU_RunFrame() {
 	if (timer_send > 0) {
 		timer_send -= g_deltaTimeMS;
 	}
+#if ENABLE_TUYAMCU_OTA
+	else if (TuyaMCU_OTA_OwnsUART()) {
+		// queued packets wait until the MCU update has finished sending
+	}
+#endif
 	else {
 		if (TUYAMCU_SendFromQueue()) {
 			timer_send = 100;
@@ -2618,6 +2636,11 @@ void TuyaMCU_RunFrame() {
 	}
 }
 void TuyaMCU_RunEverySecond() {
+#if ENABLE_TUYAMCU_OTA
+	if (TuyaMCU_OTA_OwnsUART()) {
+		return;
+	}
+#endif
 	g_sensorMode = DRV_IsRunning("tmSensor");
 	if (g_sensorMode) {
 		TuyaMCU_RunStateMachine_BatteryPowered();

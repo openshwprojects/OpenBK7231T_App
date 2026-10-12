@@ -12,6 +12,10 @@
 #define OTA_TEST_IMAGE_SIZE 600
 
 static byte g_otaImage[OTA_TEST_IMAGE_SIZE];
+// Frames other than the one looked for, skipped by Test_OTA_PopFrame
+static int g_otaOtherFrames;
+// Enough quick ticks to send the largest packet at 9600 baud
+#define OTA_FRAMES_PER_PACKET 60
 
 static void Test_OTA_WriteImage(const char *name, int size) {
 	lfs_file_t file;
@@ -61,6 +65,7 @@ static int Test_OTA_PopFrame(byte cmd, byte *payload, int maxLen) {
 			SIM_UART_ConsumeBytes(total);
 			return len;
 		}
+		g_otaOtherFrames++;
 		SIM_UART_ConsumeBytes(total);
 	}
 	return -1;
@@ -104,7 +109,7 @@ static void Test_OTA_ExpectPacket(int offset, int expectedLen) {
 	byte payload[4 + 1024];
 	int len;
 
-	Sim_RunFrames(5, false);
+	Sim_RunFrames(OTA_FRAMES_PER_PACKET, false);
 	len = Test_OTA_PopFrame(0x0B, payload, sizeof(payload));
 	SELFTEST_ASSERT(len == 4 + expectedLen);
 	SELFTEST_ASSERT(Test_OTA_BE32(payload) == (uint32_t)offset);
@@ -130,10 +135,12 @@ static void Test_OTA_Begin(byte sizeCode) {
 
 	CMD_ExecuteCommand("tuyaMcu_otaStart mcu.bin", 0);
 	SELFTEST_ASSERT_STRING(TuyaMCU_OTA_GetStateName(), "starting");
+	Sim_RunFrames(5, false);
 	SELFTEST_ASSERT(Test_OTA_PopFrame(0x0A, payload, sizeof(payload)) == 4);
 	SELFTEST_ASSERT(Test_OTA_BE32(payload) == OTA_TEST_IMAGE_SIZE);
 	Test_OTA_Reply(0x0A, &sizeCode, 1);
 	SELFTEST_ASSERT_STRING(TuyaMCU_OTA_GetStateName(), "sending");
+	g_otaOtherFrames = 0;
 }
 
 static void Test_OTA_ExpectEndMarker() {
@@ -153,12 +160,19 @@ void Test_TuyaMCU_OTA() {
 	Test_OTA_Setup();
 	Test_OTA_Begin(0);
 	Test_OTA_ExpectPacket(0, 256);
+	// Other TuyaMCU traffic is held back while packets are being sent
+	CMD_ExecuteCommand("tuyaMcu_sendCmd 0x30 00", 0);
 	Test_OTA_Ack();
 	Test_OTA_ExpectPacket(256, 256);
+	Sim_RunSeconds(2.0f, false);    // no heartbeats either
 	Test_OTA_Ack();
 	Test_OTA_ExpectPacket(512, 88);
 	Test_OTA_Ack();
 	Test_OTA_ExpectEndMarker();
+	SELFTEST_ASSERT(g_otaOtherFrames == 0);
+	// Heartbeats resume, so the MCU's restart can be seen
+	Sim_RunSeconds(4.0f, false);
+	SELFTEST_ASSERT(Test_OTA_PopFrame(0x00, payload, sizeof(payload)) == 0);
 	// A heartbeat reply of 1 is not a restart
 	Test_OTA_Reply(0x00, &one, 1);
 	SELFTEST_ASSERT_STRING(TuyaMCU_OTA_GetStateName(), "waiting for MCU restart");
@@ -228,6 +242,7 @@ void Test_TuyaMCU_OTA() {
 	// Unsupported packet size code
 	Test_OTA_Setup();
 	CMD_ExecuteCommand("tuyaMcu_otaStart mcu.bin", 0);
+	Sim_RunFrames(5, false);
 	SELFTEST_ASSERT(Test_OTA_PopFrame(0x0A, payload, sizeof(payload)) == 4);
 	payload[0] = 7;
 	Test_OTA_Reply(0x0A, payload, 1);
