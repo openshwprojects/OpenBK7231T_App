@@ -312,6 +312,26 @@ void HAL_WiFi_SetupStatusCallback(void (*cb)(int code))
 #endif
 }
 
+#if PLATFORM_BL602 && !PLATFORM_BL_NEW
+// Report the configured device name to the router as the DHCP hostname,
+// like the other platforms do. Without this, the SDK's default
+// "OpenBL602_xxxxxxxx" name is used. Must be called after
+// wifi_mgmr_sta_enable(), which creates the station netif and sets its
+// hostname to that default, and before connecting, which starts DHCP.
+// CFG_GetOpenBekenHostName() honors flag 29 (short name as hostname).
+extern const char* CFG_GetOpenBekenHostName();
+static void BL602_ApplyHostname()
+{
+	const char* name = CFG_GetOpenBekenHostName();
+	if(name && *name)
+	{
+		netif_set_hostname(wifi_mgmr_sta_netif_get(), name);
+	}
+}
+#else
+#define BL602_ApplyHostname()
+#endif
+
 void HAL_ConnectToWiFi(const char* ssid, const char* psk, obkStaticIP_t* ip)
 {
 #if PLATFORM_BL_NEW
@@ -335,6 +355,7 @@ void HAL_ConnectToWiFi(const char* ssid, const char* psk, obkStaticIP_t* ip)
 	if(g_powersave) wifi_mgmr_sta_ps_exit();
 
 	wifi_interface_t wifi_interface = wifi_mgmr_sta_enable();
+	BL602_ApplyHostname();
 	wifi_mgmr_sta_connect_mid(wifi_interface,
 		(char*)ssid,
 		(char*)psk,
@@ -428,6 +449,7 @@ void HAL_FastConnectToWiFi(const char* oob_ssid, const char* connect_key, obkSta
 		if(g_powersave) wifi_mgmr_sta_ps_exit();
 		wifi_interface_t wifi_interface;
 		wifi_interface = wifi_mgmr_sta_enable();
+		BL602_ApplyHostname();
 		wifi_mgmr_sta_connect_ext(wifi_interface, (char*)oob_ssid, (char*)connect_key, &ext_param);
 		g_bAccessPointMode = 0;
 		return;
