@@ -26,6 +26,7 @@
 #include "drv_hlw8112.h"
 #include "drv_xiaomi_compact4.h"
 #include "drv_DCF77.h"
+#include "obk_feature_manifest_probe.h"
 
 void DRV_MQTTServer_Init();
 void DRV_MQTTServer_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState);
