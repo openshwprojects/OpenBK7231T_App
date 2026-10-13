@@ -125,6 +125,7 @@ set(OBKM_SRC
 	${OBK_SRCS}driver/drv_sgp.c
 	${OBK_SRCS}driver/drv_shiftRegister.c
 	${OBK_SRCS}driver/drv_sht3x.c
+	${OBK_SRCS}driver/drv_shtc3.c
 	${OBK_SRCS}driver/drv_sm2135.c
 	${OBK_SRCS}driver/drv_sm2235.c
 	${OBK_SRCS}driver/drv_soft_i2c.c

@@ -60,6 +60,8 @@ typedef commandResult_t(*commandHandler_t)(const void* context, const char* cmd,
 #define COMMAND_FLAG_SOURCE_IR			32
 // command was sent by OBK Tele requester
 #define COMMAND_FLAG_SOURCE_TELESENDER	64
+// command was sent by driver
+#define COMMAND_FLAG_SOURCE_DRIVER	128
 
 extern bool g_powersave;
 typedef struct command_s command_t;
