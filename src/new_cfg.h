@@ -64,10 +64,16 @@ int CFG_GetBootOkSeconds();
 void CFG_SetChannelStartupValue(int channelIndex,short newValue);
 short CFG_GetChannelStartupValue(int channelIndex);
 void CFG_ApplyChannelStartValues();
+#define CFG_DEVICE_GROUP_MAX 4
 void CFG_DeviceGroups_SetName(const char *s);
+void CFG_DeviceGroups_SetNameByIndex(int index, const char *s);
+void CFG_DeviceGroups_SetTie(int index, int relay);
 void CFG_DeviceGroups_SetSendFlags(int newSendFlags);
 void CFG_DeviceGroups_SetRecvFlags(int newSendFlags);
 const char *CFG_DeviceGroups_GetName();
+const char *CFG_DeviceGroups_GetNameByIndex(int index);
+int CFG_DeviceGroups_GetTie(int index);
+int CFG_DeviceGroups_GetCount(void);
 int CFG_DeviceGroups_GetSendFlags();
 int CFG_DeviceGroups_GetRecvFlags();
 void CFG_SetFlags(uint32_t first4bytes, uint32_t second4bytes);
@@ -112,4 +118,3 @@ void CFG_SetDisableWebServer(byte value);
 #endif
 
 #endif
-
