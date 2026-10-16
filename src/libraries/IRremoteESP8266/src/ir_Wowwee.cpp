@@ -29,7 +29,7 @@
 // Demo                   0x1D0
 // Bite                   0x1D1
 
-// #include <algorithm>
+#include "minmax.h"
 #include "IRrecv.h"
 #include "IRsend.h"
 #include "IRutils.h"

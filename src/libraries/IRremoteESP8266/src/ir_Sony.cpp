@@ -164,6 +164,10 @@ bool IRrecv::decodeSony(decode_results *results, uint16_t offset,
   // Compliance
   if (strict && actualBits != nbits)
     return false;  // We got the wrong number of bits.
+  // A non-Sony protocol with a long header space can otherwise terminate the
+  // loop before the first bit and be reported as a successful zero-bit Sony
+  // message. A successful decode must contain at least one data bit.
+  if (actualBits == 0) return false;
 
   // Success
   results->bits = actualBits;
