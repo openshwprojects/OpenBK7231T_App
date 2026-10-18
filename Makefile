@@ -412,7 +412,7 @@ prebuild_OpenTXW81X: berry
 
 prebuild_OpenBL616: berry
 	git submodule update --init --recursive --depth=1 sdk/bouffalo_sdk
-	if [ ! -e platforms/BL616/gcc ]; then cd platforms/BL616 && git clone https://github.com/bouffalolab/toolchain_gcc_t-head_linux.git gcc --depth=1; fi 
+	if [ ! -e platforms/BL616/xuantie-gcc-riscv-v2.6.1-linux-x86_64 ]; then cd platforms/BL616 && wget https://github.com/bouffalolab/toolchain/releases/download/default/xuantie-gcc-riscv-v2.6.1-linux-x86_64.tar.xz && tar xJf xuantie-gcc-riscv-v2.6.1-linux-x86_64.tar.xz; fi 
 	@if [ -e platforms/BL616/pre_build.sh ]; then \
 		echo "prebuild found for OpenBL616"; \
 		sh platforms/BL616/pre_build.sh; \
@@ -421,7 +421,7 @@ prebuild_OpenBL616: berry
 
 prebuild_OpenBL602_ALT: berry
 	git submodule update --init --recursive --depth=1 sdk/bouffalo_sdk
-	if [ ! -e platforms/BL616/gcc ]; then cd platforms/BL616 && git clone https://github.com/bouffalolab/toolchain_gcc_t-head_linux.git gcc --depth=1; fi 
+	if [ ! -e platforms/BL616/xuantie-gcc-riscv-v2.6.1-linux-x86_64 ]; then cd platforms/BL616 && wget https://github.com/bouffalolab/toolchain/releases/download/default/xuantie-gcc-riscv-v2.6.1-linux-x86_64.tar.xz && tar xJf xuantie-gcc-riscv-v2.6.1-linux-x86_64.tar.xz; fi 
 	@if [ -e platforms/BL602_ALT/pre_build.sh ]; then \
 		echo "prebuild found for OpenBL602_ALT"; \
 		sh platforms/BL602_ALT/pre_build.sh; \
@@ -858,14 +858,14 @@ OpenRDA5981: prebuild_OpenRDA5981
 
 .PHONY: OpenBL616
 OpenBL616: prebuild_OpenBL616
-	cd ./platforms/BL616 && PATH="$(PATH):$(PWD)/platforms/BL616/gcc/bin" $(MAKE) CHIP=bl616 BOARD=bl616dk APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT)
+	cd ./platforms/BL616 && PATH="$(PWD)/platforms/BL616/xuantie-gcc-riscv-v2.6.1-linux-x86_64/bin:$(PATH)" $(MAKE) CHIP=bl616 BOARD=bl616dk APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT)
 	mkdir -p output/$(APP_VERSION)
 	cp ./platforms/BL616/build/build_out/OpenBeken_bl616.bin output/$(APP_VERSION)/OpenBL616_${APP_VERSION}.bin
 	cp ./platforms/BL616/build/build_out/OpenBeken_bl616.xz.ota output/$(APP_VERSION)/OpenBL616_${APP_VERSION}_OTA.bin.xz.ota
 
 .PHONY: OpenBL602_ALT
 OpenBL602_ALT: prebuild_OpenBL602_ALT
-	cd ./platforms/BL602_ALT && PATH="$(PATH):$(PWD)/platforms/BL616/gcc/bin" $(MAKE) CHIP=bl602 BOARD=bl602dk APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT)
+	cd ./platforms/BL602_ALT && PATH="$(PWD)/platforms/BL616/xuantie-gcc-riscv-v2.6.1-linux-x86_64/bin:$(PATH)" $(MAKE) CHIP=bl602 BOARD=bl602dk APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT)
 	mkdir -p output/$(APP_VERSION)
 	dd conv=notrunc bs=1K skip=4 if=platforms/BL602_ALT/build/build_out/OpenBeken_bl602.bin of=output/$(APP_VERSION)/OpenBL602_ALT_${APP_VERSION}.bin
 	cp ./platforms/BL602_ALT/build/build_out/OpenBeken_bl602.xz.ota output/$(APP_VERSION)/OpenBL602_ALT_${APP_VERSION}_OTA.bin.xz.ota
