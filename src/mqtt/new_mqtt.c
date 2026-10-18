@@ -92,8 +92,8 @@ static int g_intervalBetweenMQTTBroadcasts = 60;
 // per second in order not to overload LWIP
 static int g_maxBroadcastItemsPublishedPerSecond = 1;
 // interval for automatic publish of tasmota tele/sensor and tele/state
-static short g_teleState_interval = 120;
-static short g_teleSensor_interval = 3;
+static short g_teleState_interval = 10;//120;
+static short g_teleSensor_interval = 10;//3;
 
 /////////////////////////////////////////////////////////////
 // mqtt receive buffer, so we can action in our threads, not
@@ -2348,29 +2348,17 @@ int MQTT_RunEverySecondUpdate()
 			UNLOCK_TCPIP_CORE();
 			return 1;
 		}
-
-		// SUPREMESPORTS - Modify telemetry intervals
-		extern int g_mqtt_broadcastInterval;
 		
 		if (CFG_HasFlag(OBK_FLAG_DO_TASMOTA_TELE_PUBLISHES)) {
-			int interval_teleSensor = g_mqtt_broadcastInterval;
-			int interval_teleState = g_mqtt_broadcastInterval;
-			if (interval_teleSensor <= 0) {
-			    interval_teleSensor = g_teleSensor_interval;
-			}
-			if (interval_teleState <= 0) {
-			    interval_teleState = g_teleState_interval;
-			}
-			
 			static int g_mqtt_tasmotaTeleCounter_sensor = 0;
 			g_mqtt_tasmotaTeleCounter_sensor++;
-			if (g_mqtt_tasmotaTeleCounter_sensor >= interval_teleSensor) {
+			if (g_mqtt_tasmotaTeleCounter_sensor >= g_teleSensor_interval) {
 				g_mqtt_tasmotaTeleCounter_sensor = 0;
 				MQTT_BroadcastTasmotaTeleSENSOR();
 			}
 			static int g_mqtt_tasmotaTeleCounter_state = 0;
 			g_mqtt_tasmotaTeleCounter_state++;
-			if (g_mqtt_tasmotaTeleCounter_state >= interval_teleState) {
+			if (g_mqtt_tasmotaTeleCounter_state >= g_teleState_interval) {
 				g_mqtt_tasmotaTeleCounter_state = 0;
 				MQTT_BroadcastTasmotaTeleSTATE();
 			}
