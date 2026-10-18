@@ -521,8 +521,8 @@ static int http_tasmota_json_status_STS(void* request, jsonCb_t printer, bool bA
 	printer(request, "}"); // close WiFi
 	// SUPREMESPORTS - Add IP Address
 	printer(request, ","); // Add a comma after the Wifi object
-	JSON_PrintKeyValue_String(request, printer, "Hostname", CFG_GetWiFiHostName(), true); // Append the Hostname string natively
-	JSON_PrintKeyValue_String(request, printer, "IPAddress", g_my_ip, false); // Append the IP address string natively (false means no trailing comma)
+	JSON_PrintKeyValue_String(request, printer, "Hostname", CFG_GetMQTTClientId(), true); // Append the Hostname string natively
+	JSON_PrintKeyValue_String(request, printer, "IPAddress", HAL_GetMyIPString(), false); // Append the IP address string natively (false means no trailing comma)
 	printer(request, "}"); // close main object
 	return 0;
 }
