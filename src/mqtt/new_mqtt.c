@@ -2349,16 +2349,26 @@ int MQTT_RunEverySecondUpdate()
 			return 1;
 		}
 
+		// SUPREMESPORTS - Modify telemetry intervals
 		if (CFG_HasFlag(OBK_FLAG_DO_TASMOTA_TELE_PUBLISHES)) {
+			int interval_teleSensor = CFG_GetMQTTBroadcastInterval();
+			int interval_teleState = CFG_GetMQTTBroadcastInterval();
+			if (interval_teleSensor <= 0) {
+			    interval_teleSensor = g_teleSensor_interval;
+			}
+			if (interval_teleState <= 0) {
+			    interval_teleState = g_teleState_interval;
+			}
+			
 			static int g_mqtt_tasmotaTeleCounter_sensor = 0;
 			g_mqtt_tasmotaTeleCounter_sensor++;
-			if (g_mqtt_tasmotaTeleCounter_sensor >= g_teleSensor_interval) {
+			if (g_mqtt_tasmotaTeleCounter_sensor >= interval_teleSensor) {
 				g_mqtt_tasmotaTeleCounter_sensor = 0;
 				MQTT_BroadcastTasmotaTeleSENSOR();
 			}
 			static int g_mqtt_tasmotaTeleCounter_state = 0;
 			g_mqtt_tasmotaTeleCounter_state++;
-			if (g_mqtt_tasmotaTeleCounter_state >= g_teleState_interval) {
+			if (g_mqtt_tasmotaTeleCounter_state >= interval_teleState) {
 				g_mqtt_tasmotaTeleCounter_state = 0;
 				MQTT_BroadcastTasmotaTeleSTATE();
 			}
