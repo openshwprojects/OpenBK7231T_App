@@ -1010,13 +1010,17 @@ static OBK_Publish_Result MQTT_PublishMain(mqtt_client_t* client, const char* sC
 OBK_Publish_Result MQTT_PublishTele(const char* teleName, const char* teleValue)
 {
 	char topic[64];
-	snprintf(topic, sizeof(topic), "tele/%s", CFG_GetMQTTClientId());
+	// SUPREMESPORTS - Remove prefix tele/ from topic
+	//snprintf(topic, sizeof(topic), "tele/%s", CFG_GetMQTTClientId());
+	snprintf(topic, sizeof(topic), "%s", CFG_GetMQTTClientId());
 	return MQTT_PublishTopicToClient(mqtt_client, topic, teleName, teleValue, 0, false);
 }
 OBK_Publish_Result MQTT_PublishStat(const char* statName, const char* statValue)
 {
 	char topic[64];
-	snprintf(topic,sizeof(topic),"stat/%s", CFG_GetMQTTClientId());
+	// SUPREMESPORTS - Remove prefix stat/ from topic
+	//snprintf(topic,sizeof(topic),"stat/%s", CFG_GetMQTTClientId());
+	snprintf(topic, sizeof(topic), "%s", CFG_GetMQTTClientId());
 	return MQTT_PublishTopicToClient(mqtt_client, topic, statName, statValue, 0, false);
 }
 /// @brief Publish a MQTT message immediately.
