@@ -2350,6 +2350,8 @@ int MQTT_RunEverySecondUpdate()
 		}
 
 		// SUPREMESPORTS - Modify telemetry intervals
+		extern int g_mqtt_broadcastInterval;
+		
 		if (CFG_HasFlag(OBK_FLAG_DO_TASMOTA_TELE_PUBLISHES)) {
 			int interval_teleSensor = g_mqtt_broadcastInterval;
 			int interval_teleState = g_mqtt_broadcastInterval;
