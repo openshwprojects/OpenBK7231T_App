@@ -92,8 +92,8 @@ static int g_intervalBetweenMQTTBroadcasts = 60;
 // per second in order not to overload LWIP
 static int g_maxBroadcastItemsPublishedPerSecond = 1;
 // interval for automatic publish of tasmota tele/sensor and tele/state
-static short g_teleState_interval = 120;
-static short g_teleSensor_interval = 3;
+static short g_teleState_interval = 10;//120;
+static short g_teleSensor_interval = 10;//3;
 
 /////////////////////////////////////////////////////////////
 // mqtt receive buffer, so we can action in our threads, not
@@ -1010,13 +1010,17 @@ static OBK_Publish_Result MQTT_PublishMain(mqtt_client_t* client, const char* sC
 OBK_Publish_Result MQTT_PublishTele(const char* teleName, const char* teleValue)
 {
 	char topic[64];
-	snprintf(topic, sizeof(topic), "tele/%s", CFG_GetMQTTClientId());
+	// SUPREMESPORTS - Remove prefix tele/ from topic
+	//snprintf(topic, sizeof(topic), "tele/%s", CFG_GetMQTTClientId());
+	snprintf(topic, sizeof(topic), "%s", CFG_GetMQTTClientId());
 	return MQTT_PublishTopicToClient(mqtt_client, topic, teleName, teleValue, 0, false);
 }
 OBK_Publish_Result MQTT_PublishStat(const char* statName, const char* statValue)
 {
 	char topic[64];
-	snprintf(topic,sizeof(topic),"stat/%s", CFG_GetMQTTClientId());
+	// SUPREMESPORTS - Remove prefix stat/ from topic
+	//snprintf(topic,sizeof(topic),"stat/%s", CFG_GetMQTTClientId());
+	snprintf(topic, sizeof(topic), "%s", CFG_GetMQTTClientId());
 	return MQTT_PublishTopicToClient(mqtt_client, topic, statName, statValue, 0, false);
 }
 /// @brief Publish a MQTT message immediately.
@@ -2344,7 +2348,7 @@ int MQTT_RunEverySecondUpdate()
 			UNLOCK_TCPIP_CORE();
 			return 1;
 		}
-
+		
 		if (CFG_HasFlag(OBK_FLAG_DO_TASMOTA_TELE_PUBLISHES)) {
 			static int g_mqtt_tasmotaTeleCounter_sensor = 0;
 			g_mqtt_tasmotaTeleCounter_sensor++;
