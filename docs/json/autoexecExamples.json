@@ -154,5 +154,9 @@
 {
 "title": "[Tongou TOVTH-216WTTDA MCB with BK7231N CB2S with Enum types](https://www.elektroda.com/rtvforum/topic4147513.html)",
 "file": "autoexecs/tongou_tuyamcu_enums.bat"
+},
+{
+"title": "Mercator Ikuu SSWRM-WIFI rotary dimmer (AU): Tuya WBR2 (RTL8720CF) with a TuyaMCU dimming MCU",
+"file": "autoexecs/Mercator-Ikuu-SSWRM-WIFI.bat"
 }
 ]

@@ -28,6 +28,10 @@
         "answer": "Some TuyaMCU devices might require WiFi state packet to say it is fully connected and online, while OBK sends it only if it has MQTT and WiFi connections. Use tuyaMcu_defWiFiState to set default WiFi state to 4, so it always thinks it's fully online. See [this topic](https://www.elektroda.com/rtvforum/topic3963972.html)"
     },
     {
+        "question": "My TuyaMCU dimmer has no light entity in Home Assistant. Why?",
+        "answer": "Discovery builds a TuyaMCU light from a pair of channels: one of type Toggle (on/off) and one of type Dimmer, Dimmer256 or Dimmer1000 (brightness). Set both channel types, for example:<br>`setChannelType 1 toggle`<br>`setChannelType 2 dimmer`<br>`linkTuyaMCUOutputToChannel 1 bool 1`<br>`linkTuyaMCUOutputToChannel 2 val 2`<br>A Dimmer channel without a Toggle is not published at all. Flag 45 turns this pairing off. If the light is set up with tuyaMcu_setupLED instead, the LED driver publishes it and the pair is not needed. See the EDM-01AA-EU autoexec example."
+    },
+    {
         "question": "How to make device discoverable by Windows?",
         "answer": "OpenBeken devices will show up in Windows Network if you run SSDP driver. This driver must be run at each startup. You could just do 'startDriver SSDP' in console but that will not run again after reboot, so either use Short Startup Command or autoexec.bat to run that command with each reboot"
     },
