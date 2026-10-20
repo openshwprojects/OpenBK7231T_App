@@ -145,17 +145,16 @@ static void ping_timeout(void *arg)
 static u8_t ping_recv(void *arg, struct raw_pcb *pcb, struct pbuf *p, const ip_addr_t *addr)
 {
 	unsigned int ms;
-  struct icmp_echo_hdr *iecho;
+	struct icmp_echo_hdr iecho;
   LWIP_UNUSED_ARG(arg);
   LWIP_UNUSED_ARG(pcb);
   LWIP_UNUSED_ARG(addr);
   LWIP_ASSERT("p != NULL", p != NULL);
 
-  if ((p->tot_len >= (PBUF_IP_HLEN + sizeof(struct icmp_echo_hdr))) &&
-      pbuf_header(p, -PBUF_IP_HLEN) == 0) {
-    iecho = (struct icmp_echo_hdr *)p->payload;
+	if ((p->tot_len >= (PBUF_IP_HLEN + sizeof(struct icmp_echo_hdr))) &&
+		pbuf_copy_partial(p, &iecho, sizeof(iecho), PBUF_IP_HLEN) == sizeof(iecho)) {
 
-    if ((iecho->id == PING_ID) && (iecho->seqno == lwip_htons(ping_seq_num))) {
+		if ((iecho.id == PING_ID) && (iecho.seqno == lwip_htons(ping_seq_num))) {
     //  LWIP_DEBUGF( PING_DEBUG, ("ping: recv "));
     // ip_addr_debug_print(PING_DEBUG, addr);
 	  ms = (sys_now()-ping_time);
@@ -171,8 +170,7 @@ static u8_t ping_recv(void *arg, struct raw_pcb *pcb, struct pbuf *p, const ip_a
       pbuf_free(p);
       return 1; /* eat the packet */
     }
-    /* not eaten, restore original packet */
-    pbuf_header(p, PBUF_IP_HLEN);
+		/* Unmatched packets remain unchanged for other raw callbacks. */
   }
 
   return 0; /* don't eat the packet */
