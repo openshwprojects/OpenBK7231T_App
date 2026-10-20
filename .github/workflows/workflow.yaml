@@ -269,6 +269,8 @@ jobs:
             variant: irRemoteESP
           - platform: OpenBK7238
             variant: battery
+          - platform: OpenBK7238
+            variant: hlw8112
 
           # bt proxy
           - platform: OpenBK7238
