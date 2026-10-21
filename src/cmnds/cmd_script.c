@@ -284,6 +284,10 @@ scriptFile_t *SVM_RegisterFile(const char *fname) {
 	}
 	else {
 		r->data = (char*)LFS_ReadFile(fname);
+		// windows editors can save a utf-8 bom, and it glues itself to the first command
+		if (r->data && !strncmp(r->data, "\xEF\xBB\xBF", 3)) {
+			memmove(r->data, r->data + 3, strlen(r->data + 3) + 1);
+		}
 	}
 	r->next = g_scriptFiles;
 	g_scriptFiles = r;

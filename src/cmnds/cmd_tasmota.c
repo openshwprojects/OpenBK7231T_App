@@ -338,6 +338,10 @@ static commandResult_t cmnd_lfsexec(const void * context, const char *cmd, const
 			lfsres = lfs_file_open(&lfs, file, fname, LFS_O_RDONLY);
 			if (lfsres >= 0) {
 				ADDLOG_DEBUG(LOG_FEATURE_CMD, "opened file %s", fname);
+				// skip a utf-8 bom - where char is unsigned (arm, risc-v) the < 0x20 check below keeps it
+				char bom[3];
+				if (lfs_file_read(&lfs, file, bom, 3) != 3 || memcmp(bom, "\xEF\xBB\xBF", 3))
+					lfs_file_rewind(&lfs, file);
 				do {
 					char *p = line;
 					do {
