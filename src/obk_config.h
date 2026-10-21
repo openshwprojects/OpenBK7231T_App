@@ -447,6 +447,7 @@
 #endif
 
 #elif PLATFORM_LN882H
+#define OBK_WITH_DRIVER_SHUTTER 1
 
 //#define ENABLE_SEND_POSTANDGET				1
 #define	ENABLE_HA_DISCOVERY						1
