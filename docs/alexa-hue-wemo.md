@@ -105,6 +105,17 @@ avec un Echo physique :
 python3 tests/alexa/test_alexa.py
 ```
 
+### Validation sur module réel
+
+Le 22 octobre 2026, le firmware `1.18.318_alexa_fix4` (commit `2ee92e3`)
+a été installé par OTA sur un BK7231N, avec relecture intégrale du fichier OTA
+avant redémarrage. Le module a redémarré avec cette version ; l'API Hue exposait
+un relais et le module répondait aux recherches SSDP. Le fonctionnement avec
+Alexa en mode Hue a ensuite été confirmé par l'utilisateur.
+
+Les GPIO du module ont été restaurés et les pilotes SSDP et Hue activés au
+démarrage. Le mode Wemo reste à vérifier avec un Echo physique.
+
 Origine de l'adaptation : travail Hue de Switch-Gang (énumération des relais et
 identifiants dérivés de la MAC). Les réponses SSDP sont regroupées en datagrammes
 complets ; l'analyse JSON, la validation des canaux, la configuration Hue et les
