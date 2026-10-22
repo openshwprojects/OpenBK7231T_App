@@ -88,6 +88,8 @@ class Alexa(unittest.TestCase):
         lights = self.lights()
         self.assertEqual(3, len(lights))
         self.assertEqual(3, len({v['uniqueid'] for v in lights.values()}))
+        for value in lights.values():
+            self.assertRegex(value['uniqueid'], r'^(?:[0-9a-fA-F]{2}:){7}[0-9a-fA-F]{2}-01$')
         self.assertTrue(all(0 < int(i) <= 2147483647 for i in lights))
         self.assertEqual('Lampe "salon"', next(iter(lights.values()))['name'])
         self.assertTrue(all(v['type']=='On/Off light' for v in lights.values()))
@@ -95,6 +97,7 @@ class Alexa(unittest.TestCase):
     def test_all_channels_have_distinct_ids(self):
         for ch in range(64): self.outputs[ch] = 1
         self.assertEqual(64, len(self.lights()))
+        self.assertEqual(64, len({v["uniqueid"] for v in self.lights().values()}))
 
     def test_control_and_get_state(self):
         ids = list(self.lights())

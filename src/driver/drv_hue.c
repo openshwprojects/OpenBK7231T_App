@@ -28,6 +28,7 @@ static char *g_userID = 0;
 static char *g_uid = 0;
 static char *g_bridgeID = 0;
 static unsigned int g_lightBase;
+static char g_lightMAC[18];
 static int outBufferLen = 0;
 static int stat_searchesReceived = 0;
 static int stat_setupXMLVisits = 0;
@@ -179,7 +180,7 @@ static void HUE_PrintLight(http_request_t *request, int ch) {
 		hprintf255(request, " %d", ch);
 	}
 	hprintf255(request, "\",\"modelid\":\"LOM001\",\"manufacturername\":\"OpenBeken\","
-		"\"uniqueid\":\"%s-%02X\",\"swversion\":\"1.0\"}", g_serial, ch);
+		"\"uniqueid\":\"%s:00:%02X-01\",\"swversion\":\"1.0\"}", g_lightMAC, ch ^ 0x10);
 }
 
 static void HUE_PrintLights(http_request_t *request) {
@@ -471,6 +472,7 @@ void HUE_Init() {
 	if (g_uid)
 		return;
 	WiFI_GetMacAddress((char*)mac);
+	snprintf(g_lightMAC, sizeof(g_lightMAC), "%02x:%02x:%02x:%02x:%02x:%02x", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
 	g_lightBase = (((unsigned int)mac[3] << 16) | ((unsigned int)mac[4] << 8) | mac[5]) << 7;
 	snprintf(tmp, sizeof(tmp), "%02X%02X%02X", mac[3], mac[4], mac[5]);
 	g_userID = strdup(tmp);
