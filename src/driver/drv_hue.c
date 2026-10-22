@@ -303,6 +303,11 @@ int HUE_APICall(http_request_t *request) {
 	// Skip username without modifying the HTTP request or using global strtok.
 	path++;
 	resource = strchr(path, '/');
+	// Native OpenBeken endpoints share /api (info, pins, ota, lfs, cmnd...).
+	// Only claim the username issued by this bridge's registration response.
+	if ((resource ? (size_t)(resource - path) : strlen(path)) != strlen(g_userID)
+		|| strncmp(path, g_userID, strlen(g_userID)))
+		return 0;
 	if (resource == path || !*path)
 		return HUE_Error(request, 3, "Missing username");
 	resource = resource ? resource + 1 : "";

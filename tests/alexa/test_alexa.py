@@ -50,14 +50,21 @@ class Alexa(unittest.TestCase):
                         len(body or b'') if content is None else content).decode()
 
     def lights(self):
-        return json.loads(self.call('api/user/lights'))
+        return json.loads(self.call('api/FFFFFF/lights'))
 
     def test_auth_and_routes(self):
         self.assertIn('username', json.loads(self.call('/api', 'POST', '{}'))[0]['success'])
         self.assertIn('username', json.loads(self.call('api/', 'POST', '{}'))[0]['success'])
         self.assertEqual('', self.call('apiary'))
-        for url in ('api', 'api/user/missing', 'api/user/lights/nope', 'api/user/lights/99999999999999'):
+        for url in ('api', 'api/FFFFFF/missing', 'api/FFFFFF/lights/nope', 'api/FFFFFF/lights/99999999999999'):
             self.assertIn('error', json.loads(self.call(url))[0])
+
+    def test_native_api_routes_remain_available(self):
+        for url in ('api/info', 'api/pins', 'api/channels', 'api/channelTypes',
+                    'api/lfs/autoexec.bat', 'api/flash/0-1000', 'api/ota',
+                    'api/reboot', 'api/cmnd', 'api/unknown/lights'):
+            self.assertEqual('', self.call(url))
+            self.assertEqual('', self.call(url, 'POST', '{}'))
 
     def test_list_and_identity(self):
         lights = self.lights()
@@ -74,12 +81,12 @@ class Alexa(unittest.TestCase):
     def test_control_and_get_state(self):
         ids = list(self.lights())
         for i, channel in zip(ids, (1, 2, 63)):
-            response = json.loads(self.call(f'api/user/lights/{i}/state', 'PUT', '{ "on" : true }'))
+            response = json.loads(self.call(f'api/FFFFFF/lights/{i}/state', 'PUT', '{ "on" : true }'))
             self.assertTrue(response[0]['success'][f'/lights/{i}/state/on'])
             self.assertEqual(1, self.values[channel])
-            self.assertEqual(1, json.loads(self.call(f'api/user/lights/{i}'))['state']['on'])
-            self.assertTrue(json.loads(self.call(f'api/user/lights/{i}/state'))['on'])
-            self.call(f'api/user/lights/{i}/state', 'PUT', '{"on":false}')
+            self.assertEqual(1, json.loads(self.call(f'api/FFFFFF/lights/{i}'))['state']['on'])
+            self.assertTrue(json.loads(self.call(f'api/FFFFFF/lights/{i}/state'))['on'])
+            self.call(f'api/FFFFFF/lights/{i}/state', 'PUT', '{"on":false}')
             self.assertEqual(0, self.values[channel])
         self.assertEqual([0]*64, list(self.values))
 
@@ -90,30 +97,30 @@ class Alexa(unittest.TestCase):
                      '{"on":{"on":true}}', '[]', '{}', '{"on":true} garbage',
                      '{"on":true,}', '{"on" true}', '{"on":true false}'):
             with self.subTest(body=body):
-                response = json.loads(self.call(f'api/user/lights/{i}/state', 'PUT', body))
+                response = json.loads(self.call(f'api/FFFFFF/lights/{i}/state', 'PUT', body))
                 self.assertIn('error', response[0])
                 self.assertEqual(0, self.values[1])
-        self.assertIn('error', json.loads(self.call(f'api/user/lights/{i}/state', 'PUT', '{"on":true}', content=100))[0])
+        self.assertIn('error', json.loads(self.call(f'api/FFFFFF/lights/{i}/state', 'PUT', '{"on":true}', content=100))[0])
 
     def test_wrong_device_and_input_channels(self):
         i = int(next(iter(self.lights())))
         for bad in (i ^ 128, (i & ~127) | 1, 0, 2147483648):
-            response = json.loads(self.call(f'api/user/lights/{bad}/state', 'PUT', '{"on":true}'))
+            response = json.loads(self.call(f'api/FFFFFF/lights/{bad}/state', 'PUT', '{"on":true}'))
             self.assertIn('error', response[0])
         self.assertEqual([0]*64, list(self.values))
 
     def test_global_and_config(self):
-        all_data = json.loads(self.call('api/user'))
+        all_data = json.loads(self.call('api/FFFFFF'))
         self.assertEqual(self.lights(), all_data['lights'])
         self.assertEqual('192.0.2.10', all_data['config']['ipaddress'])
         self.assertEqual('501234FFFEFFFFFF', all_data['config']['bridgeid'])
-        self.assertEqual(all_data['config'], json.loads(self.call('api/user/config')))
+        self.assertEqual(all_data['config'], json.loads(self.call('api/FFFFFF/config')))
         for name in ('groups', 'schedules', 'scenes', 'sensors', 'rules', 'resourcelinks'):
-            self.assertEqual({}, json.loads(self.call('api/user/'+name)))
+            self.assertEqual({}, json.loads(self.call('api/FFFFFF/'+name)))
 
     def test_stopped_driver_and_reinit(self):
         c.c_int.in_dll(lib, 'running').value = 0
-        self.assertEqual('', self.call('api/user/lights'))
+        self.assertEqual('', self.call('api/FFFFFF/lights'))
         lib.init()
         c.c_int.in_dll(lib, 'running').value = 1
         self.assertEqual(3, len(self.lights()))

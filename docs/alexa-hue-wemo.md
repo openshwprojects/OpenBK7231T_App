@@ -42,16 +42,17 @@ Remplacer `IP_DU_MODULE` par l'adresse du module :
 ```sh
 curl http://IP_DU_MODULE/description.xml
 curl -X POST http://IP_DU_MODULE/api -d '{"devicetype":"alexa"}'
-curl http://IP_DU_MODULE/api/test/lights
+curl http://IP_DU_MODULE/api/UTILISATEUR_RETOURNE/lights
 ```
 
-Reprendre un identifiant renvoyé par `lights` :
+Remplacer `UTILISATEUR_RETOURNE` par le champ `username` de la réponse POST,
+puis reprendre un identifiant renvoyé par `lights` :
 
 ```sh
-curl -X PUT http://IP_DU_MODULE/api/test/lights/IDENTIFIANT/state \
+curl -X PUT http://IP_DU_MODULE/api/UTILISATEUR_RETOURNE/lights/IDENTIFIANT/state \
   -H 'Content-Type: application/json' -d '{"on":true}'
-curl http://IP_DU_MODULE/api/test/lights/IDENTIFIANT
-curl -X PUT http://IP_DU_MODULE/api/test/lights/IDENTIFIANT/state \
+curl http://IP_DU_MODULE/api/UTILISATEUR_RETOURNE/lights/IDENTIFIANT
+curl -X PUT http://IP_DU_MODULE/api/UTILISATEUR_RETOURNE/lights/IDENTIFIANT/state \
   -H 'Content-Type: application/json' -d '{"on":false}'
 ```
 
