@@ -109,3 +109,10 @@ Origine de l'adaptation : travail Hue de Switch-Gang (énumération des relais e
 identifiants dérivés de la MAC). Les réponses SSDP sont regroupées en datagrammes
 complets ; l'analyse JSON, la validation des canaux, la configuration Hue et les
 réponses Wemo ont été adaptées au code actuel.
+
+### Diagnostic de découverte
+
+Le pont fournit `/api/config` avant l’enregistrement et accepte les noms utilisateur
+Hue provisoires ou conservés par les clients (par exemple `/api/nouser/lights`).
+Les routes natives OpenBeken restent prioritaires, y compris les fichiers LittleFS.
+Les journaux HTTP signalent les lectures du descripteur et les appels aux ressources Hue.

@@ -58,7 +58,7 @@ const  char *hue_resp2 =  "ST: uuid:%s\r\n"
 
 // ARGUMENTS: uuid
 const  char *hue_resp3 = "ST: urn:schemas-upnp-org:device:Basic:1\r\n"
-   "USN: uuid:%s\r\n"
+   "USN: uuid:%s::urn:schemas-upnp-org:device:Basic:1\r\n"
    "\r\n";
 
 void DRV_HUE_Send_Advert_To(struct sockaddr_in *addr) {
@@ -122,6 +122,7 @@ const char *g_hue_setup_5 = "</UDN>"
    "\r\n";
 
 static int HUE_Setup(http_request_t* request) {
+	addLogAdv(LOG_INFO, LOG_FEATURE_HTTP, "HUE description.xml requested");
 	http_setup(request, httpMimeTypeXML);
 	poststr(request, g_hue_setup_1);
 	poststr(request, HAL_GetMyIPString());
@@ -344,10 +345,31 @@ static int HUE_SetState(http_request_t *request, int ch) {
 	return result;
 }
 
+static bool HUE_IsNativeAPI(const char *path) {
+	const char *names[] = { "info", "pins", "channels", "channelTypes", "logconfig",
+		"seriallog", "fsblock", "lfs", "run", "del", "flash", "bt_scan", "reboot", "ota", "cmnd" };
+	size_t i;
+	for (i = 0; i < sizeof(names) / sizeof(names[0]); i++) {
+		size_t len = strlen(names[i]);
+		if (!strncmp(path, names[i], len) && (!path[len] || path[len] == '/'))
+			return true;
+	}
+	return false;
+}
+
+static bool HUE_IsResource(const char *resource) {
+	return !strcmp(resource, "lights") || !strncmp(resource, "lights/", 7)
+		|| !strcmp(resource, "config") || !strcmp(resource, "groups")
+		|| !strcmp(resource, "schedules") || !strcmp(resource, "scenes")
+		|| !strcmp(resource, "sensors") || !strcmp(resource, "rules")
+		|| !strcmp(resource, "resourcelinks");
+}
+
 int HUE_APICall(http_request_t *request) {
 	const char *path, *resource, *end;
 	unsigned int id = 0;
 	int ch;
+	bool issuedUser;
 	if (!g_uid || !DRV_IsRunning("HUE") || !request->url)
 		return 0;
 	path = request->url;
@@ -368,15 +390,27 @@ int HUE_APICall(http_request_t *request) {
 	}
 	// Skip username without modifying the HTTP request or using global strtok.
 	path++;
-	resource = strchr(path, '/');
-	// Native OpenBeken endpoints share /api (info, pins, ota, lfs, cmnd...).
-	// Only claim the username issued by this bridge's registration response.
-	if ((resource ? (size_t)(resource - path) : strlen(path)) != strlen(g_userID)
-		|| strncmp(path, g_userID, strlen(g_userID))) {
-		if (resource && !strncmp(resource, "/lights", 7))
-			addLogAdv(LOG_WARN, LOG_FEATURE_HTTP, "HUE unregistered username in %s", request->url);
+	if (HUE_IsNativeAPI(path))
 		return 0;
+	// Hue discovery probes the bridge before registering a user. These URLs
+	// must return Hue JSON instead of falling through to OpenBeken's REST UI.
+	if (!strcmp(path, "config") || !strcmp(path, "config/")) {
+		if (request->method != HTTP_GET)
+			return HUE_Error(request, 4, "Method not available");
+		addLogAdv(LOG_INFO, LOG_FEATURE_HTTP, "HUE discovery configuration requested");
+		http_setup(request, httpMimeTypeJson);
+		HUE_PrintConfig(request);
+		poststr(request, NULL);
+		return 1;
 	}
+	resource = strchr(path, '/');
+	issuedUser = (resource ? (size_t)(resource - path) : strlen(path)) == strlen(g_userID)
+		&& !strncmp(path, g_userID, strlen(g_userID));
+	// Emulators accept placeholder/cached Hue usernames for Hue resources.
+	// Keep unrecognized API routes available to native OpenBeken handlers.
+	if (!issuedUser && (resource ? !HUE_IsResource(resource + 1) : strcmp(path, "nouser")))
+		return 0;
+	addLogAdv(LOG_INFO, LOG_FEATURE_HTTP, "HUE API method %d URL %s", request->method, request->url);
 	if (resource == path || !*path)
 		return HUE_Error(request, 3, "Missing username");
 	resource = resource ? resource + 1 : "";
@@ -410,10 +444,7 @@ int HUE_APICall(http_request_t *request) {
 	} else {
 		if (request->method != HTTP_GET)
 			return HUE_Error(request, 4, "Method not available");
-		if (*resource && strcmp(resource, "lights") && strcmp(resource, "config")
-			&& strcmp(resource, "groups") && strcmp(resource, "schedules")
-			&& strcmp(resource, "scenes") && strcmp(resource, "sensors")
-			&& strcmp(resource, "rules") && strcmp(resource, "resourcelinks"))
+		if (*resource && !HUE_IsResource(resource))
 			return HUE_Error(request, 3, "Resource does not exist");
 		http_setup(request, httpMimeTypeJson);
 		if (!*resource) {

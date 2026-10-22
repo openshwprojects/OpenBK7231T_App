@@ -65,9 +65,24 @@ class Alexa(unittest.TestCase):
     def test_native_api_routes_remain_available(self):
         for url in ('api/info', 'api/pins', 'api/channels', 'api/channelTypes',
                     'api/lfs/autoexec.bat', 'api/flash/0-1000', 'api/ota',
-                    'api/reboot', 'api/cmnd', 'api/unknown/lights'):
+                    'api/reboot', 'api/cmnd', 'api/lfs/lights', 'api/run/lights',
+                    'api/del/config', 'api/flash/config'):
             self.assertEqual('', self.call(url))
             self.assertEqual('', self.call(url, 'POST', '{}'))
+
+    def test_discovery_configuration_without_registration(self):
+        expected = json.loads(self.call('api/FFFFFF/config'))
+        for route in ('api/config', 'api/config/', 'api/nouser/config',
+                      'api/cached-alexa-user/config'):
+            self.assertEqual(expected, json.loads(self.call(route)))
+        for user in ('nouser', 'cached-alexa-user', 'ffffff'):
+            self.assertEqual(self.lights(), json.loads(self.call(f'api/{user}/lights')))
+            i = next(iter(self.lights()))
+            response = json.loads(self.call(f'api/{user}/lights/{i}/state', 'PUT', '{"on":true}'))
+            self.assertIn('success', response[0])
+        self.assertEqual(self.lights(), json.loads(self.call('api/nouser'))['lights'])
+        self.assertEqual('', self.call('api/new-native-endpoint'))
+        self.assertEqual('', self.call('api/new-native-endpoint/file'))
 
     def test_list_and_identity(self):
         lights = self.lights()
@@ -173,6 +188,8 @@ class Alexa(unittest.TestCase):
             self.assertIn('\r\nST: ', data)
             self.assertIn('\r\nUSN: uuid:', data)
             self.assertTrue(data.endswith('\r\n\r\n'))
+            if i == 2:
+                self.assertIn('::urn:schemas-upnp-org:device:Basic:1\r\n', data)
 
     def test_both_emulators_answer_generic_search(self):
         for target in ('ssdp:all', 'upnp:rootdevice'):
