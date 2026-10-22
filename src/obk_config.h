@@ -457,6 +457,7 @@
 
 // 3. Принудительно активируем драйвер штор (Blinds/Shutter)
 #define ENABLE_DRIVER_BLINDS 1
+#define ENABLE_DRIVER_SHUTTERS		1
 
 //#define ENABLE_SEND_POSTANDGET				1
 #define	ENABLE_HA_DISCOVERY
