@@ -2,6 +2,9 @@
 """Run real Hue/Wemo driver code with host hardware/HTTP stubs. Needs gcc and Python 3."""
 import ctypes as c
 import json
+import socket
+import threading
+import time
 from pathlib import Path
 import re
 import subprocess
@@ -101,6 +104,41 @@ class Alexa(unittest.TestCase):
                 self.assertIn('error', response[0])
                 self.assertEqual(0, self.values[1])
         self.assertIn('error', json.loads(self.call(f'api/FFFFFF/lights/{i}/state', 'PUT', '{"on":true}', content=100))[0])
+
+    def test_transition_metadata(self):
+        i = next(iter(self.lights()))
+        for body in ('{"on":true,"transitiontime":0}', '{"transitiontime":4,"on":true}'):
+            reply = json.loads(self.call(f'api/FFFFFF/lights/{i}/state', 'PUT', body))
+            self.assertEqual(2, len(reply))
+            self.assertEqual(1, self.values[1])
+        for value in ('-1', '65536', '1.2', 'true', '"0"', '00'):
+            self.values[1] = 0
+            reply = json.loads(self.call(f'api/FFFFFF/lights/{i}/state', 'PUT', '{"on":true,"transitiontime":'+value+'}'))
+            self.assertIn('error', reply[0])
+            self.assertEqual(0, self.values[1])
+
+    def test_fragmented_body(self):
+        i = next(iter(self.lights()))
+        for prefix in (b'', b'{"on":'):
+            reader, writer = socket.socketpair()
+            fd = c.c_int.in_dll(lib, 'test_fd')
+            fd.value = reader.fileno()
+            body = b'{"on":true,"transitiontime":0}'
+            def send_rest():
+                time.sleep(0.05)
+                writer.sendall(body[len(prefix):])
+            thread = threading.Thread(target=send_rest)
+            thread.start()
+            try:
+                reply = json.loads(self.call(f'api/FFFFFF/lights/{i}/state', 'PUT', prefix, content=len(body)))
+                self.assertIn('success', reply[0])
+                self.assertEqual(1, self.values[1])
+            finally:
+                thread.join()
+                fd.value = 0
+                reader.close()
+                writer.close()
+        self.assertIn('error', json.loads(self.call(f'api/FFFFFF/lights/{i}/state', 'PUT', '{}', content=513))[0])
 
     def test_wrong_device_and_input_channels(self):
         i = int(next(iter(self.lights())))

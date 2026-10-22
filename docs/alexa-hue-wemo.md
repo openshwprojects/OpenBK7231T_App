@@ -58,7 +58,10 @@ curl -X PUT http://IP_DU_MODULE/api/UTILISATEUR_RETOURNE/lights/IDENTIFIANT/stat
 
 L'API accepte les lectures de configuration globale, des lumières et de leur état,
 et la création d'un utilisateur. Les collections non prises en charge sont vides.
-Les écritures acceptent uniquement un booléen `on` : variation et couleur ne sont
+Les écritures acceptent un booléen `on` et le paramètre optionnel `transitiontime`
+(entier de 0 à 65535). Un relais commute immédiatement, sans fondu.
+Les corps JSON arrivant dans plusieurs paquets TCP sont assemblés (maximum 512 octets).
+Variation et couleur ne sont
 pas annoncées et ne sont pas appliquées. Un identifiant inconnu ou appartenant à
 un autre module renvoie une erreur sans actionner les relais.
 

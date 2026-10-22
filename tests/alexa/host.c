@@ -2,6 +2,7 @@
 int running = 3, values[CHANNEL_MAX], outputs[CHANNEL_MAX];
 static char response[32768], packets[8][1024];
 static int packetCount, finishes;
+int test_fd = 0;
 static int (*wemoEvent)(http_request_t*), (*wemoSetup)(http_request_t*);
 const char httpMimeTypeJson[] = "application/json", httpMimeTypeXML[] = "text/xml";
 void HUE_Init(void);
@@ -50,7 +51,7 @@ int HTTP_RegisterCallback(const char *url,int method,int (*fn)(http_request_t*),
 }
 const char *call(int wemo,int method,const char *url,const char *body,int length,int contentLength) {
  http_request_t r={0}; response[0]=0;finishes=0;
- r.method=method;r.url=(char*)url;r.bodystart=(char*)body;r.bodylen=length;r.contentLength=contentLength;
+ r.fd=test_fd;r.method=method;r.url=(char*)url;r.bodystart=(char*)body;r.bodylen=length;r.contentLength=contentLength;
  if(wemo==1) wemoEvent(&r); else if(wemo==2) wemoSetup(&r); else HUE_APICall(&r);
  if(response[0] && finishes!=1) abort();
  return response;

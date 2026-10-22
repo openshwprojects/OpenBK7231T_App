@@ -15,6 +15,7 @@
 #ifndef ENABLE_LED_BASIC
 #define ENABLE_LED_BASIC 0
 #endif
+#define LOG_WARN 0
 #define LOG_INFO 0
 #define LOG_ALL 0
 #define LOG_EXTRADEBUG 0

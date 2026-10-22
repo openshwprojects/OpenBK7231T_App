@@ -151,6 +151,7 @@ static unsigned int HUE_LightId(int ch) {
 }
 
 static int HUE_Error(http_request_t *request, int type, const char *description) {
+	addLogAdv(LOG_WARN, LOG_FEATURE_HTTP, "HUE error %d at %s: %s", type, request->url, description);
 	http_setup(request, httpMimeTypeJson);
 	hprintf255(request, "[{\"error\":{\"type\":%d,\"address\":\"/", type);
 	poststr_escapedForJSON(request, request->url);
@@ -215,13 +216,14 @@ static int HUE_SkipSpace(const char *body, int pos, int length) {
 	return pos;
 }
 
-static int HUE_SetState(http_request_t *request, int ch) {
+static int HUE_SetStateComplete(http_request_t *request, int ch) {
 	jsmn_parser parser;
 	jsmntok_t tokens[32];
 	const char *body = request->bodystart;
-	int count, i, pos, on = -1;
+	int count, i, pos, on = -1, transition = -1;
 	if (!body || request->bodylen <= 0 || request->bodylen < request->contentLength)
 		return HUE_Error(request, 2, "Missing or incomplete JSON body");
+	addLogAdv(LOG_INFO, LOG_FEATURE_HTTP, "HUE state JSON: %.*s", request->bodylen < 160 ? request->bodylen : 160, body);
 	jsmn_init(&parser);
 	count = jsmn_parse(&parser, body, request->bodylen, tokens, 32);
 	if (count < 1 || tokens[0].type != JSMN_OBJECT || count != 1 + 2 * tokens[0].size)
@@ -257,6 +259,22 @@ static int HUE_SetState(http_request_t *request, int ch) {
 	for (i = 1; i < count; i += 2) {
 		jsmntok_t *value = &tokens[i + 1];
 		int len = value->end - value->start;
+		if (jsoneq(body, &tokens[i], "transitiontime") == 0) {
+			int digit;
+			if (transition != -1 || value->type != JSMN_PRIMITIVE || len < 1 || len > 5)
+				return HUE_Error(request, 7, "Invalid transitiontime");
+			transition = 0;
+			for (digit = 0; digit < len; digit++) {
+				char c = body[value->start + digit];
+				if (c < '0' || c > '9')
+					return HUE_Error(request, 7, "Invalid transitiontime");
+				transition = transition * 10 + c - '0';
+			}
+			if (transition > 65535 || (len > 1 && body[value->start] == '0'))
+				return HUE_Error(request, 7, "Invalid transitiontime");
+			// Binary relays have no fade: accept Hue timing metadata and switch immediately.
+			continue;
+		}
 		if (jsoneq(body, &tokens[i], "on") != 0)
 			return HUE_Error(request, 6, "Parameter not available for an On/Off light");
 		if (on != -1 || value->type != JSMN_PRIMITIVE)
@@ -273,9 +291,57 @@ static int HUE_SetState(http_request_t *request, int ch) {
 	CHANNEL_Set(ch, on, 0);
 	stat_eventsReceived++;
 	http_setup(request, httpMimeTypeJson);
-	hprintf255(request, "[{\"success\":{\"/lights/%u/state/on\":%s}}]", HUE_LightId(ch), on ? "true" : "false");
+	addLogAdv(LOG_INFO, LOG_FEATURE_HTTP, "HUE channel %d set to %d", ch, on);
+	hprintf255(request, "[{\"success\":{\"/lights/%u/state/on\":%s}}", HUE_LightId(ch), on ? "true" : "false");
+	if (transition != -1)
+		hprintf255(request, ",{\"success\":{\"/lights/%u/state/transitiontime\":%d}}", HUE_LightId(ch), transition);
+	poststr(request, "]");
 	poststr(request, NULL);
 	return 1;
+}
+
+static int HUE_SetState(http_request_t *request, int ch) {
+	char *body, *original;
+	int length = request->contentLength;
+	int have = request->bodylen;
+	int result, received, originalLength;
+	// The HTTP server may dispatch after receiving headers, before the body.
+	// Gather bounded Hue JSON bodies; never consume unbounded upload streams.
+	if (length <= have)
+		return HUE_SetStateComplete(request, ch);
+	if (length > 512 || have < 0 || request->fd <= 0)
+		return HUE_Error(request, 2, "Invalid or incomplete state body");
+	body = malloc(length + 1);
+	if (!body)
+		return HUE_Error(request, 2, "No memory for state body");
+	if (have && request->bodystart)
+		memcpy(body, request->bodystart, have);
+	while (have < length) {
+		fd_set ready;
+		struct timeval timeout = { 2, 0 };
+		FD_ZERO(&ready);
+		FD_SET(request->fd, &ready);
+		if (select(request->fd + 1, &ready, NULL, NULL, &timeout) <= 0)
+			break;
+		received = recv(request->fd, body + have, length - have, 0);
+		if (received <= 0)
+			break;
+		have += received;
+	}
+	if (have != length) {
+		free(body);
+		return HUE_Error(request, 2, "Incomplete state body");
+	}
+	body[length] = 0;
+	original = request->bodystart;
+	originalLength = request->bodylen;
+	request->bodystart = body;
+	request->bodylen = length;
+	result = HUE_SetStateComplete(request, ch);
+	request->bodystart = original;
+	request->bodylen = originalLength;
+	free(body);
+	return result;
 }
 
 int HUE_APICall(http_request_t *request) {
@@ -306,8 +372,11 @@ int HUE_APICall(http_request_t *request) {
 	// Native OpenBeken endpoints share /api (info, pins, ota, lfs, cmnd...).
 	// Only claim the username issued by this bridge's registration response.
 	if ((resource ? (size_t)(resource - path) : strlen(path)) != strlen(g_userID)
-		|| strncmp(path, g_userID, strlen(g_userID)))
+		|| strncmp(path, g_userID, strlen(g_userID))) {
+		if (resource && !strncmp(resource, "/lights", 7))
+			addLogAdv(LOG_WARN, LOG_FEATURE_HTTP, "HUE unregistered username in %s", request->url);
 		return 0;
+	}
 	if (resource == path || !*path)
 		return HUE_Error(request, 3, "Missing username");
 	resource = resource ? resource + 1 : "";
@@ -323,8 +392,12 @@ int HUE_APICall(http_request_t *request) {
 		ch = (int)(id & 127) - 1;
 		if (end == path || !HUE_IsLight(ch) || id != HUE_LightId(ch))
 			return HUE_Error(request, 3, "Light does not exist");
-		if (!strcmp(end, "/state") && request->method == HTTP_PUT)
+		if (!strcmp(end, "/state") && request->method == HTTP_PUT) {
+			addLogAdv(LOG_INFO, LOG_FEATURE_HTTP, "HUE PUT %s body %d/%d: %.*s", request->url,
+				request->bodylen, request->contentLength, request->bodylen < 160 ? request->bodylen : 160,
+				request->bodystart ? request->bodystart : "");
 			return HUE_SetState(request, ch);
+		}
 		if (request->method != HTTP_GET)
 			return HUE_Error(request, 4, "Method not available");
 		if (*end && strcmp(end, "/state"))
