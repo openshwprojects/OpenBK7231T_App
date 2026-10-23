@@ -33,6 +33,10 @@ void DRV_MQTTServer_RunEverySecond();
 void DRV_MQTTServer_RunQuickTick();
 void DRV_MQTTServer_Stop();
 
+#if ENABLE_DRIVER_TAILSCALE
+#include "../tailscale/drv_tailscale.h"
+#endif
+
 
 typedef struct driver_s {
 	const char* name;
@@ -52,6 +56,14 @@ void GirierMCU_RunEverySecond();
 
 // startDriver BL0937
 static driver_t g_drivers[] = {
+#if ENABLE_DRIVER_TAILSCALE
+	//drvdetail:{"name":"Tailscale",
+	//drvdetail:"title":"Experimental Tailscale client",
+	//drvdetail:"descr":"Native HTTP and socket access over Tailscale. BK7231N opt-in build; requires tailscale.conf and NTP. See docs/tailscale.md.",
+	//drvdetail:"requires":"ENABLE_DRIVER_TAILSCALE"}
+	{ "Tailscale", DRV_Tailscale_Init, NULL, NULL, NULL,
+		DRV_Tailscale_Stop, NULL, NULL, false },
+#endif
 #if ENABLE_DRIVER_TUYAMCU
 	//drvdetail:{"name":"TuyaMCU",
 	//drvdetail:"title":"TODO",

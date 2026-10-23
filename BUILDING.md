@@ -45,6 +45,12 @@ The output binaries can be found at `apps/<appname>/output/<appversion>`.
 Same as for BK7231T, but use BK7231N SDK and you also might need to rename project directory from OpenBK7231T_App to OpenBK7231N_App:
 https://github.com/openshwprojects/OpenBK7231N
 
+### Experimental Tailscale variant
+
+`make OpenBK7231N VARIANT=tailscale` enables the native-stack Tailscale driver.
+See [the integration guide](docs/tailscale.md) for dependency access, configuration,
+memory limits and the measured BK7231N results.
+
 ## Building for XR809
 
 Get XR809 SDK:
