@@ -11,7 +11,7 @@ It is an opt-in experimental build with bounded peer/session storage.
 ## Build
 
 The dependency is a Git submodule at `libraries/tailscalec`, pinned to
-`e7a0d25fd0cfdbe67bf8d500987e5623efc7669c`. The repository is public and can be
+`cb7bf6971f5f69c37e8eeca1643ac163d8edbab4`. The repository is public and can be
 checked out anonymously. Initialize it on the host before using a build container:
 
 ```sh
@@ -164,5 +164,7 @@ and extend runtime test coverage. Further connectivity work includes periodic
 NAT remapping, DERP lifecycle/failover, refresh latency and outbound DNS.
 
 The library's original version was supplied by Eryk Wieliczko
-([@erykwieliczko](https://github.com/erykwieliczko)) as public domain. See its
-`CREDITS.md`, `LICENSE` and `THIRD_PARTY_NOTICES.md` for provenance and licenses.
+([@erykwieliczko](https://github.com/erykwieliczko)) as public domain. At his
+request, project-original code and subsequent original contributions use
+**CC0 1.0 Universal**. Bundled and adapted third-party code has its own licenses;
+see the library's `CREDITS.md`, `LICENSE` and `THIRD_PARTY_NOTICES.md`.
