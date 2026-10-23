@@ -447,13 +447,13 @@
 #endif
 
 #elif PLATFORM_LN882H
-#elif defined(PLATFORM_LN882H)
+//#elif defined(PLATFORM_LN882H)
 
 // 1. Убираем глобальное отключение драйверов, чтобы разрешить сборку кастомных модулей
-#undef OBK_DISABLE_ALL_DRIVERS
+//#undef OBK_DISABLE_ALL_DRIVERS
 
 // 2. Включаем обратно базовый фреймворк драйверов
-#define OBK_HAS_DRIVERS 1
+//#define OBK_HAS_DRIVERS 1
 
 // 3. Принудительно активируем драйвер штор (Blinds/Shutter)
 #define ENABLE_DRIVER_BLINDS 1
