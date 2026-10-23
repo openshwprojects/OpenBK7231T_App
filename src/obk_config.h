@@ -446,7 +446,7 @@
 #define ENABLE_DRIVER_ESPHOME_API				1
 #endif
 
-#elif PLATFORM_LN882H
+ #elif PLATFORM_LN882H
 //#elif defined(PLATFORM_LN882H)
 
 // 1. Убираем глобальное отключение драйверов, чтобы разрешить сборку кастомных модулей
