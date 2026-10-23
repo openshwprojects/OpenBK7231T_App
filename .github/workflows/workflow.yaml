@@ -245,6 +245,8 @@ jobs:
             variant: hlw8112
           - platform: OpenBK7231N
             variant: battery
+          - platform: OpenBK7231N
+            variant: tailscale
             
           - platform: OpenBL602
             variant: berry
@@ -316,6 +318,18 @@ jobs:
   
       - name: Run make
         run: make APP_VERSION=${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }} APP_NAME=${{ matrix.platform }} VARIANT="${{ matrix.variant }}" ${{ matrix.platform }}
+
+      - name: Verify Tailscale firmware
+        if: matrix.platform == 'OpenBK7231N' && matrix.variant == 'tailscale'
+        env:
+          BUILD_VERSION: ${{ needs.refs.outputs.version }}_tailscale
+        run: |
+          firmware="output/${BUILD_VERSION}/OpenBK7231N_${BUILD_VERSION}"
+          test -s "${firmware}.rbl"
+          sdk/OpenBK7231N/platforms/bk7231n/toolchain/gcc-arm-none-eabi-4_9-2015q1/bin/arm-none-eabi-nm --defined-only "${firmware}.axf" > "${firmware}.symbols"
+          for symbol in DRV_Tailscale_Init DRV_Tailscale_Stop tsc_client_poll Tailscale_SystemInit; do
+            grep -E "[[:space:]]${symbol}$" "${firmware}.symbols"
+          done
 
       - name: Save build assets
         uses: actions/upload-artifact@v6

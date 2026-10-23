@@ -11,20 +11,12 @@ It is an opt-in experimental build with bounded peer/session storage.
 ## Build
 
 The dependency is a Git submodule at `libraries/tailscalec`, pinned to
-`e7a0d25fd0cfdbe67bf8d500987e5623efc7669c`. It is currently a **private repository**;
-the checkout requires a GitHub account with read access. Initialize it on the
-host before using a build container:
+`e7a0d25fd0cfdbe67bf8d500987e5623efc7669c`. The repository is public and can be
+checked out anonymously. Initialize it on the host before using a build container:
 
 ```sh
 git submodule update --init libraries/tailscalec
 make OpenBK7231N VARIANT=tailscale APP_VERSION=1.18.318-tailscale
-```
-
-With an authenticated GitHub CLI, the initialization command can instead use
-its credential helper without changing the machine's Git configuration:
-
-```sh
-git -c credential.helper='!gh auth git-credential' submodule update --init libraries/tailscalec
 ```
 
 The existing `CFG_USE_TAILSCALE=1` build switch is also supported. The BK7231N
@@ -42,10 +34,11 @@ until both features can share one mbedTLS configuration.
 Upload the **RBL** through OpenBeken's normal OTA interface. Observe the board's
 OTA/LittleFS size limits. The enabled firmware measured below was 619,520 bytes.
 
-The private dependency is not available to the ordinary public Actions token,
-so the enabled variant is currently validated locally. The existing CI matrix
-continues to cover the standard disabled-feature builds. Adding an enabled
-CI job requires making the dependency accessible to that job.
+GitHub Actions builds this variant on pushes and pull requests as
+`Build (OpenBK7231N, tailscale)`. The job verifies that the RBL exists and that
+the linked firmware contains the Tailscale driver, client and system-adapter
+symbols. Download the `OpenBK7231N` artifact with the `_tailscale` suffix from
+the workflow run; the OTA image is `OpenBK7231N_<version>_tailscale.rbl`.
 
 ## Configuration and startup
 
@@ -167,7 +160,7 @@ replay after eviction/reordering, forged timestamp authentication and revocation
 Before treating this as a general-purpose release: qualify sustained traffic
 and maximum supported maps against the existing low-memory watchdog; test
 repeated reconnect/start-stop cycles; review the parser/cache security paths;
-and integrate enabled-feature CI. Further connectivity work includes periodic
+and extend runtime test coverage. Further connectivity work includes periodic
 NAT remapping, DERP lifecycle/failover, refresh latency and outbound DNS.
 
 The library's original version was supplied by Eryk Wieliczko

@@ -48,7 +48,7 @@ https://github.com/openshwprojects/OpenBK7231N
 ### Experimental Tailscale variant
 
 `make OpenBK7231N VARIANT=tailscale` enables the native-stack Tailscale driver.
-See [the integration guide](docs/tailscale.md) for dependency access, configuration,
+See [the integration guide](docs/tailscale.md) for dependency setup, configuration,
 memory limits and the measured BK7231N results.
 
 ## Building for XR809
