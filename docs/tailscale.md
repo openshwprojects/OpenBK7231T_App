@@ -8,11 +8,19 @@ application TCP/UDP stacks are disabled.
 This first port supports direct IPv4 connectivity on the original BK7231N SDK.
 It is an opt-in experimental build with bounded peer/session storage.
 
+## What it is useful for
+
+[Tailscale](https://tailscale.com/) provides a private network using encrypted
+WireGuard connections. Each enrolled OpenBeken device gets a tailnet IPv4
+address, so authorized clients can use its existing web UI and REST API from
+another network. Examples include controlling a socket in a second home or
+accessing its readings while away, without forwarding the device's HTTP port
+on the router. This implementation requires a working direct UDP path.
+
 ## Build
 
-The dependency is a Git submodule at `libraries/tailscalec`, pinned to
-`cb7bf6971f5f69c37e8eeca1643ac163d8edbab4`. The repository is public and can be
-checked out anonymously. Initialize it on the host before using a build container:
+Initialize the `libraries/tailscalec` submodule on the host before using a
+build container:
 
 ```sh
 git submodule update --init libraries/tailscalec
@@ -35,10 +43,9 @@ Upload the **RBL** through OpenBeken's normal OTA interface. Observe the board's
 OTA/LittleFS size limits. The enabled firmware measured below was 619,520 bytes.
 
 GitHub Actions builds this variant on pushes and pull requests as
-`Build (OpenBK7231N, tailscale)`. The job verifies that the RBL exists and that
-the linked firmware contains the Tailscale driver, client and system-adapter
-symbols. Download the `OpenBK7231N` artifact with the `_tailscale` suffix from
-the workflow run; the OTA image is `OpenBK7231N_<version>_tailscale.rbl`.
+`Build (OpenBK7231N, tailscale)`. Download the `OpenBK7231N` artifact with the
+`_tailscale` suffix from the workflow run; the OTA image is
+`OpenBK7231N_<version>_tailscale.rbl`.
 
 ## Configuration and startup
 
@@ -163,8 +170,8 @@ repeated reconnect/start-stop cycles; review the parser/cache security paths;
 and extend runtime test coverage. Further connectivity work includes periodic
 NAT remapping, DERP lifecycle/failover, refresh latency and outbound DNS.
 
-The library's original version was supplied by Eryk Wieliczko
-([@erykwieliczko](https://github.com/erykwieliczko)) as public domain. At his
-request, project-original code and subsequent original contributions use
-**CC0 1.0 Universal**. Bundled and adapted third-party code has its own licenses;
-see the library's `CREDITS.md`, `LICENSE` and `THIRD_PARTY_NOTICES.md`.
+## Library licensing
+
+The library's project-original code uses **CC0 1.0 Universal**. Bundled and
+adapted third-party code has its own licenses; see the library's `LICENSE`
+and `THIRD_PARTY_NOTICES.md`.
