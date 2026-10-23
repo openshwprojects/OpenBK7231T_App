@@ -518,19 +518,24 @@ void DRV_SSDP_RunQuickTick() {
     // if search, then respond
     // we SHOULD be a little more specific!!!
     if (!strncmp(udp_msgbuf, "M-SEARCH", 8)){
-        // reply with our advert to the sender
+        bool replied = false;
+        // Reply with each active emulator; both may answer a generic search.
         addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_HTTP,"Is MSEARCH - responding");
 #if ENABLE_DRIVER_WEMO
 		if (DRV_IsRunning("WEMO")) {
 			if (strcasestr(udp_msgbuf, "urn:belkin:device:**")) {
 				DRV_WEMO_Send_Advert_To(1, &addr);
-				return;
+				replied = true;
+			}
+			else if (strcasestr(udp_msgbuf, "urn:belkin:device:controllee:1")) {
+				DRV_WEMO_Send_Advert_To(3, &addr);
+				replied = true;
 			}
 			else if (strcasestr(udp_msgbuf, "upnp:rootdevice")
 				|| strcasestr(udp_msgbuf, "ssdpsearch:all")
 				|| strcasestr(udp_msgbuf, "ssdp:all")) {
 				DRV_WEMO_Send_Advert_To(2, &addr);
-				return;
+				replied = true;
 			}
 		}
 #endif
@@ -541,13 +546,14 @@ void DRV_SSDP_RunQuickTick() {
 				|| strcasestr(udp_msgbuf, "ssdpsearch:all")
 				|| strcasestr(udp_msgbuf, "ssdp:all")) {
 				addLogAdv(LOG_ALL, LOG_FEATURE_HTTP, "SSDP has received HUE PACKET");
-				addLogAdv(LOG_ALL, LOG_FEATURE_HTTP, udp_msgbuf);
+				addLogAdv(LOG_ALL, LOG_FEATURE_HTTP, "%s", udp_msgbuf);
 				DRV_HUE_Send_Advert_To(&addr);
-				return;
+				replied = true;
 			}
 		}
 #endif
-		DRV_SSDP_Send_Advert_To(&addr);
+		if (!replied)
+			DRV_SSDP_Send_Advert_To(&addr);
     }
 
     // our NOTIFTY like:
