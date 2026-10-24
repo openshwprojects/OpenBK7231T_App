@@ -132,11 +132,8 @@ int main(void)
 
     /* Ethernet is already up before Main_Init(), so mark network connected so
      * network drivers started during Main_Init() (SSDP, MDNS, DGR) bind immediately. */
-    extern void RTL8196C_Ping_RegisterCommands(void);
-    extern void RTL8196C_PingWatchDog_Poll(void);
     Main_OnWiFiStatusChange(WIFI_AP_CONNECTED);
     Main_Init();
-    RTL8196C_Ping_RegisterCommands();
     rtl8196c_usb_vfs_init();
     /* Start Wi-Fi AP (when unconfigured) or STA (when configured) immediately without 5s delay */
     if (g_openAP > 0) {
@@ -172,7 +169,6 @@ int main(void)
     uint32_t last_sec = timer_ms();
     for (;;) {
         rtos_delay_milliseconds(10);
-        RTL8196C_PingWatchDog_Poll();
         uint32_t now = timer_ms();
         while ((uint32_t)(now - last_sec) >= 1000u) {
             last_sec += 1000u;
