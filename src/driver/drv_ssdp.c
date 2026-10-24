@@ -102,12 +102,13 @@ static int http_rest_get_devicelist(http_request_t* request) {
     int count = 0;
     for (int i = 0; i < MAX_OBK_DEVICES; i++){
         if (obkDevices[i].ip != 0){
+            const uint8_t *ipb = (const uint8_t *)&obkDevices[i].ip;
             if (count) hprintf255(request,",");
-            hprintf255(request,"{\"ip\":\"%d.%d.%d.%d\"}", 
-                obkDevices[i].ip & 0xff,
-                (obkDevices[i].ip & 0xff00)>>8,
-                (obkDevices[i].ip & 0xff0000) >> 16,
-                (obkDevices[i].ip & 0xff000000) >> 24
+            hprintf255(request,"{\"ip\":\"%u.%u.%u.%u\"}",
+                (unsigned)ipb[0],
+                (unsigned)ipb[1],
+                (unsigned)ipb[2],
+                (unsigned)ipb[3]
                 );
             count++;
         }
@@ -444,6 +445,7 @@ void DRV_SSDP_Init()
 
     HTTP_RegisterCallback("/obkdevicelist", HTTP_GET, http_rest_get_devicelist, 0);
 
+    ssdp_timercount = 28;
     DRV_SSDP_Active = 1;
 }
 

@@ -89,16 +89,20 @@ static void tcp_client_thread(tcp_thread_t* arg)
 		{
 			break;
 		}
+		if(strstr(request.received, "\r\n\r\n") != NULL &&
+		   (strncmp(request.received, "POST /api/lfs/", 14) == 0 ||
+		    strncmp(request.received, "POST /api/ota", 13) == 0))
+		{
+			break;
+		}
 		// grow by INCOMING_BUFFER_SIZE
 		request.receivedLenmax += INCOMING_BUFFER_SIZE;
 		char *newbuf = (char*)realloc(request.received, request.receivedLenmax + 2);
 		if(newbuf == NULL)
 		{
 			ADDLOG_ERROR(LOG_FEATURE_HTTP, "TCP Client realloc failed");
-			// no memory
-			//goto exit;
 			request.receivedLenmax -= INCOMING_BUFFER_SIZE;
-			continue;
+			break;
 		}
 		request.received = buf = newbuf;
 	}
