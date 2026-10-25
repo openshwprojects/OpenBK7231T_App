@@ -181,6 +181,7 @@ static bool HUE_IsOBKRestName(const char *seg, int len) {
 	return false;
 }
 
+#if ENABLE_LED_BASIC
 // Hue bri is 1..254, OpenBeken dimmer is 0..100
 static int HUE_DimmerToBri(float dimmer) {
 	int bri = (int)(dimmer * 254.0f / 100.0f + 0.5f);
@@ -203,6 +204,7 @@ static bool HUE_SupportsCT() {
 	PIN_get_Relay_PWM_Count(0, &pwmCount, 0);
 	return pwmCount == 2 || pwmCount >= 4;
 }
+#endif
 
 #define HUE_MAX_LIGHTS 16
 
@@ -223,11 +225,13 @@ static int HUE_GetLights(hueLight_t *lights) {
 	int count = 0;
 	int ch;
 
+#if ENABLE_LED_BASIC
 	if (LED_IsLEDRunning()) {
 		lights[count].isLED = true;
 		lights[count].channel = -1;
 		count++;
 	}
+#endif
 	for (ch = 0; ch < CHANNEL_MAX && count < HUE_MAX_LIGHTS; ch++) {
 		if (HUE_IsRelayChannel(ch)) {
 			lights[count].isLED = false;
@@ -262,6 +266,7 @@ static void HUE_PostJsonString(http_request_t* request, const char *s) {
 	poststr(request, "\"");
 }
 
+#if ENABLE_LED_BASIC
 static void HUE_PostLEDState(http_request_t* request, bool ct) {
 	int mireds;
 
@@ -275,22 +280,25 @@ static void HUE_PostLEDState(http_request_t* request, bool ct) {
 	}
 	poststr(request, "\"alert\":\"none\",\"effect\":\"none\",\"reachable\":true},");
 }
+#endif
 
 // id is the Hue light number (1-based); relayIndex/relayCount number the relays among themselves.
 static void HUE_PostLight(http_request_t* request, const hueLight_t *light, int id, int relayIndex, int relayCount) {
 	char name[96];
 	const char *type, *modelid, *productname;
-	bool ct = false;
 
+#if ENABLE_LED_BASIC
 	if (light->isLED) {
-		ct = HUE_SupportsCT();
+		bool ct = HUE_SupportsCT();
 		HUE_PostLEDState(request, ct);
 		type = ct ? "Color temperature light" : "Dimmable light";
 		modelid = ct ? "LTW001" : "LWB010";
 		productname = ct ? "Hue white ambiance lamp" : "Hue white lamp";
 		snprintf(name, sizeof(name), "%s", CFG_GetDeviceName());
 	}
-	else {
+	else
+#endif
+	{
 		hprintf255(request, "{\"state\":{\"on\":%s,\"alert\":\"none\",\"reachable\":true},",
 			CHANNEL_Get(light->channel) ? "true" : "false");
 		type = "On/Off plug-in unit";
@@ -374,13 +382,45 @@ static int HUE_Error(http_request_t* request, int type, const char *address, con
 	return 1;
 }
 
+#if ENABLE_LED_BASIC
+static void HUE_SetLEDState(http_request_t* request, const char *path, cJSON *json, cJSON *on) {
+	cJSON *bri = cJSON_GetObjectItemCaseSensitive(json, "bri");
+	cJSON *ct = cJSON_GetObjectItemCaseSensitive(json, "ct");
+	bool first = true;
+
+	if (on != 0 && cJSON_IsBool(on)) {
+		LED_SetEnableAll(cJSON_IsTrue(on));
+		hprintf255(request, "{\"success\":{\"%s/on\":%s}}", path, cJSON_IsTrue(on) ? "true" : "false");
+		first = false;
+	}
+	if (bri != 0 && cJSON_IsNumber(bri)) {
+		int value = bri->valueint;
+		if (value < 1) value = 1;
+		if (value > 254) value = 254;
+		LED_SetDimmer(HUE_BriToDimmer(value));
+		// Alexa's "set the lamp to 40%" may not include "on"; a real Hue bulb would stay off, but that
+		// would make the request appear to do nothing, so switch on like Tasmota does.
+		if (on == 0 && !LED_GetEnableAll())
+			LED_SetEnableAll(1);
+		hprintf255(request, "%s{\"success\":{\"%s/bri\":%i}}", first ? "" : ",", path, value);
+		first = false;
+	}
+	if (ct != 0 && cJSON_IsNumber(ct) && HUE_SupportsCT()) {
+		int value = ct->valueint;
+		if (value < (int)led_temperature_min) value = (int)led_temperature_min;
+		if (value > (int)led_temperature_max) value = (int)led_temperature_max;
+		LED_SetTemperature(value, 1);
+		hprintf255(request, "%s{\"success\":{\"%s/ct\":%i}}", first ? "" : ",", path, value);
+	}
+}
+#endif
+
 // PUT /api/<user>/lights/<id>/state with a body such as {"on":true,"bri":127,"ct":366}
 static int HUE_SetState(http_request_t* request, const hueLight_t *light, int id) {
 	char body[256];
 	char path[48];
 	int len = request->bodylen;
-	bool first = true;
-	cJSON *json, *on, *bri, *ct;
+	cJSON *json, *on;
 
 	snprintf(path, sizeof(path), "/lights/%i/state", id);
 	if (request->bodystart == 0 || len <= 0)
@@ -394,41 +434,20 @@ static int HUE_SetState(http_request_t* request, const hueLight_t *light, int id
 	if (json == 0)
 		return HUE_Error(request, 2, path, "body contains invalid json");
 	on = cJSON_GetObjectItemCaseSensitive(json, "on");
-	bri = cJSON_GetObjectItemCaseSensitive(json, "bri");
-	ct = cJSON_GetObjectItemCaseSensitive(json, "ct");
 
 	stat_lightChanges++;
 	http_setup(request, httpMimeTypeJson);
 	poststr(request, "[");
 
-	if (on != 0 && cJSON_IsBool(on)) {
-		if (light->isLED)
-			LED_SetEnableAll(cJSON_IsTrue(on));
-		else
-			CHANNEL_Set(light->channel, cJSON_IsTrue(on) ? 1 : 0, 0);
-		hprintf255(request, "{\"success\":{\"%s/on\":%s}}", path, cJSON_IsTrue(on) ? "true" : "false");
-		first = false;
+	if (light->isLED) {
+#if ENABLE_LED_BASIC
+		HUE_SetLEDState(request, path, json, on);
+#endif
 	}
 	// relays only switch on and off
-	if (light->isLED && bri != 0 && cJSON_IsNumber(bri)) {
-		int value = bri->valueint;
-		if (value < 1) value = 1;
-		if (value > 254) value = 254;
-		LED_SetDimmer(HUE_BriToDimmer(value));
-		// Alexa's "set the lamp to 40%" may not include "on"; a real Hue bulb would stay off, but that
-		// would make the request appear to do nothing, so switch on like Tasmota does.
-		if (on == 0 && !LED_GetEnableAll())
-			LED_SetEnableAll(1);
-		hprintf255(request, "%s{\"success\":{\"%s/bri\":%i}}", first ? "" : ",", path, value);
-		first = false;
-	}
-	if (light->isLED && ct != 0 && cJSON_IsNumber(ct) && HUE_SupportsCT()) {
-		int value = ct->valueint;
-		if (value < (int)led_temperature_min) value = (int)led_temperature_min;
-		if (value > (int)led_temperature_max) value = (int)led_temperature_max;
-		LED_SetTemperature(value, 1);
-		hprintf255(request, "%s{\"success\":{\"%s/ct\":%i}}", first ? "" : ",", path, value);
-		first = false;
+	else if (on != 0 && cJSON_IsBool(on)) {
+		CHANNEL_Set(light->channel, cJSON_IsTrue(on) ? 1 : 0, 0);
+		hprintf255(request, "{\"success\":{\"%s/on\":%s}}", path, cJSON_IsTrue(on) ? "true" : "false");
 	}
 	poststr(request, "]");
 	poststr(request, NULL);
