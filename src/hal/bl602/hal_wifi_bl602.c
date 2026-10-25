@@ -17,6 +17,7 @@ extern void wifi_task_create(void);
 #include "fhost_api.h"
 #include "wifi_mgmr.h"
 #define MGMR_IP_SET(a,b,c,d,e) wifi_mgmr_sta_ip_set(a,b,c,d)
+#define wifi_mgmr_sta_netif_get() fhost_to_net_if(MGMR_VIF_STA)
 #else
 #define MGMR_IP_SET(a,b,c,d,e) wifi_mgmr_sta_ip_set(a,b,c,d,e)
 static wifi_conf_t conf = {
@@ -44,7 +45,7 @@ static void (*g_wifiStatusCallback)(int code);
 extern bool g_powersave;
 __attribute__((aligned(32))) static obkFastConnectData_t fcdata = { 0 };
 extern uint16_t phy_channel_to_freq(uint8_t band, int channel);
-
+extern const char* CFG_GetOpenBekenHostName();
 #if PLATFORM_BL_NEW
 static bool g_wifi_init = false;
 static bool wifi_init_done = 0;
@@ -280,26 +281,10 @@ static void wifi_event_handler(input_event_t* event, void* private_data)
 #else
 			xTaskCreate(wifi_cb_task, "wifi_ct", 256, (void*)WIFI_STA_DISCONNECTED, 10, NULL);
 #endif
+			break;
 		}
-		break;
-
-		case CODE_WIFI_CMD_RECONNECT:
-		case CODE_WIFI_ON_PRE_GOT_IP:
-		case CODE_WIFI_ON_PROV_SSID:
-		case CODE_WIFI_ON_PROV_BSSID:
-		case CODE_WIFI_ON_PROV_PASSWD:
-		case CODE_WIFI_ON_PROV_CONNECT:
-		case CODE_WIFI_ON_PROV_DISCONNECT:
-			break;
-		case CODE_WIFI_ON_AP_STARTED:
-		case CODE_WIFI_ON_AP_STOPPED:
-		case CODE_WIFI_ON_AP_STA_ADD:
-		case CODE_WIFI_ON_AP_STA_DEL:
-			break;
 		default:
-		{
-			printf("[APP] [EVT] Unknown code %u\r\n", (unsigned int)code);
-		}
+			break;
 	}
 }
 
@@ -330,6 +315,8 @@ void HAL_ConnectToWiFi(const char* ssid, const char* psk, obkStaticIP_t* ip)
 	{
 		MGMR_IP_SET(*(int*)ip->localIPAddr, *(int*)ip->netMask, *(int*)ip->gatewayIPAddr, *(int*)ip->dnsServerIpAddr, 0);
 	}
+	struct netif* netif = wifi_mgmr_sta_netif_get();
+	netif_set_hostname(netif, CFG_GetOpenBekenHostName());
 
 #if PLATFORM_BL602
 	if(g_powersave) wifi_mgmr_sta_ps_exit();
@@ -428,6 +415,8 @@ void HAL_FastConnectToWiFi(const char* oob_ssid, const char* connect_key, obkSta
 		if(g_powersave) wifi_mgmr_sta_ps_exit();
 		wifi_interface_t wifi_interface;
 		wifi_interface = wifi_mgmr_sta_enable();
+		struct netif* netif = wifi_mgmr_sta_netif_get();
+		netif_set_hostname(netif, CFG_GetOpenBekenHostName());
 		wifi_mgmr_sta_connect_ext(wifi_interface, (char*)oob_ssid, (char*)connect_key, &ext_param);
 		g_bAccessPointMode = 0;
 		return;

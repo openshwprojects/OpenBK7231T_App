@@ -146,4 +146,6 @@ extern int *__errno(void);
 #endif
 #define LWIP_RAND()                                      ((u32_t)random())
 
+#define LWIP_NOASSERT 1
+
 #endif /* LWIP_HDR_LWIPOPTS_H__ */
