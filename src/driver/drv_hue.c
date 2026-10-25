@@ -27,6 +27,7 @@ static char g_serial[13];
 static char g_userID[7];
 static char g_uid[37];
 static char g_bridgeID[17];
+static char g_mac[18];		// "AA:BB:CC:DD:EE:FF"
 static int outBufferLen = 0;
 static int stat_searchesReceived = 0;
 static int stat_setupXMLVisits = 0;
@@ -43,23 +44,15 @@ const  char *hue_resp = "HTTP/1.1 200 OK\r\n"
    "SERVER: Linux/3.14.0 UPnP/1.0 IpBridge/1.24.0\r\n"  // was 1.17
    "hue-bridgeid: %s\r\n";
 
-// ARGUMENTS: uuid
-const  char *hue_resp1 = "ST: upnp:rootdevice\r\n"
-  "USN: uuid:%s::upnp:rootdevice\r\n"
-  "\r\n";
-
-// ARGUMENTS: uuid and uuid
-const  char *hue_resp2 =  "ST: uuid:%s\r\n"
-   "USN: uuid:%s\r\n"
-   "\r\n";
-
-// ARGUMENTS: uuid
-const  char *hue_resp3 = "ST: urn:schemas-upnp-org:device:basic:1\r\n"
-   "USN: uuid:%s\r\n"
-   "\r\n";
+// The search-target lines that follow hue_resp. ARGUMENTS: uuid (used once or twice)
+static const char *hue_resp_st[] = {
+	"ST: upnp:rootdevice\r\nUSN: uuid:%s::upnp:rootdevice\r\n\r\n",
+	"ST: uuid:%s\r\nUSN: uuid:%s\r\n\r\n",
+	"ST: urn:schemas-upnp-org:device:basic:1\r\nUSN: uuid:%s\r\n\r\n",
+};
 
 void DRV_HUE_Send_Advert_To(struct sockaddr_in *addr) {
-	//const char *useType;
+	int i;
 
 	if (g_uid[0] == 0) {
 		// not running
@@ -71,33 +64,15 @@ void DRV_HUE_Send_Advert_To(struct sockaddr_in *addr) {
 	if (buffer_out == 0) {
 		outBufferLen = strlen(hue_resp) + 256;
 		buffer_out = (char*)malloc(outBufferLen);
+		if (buffer_out == 0)
+			return;
 	}
-	{
-		// ARGUMENTS: first IP, then bridgeID
-		snprintf(buffer_out, outBufferLen, hue_resp, HAL_GetMyIPString(), g_bridgeID);
-
-		addLogAdv(LOG_ALL, LOG_FEATURE_HTTP, "HUE - Sending[0] %s", buffer_out);
-		DRV_SSDP_SendReply(addr, buffer_out);
-	}
-	{
-		// ARGUMENTS: uuid
-		snprintf(buffer_out, outBufferLen, hue_resp1, g_uid);
-
-		addLogAdv(LOG_ALL, LOG_FEATURE_HTTP, "HUE - Sending[1] %s", buffer_out);
-		DRV_SSDP_SendReply(addr, buffer_out);
-	}
-	{
-		// ARGUMENTS: uuid and uuid
-		snprintf(buffer_out, outBufferLen, hue_resp2, g_uid, g_uid);
-
-		addLogAdv(LOG_ALL, LOG_FEATURE_HTTP, "HUE - Sending[2] %s", buffer_out);
-		DRV_SSDP_SendReply(addr, buffer_out);
-	}
-	{
-		// ARGUMENTS: uuid
-		snprintf(buffer_out, outBufferLen, hue_resp3, g_uid);
-
-		addLogAdv(LOG_ALL, LOG_FEATURE_HTTP, "HUE - Sending[3] %s", buffer_out);
+	// ARGUMENTS: first IP, then bridgeID
+	snprintf(buffer_out, outBufferLen, hue_resp, HAL_GetMyIPString(), g_bridgeID);
+	for (i = -1; i < 3; i++) {
+		if (i >= 0)
+			snprintf(buffer_out, outBufferLen, hue_resp_st[i], g_uid, g_uid);
+		addLogAdv(LOG_ALL, LOG_FEATURE_HTTP, "HUE - Sending %s", buffer_out);
 		DRV_SSDP_SendReply(addr, buffer_out);
 	}
 }
@@ -211,6 +186,7 @@ static bool HUE_SupportsCT() {
 typedef struct hueLight_s {
 	bool isLED;
 	int channel;	// relay channel; unused for the LED light
+	int relayIndex;	// 1-based number among the relays; 0 for the LED light
 } hueLight_t;
 
 // A channel becomes a Hue plug if it switches a relay (or an H-bridge), or is a toggle channel.
@@ -229,6 +205,7 @@ static int HUE_GetLights(hueLight_t *lights) {
 	if (LED_IsLEDRunning()) {
 		lights[count].isLED = true;
 		lights[count].channel = -1;
+		lights[count].relayIndex = 0;
 		count++;
 	}
 #endif
@@ -236,19 +213,16 @@ static int HUE_GetLights(hueLight_t *lights) {
 		if (HUE_IsRelayChannel(ch)) {
 			lights[count].isLED = false;
 			lights[count].channel = ch;
+			lights[count].relayIndex = count + 1 - (lights[0].isLED ? 1 : 0);
 			count++;
 		}
 	}
 	return count;
 }
 
+// relays always follow the LED light, so the last light's number is the relay count
 static int HUE_CountRelays(const hueLight_t *lights, int count) {
-	int i, relays = 0;
-	for (i = 0; i < count; i++) {
-		if (!lights[i].isLED)
-			relays++;
-	}
-	return relays;
+	return count ? lights[count - 1].relayIndex : 0;
 }
 
 static void HUE_PostJsonString(http_request_t* request, const char *s) {
@@ -282,10 +256,10 @@ static void HUE_PostLEDState(http_request_t* request, bool ct) {
 }
 #endif
 
-// id is the Hue light number (1-based); relayIndex/relayCount number the relays among themselves.
-static void HUE_PostLight(http_request_t* request, const hueLight_t *light, int id, int relayIndex, int relayCount) {
+// id is the Hue light number (1-based); relayCount is how many relays the device has.
+static void HUE_PostLight(http_request_t* request, const hueLight_t *light, int id, int relayCount) {
 	char name[96];
-	const char *type, *modelid, *productname;
+	const char *type, *modelid;
 
 #if ENABLE_LED_BASIC
 	if (light->isLED) {
@@ -293,7 +267,6 @@ static void HUE_PostLight(http_request_t* request, const hueLight_t *light, int 
 		HUE_PostLEDState(request, ct);
 		type = ct ? "Color temperature light" : "Dimmable light";
 		modelid = ct ? "LTW001" : "LWB010";
-		productname = ct ? "Hue white ambiance lamp" : "Hue white lamp";
 		snprintf(name, sizeof(name), "%s", CFG_GetDeviceName());
 	}
 	else
@@ -303,33 +276,20 @@ static void HUE_PostLight(http_request_t* request, const hueLight_t *light, int 
 			CHANNEL_Get(light->channel) ? "true" : "false");
 		type = "On/Off plug-in unit";
 		modelid = "LOM001";
-		productname = "Hue Smart plug";
 		// one relay: the device's name; several: the channel label, or the device name plus a number
 		if (CHANNEL_HasLabel(light->channel))
 			snprintf(name, sizeof(name), "%s", CHANNEL_GetLabel(light->channel));
 		else if (relayCount == 1)
 			snprintf(name, sizeof(name), "%s", CFG_GetDeviceName());
 		else
-			snprintf(name, sizeof(name), "%s %i", CFG_GetDeviceName(), relayIndex);
+			snprintf(name, sizeof(name), "%s %i", CFG_GetDeviceName(), light->relayIndex);
 	}
 	hprintf255(request, "\"type\":\"%s\",\"name\":", type);
 	HUE_PostJsonString(request, name);
 	// uniqueid: MAC plus endpoint, the same shape Tasmota uses, with the light number as the last byte
-	hprintf255(request, ",\"modelid\":\"%s\",\"manufacturername\":\"OpenBeken\",\"productname\":\"%s\","
-		"\"uniqueid\":\"%c%c:%c%c:%c%c:%c%c:%c%c:%c%c:00:11-%02x\",\"swversion\":\"1.0\"}",
-		modelid, productname,
-		g_serial[0], g_serial[1], g_serial[2], g_serial[3], g_serial[4], g_serial[5],
-		g_serial[6], g_serial[7], g_serial[8], g_serial[9], g_serial[10], g_serial[11], id);
-}
-
-// relay number (1-based, among relays only) of the light at index i
-static int HUE_RelayIndex(const hueLight_t *lights, int i) {
-	int j, n = 0;
-	for (j = 0; j <= i; j++) {
-		if (!lights[j].isLED)
-			n++;
-	}
-	return n;
+	hprintf255(request, ",\"modelid\":\"%s\",\"manufacturername\":\"OpenBeken\","
+		"\"uniqueid\":\"%s:00:11-%02x\",\"swversion\":\"1.0\"}",
+		modelid, g_mac, id);
 }
 
 static void HUE_PostLights(http_request_t* request) {
@@ -341,15 +301,13 @@ static void HUE_PostLights(http_request_t* request) {
 	poststr(request, "{");
 	for (i = 0; i < count; i++) {
 		hprintf255(request, "%s\"%i\":", i ? "," : "", i + 1);
-		HUE_PostLight(request, &lights[i], i + 1, HUE_RelayIndex(lights, i), relays);
+		HUE_PostLight(request, &lights[i], i + 1, relays);
 	}
 	poststr(request, "}");
 }
 
 static void HUE_PostConfig(http_request_t* request) {
-	hprintf255(request, "{\"name\":\"Philips hue\",\"mac\":\"%c%c:%c%c:%c%c:%c%c:%c%c:%c%c\",",
-		g_serial[0], g_serial[1], g_serial[2], g_serial[3], g_serial[4], g_serial[5],
-		g_serial[6], g_serial[7], g_serial[8], g_serial[9], g_serial[10], g_serial[11]);
+	hprintf255(request, "{\"name\":\"Philips hue\",\"mac\":\"%s\",", g_mac);
 	hprintf255(request, "\"dhcp\":true,\"ipaddress\":\"%s\",\"netmask\":\"%s\",",
 		HAL_GetMyIPString(), HAL_GetMyMaskString());
 	hprintf255(request, "\"gateway\":\"%s\",\"proxyaddress\":\"none\",\"proxyport\":0,\"bridgeid\":\"%s\",",
@@ -530,7 +488,7 @@ int HUE_APICall(http_request_t* request) {
 			return HUE_SetState(request, &lights[id - 1], (int)id);
 		}
 		http_setup(request, httpMimeTypeJson);
-		HUE_PostLight(request, &lights[id - 1], (int)id, HUE_RelayIndex(lights, (int)id - 1), HUE_CountRelays(lights, count));
+		HUE_PostLight(request, &lights[id - 1], (int)id, HUE_CountRelays(lights, count));
 		poststr(request, NULL);
 		return 1;
 	}
@@ -547,6 +505,7 @@ void HUE_Init() {
 	snprintf(g_serial, sizeof(g_serial), "%02X%02X%02X%02X%02X%02X", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
 	// BridgeID - as in Tas, full 12 chars of MAC with FFFE inside, so 5C CF 7F FFFE 13 9F 3D
 	snprintf(g_bridgeID, sizeof(g_bridgeID), "%02X%02X%02XFFFE%02X%02X%02X", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+	snprintf(g_mac, sizeof(g_mac), "%02X:%02X:%02X:%02X:%02X:%02X", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
 	// uuid
 	snprintf(g_uid, sizeof(g_uid), "f6543a06-da50-11ba-8d8f-%s", g_serial);
 
