@@ -308,8 +308,9 @@ static void HUE_PostLights(http_request_t* request) {
 
 static void HUE_PostConfig(http_request_t* request) {
 	hprintf255(request, "{\"name\":\"Philips hue\",\"mac\":\"%s\",", g_mac);
-	hprintf255(request, "\"dhcp\":true,\"ipaddress\":\"%s\",\"netmask\":\"%s\",",
-		HAL_GetMyIPString(), HAL_GetMyMaskString());
+	// one HAL string per call: some platforms return the IP, netmask and gateway in the same buffer
+	hprintf255(request, "\"dhcp\":true,\"ipaddress\":\"%s\",", HAL_GetMyIPString());
+	hprintf255(request, "\"netmask\":\"%s\",", HAL_GetMyMaskString());
 	hprintf255(request, "\"gateway\":\"%s\",\"proxyaddress\":\"none\",\"proxyport\":0,\"bridgeid\":\"%s\",",
 		HAL_GetMyGatewayString(), g_bridgeID);
 	hprintf255(request, "\"UTC\":\"2024-01-01T00:00:00\",\"whitelist\":{\"%s\":{\"last use date\":\"2024-01-01T00:00:00\","
