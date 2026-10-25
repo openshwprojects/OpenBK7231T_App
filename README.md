@@ -42,6 +42,7 @@ Although this repository is named `OpenBK7231T_App`, it has evolved into a multi
 -   LN8825B (eg SCW-T503)
 -   BL616/BL618 (eg Ai-M62-12F, Ai-M61-32S)
 -   GD32VW553 (eg GD32VW553-MINI, GD32VW553-UNIFI)
+-   RTL8196C (Realtek MIPS router SoC with SDRAM, as found in many cheap home routers, eg Cyfrowy Polsat LT-6408n; WiFi AP/STA and Ethernet, OTA via web/TCP, runs with LittleFS, FTP and SMB drivers, see [development thread](https://www.elektroda.com/rtvforum/topic4179473.html) and [router teardown and bootloader analysis](https://www.elektroda.com/rtvforum/topic4173841.html))
 
 Please use automatically compiled binaries from the Releases tab. To build OpenBeken yourself for any supported platform, fork our version of the submodule SDK first, and then check out this app repository alongside it. Details further down. Alternatively consider using the easier [override method.](https://www.elektroda.com/rtvforum/topic4082682.html)
 
@@ -109,6 +110,7 @@ OpenBeken features:
 -   Easily configurable via commands (see [tutorial](https://www.elektroda.com/rtvforum/topic3947241.html))
 -   Thanks to keeping Tasmota standard, OBK has basic compatibility with [ioBroker](https://www.youtube.com/watch?v=x4p3JHXbK1E&ab_channel=Elektrodacom) and similar systems through TELE/STAT/CMND MQTT packets, Tasmota Control app is also supported
 -   [DDP lighting protocol support](https://www.elektroda.com/rtvforum/topic4040325.html) ("startDriver DDP" in autoexec.bat/short startup command), works with xLights,
+-   FTP server driver ("startDriver FTP", RFC 959) and SMB2 network share driver ("startDriver SMB", port 445) giving transparent access to LittleFS and mounted VFS volumes (such as USB drives) from Windows/Linux/macOS file managers (currently enabled for RTL8196C and the simulator, can be enabled per platform in obk_config.h)
 -   Can be scripted to even [work with shutters](https://www.elektroda.com/rtvforum/topic3972935.html), see also [second shutters script](https://www.elektroda.com/rtvforum/viewtopic.php?p=20910126#20910126)
 -   Password-protected Web security [see tutorial](https://www.elektroda.com/rtvforum/topic4021160.html)
 -   Advanced deep sleep with GPIO/timer wakeup and [hybrid power save systems](https://youtu.be/eupL16eB7BA), fully scriptable, can be configured to last longer than Tuya
