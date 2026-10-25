@@ -22,10 +22,11 @@
 // 4. and can change the binary state (0 or 1) with POST
 
 static char *buffer_out = 0;
-static char *g_serial = 0;
-static char *g_userID = 0;
-static char *g_uid = 0;
-static char *g_bridgeID = 0;
+// Filled in by HUE_Init; empty until the driver is started.
+static char g_serial[13];
+static char g_userID[7];
+static char g_uid[37];
+static char g_bridgeID[17];
 static int outBufferLen = 0;
 static int stat_searchesReceived = 0;
 static int stat_setupXMLVisits = 0;
@@ -60,7 +61,7 @@ const  char *hue_resp3 = "ST: urn:schemas-upnp-org:device:basic:1\r\n"
 void DRV_HUE_Send_Advert_To(struct sockaddr_in *addr) {
 	//const char *useType;
 
-	if (g_uid == 0) {
+	if (g_uid[0] == 0) {
 		// not running
 		return;
 	}
@@ -443,7 +444,7 @@ int HUE_APICall(http_request_t* request) {
 	const char *seg, *rest;
 	int segLen;
 
-	if (g_uid == 0) {
+	if (g_uid[0] == 0) {
 		// not running
 		return 0;
 	}
@@ -518,22 +519,17 @@ int HUE_APICall(http_request_t* request) {
 // backlog startDriver SSDP; startDriver HUE
 // 
 void HUE_Init() {
-	char tmp[64];
 	unsigned char mac[8];
 
 	WiFI_GetMacAddress((char*)mac);
 	// username - 
-	snprintf(tmp, sizeof(tmp), "%02X%02X%02X",  mac[3], mac[4], mac[5]);
-	g_userID = strdup(tmp);
+	snprintf(g_userID, sizeof(g_userID), "%02X%02X%02X",  mac[3], mac[4], mac[5]);
 	// SERIAL - as in Tas, full 12 chars of MAC, so 5c cf 7f 13 9f 3d
-	snprintf(tmp, sizeof(tmp), "%02X%02X%02X%02X%02X%02X", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
-	g_serial = strdup(tmp);
+	snprintf(g_serial, sizeof(g_serial), "%02X%02X%02X%02X%02X%02X", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
 	// BridgeID - as in Tas, full 12 chars of MAC with FFFE inside, so 5C CF 7F FFFE 13 9F 3D
-	snprintf(tmp, sizeof(tmp), "%02X%02X%02XFFFE%02X%02X%02X", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
-	g_bridgeID = strdup(tmp);
+	snprintf(g_bridgeID, sizeof(g_bridgeID), "%02X%02X%02XFFFE%02X%02X%02X", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
 	// uuid
-	snprintf(tmp, sizeof(tmp), "f6543a06-da50-11ba-8d8f-%s", g_serial);
-	g_uid = strdup(tmp);
+	snprintf(g_uid, sizeof(g_uid), "f6543a06-da50-11ba-8d8f-%s", g_serial);
 
 
 	//HTTP_RegisterCallback("/api", HTTP_ANY, HUE_APICall);
