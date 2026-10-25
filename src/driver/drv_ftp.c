@@ -23,6 +23,11 @@
 
 #if ENABLE_DRIVER_FTP && ENABLE_LITTLEFS
 
+#if !PLATFORM_RTL8196C
+// rtos_yield() is provided by the RTL8196C SDK; other platforms fall back to a short sleep
+#define rtos_yield() rtos_delay_milliseconds(1)
+#endif
+
 #if PLATFORM_RTL8196C || WINDOWS
 #define FTP_XFER_CHUNK_SIZE 16384
 #else
