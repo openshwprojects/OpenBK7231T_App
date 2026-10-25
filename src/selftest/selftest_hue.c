@@ -120,9 +120,97 @@ void Test_Hue_SingleChannel() {
 	SELFTEST_ASSERT(!Hue_ReplyConfirms("/lights/1/state/ct"));
 }
 
+static cJSON *Hue_Light(const char *id) {
+	return cJSON_GetObjectItemCaseSensitive(Test_GetLastJSON(), id);
+}
+
+void Test_Hue_Relays() {
+	cJSON *light;
+
+	// a smart plug: relay on channel 1, its status LED on channel 2 (the LED must not become a second device)
+	SIM_ClearOBK(0);
+	PIN_SetPinRoleForPinIndex(14, IOR_Relay);
+	PIN_SetPinChannelForPinIndex(14, 1);
+	PIN_SetPinRoleForPinIndex(15, IOR_LED);
+	PIN_SetPinChannelForPinIndex(15, 2);
+	CFG_SetDeviceName("Monitors");
+	CMD_ExecuteCommand("startDriver SSDP", 0);
+	CMD_ExecuteCommand("startDriver Hue", 0);
+	CHANNEL_Set(1, 1, 0);
+
+	Test_FakeHTTPClientPacket_JSON("api/1234AB/lights");
+	light = Hue_Light("1");
+	SELFTEST_ASSERT(light != 0);
+	SELFTEST_ASSERT(Hue_Light("2") == 0);
+	SELFTEST_ASSERT_STRING(Hue_String(light, "type"), "On/Off plug-in unit");
+	SELFTEST_ASSERT_STRING(Hue_String(light, "name"), "Monitors");
+	SELFTEST_ASSERT(cJSON_IsTrue(cJSON_GetObjectItemCaseSensitive(cJSON_GetObjectItemCaseSensitive(light, "state"), "on")));
+	// a plug has no brightness
+	SELFTEST_ASSERT(cJSON_GetObjectItemCaseSensitive(cJSON_GetObjectItemCaseSensitive(light, "state"), "bri") == 0);
+
+	// "Alexa, turn off Monitors"; brightness is ignored for a plug
+	Test_FakeHTTPClientPacket_PUT_withJSONReply("api/1234AB/lights/1/state", "{\"on\":false,\"bri\":200}");
+	SELFTEST_ASSERT(Hue_ReplyConfirms("/lights/1/state/on"));
+	SELFTEST_ASSERT(!Hue_ReplyConfirms("/lights/1/state/bri"));
+	SELFTEST_ASSERT_CHANNEL(1, 0);
+	Test_FakeHTTPClientPacket_PUT_withJSONReply("api/1234AB/lights/1/state", "{\"on\":true}");
+	SELFTEST_ASSERT_CHANNEL(1, 1);
+
+	// a broken body gets Hue's error reply and changes nothing
+	Test_FakeHTTPClientPacket_PUT_withJSONReply("api/1234AB/lights/1/state", "{\"on\":fal");
+	SELFTEST_ASSERT(cJSON_GetObjectItemCaseSensitive(cJSON_GetArrayItem(Test_GetLastJSON(), 0), "error") != 0);
+	SELFTEST_ASSERT_CHANNEL(1, 1);
+
+	// a power strip: two relays, one labelled, plus a toggle channel; each is its own plug
+	SIM_ClearOBK(0);
+	PIN_SetPinRoleForPinIndex(14, IOR_Relay);
+	PIN_SetPinChannelForPinIndex(14, 1);
+	PIN_SetPinRoleForPinIndex(15, IOR_Relay_n);
+	PIN_SetPinChannelForPinIndex(15, 2);
+	CMD_ExecuteCommand("setChannelType 5 Toggle", 0);
+	CMD_ExecuteCommand("setChannelLabel 2 \"Desk Fan\"", 0);
+	CFG_SetDeviceName("Strip");
+	CMD_ExecuteCommand("startDriver SSDP", 0);
+	CMD_ExecuteCommand("startDriver Hue", 0);
+
+	Test_FakeHTTPClientPacket_JSON("api/1234AB/lights");
+	SELFTEST_ASSERT_STRING(Hue_String(Hue_Light("1"), "name"), "Strip 1");
+	SELFTEST_ASSERT_STRING(Hue_String(Hue_Light("2"), "name"), "Desk Fan");
+	SELFTEST_ASSERT_STRING(Hue_String(Hue_Light("3"), "name"), "Strip 3");
+	SELFTEST_ASSERT(Hue_Light("4") == 0);
+	// every light has its own uniqueid
+	SELFTEST_ASSERT(strcmp(Hue_String(Hue_Light("1"), "uniqueid"), Hue_String(Hue_Light("2"), "uniqueid")) != 0);
+
+	Test_FakeHTTPClientPacket_PUT_withJSONReply("api/1234AB/lights/2/state", "{\"on\":true}");
+	SELFTEST_ASSERT(Hue_ReplyConfirms("/lights/2/state/on"));
+	SELFTEST_ASSERT_CHANNEL(2, 1);
+	SELFTEST_ASSERT_CHANNEL(1, 0);
+	Test_FakeHTTPClientPacket_JSON("api/1234AB/lights/2");
+	SELFTEST_ASSERT_STRING(Hue_String(Test_GetLastJSON(), "name"), "Desk Fan");
+	Test_FakeHTTPClientPacket_JSON("api/1234AB/lights/4");
+	SELFTEST_ASSERT(cJSON_GetObjectItemCaseSensitive(cJSON_GetArrayItem(Test_GetLastJSON(), 0), "error") != 0);
+
+	// a light with a relay as well (e.g. a ceiling fan light): the light is 1, the relay 2
+	SIM_ClearOBK(0);
+	PIN_SetPinRoleForPinIndex(24, IOR_PWM);
+	PIN_SetPinChannelForPinIndex(24, 1);
+	PIN_SetPinRoleForPinIndex(14, IOR_Relay);
+	PIN_SetPinChannelForPinIndex(14, 7);
+	CFG_SetDeviceName("Fan");
+	CMD_ExecuteCommand("startDriver SSDP", 0);
+	CMD_ExecuteCommand("startDriver Hue", 0);
+
+	Test_FakeHTTPClientPacket_JSON("api/1234AB/lights");
+	SELFTEST_ASSERT_STRING(Hue_String(Hue_Light("1"), "type"), "Dimmable light");
+	SELFTEST_ASSERT_STRING(Hue_String(Hue_Light("2"), "type"), "On/Off plug-in unit");
+	Test_FakeHTTPClientPacket_PUT_withJSONReply("api/1234AB/lights/2/state", "{\"on\":true}");
+	SELFTEST_ASSERT_CHANNEL(7, 1);
+}
+
 void Test_Hue() {
 	Test_Hue_CW();
 	Test_Hue_SingleChannel();
+	Test_Hue_Relays();
 }
 
 #endif

@@ -11,6 +11,7 @@
 #include "drv_local.h"
 #include "drv_ssdp.h"
 #include "../httpserver/new_http.h"
+#include "../cJSON/cJSON.h"
 
 // Hue driver for Alexa, requiring btsimonh's SSDP to work
 // Based on Tasmota approach
@@ -158,10 +159,11 @@ static int HUE_Setup(http_request_t* request) {
 // Hue API for Alexa (and other Hue clients). The Echo, after finding description.xml, does:
 //   POST /api                         -> register, we hand out our fixed username
 //   GET  /api/<user>                  -> whole bridge state (lights + config)
-//   GET  /api/<user>/lights           -> list of lights; we expose the LED driver as light "1"
-//   GET  /api/<user>/lights/1         -> one light
-//   PUT  /api/<user>/lights/1/state   -> {"on":true,"bri":127,"ct":366}
-// Replies follow Tasmota's Hue emulation, which Echo devices accept.
+//   GET  /api/<user>/lights           -> list of lights
+//   GET  /api/<user>/lights/<id>      -> one light
+//   PUT  /api/<user>/lights/<id>/state -> {"on":true,"bri":127,"ct":366}
+// Lights: the LED driver (if running) is light 1, then every relay channel, in channel order, as an
+// on/off plug. Replies follow Tasmota's Hue emulation, which Echo devices accept.
 
 // OpenBeken's own REST API also lives under /api/ - never claim those requests.
 static const char *g_obkRestNames[] = {
@@ -201,6 +203,49 @@ static bool HUE_SupportsCT() {
 	return pwmCount == 2 || pwmCount >= 4;
 }
 
+#define HUE_MAX_LIGHTS 16
+
+typedef struct hueLight_s {
+	bool isLED;
+	int channel;	// relay channel; unused for the LED light
+} hueLight_t;
+
+// A channel becomes a Hue plug if it switches a relay (or an H-bridge), or is a toggle channel.
+// Status LED pins alone are not exposed, so a plug's indicator doesn't show up as a second device.
+static bool HUE_IsRelayChannel(int ch) {
+	return CHANNEL_HasChannelPinWithRoleOrRole(ch, IOR_Relay, IOR_Relay_n)
+		|| CHANNEL_HasChannelPinWithRoleOrRole(ch, IOR_BridgeForward, IOR_BridgeReverse)
+		|| CHANNEL_GetType(ch) == ChType_Toggle;
+}
+
+static int HUE_GetLights(hueLight_t *lights) {
+	int count = 0;
+	int ch;
+
+	if (LED_IsLEDRunning()) {
+		lights[count].isLED = true;
+		lights[count].channel = -1;
+		count++;
+	}
+	for (ch = 0; ch < CHANNEL_MAX && count < HUE_MAX_LIGHTS; ch++) {
+		if (HUE_IsRelayChannel(ch)) {
+			lights[count].isLED = false;
+			lights[count].channel = ch;
+			count++;
+		}
+	}
+	return count;
+}
+
+static int HUE_CountRelays(const hueLight_t *lights, int count) {
+	int i, relays = 0;
+	for (i = 0; i < count; i++) {
+		if (!lights[i].isLED)
+			relays++;
+	}
+	return relays;
+}
+
 static void HUE_PostJsonString(http_request_t* request, const char *s) {
 	char tmp[2] = { 0, 0 };
 	poststr(request, "\"");
@@ -216,8 +261,7 @@ static void HUE_PostJsonString(http_request_t* request, const char *s) {
 	poststr(request, "\"");
 }
 
-static void HUE_PostLight(http_request_t* request) {
-	bool ct = HUE_SupportsCT();
+static void HUE_PostLEDState(http_request_t* request, bool ct) {
 	int mireds;
 
 	hprintf255(request, "{\"state\":{\"on\":%s,\"bri\":%i,",
@@ -229,21 +273,66 @@ static void HUE_PostLight(http_request_t* request) {
 		hprintf255(request, "\"ct\":%i,\"colormode\":\"ct\",", mireds);
 	}
 	poststr(request, "\"alert\":\"none\",\"effect\":\"none\",\"reachable\":true},");
-	hprintf255(request, "\"type\":\"%s\",\"name\":", ct ? "Color temperature light" : "Dimmable light");
-	HUE_PostJsonString(request, CFG_GetDeviceName());
-	// uniqueid: MAC plus endpoint, the same shape Tasmota uses
+}
+
+// id is the Hue light number (1-based); relayIndex/relayCount number the relays among themselves.
+static void HUE_PostLight(http_request_t* request, const hueLight_t *light, int id, int relayIndex, int relayCount) {
+	char name[96];
+	const char *type, *modelid, *productname;
+	bool ct = false;
+
+	if (light->isLED) {
+		ct = HUE_SupportsCT();
+		HUE_PostLEDState(request, ct);
+		type = ct ? "Color temperature light" : "Dimmable light";
+		modelid = ct ? "LTW001" : "LWB010";
+		productname = ct ? "Hue white ambiance lamp" : "Hue white lamp";
+		snprintf(name, sizeof(name), "%s", CFG_GetDeviceName());
+	}
+	else {
+		hprintf255(request, "{\"state\":{\"on\":%s,\"alert\":\"none\",\"reachable\":true},",
+			CHANNEL_Get(light->channel) ? "true" : "false");
+		type = "On/Off plug-in unit";
+		modelid = "LOM001";
+		productname = "Hue Smart plug";
+		// one relay: the device's name; several: the channel label, or the device name plus a number
+		if (CHANNEL_HasLabel(light->channel))
+			snprintf(name, sizeof(name), "%s", CHANNEL_GetLabel(light->channel));
+		else if (relayCount == 1)
+			snprintf(name, sizeof(name), "%s", CFG_GetDeviceName());
+		else
+			snprintf(name, sizeof(name), "%s %i", CFG_GetDeviceName(), relayIndex);
+	}
+	hprintf255(request, "\"type\":\"%s\",\"name\":", type);
+	HUE_PostJsonString(request, name);
+	// uniqueid: MAC plus endpoint, the same shape Tasmota uses, with the light number as the last byte
 	hprintf255(request, ",\"modelid\":\"%s\",\"manufacturername\":\"OpenBeken\",\"productname\":\"%s\","
-		"\"uniqueid\":\"%c%c:%c%c:%c%c:%c%c:%c%c:%c%c:00:11-01\",\"swversion\":\"1.0\"}",
-		ct ? "LTW001" : "LWB010", ct ? "Hue white ambiance lamp" : "Hue white lamp",
+		"\"uniqueid\":\"%c%c:%c%c:%c%c:%c%c:%c%c:%c%c:00:11-%02x\",\"swversion\":\"1.0\"}",
+		modelid, productname,
 		g_serial[0], g_serial[1], g_serial[2], g_serial[3], g_serial[4], g_serial[5],
-		g_serial[6], g_serial[7], g_serial[8], g_serial[9], g_serial[10], g_serial[11]);
+		g_serial[6], g_serial[7], g_serial[8], g_serial[9], g_serial[10], g_serial[11], id);
+}
+
+// relay number (1-based, among relays only) of the light at index i
+static int HUE_RelayIndex(const hueLight_t *lights, int i) {
+	int j, n = 0;
+	for (j = 0; j <= i; j++) {
+		if (!lights[j].isLED)
+			n++;
+	}
+	return n;
 }
 
 static void HUE_PostLights(http_request_t* request) {
+	hueLight_t lights[HUE_MAX_LIGHTS];
+	int count = HUE_GetLights(lights);
+	int relays = HUE_CountRelays(lights, count);
+	int i;
+
 	poststr(request, "{");
-	if (LED_IsLEDRunning()) {
-		poststr(request, "\"1\":");
-		HUE_PostLight(request);
+	for (i = 0; i < count; i++) {
+		hprintf255(request, "%s\"%i\":", i ? "," : "", i + 1);
+		HUE_PostLight(request, &lights[i], i + 1, HUE_RelayIndex(lights, i), relays);
 	}
 	poststr(request, "}");
 }
@@ -284,73 +373,65 @@ static int HUE_Error(http_request_t* request, int type, const char *address, con
 	return 1;
 }
 
-// Minimal JSON field readers for the small bodies Hue clients send, e.g. {"on":true,"bri":127}
-static const char *HUE_FindJsonValue(const char *json, const char *key) {
-	char pattern[16];
-	const char *p;
-	snprintf(pattern, sizeof(pattern), "\"%s\"", key);
-	p = strstr(json, pattern);
-	if (p == 0)
-		return 0;
-	p += strlen(pattern);
-	while (*p == ' ' || *p == '\t' || *p == '\r' || *p == '\n')
-		p++;
-	if (*p != ':')
-		return 0;
-	p++;
-	while (*p == ' ' || *p == '\t' || *p == '\r' || *p == '\n')
-		p++;
-	return p;
-}
-
-static int HUE_SetState(http_request_t* request) {
+// PUT /api/<user>/lights/<id>/state with a body such as {"on":true,"bri":127,"ct":366}
+static int HUE_SetState(http_request_t* request, const hueLight_t *light, int id) {
 	char body[256];
-	const char *v;
+	char path[48];
 	int len = request->bodylen;
 	bool first = true;
+	cJSON *json, *on, *bri, *ct;
 
+	snprintf(path, sizeof(path), "/lights/%i/state", id);
 	if (request->bodystart == 0 || len <= 0)
-		return HUE_Error(request, 5, "/lights/1/state", "invalid/missing parameters in body");
+		return HUE_Error(request, 5, path, "invalid/missing parameters in body");
 	if (len >= (int)sizeof(body))
 		len = sizeof(body) - 1;
 	memcpy(body, request->bodystart, len);
 	body[len] = 0;
 
+	json = cJSON_Parse(body);
+	if (json == 0)
+		return HUE_Error(request, 2, path, "body contains invalid json");
+	on = cJSON_GetObjectItemCaseSensitive(json, "on");
+	bri = cJSON_GetObjectItemCaseSensitive(json, "bri");
+	ct = cJSON_GetObjectItemCaseSensitive(json, "ct");
+
 	stat_lightChanges++;
 	http_setup(request, httpMimeTypeJson);
 	poststr(request, "[");
 
-	v = HUE_FindJsonValue(body, "on");
-	if (v) {
-		int on = (*v == 't');
-		LED_SetEnableAll(on);
-		hprintf255(request, "{\"success\":{\"/lights/1/state/on\":%s}}", on ? "true" : "false");
+	if (on != 0 && cJSON_IsBool(on)) {
+		if (light->isLED)
+			LED_SetEnableAll(cJSON_IsTrue(on));
+		else
+			CHANNEL_Set(light->channel, cJSON_IsTrue(on) ? 1 : 0, 0);
+		hprintf255(request, "{\"success\":{\"%s/on\":%s}}", path, cJSON_IsTrue(on) ? "true" : "false");
 		first = false;
 	}
-	v = HUE_FindJsonValue(body, "bri");
-	if (v) {
-		int bri = atoi(v);
-		if (bri < 1) bri = 1;
-		if (bri > 254) bri = 254;
-		LED_SetDimmer(HUE_BriToDimmer(bri));
+	// relays only switch on and off
+	if (light->isLED && bri != 0 && cJSON_IsNumber(bri)) {
+		int value = bri->valueint;
+		if (value < 1) value = 1;
+		if (value > 254) value = 254;
+		LED_SetDimmer(HUE_BriToDimmer(value));
 		// Alexa's "set the lamp to 40%" may not include "on"; a real Hue bulb would stay off, but that
 		// would make the request appear to do nothing, so switch on like Tasmota does.
-		if (HUE_FindJsonValue(body, "on") == 0 && !LED_GetEnableAll())
+		if (on == 0 && !LED_GetEnableAll())
 			LED_SetEnableAll(1);
-		hprintf255(request, "%s{\"success\":{\"/lights/1/state/bri\":%i}}", first ? "" : ",", bri);
+		hprintf255(request, "%s{\"success\":{\"%s/bri\":%i}}", first ? "" : ",", path, value);
 		first = false;
 	}
-	v = HUE_FindJsonValue(body, "ct");
-	if (v && HUE_SupportsCT()) {
-		int ct = atoi(v);
-		if (ct < (int)led_temperature_min) ct = (int)led_temperature_min;
-		if (ct > (int)led_temperature_max) ct = (int)led_temperature_max;
-		LED_SetTemperature(ct, 1);
-		hprintf255(request, "%s{\"success\":{\"/lights/1/state/ct\":%i}}", first ? "" : ",", ct);
+	if (light->isLED && ct != 0 && cJSON_IsNumber(ct) && HUE_SupportsCT()) {
+		int value = ct->valueint;
+		if (value < (int)led_temperature_min) value = (int)led_temperature_min;
+		if (value > (int)led_temperature_max) value = (int)led_temperature_max;
+		LED_SetTemperature(value, 1);
+		hprintf255(request, "%s{\"success\":{\"%s/ct\":%i}}", first ? "" : ",", path, value);
 		first = false;
 	}
 	poststr(request, "]");
 	poststr(request, NULL);
+	cJSON_Delete(json);
 	return 1;
 }
 
@@ -413,15 +494,26 @@ int HUE_APICall(http_request_t* request) {
 	if (*rest == '/')
 		rest++;
 
-	// only light "1" exists
-	if (rest[0] != '1' || (rest[1] != 0 && rest[1] != '/' && rest[1] != '?') || !LED_IsLEDRunning())
-		return HUE_Error(request, 3, "/lights", "resource, /lights, not available");
-	rest++;
-	if (*rest == '/' && !strncmp(rest + 1, "state", 5)) {
-		if (request->method == HTTP_PUT || request->method == HTTP_POST)
-			return HUE_SetState(request);
+	{
+		hueLight_t lights[HUE_MAX_LIGHTS];
+		int count = HUE_GetLights(lights);
+		char *end;
+		long id = strtol(rest, &end, 10);
+		char address[24];
+
+		if (end == rest || id < 1 || id > count || (*end != 0 && *end != '/' && *end != '?')) {
+			snprintf(address, sizeof(address), "/lights/%.8s", rest);
+			return HUE_Error(request, 3, address, "resource not available");
+		}
+		if (*end == '/' && !strncmp(end + 1, "state", 5)
+			&& (request->method == HTTP_PUT || request->method == HTTP_POST)) {
+			return HUE_SetState(request, &lights[id - 1], (int)id);
+		}
+		http_setup(request, httpMimeTypeJson);
+		HUE_PostLight(request, &lights[id - 1], (int)id, HUE_RelayIndex(lights, (int)id - 1), HUE_CountRelays(lights, count));
+		poststr(request, NULL);
+		return 1;
 	}
-	return HUE_Reply_Json(request, HUE_PostLight);
 }
 // backlog startDriver SSDP; startDriver HUE
 // 
