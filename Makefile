@@ -892,6 +892,22 @@ OpenBK7236: prebuild_OpenBK7236
 	cp sdk/OpenBK7239N/build/bk7236/BK7236/package/all-app.bin output/$(APP_VERSION)/OpenBK7236_QIO_$(APP_VERSION).bin
 	cp sdk/OpenBK7239N/build/bk7236/BK7236/package/app_pack.rbl output/$(APP_VERSION)/OpenBK7236_${APP_VERSION}.rbl
 
+OPENRTL8196C_SDK ?= $(firstword $(wildcard sdk/OpenRTL8196C ../OpenRTL8196C))
+
+.PHONY: prebuild_OpenRTL8196C OpenRTL8196C
+prebuild_OpenRTL8196C: berry
+	@if [ -e platforms/RTL8196C/pre_build.sh ]; then \
+		echo "prebuild found for OpenRTL8196C"; \
+		sh platforms/RTL8196C/pre_build.sh; \
+	else echo "prebuild for OpenRTL8196C not found ... "; \
+	fi
+
+OpenRTL8196C: prebuild_OpenRTL8196C
+	python3 $(OPENRTL8196C_SDK)/tools/build_obk.py --obk "$(CURDIR)" --ver "$(APP_VERSION)"
+	mkdir -p output/$(APP_VERSION)
+	cp $(OPENRTL8196C_SDK)/build/obk/openbeken_rtl8196c.bin output/$(APP_VERSION)/OpenRTL8196C_$(APP_VERSION).bin
+	cp $(OPENRTL8196C_SDK)/build/obk/openbeken_rtl8196c.img output/$(APP_VERSION)/OpenRTL8196C_$(APP_VERSION)_ota.img
+
 # Add custom Makefile if required
 -include custom.mk
 
@@ -918,6 +934,7 @@ clean:
 	-test -d ./sdk/beken_freertos_sdk && $(MAKE) -C sdk/beken_freertos_sdk clean
 	-test -d ./sdk/OpenTXW81X && $(MAKE) -C sdk/OpenTXW81X/project clean
 	-test -d ./sdk/OpenRDA5981 && $(MAKE) -C sdk/OpenRDA5981 clean
+	-test -n "$(OPENRTL8196C_SDK)" && $(RM) -r $(OPENRTL8196C_SDK)/build/obk
 	-test -d ./sdk/OpenLN882H/build && cmake --build ./sdk/OpenLN882H/build --target clean
 	-test -d ./platforms/ESP-IDF/build-32 && cmake --build ./platforms/ESP-IDF/build-32 --target clean
 	-test -d ./platforms/ESP-IDF/build-c3 && cmake --build ./platforms/ESP-IDF/build-c3 --target clean

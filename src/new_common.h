@@ -262,6 +262,12 @@ typedef long BaseType_t;
 #define PLATFORM_MCU_NAME "BK7236N"
 #define MANUFACTURER "Beken Corporation"
 #define DEF_MQTT_GROUP "bekens_6n"
+#elif PLATFORM_RTL8196C
+#define DEVICENAME_PREFIX_FULL "OpenRTL8196C"
+#define DEVICENAME_PREFIX_SHORT "rtl8196c"
+#define PLATFORM_MCU_NAME "RTL8196C"
+#define MANUFACTURER "Realtek"
+#define DEF_MQTT_GROUP "rtl8196cs"
 #else
 #error "You must define a platform.."
 This platform is not supported, error!
@@ -343,6 +349,8 @@ This platform is not supported, error!
 #define USER_SW_VER "BK7236_Test"
 #elif PLATFORM_BK7236N
 #define USER_SW_VER "BK7236N_Test"
+#elif PLATFORM_RTL8196C
+#define USER_SW_VER "RTL8196C_1.0"
 #else
 #warning "USER_SW_VER undefined"
 #define USER_SW_VER "unknown"
@@ -1166,6 +1174,35 @@ typedef int OSStatus;
 
 #define OBK_OTA_EXTENSION ".rbl"
 
+#elif PLATFORM_RTL8196C
+
+#include "FreeRTOS.h"
+#include "task.h"
+#include "semphr.h"
+#include "lwip/err.h"
+#include "lwip/sockets.h"
+#include "lwip/sys.h"
+#include "lwip/netdb.h"
+#include "lwip/dns.h"
+
+typedef unsigned int UINT32;
+typedef uint8_t UINT8;
+
+#define ASSERT(x) ((void)0)
+#define bk_printf printf
+#define os_malloc malloc
+#define os_free free
+#define lwip_close_force(x) lwip_close(x)
+
+#define BEKEN_DEFAULT_WORKER_PRIORITY      (6)
+#define BEKEN_APPLICATION_PRIORITY         (7)
+
+#define GLOBAL_INT_DECLARATION()	;
+#define GLOBAL_INT_DISABLE()		;
+#define GLOBAL_INT_RESTORE()		;
+
+#define OBK_OTA_EXTENSION ".bin"
+
 #else
 
 #include "gw_intf.h"
@@ -1315,7 +1352,7 @@ typedef enum
 } WIFI_RSSI_LEVEL;
 
 #if PLATFORM_LN882H || PLATFORM_REALTEK || PLATFORM_ECR6600 || PLATFORM_TR6260 || PLATFORM_XRADIO \
- || PLATFORM_TXW81X || PLATFORM_LN8825 || PLATFORM_ESP8266 || PLATFORM_ESPIDF || PLATFORM_GD32VW553
+ || PLATFORM_TXW81X || PLATFORM_LN8825 || PLATFORM_ESP8266 || PLATFORM_ESPIDF || PLATFORM_GD32VW553 || PLATFORM_RTL8196C
 #define IP_STRING_FORMAT	"%u.%u.%u.%u"
 #else
 #define IP_STRING_FORMAT	"%hhu.%hhu.%hhu.%hhu"

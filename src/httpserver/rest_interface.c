@@ -226,7 +226,7 @@ static int http_rest_post(http_request_t* request) {
 		r = http_rest_post_flash(request, 0, -1);
 #elif PLATFORM_TXW81X
 		r = http_rest_post_flash(request, 0, -1);
-#elif PLATFORM_RDA5981
+#elif PLATFORM_RDA5981 || PLATFORM_RTL8196C
 		r = http_rest_post_flash(request, 0, -1);
 #elif PLATFORM_GD32VW553
 		r = http_rest_post_flash(request, 0, -1);
@@ -494,7 +494,11 @@ static int http_rest_get_lfs_file(http_request_t* request) {
 
 	fpath = os_malloc(strlen(request->url) - strlen("api/lfs/") + 1);
 
+#if PLATFORM_RTL8196C
+	buff = os_malloc(16384);
+#else
 	buff = os_malloc(1024);
+#endif
 	file = os_malloc(sizeof(lfs_file_t));
 	memset(file, 0, sizeof(lfs_file_t));
 
@@ -607,6 +611,12 @@ static int http_rest_get_lfs_file(http_request_t* request) {
 				else if (EndsWith(fpath, ".ico")) {
 					mimetype = "image/x-icon";
 				}
+				else if (EndsWith(fpath, ".jpg") || EndsWith(fpath, ".jpeg")) {
+					mimetype = "image/jpeg";
+				}
+				else if (EndsWith(fpath, ".png")) {
+					mimetype = "image/png";
+				}
 			}
 
 			if (isGzip) {
@@ -618,6 +628,24 @@ static int http_rest_get_lfs_file(http_request_t* request) {
 			//#if ENABLE_OBK_BERRY
 			//			http_runBerryFile(request, fpath);
 			//#else
+#if PLATFORM_RTL8196C
+			poststr(request, NULL);
+			do {
+				len = lfs_file_read(&lfs, file, buff, 16384);
+				if (len > 0) {
+					total += len;
+					int sent = 0;
+					while (sent < len) {
+						int r = send(request->fd, buff + sent, len - sent, 0);
+						if (r <= 0) {
+							len = -1;
+							break;
+						}
+						sent += r;
+					}
+				}
+			} while (len > 0);
+#else
 			do {
 				len = lfs_file_read(&lfs, file, buff, 1024);
 				total += len;
@@ -626,6 +654,7 @@ static int http_rest_get_lfs_file(http_request_t* request) {
 					postany(request, buff, len);
 				}
 			} while (len > 0);
+#endif
 			//#endif
 			lfs_file_close(&lfs, file);
 			ADDLOG_DEBUG(LOG_FEATURE_API, "%d total bytes read", total);
@@ -753,7 +782,7 @@ static int http_rest_post_lfs_file(http_request_t* request) {
 
 	//ADDLOG_DEBUG(LOG_FEATURE_API, "LFS write of %s len %d", fpath, request->contentLength);
 
-	lfsres = lfs_file_open(&lfs, file, fpath, LFS_O_RDWR | LFS_O_CREAT);
+	lfsres = lfs_file_open(&lfs, file, fpath, LFS_O_RDWR | LFS_O_CREAT | LFS_O_TRUNC);
 	if (lfsres >= 0) {
 		//ADDLOG_DEBUG(LOG_FEATURE_API, "opened %s");
 		int towrite = request->bodylen;
@@ -773,12 +802,20 @@ static int http_rest_post_lfs_file(http_request_t* request) {
 			goto exit;
 		}
 
+#if PLATFORM_RTL8196C
+		char* rx_stream_buf = os_malloc(16384);
+#endif
 		do {
 			loops++;
 #if ENABLE_LFS_SPI
 			if (loops > 50) {
 				loops = 0;
 				rtos_delay_milliseconds(1);
+			}
+#elif PLATFORM_RTL8196C
+			if (loops > 64) {
+				loops = 0;
+				rtos_yield();
 			}
 #else
 			if (loops > 10) {
@@ -798,13 +835,26 @@ static int http_rest_post_lfs_file(http_request_t* request) {
 			}
 			towrite -= len;
 			if (towrite > 0) {
+#if PLATFORM_RTL8196C
+				if (rx_stream_buf) {
+					writebuf = rx_stream_buf;
+					writelen = recv(request->fd, writebuf, 16384, 0);
+				} else {
+					writebuf = request->received;
+					writelen = recv(request->fd, writebuf, request->receivedLenmax, 0);
+				}
+#else
 				writebuf = request->received;
 				writelen = recv(request->fd, writebuf, request->receivedLenmax, 0);
+#endif
 				if (writelen < 0) {
 					ADDLOG_DEBUG(LOG_FEATURE_API, "recv returned %d - end of data - remaining %d", writelen, towrite);
 				}
 			}
 		} while ((towrite > 0) && (writelen >= 0));
+#if PLATFORM_RTL8196C
+		if (rx_stream_buf) os_free(rx_stream_buf);
+#endif
 
 		// no more data
 		lfs_file_truncate(&lfs, file, total);
