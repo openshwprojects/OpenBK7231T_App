@@ -19,6 +19,14 @@
 #include <math.h>
 #ifndef WINDOWS
 #include <lwip/dns.h>
+#include <lwip/init.h>
+#if LWIP_VERSION_MAJOR > 2 || (LWIP_VERSION_MAJOR == 2 && LWIP_VERSION_MINOR >= 1)
+#include "lwip/apps/mqtt_priv.h"
+#else
+// before lwIP 2.1 there is no altcp layer and the MQTT client's conn is a plain tcp_pcb
+#include <lwip/tcp.h>
+#define altcp_nagle_disable tcp_nagle_disable
+#endif
 #endif
 #if PLATFORM_ESPIDF
 #include <lwip/tcpip.h>
@@ -1161,6 +1169,12 @@ static void mqtt_connection_cb(mqtt_client_t* client, void* arg, mqtt_connection
 	if (status == MQTT_CONNECT_ACCEPTED)
 	{
 		addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "mqtt_connection_cb: Successfully connected");
+
+#ifndef WINDOWS
+		// Send small publishes immediately instead of waiting for the ACK of the previous one.
+		// On a lossy link a lost ACK would otherwise delay state updates by the TCP retransmit timeout.
+		altcp_nagle_disable(client->conn);
+#endif
 
 #if LWIP_ALTCP_TLS_MBEDTLS
 		if (CFG_GetMQTTUseTls() && client && client->conn && client->conn->state) {
