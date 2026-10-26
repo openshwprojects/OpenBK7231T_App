@@ -31,6 +31,8 @@ COMPRESS_DESCRIPTOR_MAGIC = 0xA1B2C3D4
 DEFAULT_PARAM_IMAGE_OFFSET = 0x200
 DEFAULT_PARAM_SOURCE_OFFSET = 0x210
 DEFAULT_COMPRESS_DICT_SIZE = 32 * 1024
+CODE_ALIGNMENT = 0x200
+CODE_POST_ALIGNMENT_BYTES = 16  # twelve zeroes and the 4-byte CRC32 complement
 
 
 class FormatError(ValueError):
@@ -78,7 +80,7 @@ def parse_build_date(value: str | None) -> int:
     elif os.environ.get("SOURCE_DATE_EPOCH"):
         date = dt.datetime.fromtimestamp(int(os.environ["SOURCE_DATE_EPOCH"]), tz=dt.timezone.utc).date()
     else:
-        date = dt.date.today()
+        date = dt.datetime.now(dt.timezone.utc).date()
     return (date.year << 16) | (date.month << 8) | date.day
 
 
@@ -199,6 +201,53 @@ def extract_parameter(
     return bytes(parameter)
 
 
+def finish_compiler_code(raw_code: bytes, parameter: bytes, *, parameter_offset: int) -> bytes:
+    """Apply the Taixin SPI packager's missing post-link transformations.
+
+    BinScript extracts a parameter block from parameter.bincfg. Taixin's
+    makecode.exe also replaces the parameter reservation *inside the code*
+    before emitting the SPI image, then pads the code to a 512-byte boundary
+    plus 16 bytes, with a complemented CRC32 in the final four bytes.
+
+    This was reconstructed from July and October 2026 WSL outputs, including
+    their embedded parameters, padded lengths and trailing CRC32 values. The
+    function accepts raw compiler output, NOT code extracted from an already
+    packaged APP.bin (which has been transformed).
+    """
+    if parameter_offset < 0 or parameter_offset + len(parameter) > len(raw_code):
+        raise FormatError("embedded parameter reservation extends beyond compiler code")
+    if len(parameter) < 2 or struct.unpack_from("<H", parameter)[0] != len(parameter):
+        raise FormatError("invalid embedded parameter length")
+
+    code = bytearray(raw_code)
+    code[parameter_offset : parameter_offset + len(parameter)] = parameter
+    rounded = ((len(code) + CODE_ALIGNMENT - 1) // CODE_ALIGNMENT) * CODE_ALIGNMENT
+    final_size = rounded + CODE_POST_ALIGNMENT_BYTES
+    padding_length = final_size - len(code) - 4
+    if padding_length < 0:
+        raise FormatError("invalid code padding length")
+    code.extend(b"\x00" * padding_length)
+    code.extend(struct.pack("<I", (~crc32_hgic(code)) & 0xFFFFFFFF))
+    return bytes(code)
+
+
+def check_finished_code(code: bytes, parameter: bytes, *, parameter_offset: int) -> dict[str, bool]:
+    """Validate Taixin's embedded parameters, padded code and CRC32 trailer."""
+    return {
+        "embedded_parameter": (
+            parameter_offset >= 0
+            and parameter_offset + len(parameter) <= len(code)
+            and code[parameter_offset : parameter_offset + len(parameter)] == parameter
+        ),
+        "code_512_alignment_plus_16": len(code) % CODE_ALIGNMENT == CODE_POST_ALIGNMENT_BYTES,
+        "code_trailing_crc32_complement": (
+            len(code) >= 4
+            and struct.unpack_from("<I", code, len(code) - 4)[0]
+            == ((~crc32_hgic(code[:-4])) & 0xFFFFFFFF)
+        ),
+    }
+
+
 def _wire_mode_bits(value: int) -> int:
     mapping = {1: 0, 2: 1, 4: 2}
     if value not in mapping:
@@ -254,6 +303,12 @@ class ImageConfig:
 
     @classmethod
     def from_ini(cls, common: Mapping[str, str], spi: Mapping[str, str]) -> "ImageConfig":
+        if parse_int(common.get("CodeType", "1")) != 1:
+            raise FormatError("only SPI CodeType=1 is supported; EFLASH modes are not implemented")
+        if parse_int(spi.get("AesEnable", "0")):
+            raise FormatError("AES-enabled Taixin images are not supported")
+        if not parse_int(spi.get("CodeCRC16", "1")):
+            raise FormatError("TXW81x SPI images without CodeCRC16 are not supported")
         count = parse_int(spi.get("SpecSquenceNumbers", "0"))
         sequences = tuple(
             _parse_spi_sequence(spi[f"SpecSquence{index}"])
@@ -406,6 +461,12 @@ def build_header_terminator(parameter_offset: int) -> bytes:
 
 
 def build_app_image(code: bytes, parameter: bytes, config: ImageConfig, version: VersionInfo) -> bytes:
+    if config.aes_enabled:
+        raise FormatError("AES-enabled Taixin images are not supported")
+    if not config.code_crc16_enabled:
+        raise FormatError("TXW81x SPI CodeCRC16 must be enabled")
+    if config.code_offset + len(code) > config.flash_size:
+        raise FormatError("APP image exceeds configured SPI flash capacity")
     if len(parameter) < 2 or struct.unpack_from("<H", parameter)[0] != len(parameter):
         raise FormatError("parameter block's first u16 must equal its byte length")
     headers = b"".join(
@@ -704,18 +765,41 @@ def command_pack_app(args: argparse.Namespace) -> int:
         source_offset=args.parameter_source_offset,
     )
     version = _version_info(args)
+    code = finish_compiler_code(
+        code, parameter, parameter_offset=parse_int(common.get("ParamOffset", "180"))
+    )
     image = build_app_image(code, parameter, config, version)
-    args.output.write_bytes(image)
     result = parse_app_image(image)
+    checks = {**result["checks"], **check_finished_code(code, parameter, parameter_offset=parse_int(common.get("ParamOffset", "180")))}
+    if not all(checks.values()):
+        raise FormatError(f"generated APP failed validation: {[key for key, passed in checks.items() if not passed]}")
+    args.output.write_bytes(image)
+    result["checks"].update(checks)
     result["input_base_address"] = base
     print(json.dumps(result, indent=2, sort_keys=True))
     return 0
 
 
 def command_pack_ota(args: argparse.Namespace) -> int:
-    image = build_ota_image(args.app.read_bytes(), args.loader.read_bytes())
+    app = args.app.read_bytes()
+    app_info = parse_app_image(app)
+    code = app[app_info["boot"]["code_offset"] :]
+    parameter = app[app_info["parameter_offset"] : app_info["parameter_offset"] + app_info["parameter_length"]]
+    if args.makecode_ini:
+        common, _ = load_makecode_ini(args.makecode_ini)
+        parameter_code_offset = parse_int(common.get("ParamOffset", "180"))
+    else:
+        parameter_code_offset = parse_int(args.parameter_code_offset)
+    checks = {**app_info["checks"], **check_finished_code(code, parameter, parameter_offset=parameter_code_offset)}
+    failures = [key for key, passed in checks.items() if not passed]
+    if failures:
+        raise FormatError(f"cannot create OTA from malformed APP: {failures}")
+    image = build_ota_image(app, args.loader.read_bytes())
+    result = parse_ota_image(image)
+    if not all(result["checks"].values()) or not all(result["compressed_image"]["checks"].values()):
+        raise FormatError("generated OTA failed integrity checks")
     args.output.write_bytes(image)
-    print(json.dumps(parse_ota_image(image), indent=2, sort_keys=True))
+    print(json.dumps(result, indent=2, sort_keys=True))
     return 0
 
 
@@ -728,6 +812,13 @@ def command_inspect(args: argparse.Namespace) -> int:
         info = parse_app_image(data)
         info["type"] = "app"
     print(json.dumps(info, indent=2, sort_keys=True))
+    checks = dict(info["checks"])
+    if info["type"] == "ota":
+        checks.update({f"compressed_{key}": value for key, value in info["compressed_image"]["checks"].items()})
+        checks.update({f"loader_{key}": value for key, value in info["loader"]["checks"].items() if key != "function4_version_copy"})
+    failures = [key for key, passed in checks.items() if not passed]
+    if failures:
+        raise FormatError(f"firmware integrity checks failed: {failures}")
     return 0
 
 
@@ -752,6 +843,8 @@ def build_argument_parser() -> argparse.ArgumentParser:
     ota.add_argument("--app", type=Path, required=True)
     ota.add_argument("--loader", type=Path, required=True, help="existing loader_compress.bin")
     ota.add_argument("--output", type=Path, required=True)
+    ota.add_argument("--parameter-code-offset", default="180", help="hex embedded parameter offset, default 0x180")
+    ota.add_argument("--makecode-ini", type=Path, help="derive embedded parameter offset from the same INI used for APP")
     ota.set_defaults(func=command_pack_ota)
 
     inspect = sub.add_parser("inspect", help="parse and validate APP or compressed OTA image")

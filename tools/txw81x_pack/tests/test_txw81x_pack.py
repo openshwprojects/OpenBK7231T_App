@@ -1,6 +1,9 @@
 from __future__ import annotations
 
 import importlib.util
+import contextlib
+import io
+import zlib
 import json
 import os
 import struct
@@ -90,6 +93,108 @@ class AlgorithmTests(unittest.TestCase):
         self.assertEqual(parameter[:2], b"\x20\x00")
         self.assertEqual(parameter[2:], bytes(range(2, 0x20)))
 
+    def test_finalise_code_inserts_parameters_and_crc32_trailer(self) -> None:
+        parameter = bytearray(0x80)
+        struct.pack_into("<H", parameter, 0, len(parameter))
+        parameter[2:] = bytes((index * 13) & 0xFF for index in range(len(parameter) - 2))
+        raw = bytearray((index * 7 + 1) & 0xFF for index in range(0x9A2))
+        struct.pack_into("<H", raw, 0x180, len(parameter))
+        raw[0x182 : 0x180 + len(parameter)] = bytes(len(parameter) - 2)
+        result = pack.finish_compiler_code(bytes(raw), bytes(parameter), parameter_offset=0x180)
+        self.assertEqual(len(result), 0xA10)
+        self.assertEqual(result[:0x180], raw[:0x180])
+        self.assertEqual(result[0x180 : 0x180 + len(parameter)], parameter)
+        self.assertEqual(result[0x180 + len(parameter) : len(raw)], raw[0x180 + len(parameter) :])
+        self.assertEqual(result[len(raw) : -4], bytes(len(result) - len(raw) - 4))
+        self.assertEqual(struct.unpack_from("<I", result, len(result) - 4)[0], (~zlib.crc32(result[:-4])) & 0xFFFFFFFF)
+        self.assertTrue(all(pack.check_finished_code(result, parameter, parameter_offset=0x180).values()))
+
+    def test_code_size_alignment_at_boundaries(self) -> None:
+        parameter = struct.pack("<H", 0x20) + bytes(range(2, 0x20))
+        for length, expected in ((0x600, 0x610), (0x601, 0x810), (0x7FF, 0x810), (0x800, 0x810)):
+            with self.subTest(length=length):
+                raw = bytearray(b"\x5A" * length)
+                struct.pack_into("<H", raw, 0x180, len(parameter))
+                packed = pack.finish_compiler_code(raw, parameter, parameter_offset=0x180)
+                self.assertEqual(len(packed), expected)
+                self.assertTrue(all(pack.check_finished_code(packed, parameter, parameter_offset=0x180).values()))
+
+    def test_reject_unsupported_image_configurations(self) -> None:
+        for common, spi in (({"CodeType": "2"}, {}), ({"CodeType": "1"}, {"AesEnable": "1"}),
+                            ({"CodeType": "1"}, {"CodeCRC16": "0"})):
+            with self.subTest(common=common, spi=spi):
+                with self.assertRaises(pack.FormatError):
+                    pack.ImageConfig.from_ini(common, spi)
+
+    def test_bad_parameter_reservation_is_rejected(self) -> None:
+        parameter = struct.pack("<H", 0x80) + bytes(0x7E)
+        with self.assertRaises(pack.FormatError):
+            pack.finish_compiler_code(bytes(0x1C0), parameter, parameter_offset=0x180)
+
+    def test_cli_packs_raw_hex_and_detects_corrupted_output(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            directory = Path(tmpdir)
+            raw = bytearray((index * 7 + 5) & 0xFF for index in range(0x701))
+            struct.pack_into("<H", raw, 0x180, 0x20)
+            raw[0x182 : 0x1A0] = bytes(0x1E)
+            parameter = struct.pack("<H", 0x20) + bytes(range(2, 0x20))
+            cfg = bytearray(0x210 + len(parameter))
+            cfg[0x210:] = parameter
+            (directory / "parameter.bincfg").write_bytes(cfg)
+            (directory / "makecode.ini").write_text("[COMMON]\nCodeType=1\nParamOffset=180\n[SPI]\nCodeCRC16=1\nSpecSquenceNumbers=0\n", encoding="utf-8")
+            def record(address: int, kind: int, data: bytes) -> str:
+                payload = bytes((len(data), address >> 8, address & 0xFF, kind)) + data
+                return ":" + (payload + bytes(((-sum(payload)) & 0xFF,))).hex().upper()
+            records = [record(0, 4, struct.pack(">H", 0x1800))]
+            records.extend(record(i, 0, raw[i:i + 32]) for i in range(0, len(raw), 32))
+            records.append(record(0, 1, b""))
+            (directory / "project.hex").write_text("\n".join(records) + "\n", encoding="ascii")
+            output = directory / "APP.bin"
+            cmd = ["pack-app", "--input", str(directory / "project.hex"), "--parameter-cfg", str(directory / "parameter.bincfg"),
+                   "--makecode-ini", str(directory / "makecode.ini"), "--sdk-version", "02050307", "--svn-version", "8EB5",
+                   "--date", "2026-10-26", "--output", str(output)]
+            with contextlib.redirect_stdout(io.StringIO()):
+                self.assertEqual(pack.main(cmd), 0)
+            image = output.read_bytes()
+            parsed = pack.parse_app_image(image)
+            self.assertTrue(all(parsed["checks"].values()))
+            code = image[parsed["boot"]["code_offset"]:]
+            self.assertEqual(len(code), 0x810)
+            self.assertTrue(all(pack.check_finished_code(code, parameter, parameter_offset=0x180).values()))
+            corrupt = bytearray(image)
+            corrupt[-20] ^= 0x01
+            (directory / "corrupt.bin").write_bytes(corrupt)
+            with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
+                with self.assertRaises(SystemExit) as ex:
+                    pack.main(["inspect", str(directory / "corrupt.bin")])
+            self.assertNotEqual(ex.exception.code, 0)
+
+    def test_flash_capacity_is_checked(self) -> None:
+        config = txw81x_config()
+        parameter = struct.pack("<H", 0x20) + bytes(0x1E)
+        version = pack.VersionInfo(0x02050307, 0x8EB5, 0x07EA0A1A, 0)
+        with self.assertRaises(pack.FormatError):
+            pack.build_app_image(bytes(config.flash_size - config.code_offset + 1), parameter, config, version)
+
+    def test_ota_command_rejects_missing_embedded_parameter(self) -> None:
+        config = txw81x_config()
+        parameter = struct.pack("<H", 0x20) + bytes(range(2, 0x20))
+        raw = bytearray(b"\x00" * 0x900)
+        struct.pack_into("<H", raw, 0x180, 0x20)
+        version = pack.VersionInfo(0x02050307, 0x8EB5, 0x07EA0A1A, 0)
+        # A superficially valid APP (header, parameter CRC and code CRC pass)
+        # must still be rejected if the vendor's code insertion was omitted.
+        bad_app = pack.build_app_image(raw, parameter, config, version)
+        self.assertTrue(all(pack.parse_app_image(bad_app)["checks"].values()))
+        with tempfile.TemporaryDirectory() as tmpdir:
+            app_path = Path(tmpdir) / "APP.bin"
+            app_path.write_bytes(bad_app)
+            with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
+                with self.assertRaises(SystemExit) as raised:
+                    pack.main(["pack-ota", "--app", str(app_path), "--loader", str(Path(tmpdir) / "unused.bin"),
+                               "--output", str(Path(tmpdir) / "APP_compress.bin")])
+            self.assertNotEqual(raised.exception.code, 0)
+
     def test_synthetic_app_is_deterministic_and_self_consistent(self) -> None:
         code = bytearray((index * 17 + 3) & 0xFF for index in range(0x700))
         struct.pack_into("<H", code, 0x180, 0x40)
@@ -175,6 +280,34 @@ class KnownGoodTaixinTests(unittest.TestCase):
         )
         rebuilt = pack.build_app_image(code, parameter, txw81x_config(), version)
         self.assertEqual(rebuilt, app)
+
+    def test_rebuild_from_prepack_code_matches_vendor_app_and_ota(self) -> None:
+        """Exercise the transformation the old repack test omitted.
+
+        Strip the observed Taixin code padding/trailer and restore the compiler's
+        unpopulated parameter reservation before running the *raw* code path.
+        This golden test requires the independently archived Windows output.
+        """
+        app = self.app_path.read_bytes()
+        ota = self.ota_path.read_bytes()
+        info = pack.parse_app_image(app)
+        code = app[info["boot"]["code_offset"]:]
+        parameter = app[info["parameter_offset"]:info["parameter_offset"] + info["parameter_length"]]
+        # Do not mistake the last four bytes (CRC32) or its preceding zero
+        # padding for compiler code. A deliberately conservative raw cutoff
+        # uses the last nonzero byte, which is enough to test the packer.
+        raw = bytearray(code[:-4].rstrip(b"\x00"))
+        raw[0x180 : 0x180 + len(parameter)] = bytes(len(parameter))
+        raw[0x180 : 0x182] = parameter[:2]
+        completed = pack.finish_compiler_code(raw, parameter, parameter_offset=0x180)
+        self.assertEqual(completed, code)
+        version = pack.VersionInfo(
+            info["firmware"]["sdk_version"], info["firmware"]["svn_version"],
+            info["firmware"]["date"], info["application_version"],
+        )
+        rebuilt = pack.build_app_image(completed, parameter, txw81x_config(), version)
+        self.assertEqual(rebuilt, app)
+        self.assertEqual(pack.build_ota_image(rebuilt, self.loader_path.read_bytes()), ota)
 
     def test_ota_repack_is_byte_identical(self) -> None:
         app = self.app_path.read_bytes()

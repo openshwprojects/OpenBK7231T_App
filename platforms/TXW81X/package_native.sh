@@ -96,4 +96,5 @@ printf '%s\n' 'Packaging TXW81x APP_compress.bin natively with Python'
 "$PYTHON" "$PACKER" pack-ota \
     --app "$PROJECT_DIR/APP.bin" \
     --loader "$LOADER" \
+    --makecode-ini "$PROJECT_DIR/makecode.ini" \
     --output "$PROJECT_DIR/APP_compress.bin"

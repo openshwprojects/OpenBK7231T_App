@@ -280,3 +280,34 @@ OK
 6. Verify OTA success, reboot, settings retention, rollback/recovery behavior and a subsequent OTA.
 7. Repeat with at least one materially different firmware size and, ideally, a second TXW81x board/device.
 8. Keep the change in draft/review status until those hardware tests pass; software equivalence alone is not a bootability or OTA-safety guarantee.
+
+## October 2026 parity-review correction
+
+A review of three independently archived original Windows/WSL APP and OTA pairs
+(July 12, July 22 and October 25, 2026) found that serializing code directly
+from `project.hex` was incomplete. The original `makecode.exe` additionally:
+
+1. Replaces the reserved code region beginning at `ParamOffset=0x180` with
+   the parameter block extracted from `parameter.bincfg`. The flash parameter
+   area at offset `0x200` alone is insufficient.
+2. Pads raw code to a 512-byte boundary, retains twelve more zero bytes,
+   and appends the little-endian complemented CRC32 over the preceding code.
+   The final code length is `ceil(raw_len / 0x200) * 0x200 + 0x10`.
+
+The old Python-generated outputs omitted both transformations but still
+passed image-header CRC16 checks and the earlier round-trip tests, because
+those tests used code extracted from already packaged Windows firmware.
+
+With both transformations implemented, CLI-level Intel-HEX-to-APP and APP-to-OTA
+reconstructions match the original APP and OTA **byte-for-byte** for all three
+reference pairs. The unprepared code used in these tests was reconstructed by
+removing the reference's code padding/trailer and clearing the embedded
+parameter reservation; this is not a substitute for an independent capture of
+Taixin's original `project.hex`. That exact same-input comparison and real
+hardware boot/OTA validation are still required before treating the build as
+production-proven.
+
+The SDK `script.7z` documentation independently describes the 32-byte
+`compress_s` descriptor and the special low-memory `xz -0` mode; the newer
+v2.5.4.7-45354 SDK does not supply native Linux replacements for `BinScript.exe`
+and `makecode.exe`.
