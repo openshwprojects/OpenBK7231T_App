@@ -15,6 +15,9 @@
 //#include "../driver/drv_ntp.h"
 #include "../driver/drv_deviceclock.h"
 #include "../driver/drv_tuyaMCU.h"
+#if ENABLE_DRIVER_IRREMOTEESP && defined(ENABLE_IRAC)
+#include "../driver/drv_ir.h"
+#endif
 #include "../hal/hal_ota.h"
 #include <math.h>
 #ifndef WINDOWS
@@ -616,6 +619,10 @@ int channelGet(obk_mqtt_request_t* request) {
 	// we only support here publishes with emtpy value, otherwise we would get into
 	// a loop where we receive a get, and then send get reply with val, and receive our own get
 	if (request->receivedLen) {
+#if ENABLE_DRIVER_IRREMOTEESP && defined(ENABLE_IRAC)
+		// retained A/C state we published before the restart, used to restore the thermostat state
+		DRV_IR_OnRetainedState(request->topic, (const char*)request->received, request->receivedLen);
+#endif
 		return 1;
 	}
 
