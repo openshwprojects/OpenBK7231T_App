@@ -473,12 +473,13 @@ void IRFujitsuAC::setTemp(const float temp, const bool useCelsius) {
   _temp = ::max(mintemp, _temp);
   _temp = ::min(maxtemp, _temp);
   if (_useCelsius) {
+    // explicit uint8_t casts: a float to bitfield conversion needs __aeabi_f2ulz, which some SDKs lack
     if (_model == fujitsu_ac_remote_model_t::ARREW4E)
-      _.Temp = (_temp - (offset / 2)) * 2;
+      _.Temp = static_cast<uint8_t>((_temp - (offset / 2)) * 2);
     else
-      _.Temp = (_temp - offset) * 4;
+      _.Temp = static_cast<uint8_t>((_temp - offset) * 4);
   } else {
-    _.Temp = _temp - offset;
+    _.Temp = static_cast<uint8_t>(_temp - offset);
   }
   _rawstatemodified = true;
   setCmd(kFujitsuAcCmdStayOn);  // No special command involved.
