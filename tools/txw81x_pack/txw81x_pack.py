@@ -1,14 +1,39 @@
 #!/usr/bin/env python3
-"""Native TXW81x application and compressed-OTA image packer.
+"""Native TXW81x SPI APP and compressed-OTA packaging (Python standard library).
 
-Portions of the CRC and HGIC/Taixin SPI-header implementation are adapted from
-I-AM-ENGINEER/RNode_Halow_Firmware, pack/prepare_firmware.py (MIT License,
-Copyright (c) 2026 I-AM-ENGINEER). See ATTRIBUTION.md.
+Build: make APP_VERSION=dev APP_NAME=OpenTXW81X VARIANT=default OpenTXW81X
+Repackage after compiling: sh platforms/TXW81X/package_native.sh
+Use pack-app --help, pack-ota --help or inspect --help for standalone commands.
 
-This tool does not contain or redistribute Taixin executables, SDK sources, or
-loader binaries. The OTA command consumes loader_compress.bin from an existing
-SDK/OpenTXW81X checkout.
+Prefer project.hex. Raw binary must preserve BinScript's address remapping and
+0xFF gap filling; code extracted from an existing APP is not compiler input.
+The wrapper reads configuration/version fields and loader_compress.bin from the
+SDK checkout. AES and non-SPI image modes are not supported.
 """
+
+# CRC and HGIC/Taixin SPI-header portions adapted from:
+# I-AM-ENGINEER/RNode_Halow_Firmware, pack/prepare_firmware.py.
+# MIT License
+#
+# Copyright (c) 2026 I-AM-ENGINEER
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
 from __future__ import annotations
 
 import argparse
@@ -202,17 +227,12 @@ def extract_parameter(
 
 
 def finish_compiler_code(raw_code: bytes, parameter: bytes, *, parameter_offset: int) -> bytes:
-    """Apply the Taixin SPI packager's missing post-link transformations.
+    """Prepare raw compiler code for a Taixin SPI image.
 
-    BinScript extracts a parameter block from parameter.bincfg. Taixin's
-    makecode.exe also replaces the parameter reservation *inside the code*
-    before emitting the SPI image, then pads the code to a 512-byte boundary
-    plus 16 bytes, with a complemented CRC32 in the final four bytes.
-
-    This was reconstructed from July and October 2026 WSL outputs, including
-    their embedded parameters, padded lengths and trailing CRC32 values. The
-    function accepts raw compiler output, NOT code extracted from an already
-    packaged APP.bin (which has been transformed).
+    Parameters are stored both here and in the image prefix. Insert them at
+    ParamOffset, zero-pad to a 512-byte boundary plus 12 bytes, then append the
+    little-endian complemented CRC32 over all preceding code bytes.
+    Do not pass code extracted from an already packaged APP.
     """
     if parameter_offset < 0 or parameter_offset + len(parameter) > len(raw_code):
         raise FormatError("embedded parameter reservation extends beyond compiler code")
@@ -441,9 +461,8 @@ def build_encryption_header(config: ImageConfig) -> bytes:
 
 
 def build_application_version_header(version: VersionInfo) -> bytes:
-    # Function 4 is 40 bytes total: app, SDK and SVN versions, 24 reserved
-    # bytes and CRC16. This layout is present in current Taixin output but is
-    # absent from RNode's prepare_firmware.py.
+    # Function 4: app, SDK and SVN versions, 24 reserved bytes and CRC16
+    # (40 bytes total, including the function/size fields).
     without_crc = struct.pack(
         "<BBIII",
         4,
@@ -461,6 +480,7 @@ def build_header_terminator(parameter_offset: int) -> bytes:
 
 
 def build_app_image(code: bytes, parameter: bytes, config: ImageConfig, version: VersionInfo) -> bytes:
+    """Serialize code prepared by finish_compiler_code() and the SPI headers."""
     if config.aes_enabled:
         raise FormatError("AES-enabled Taixin images are not supported")
     if not config.code_crc16_enabled:
@@ -510,6 +530,8 @@ def compress_real_code(app: bytes) -> tuple[bytes, bytes, bytes]:
     # real_code.BinScript requests APP length bytes from source offset C00;
     # bytes beyond EOF are 0xFF, yielding code + code_offset bytes of 0xFF.
     real_code = app[code_offset:] + b"\xFF" * code_offset
+    # Match Taixin's bundled xz -0: LZMA2, 32 KiB dictionary and CRC64.
+    # Do not rely on the host library's preset dictionary size.
     xz_payload = lzma.compress(
         real_code,
         format=lzma.FORMAT_XZ,
@@ -522,6 +544,8 @@ def compress_real_code(app: bytes) -> tuple[bytes, bytes, bytes]:
             }
         ],
     )
+    # SDK compress_s: three u32 fields, seven reserved u16 values, then
+    # raw-code, XZ-payload and descriptor CRC16 values (32 bytes total).
     descriptor_without_crc = (
         struct.pack("<III", COMPRESS_DESCRIPTOR_MAGIC, len(real_code), len(xz_payload))
         + bytes(14)

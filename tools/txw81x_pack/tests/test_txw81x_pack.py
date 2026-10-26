@@ -1,3 +1,14 @@
+"""TXW81x packer regression tests.
+
+From the repository root:
+    python3 -m unittest discover -s tools/txw81x_pack/tests -v
+
+For reference tests, also set TXW81X_REFERENCE_DIR to the directory containing
+files named in reference_manifest.json and TXW81X_LOADER to the SDK's
+loader_compress.bin. Without these inputs, KnownGoodTaixinTests is skipped.
+Reference reconstruction does not replace testing both packagers against the
+same original compiler-generated project.hex.
+"""
 from __future__ import annotations
 
 import importlib.util
@@ -282,20 +293,17 @@ class KnownGoodTaixinTests(unittest.TestCase):
         self.assertEqual(rebuilt, app)
 
     def test_rebuild_from_prepack_code_matches_vendor_app_and_ota(self) -> None:
-        """Exercise the transformation the old repack test omitted.
+        """Regenerate parameters, padding and CRC32 from reconstructed raw code.
 
-        Strip the observed Taixin code padding/trailer and restore the compiler's
-        unpopulated parameter reservation before running the *raw* code path.
-        This golden test requires the independently archived Windows output.
+        This input is derived from reference output, not a captured compiler HEX.
         """
         app = self.app_path.read_bytes()
         ota = self.ota_path.read_bytes()
         info = pack.parse_app_image(app)
         code = app[info["boot"]["code_offset"]:]
         parameter = app[info["parameter_offset"]:info["parameter_offset"] + info["parameter_length"]]
-        # Do not mistake the last four bytes (CRC32) or its preceding zero
-        # padding for compiler code. A deliberately conservative raw cutoff
-        # uses the last nonzero byte, which is enough to test the packer.
+        # Strip the CRC32 and trailing zeroes to exercise code preparation.
+        # This reconstruction does not establish the original compiler length.
         raw = bytearray(code[:-4].rstrip(b"\x00"))
         raw[0x180 : 0x180 + len(parameter)] = bytes(len(parameter))
         raw[0x180 : 0x182] = parameter[:2]

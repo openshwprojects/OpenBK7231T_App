@@ -1,5 +1,7 @@
 #!/bin/sh
 # Native TXW81x APP.bin and APP_compress.bin packaging for OpenBeken.
+# Use compiler HEX: BinScript fills address gaps with 0xFF; raw objcopy output
+# may fill them differently. The packer handles parameter insertion and CRCs.
 set -eu
 
 ROOT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
@@ -72,6 +74,8 @@ for key, value in values.items():
 PY
 )"
 
+# Version overrides are hexadecimal. TXW81X_BUILD_DATE is YYYY-MM-DD;
+# otherwise Python uses SOURCE_DATE_EPOCH or the current UTC date.
 : "${TXW81X_SDK_VERSION:=$TXW81X_DERIVED_SDK_VERSION}"
 : "${TXW81X_SVN_VERSION:=$TXW81X_DERIVED_SVN_VERSION}"
 : "${TXW81X_IMAGE_VERSION:=$TXW81X_DERIVED_IMAGE_VERSION}"
