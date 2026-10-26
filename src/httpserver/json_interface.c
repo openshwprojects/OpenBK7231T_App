@@ -519,7 +519,11 @@ static int http_tasmota_json_status_STS(void* request, jsonCb_t printer, bool bA
 	JSON_PrintKeyValue_Int(request, printer, "LinkCount", 21, true);
 	JSON_PrintKeyValue_String(request, printer, "Downtime", "0T06:13:34", false);
 	printer(request, "}"); // close WiFi
-	printer(request, "}");
+	// SUPREMESPORTS - Add Hostname and IP Address
+	printer(request, ","); // Add a comma after the Wifi object
+	JSON_PrintKeyValue_String(request, printer, "Hostname", CFG_GetMQTTClientId(), true); // Append the Hostname string natively
+	JSON_PrintKeyValue_String(request, printer, "IPAddress", HAL_GetMyIPString(), false); // Append the IP address string natively (false means no trailing comma)
+	printer(request, "}"); // close main object
 	return 0;
 }
 static int http_tasmota_json_status_TIM(void* request, jsonCb_t printer) {
