@@ -411,9 +411,8 @@
 
 #if (OBK_VARIANT == OBK_VARIANT_IRREMOTEESP)
 #undef ENABLE_DRIVER_DDP
+// the BK7231T OTA image has to fit in the 528384 byte OTA area (see http_rest_post_flash), Berry does not fit with A/C control
 #undef ENABLE_OBK_BERRY
-// no room left in the app partition on BK7231T for both A/C control and the shutters (motor) driver
-#undef ENABLE_DRIVER_SHUTTERS
 #define ENABLE_DRIVER_IRREMOTEESP				1
 #define ENABLE_IRAC								1
 #endif
