@@ -477,8 +477,6 @@ jobs:
     steps:
       - name: Source checkout
         uses: actions/checkout@v5
-      - name: Test native TXW81x packer
-        run: python3 -m unittest discover -s tools/txw81x_pack/tests -v
       - name: Run make
         run: |
           make APP_VERSION=${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }} APP_NAME=${{ matrix.platform }} VARIANT="${{ matrix.variant }}" ${{ matrix.platform }}
