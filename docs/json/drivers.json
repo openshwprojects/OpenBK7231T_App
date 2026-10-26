@@ -391,6 +391,20 @@
     "define": "Enabled by defining \"<b>ENABLE_DRIVER_SSDP</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
   },
   {
+    "name": "FTP",
+    "title": "FTP",
+    "descr": "RFC 959 FTP Server providing transparent access to LittleFS and mounted VFS volumes (such as USB drives).",
+    "requires": "",
+    "define": "Enabled by defining \"<b>ENABLE_DRIVER_FTP && ENABLE_LITTLEFS</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
+  },
+  {
+    "name": "SMB",
+    "title": "SMB",
+    "descr": "SMB2 network file share server (port 445) providing native Windows/Linux/macOS access to LittleFS and mounted VFS volumes.",
+    "requires": "",
+    "define": "Enabled by defining \"<b>ENABLE_DRIVER_SMB && ENABLE_LITTLEFS</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
+  },
+  {
     "name": "DGR",
     "title": "TODO",
     "descr": "Tasmota Device groups driver. See [forum example](https://www.elektroda.com/rtvforum/topic3925472.html) and [video tutorial](https://www.youtube.com/watch?v=e1xcq3OUR5M&ab_channel=Elektrodacom)",

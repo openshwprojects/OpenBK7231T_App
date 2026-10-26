@@ -191,6 +191,12 @@
 #define LFS_BLOCKS_END 0x3FE000
 #define LFS_BLOCKS_MAX_LEN 0x100000
 
+#elif PLATFORM_RTL8196C
+
+#define LFS_BLOCKS_START 0x10000
+#define LFS_BLOCKS_START_MIN 0x10000
+#define LFS_BLOCKS_END 0x70000
+
 #else
 // TODO
 // start 0x1000 after OTA addr
@@ -228,5 +234,8 @@ void LFSAddCmds();
 void init_lfs(int create);
 void release_lfs();
 int lfs_present();
+#if PLATFORM_RTL8196C
+#include "../hal/rtl8196c/hal_vfs_rtl8196c.h"
+#endif
 #endif
 #endif
