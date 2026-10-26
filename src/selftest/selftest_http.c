@@ -789,7 +789,7 @@ bool SIM_HasHTTPRGB() {
 	s.tag = "input";
 	s.parms[0].name = "type";
 	s.parms[0].value = "color";
-	s.parms[1].name = "oninput";
+	s.parms[1].name = "onchange";
 	s.parms[1].value = "this.form.submit()";
 	s.parms[2].name = "name";
 	s.parms[2].value = "rgb";

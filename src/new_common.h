@@ -244,6 +244,30 @@ typedef long BaseType_t;
 #define PLATFORM_MCU_NAME "GD32VW553"
 #define MANUFACTURER "GigaDevices"
 #define DEF_MQTT_GROUP "gd32s"
+#elif PLATFORM_BK7239N
+#define DEVICENAME_PREFIX_FULL "OpenBK7239N"
+#define DEVICENAME_PREFIX_SHORT "obk"
+#define PLATFORM_MCU_NAME "BK7239N"
+#define MANUFACTURER "Beken Corporation"
+#define DEF_MQTT_GROUP "bekens_9n"
+#elif PLATFORM_BK7236
+#define DEVICENAME_PREFIX_FULL "OpenBK7236"
+#define DEVICENAME_PREFIX_SHORT "obk"
+#define PLATFORM_MCU_NAME "BK7236"
+#define MANUFACTURER "Beken Corporation"
+#define DEF_MQTT_GROUP "bekens_6"
+#elif PLATFORM_BK7236N
+#define DEVICENAME_PREFIX_FULL "OpenBK7236N"
+#define DEVICENAME_PREFIX_SHORT "obk"
+#define PLATFORM_MCU_NAME "BK7236N"
+#define MANUFACTURER "Beken Corporation"
+#define DEF_MQTT_GROUP "bekens_6n"
+#elif PLATFORM_RTL8196C
+#define DEVICENAME_PREFIX_FULL "OpenRTL8196C"
+#define DEVICENAME_PREFIX_SHORT "rtl8196c"
+#define PLATFORM_MCU_NAME "RTL8196C"
+#define MANUFACTURER "Realtek"
+#define DEF_MQTT_GROUP "rtl8196cs"
 #else
 #error "You must define a platform.."
 This platform is not supported, error!
@@ -319,6 +343,14 @@ This platform is not supported, error!
 #define USER_SW_VER "BL616_Test"
 #elif PLATFORM_GD32VW553
 #define USER_SW_VER "GD32VW553_Test"
+#elif PLATFORM_BK7239N
+#define USER_SW_VER "BK7239N_Test"
+#elif PLATFORM_BK7236
+#define USER_SW_VER "BK7236_Test"
+#elif PLATFORM_BK7236N
+#define USER_SW_VER "BK7236N_Test"
+#elif PLATFORM_RTL8196C
+#define USER_SW_VER "RTL8196C_1.0"
 #else
 #warning "USER_SW_VER undefined"
 #define USER_SW_VER "unknown"
@@ -475,9 +507,7 @@ typedef unsigned int u32;
 #include "FreeRTOS.h"
 #include "task.h"
 
-#if !PLATFORM_XR809
 #define OBK_OTA_EXTENSION ".img"
-#endif
 //typedef unsigned char u8;
 //typedef unsigned char uint8_t;
 //typedef unsigned int uint32_t;
@@ -1113,6 +1143,66 @@ OSStatus rtos_suspend_thread(beken_thread_t* thread);
 
 #define OBK_OTA_EXTENSION ".img"
 
+#elif PLATFORM_ARMINO
+
+#include "stdint.h"
+#include "FreeRTOS.h"
+#include "task.h"
+#include "semphr.h"
+#include "queue.h"
+#include "event_groups.h"
+#include "components/system.h"
+#include "lwip/sockets.h"
+#include "lwip/ip_addr.h"
+#include "lwip/inet.h"
+#include "bk_wifi_types.h"
+#include "bk_sensor_internal.h"
+#include "driver/adc.h"
+#include "temp_detect.h"
+#include <driver/flash_partition.h>
+#include "modules/pm.h"
+#include "driver/aon_rtc.h"
+void* os_malloc(size_t size);
+void  os_free(void* ptr);
+void* os_realloc(void* ptr, size_t size);
+typedef int OSStatus;
+#define ASSERT
+#define delay_ms rtos_delay_milliseconds
+#define lwip_close_force(x) lwip_close(x)
+
+#define printf(...) addLog(__VA_ARGS__)
+
+#define OBK_OTA_EXTENSION ".rbl"
+
+#elif PLATFORM_RTL8196C
+
+#include "FreeRTOS.h"
+#include "task.h"
+#include "semphr.h"
+#include "lwip/err.h"
+#include "lwip/sockets.h"
+#include "lwip/sys.h"
+#include "lwip/netdb.h"
+#include "lwip/dns.h"
+
+typedef unsigned int UINT32;
+typedef uint8_t UINT8;
+
+#define ASSERT(x) ((void)0)
+#define bk_printf printf
+#define os_malloc malloc
+#define os_free free
+#define lwip_close_force(x) lwip_close(x)
+
+#define BEKEN_DEFAULT_WORKER_PRIORITY      (6)
+#define BEKEN_APPLICATION_PRIORITY         (7)
+
+#define GLOBAL_INT_DECLARATION()	;
+#define GLOBAL_INT_DISABLE()		;
+#define GLOBAL_INT_RESTORE()		;
+
+#define OBK_OTA_EXTENSION ".bin"
+
 #else
 
 #include "gw_intf.h"
@@ -1201,7 +1291,7 @@ void urldecode2_safe(char *dst, const char *srcin, int maxDstLen);
 int strIsInteger(const char *s);
 
 #if !defined(PLATFORM_ESPIDF) && !defined(PLATFORM_TR6260) && !defined(PLATFORM_ECR6600) && !defined(PLATFORM_BL602) && \
-	!defined(PLATFORM_ESP8266) && !defined(PLATFORM_W800)
+	!defined(PLATFORM_ESP8266) && !defined(PLATFORM_W800) && !defined(PLATFORM_ARMINO)
 
 const char* strcasestr(const char* str1, const char* str2);
 #endif
@@ -1262,7 +1352,7 @@ typedef enum
 } WIFI_RSSI_LEVEL;
 
 #if PLATFORM_LN882H || PLATFORM_REALTEK || PLATFORM_ECR6600 || PLATFORM_TR6260 || PLATFORM_XRADIO \
- || PLATFORM_TXW81X || PLATFORM_LN8825 || PLATFORM_ESP8266 || PLATFORM_ESPIDF || PLATFORM_GD32VW553
+ || PLATFORM_TXW81X || PLATFORM_LN8825 || PLATFORM_ESP8266 || PLATFORM_ESPIDF || PLATFORM_GD32VW553 || PLATFORM_RTL8196C
 #define IP_STRING_FORMAT	"%u.%u.%u.%u"
 #else
 #define IP_STRING_FORMAT	"%hhu.%hhu.%hhu.%hhu"

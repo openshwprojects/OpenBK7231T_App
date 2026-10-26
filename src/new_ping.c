@@ -23,7 +23,6 @@
 
 #else
 #include "lwip/timeouts.h"
-#include "lwip/prot/ip4.h"
 #endif
 #include "lwip/inet_chksum.h"
 

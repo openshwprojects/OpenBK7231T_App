@@ -20,6 +20,9 @@
 #ifndef WINDOWS
 #include <lwip/dns.h>
 #endif
+#if PLATFORM_ESPIDF
+#include <lwip/tcpip.h>
+#endif
 
 #define BUILD_AND_VERSION_FOR_MQTT "Open" PLATFORM_MCU_NAME " " USER_SW_VER " " __DATE__ " " __TIME__ 
 
@@ -61,7 +64,7 @@ struct altcp_tls_config {
 #endif
 #endif
 
-#ifdef PLATFORM_BEKEN
+#if defined(PLATFORM_BEKEN) || defined(PLATFORM_ARMINO)
 #include <tcpip.h>
 // from hal_main_bk7231.c
 // triggers a one-shot timer to cause read.
@@ -151,6 +154,9 @@ int getLenData(int *len, unsigned char *data, int maxlen){
 }
 
 static SemaphoreHandle_t g_mutex = 0;
+#if PLATFORM_ESPIDF
+static SemaphoreHandle_t g_rx_mutex = 0;
+#endif
 
 static bool MQTT_Mutex_Take(int del) {
 	int taken;
@@ -171,6 +177,27 @@ static void MQTT_Mutex_Free()
 	xSemaphoreGive(g_mutex);
 }
 
+static bool MQTT_RX_Mutex_Take(int del)
+{
+#if PLATFORM_ESPIDF
+	if (g_rx_mutex == 0) {
+		return false;
+	}
+	return xSemaphoreTake(g_rx_mutex, del) == pdTRUE;
+#else
+	return MQTT_Mutex_Take(del);
+#endif
+}
+
+static void MQTT_RX_Mutex_Free()
+{
+#if PLATFORM_ESPIDF
+	xSemaphoreGive(g_rx_mutex);
+#else
+	MQTT_Mutex_Free();
+#endif
+}
+
 // this is called from tcp_thread context to queue received mqtt,
 // and then we'll retrieve them from our own thread for processing.
 //
@@ -178,17 +205,20 @@ static void MQTT_Mutex_Free()
 // system can use it to spoof MQTT packets to check if MQTT commands
 // are working...
 int MQTT_Post_Received(const char *topic, int topiclen, const unsigned char *data, int datalen){
-	MQTT_Mutex_Take(100);
+	// The TCP/IP callback only shares this ring buffer with our command task.
+	if (!MQTT_RX_Mutex_Take(100)) {
+		return 0;
+	}
 	if ((MQTT_RX_BUFFER_MAX - 1 - mqtt_rx_buffer_count) < topiclen + datalen + 2 + 2){
 		addLogAdv(LOG_ERROR, LOG_FEATURE_MQTT, "MQTT_rx buffer overflow for topic %s", topic);
 	} else {
 		addLenData(topiclen, (unsigned char *)topic);
 		addLenData(datalen, data);
 	}
-	MQTT_Mutex_Free();
+	MQTT_RX_Mutex_Free();
 
 
-#ifdef PLATFORM_BEKEN
+#if defined(PLATFORM_BEKEN) || defined(PLATFORM_ARMINO)
 	MQTT_TriggerRead();
 #endif
 	return 1;
@@ -198,7 +228,9 @@ int MQTT_Post_Received_Str(const char *topic, const char *data) {
 }
 int get_received(char **topic, int *topiclen, unsigned char **data, int *datalen){
 	int res = 0;
-	MQTT_Mutex_Take(100);
+	if (!MQTT_RX_Mutex_Take(100)) {
+		return 0;
+	}
 	if (mqtt_rx_buffer_tail != mqtt_rx_buffer_head){
 		getLenData(topiclen, temp_topic, sizeof(temp_topic)-1);
 		temp_topic[*topiclen] = 0;
@@ -208,7 +240,7 @@ int get_received(char **topic, int *topiclen, unsigned char **data, int *datalen
 		*data = temp_data;
 		res = 1;
 	}
-	MQTT_Mutex_Free();
+	MQTT_RX_Mutex_Free();
 	return res;
 }
 //
@@ -1094,7 +1126,7 @@ static void mqtt_incoming_publish_cb(void* arg, const char* topic, u32_t tot_len
 	for (i = 0; i < numCallbacks; i++)
 	{
 		char* cbtopic = callbacks[i]->topic;
-		if (strncmp(topic, cbtopic, strlen(cbtopic)))
+		if (!strncmp(topic, cbtopic, strlen(cbtopic)))
 		{
 			strncpy(g_mqtt_request.topic, topic, sizeof(g_mqtt_request.topic) - 1);
 			g_mqtt_request.topic[sizeof(g_mqtt_request.topic) - 1] = 0;
@@ -1404,7 +1436,7 @@ static int MQTT_do_connect(mqtt_client_t* client)
 			snprintf(mqtt_status_message, sizeof(mqtt_status_message), "mqtt_client_connect connect failed");
 			if (res == ERR_ISCONN)
 			{
-				mqtt_disconnect(mqtt_client);
+				MQTT_disconnect(mqtt_client);
 			}
 		}
 		else {
@@ -1936,6 +1968,12 @@ void MQTT_init()
 #ifdef WINDOWS
 	mqtt_client = 0;
 #endif
+#if PLATFORM_ESPIDF
+	// Create this before connecting; receive callbacks run in the TCP/IP task.
+	if (g_rx_mutex == 0) {
+		g_rx_mutex = xSemaphoreCreateMutex();
+	}
+#endif
 
 	MQTT_InitCallbacks();
 
@@ -2360,11 +2398,12 @@ int MQTT_RunEverySecondUpdate()
 							break;
 						}
 					}
-					// OBK_PUBLISH_MUTEX_FAIL - MQTT is busy
+					// Stop on transient failures instead of hammering every remaining item.
 					if (publishRes == OBK_PUBLISH_MUTEX_FAIL
-						|| publishRes == OBK_PUBLISH_WAS_DISCONNECTED)
+						|| publishRes == OBK_PUBLISH_WAS_DISCONNECTED
+						|| publishRes == OBK_PUBLISH_MEM_FAIL)
 					{
-						// retry the same later
+						// Leave this item pending while MQTT has time to drain its queue.
 						break;
 					}
 					// OBK_PUBLISH_WAS_NOT_REQUIRED

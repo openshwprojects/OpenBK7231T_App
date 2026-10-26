@@ -228,21 +228,23 @@ int http_rest_post_flash(http_request_t* request, int startaddr, int maxaddr)
 	int towrite = request->bodylen;
 	char* writebuf = request->bodystart;
 	int writelen = request->bodylen;
+    int initial_addr = startaddr;
 
 	ADDLOG_DEBUG(LOG_FEATURE_OTA, "OTA post len %d", request->contentLength);
-
-	init_ota(startaddr);
 
 	if (request->contentLength >= 0)
 	{
 		towrite = request->contentLength;
 	}
 
-	if (writelen < 0 || (startaddr + writelen > maxaddr))
+	if (writelen < 0 || towrite <= 0 || startaddr < 0 || startaddr > maxaddr
+		|| towrite > maxaddr - startaddr)
 	{
-		ADDLOG_DEBUG(LOG_FEATURE_OTA, "ABORTED: %d bytes to write", writelen);
-		return http_rest_error(request, -20, "writelen < 0 or end > 0x200000");
+		ADDLOG_DEBUG(LOG_FEATURE_OTA, "ABORTED: %d bytes to write", towrite);
+		return http_rest_error(request, -20, "invalid length, or end beyond maxaddr");
 	}
+
+	init_ota(startaddr);
 
 	do
 	{
@@ -266,7 +268,7 @@ int http_rest_post_flash(http_request_t* request, int startaddr, int maxaddr)
 	http_setup(request, httpMimeTypeJson);
 	hprintf255(request, "{\"size\":%d}", total);
 	poststr(request, NULL);
-	CFG_IncrementOTACount();
+	if(initial_addr == START_ADR_OF_BK_PARTITION_OTA) CFG_IncrementOTACount();
 	return 0;
 }
 

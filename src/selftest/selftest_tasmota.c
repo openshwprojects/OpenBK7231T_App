@@ -634,6 +634,9 @@ void Test_Backlog() {
 	SELFTEST_ASSERT_CHANNEL(1, 5);
 	SELFTEST_ASSERT(CMD_ExecuteCommand("backlog setChannel 1 22; setChannel 1 33", 0) == CMD_RES_OK);
 	SELFTEST_ASSERT_CHANNEL(1, 33);
+	// one command over 127 chars - the 77 sits past the old char[128] cut
+	SELFTEST_ASSERT(CMD_ExecuteCommand("backlog setChannel 1 5; setChannel 1                                                                                                                                                      77", 0) == CMD_RES_OK);
+	SELFTEST_ASSERT_CHANNEL(1, 77);
 }
 void Test_Tasmota_Backlog() {
 	CMD_ExecuteCommand("backlog setChannel 1 123; delay_ms 500; setChannel 1 234; delay_ms 500; setChannel 1 345; delay_ms 500; setChannel 1 456; delay_s 0.5; setChannel 1 567",0);

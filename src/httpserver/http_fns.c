@@ -22,9 +22,6 @@
 #include "../driver/drv_ntp.h"
 #include "../driver/drv_deviceclock.h"		// to set clock via Javascript in pmntp
 #include "../driver/drv_local.h"
-#ifdef PLATFORM_BEKEN
-#include "start_type_pub.h"
-#endif
 
 #ifdef WINDOWS
 // nothing
@@ -34,16 +31,12 @@
 #include <bl602_adc.h>  //  For BL602 ADC Standard Driver
 #include <bl602_glb.h>  //  For BL602 Global Register Standard Driver
 #include <wifi_mgmr_ext.h> //For BL602 WiFi AP Scan
-#elif PLATFORM_W600 || PLATFORM_W800
-
+#elif defined(PLATFORM_BEKEN)
+#include "start_type_pub.h"
+#include "rw_pub.h"
 #elif PLATFORM_XRADIO
 #include <image/flash.h>
 #include <ota/ota.h>
-#elif defined(PLATFORM_BK7231N)
-// tuya-iotos-embeded-sdk-wifi-ble-bk7231n/sdk/include/tuya_hal_storage.h
-#include "tuya_hal_storage.h"
-#include "BkDriverFlash.h"
-#include "temp_detect_pub.h"
 #elif defined(PLATFORM_LN882H)
 #elif defined(PLATFORM_TR6260)
 #elif defined(PLATFORM_REALTEK) && !PLATFORM_REALTEK_NEW
@@ -65,12 +58,6 @@ extern uint32_t current_fw_idx;
 #elif defined(PLATFORM_ESPIDF) || PLATFORM_ESP8266
 #include "esp_wifi.h"
 #include "esp_system.h"
-#elif defined(PLATFORM_BK7231T)
-// REALLY? A typo in Tuya SDK? Storge?
-// tuya-iotos-embeded-sdk-wifi-ble-bk7231t/platforms/bk7231t/tuya_os_adapter/include/driver/tuya_hal_storge.h
-#include "tuya_hal_storge.h"
-#include "BkDriverFlash.h"
-#include "temp_detect_pub.h"
 #elif defined(PLATFORM_ECR6600)
 #include "hal_system.h"
 #elif PLATFORM_GD32VW553
@@ -78,11 +65,6 @@ extern uint32_t current_fw_idx;
 #include "wifi_management.h"
 #include "wifi_export.h"
 #include "macif_types.h"
-#endif
-
-#if (defined(PLATFORM_BK7231T) || defined(PLATFORM_BK7231N)) && !defined(PLATFORM_BEKEN_NEW)
-int tuya_os_adapt_wifi_all_ap_scan(AP_IF_S** ap_ary, unsigned int* num);
-int tuya_os_adapt_wifi_release_ap(AP_IF_S* ap);
 #endif
 
 static const char SUBMIT_AND_END_FORM[] = "<br><input type=\"submit\" value=\"Submit\"></form>";
@@ -284,12 +266,12 @@ int http_fn_index(http_request_t* request) {
 		http_html_start(request, NULL);
 
 		poststr(request, "<div id=\"changed\">");
-#if defined(PLATFORM_BEKEN) || defined(WINDOWS)
+#if defined(PLATFORM_BEKEN) || defined(WINDOWS) || defined(PLATFORM_ARMINO)
 		if (DRV_IsRunning("PWMToggler")) {
 			DRV_Toggler_ProcessChanges(request);
 		}
 #endif
-#if defined(PLATFORM_BEKEN) || defined(WINDOWS)
+#if defined(PLATFORM_BEKEN) || defined(WINDOWS) || defined(PLATFORM_ARMINO)
 		if (DRV_IsRunning("httpButtons")) {
 			DRV_HTTPButtons_ProcessChanges(request);
 		}
@@ -496,6 +478,15 @@ int http_fn_index(http_request_t* request) {
 	for (i = 0; i < CHANNEL_MAX; i++) {
 		const char **types;
 		int numTypes;
+		const char *channelPrefix = "Channel ";
+		const char *enumSuffix = " Enum";
+
+#if ENABLE_DRIVER_XIAOMI_COMPACT4
+		if (XiaomiCompact4_ShouldUseCompactIndexLabels(i)) {
+			channelPrefix = "";
+			enumSuffix = "";
+		}
+#endif
 
 		// check ability to hide given channel from gui
 		if (BIT_CHECK(g_hiddenChannels, i)) {
@@ -530,10 +521,10 @@ int http_fn_index(http_request_t* request) {
 			iValue = CHANNEL_Get(i);
 			poststr(request, "<tr><td>");
 			if (iValue >= 0 && iValue <= 2) {
-				hprintf255(request, "Channel %s = %s", CHANNEL_GetLabel(i), types[iValue]);
+				hprintf255(request, "%s%s = %s", channelPrefix, CHANNEL_GetLabel(i), types[iValue]);
 			}
 			else {
-				hprintf255(request, "Channel %s = %i", CHANNEL_GetLabel(i), iValue);
+				hprintf255(request, "%s%s = %i", channelPrefix, CHANNEL_GetLabel(i), iValue);
 			}
 			poststr(request, "</td></tr>");
 		} else if (channelType == ChType_Enum) {
@@ -545,7 +536,7 @@ int http_fn_index(http_request_t* request) {
 			if (g_enums == NULL || g_enums[i]->numOptions == 0 ) {
 				//en = g_enums[i];
 				poststr(request, "<tr><td>");
-				hprintf255(request, "<p>Change channel %s enum:</p><form action=\"index\">", CHANNEL_GetLabel(i));
+				hprintf255(request, "<p>Change %s%s%s:</p><form action=\"index\">", channelPrefix, CHANNEL_GetLabel(i), enumSuffix);
 				hprintf255(request, "<input type=\"hidden\" name=\"setIndex\" value=\"%i\">", i);
 				hprintf255(request, "<input type=\"number\" name=\"set\" value=\"%i\" onblur=\"this.form.submit()\">", iValue);
 				hprintf255(request, "<input type=\"submit\" value=\"Set!\"/></form>");
@@ -555,7 +546,7 @@ int http_fn_index(http_request_t* request) {
 				en = g_enums[i];
 
 				poststr(request, "<tr><td>");
-				hprintf255(request, "<form action=\"index\"><label for=\"select%i\">Channel %s Enum:</label>", i, CHANNEL_GetLabel(i));
+				hprintf255(request, "<form action=\"index\"><label for=\"select%i\">%s%s%s:</label>", i, channelPrefix, CHANNEL_GetLabel(i), enumSuffix);
 				hprintf255(request, "<input type=\"hidden\" name=\"setIndex\" value=\"%i\">", i);
 				hprintf255(request, "<select id=\"select%i\" name=\"set\" onchange=\"this.form.submit()\">", i);
 
@@ -584,7 +575,11 @@ int http_fn_index(http_request_t* request) {
 				oLabel = CMD_FindChannelEnumLabel(g_enums[i], iValue);
 
 			poststr(request, "<tr><td>");
-			hprintf255(request, "Channel %s = %s [%i]", CHANNEL_GetLabel(i), oLabel, iValue);
+			if (channelPrefix[0] == '\0') {
+				hprintf255(request, "%s = %s", CHANNEL_GetLabel(i), oLabel);
+			} else {
+				hprintf255(request, "%s%s = %s [%i]", channelPrefix, CHANNEL_GetLabel(i), oLabel, iValue);
+			}
 			poststr(request, "</td></tr>");
 		}
 		else if ((types = Channel_GetOptionsForChannelType(channelType, &numTypes)) != 0) {
@@ -632,7 +627,7 @@ int http_fn_index(http_request_t* request) {
 			iValue = CHANNEL_Get(i);
 
 			poststr(request, "<tr><td>");
-			hprintf255(request, "Channel %s = %i", CHANNEL_GetLabel(i), iValue);
+			hprintf255(request, "%s%s = %i", channelPrefix, CHANNEL_GetLabel(i), iValue);
 			poststr(request, "</td></tr>");
 		}
 		else if (channelType == ChType_Motion || channelType == ChType_Motion_n) {
@@ -693,8 +688,8 @@ int http_fn_index(http_request_t* request) {
 			}
 			pwmValue = CHANNEL_Get(i);
 			poststr(request, "<tr><td>");
-			hprintf255(request, "Channel %s:<br><form action=\"index\" id=\"form%i\">", CHANNEL_GetLabel(i), i);
-			hprintf255(request, "<input type=\"range\" min=\"0\" max=\"%i\" name=\"%s\" id=\"slider%i\" value=\"%i\" onchange=\"this.form.submit()\">", maxValue, inputName, i, pwmValue);
+			hprintf255(request, "%s%s: <span id=\"sliderValue%i\">%i</span><br><form action=\"index\" id=\"form%i\">", channelPrefix, CHANNEL_GetLabel(i), i, pwmValue, i);
+			hprintf255(request, "<input type=\"range\" min=\"0\" max=\"%i\" name=\"%s\" id=\"slider%i\" value=\"%i\" data-value-id=\"sliderValue%i\" oninput=\"updateSliderValue(this)\" onchange=\"submitSlider(this)\">", maxValue, inputName, i, pwmValue, i);
 			hprintf255(request, "<input type=\"hidden\" name=\"%sIndex\" value=\"%i\">", inputName, i);
 			hprintf255(request, "<input type=\"submit\" class='disp-none' value=\"Toggle %s\"/></form>", CHANNEL_GetLabel(i));
 			poststr(request, "</td></tr>");
@@ -805,9 +800,9 @@ int http_fn_index(http_request_t* request) {
 			pwmValue = LED_GetDimmer();
 
 			poststr(request, "<tr><td>");
-			hprintf255(request, "<h5>LED Dimmer/Brightness</h5>");
+			hprintf255(request, "<h5>LED Dimmer/Brightness: <span id=\"sliderValue%i\">%i</span></h5>", SPECIAL_CHANNEL_BRIGHTNESS, pwmValue);
 			hprintf255(request, "<form action=\"index\" id=\"form%i\">", SPECIAL_CHANNEL_BRIGHTNESS);
-			hprintf255(request, "<input type=\"range\" min=\"0\" max=\"100\" name=\"%s\" id=\"slider%i\" value=\"%i\" onchange=\"this.form.submit()\">", inputName, SPECIAL_CHANNEL_BRIGHTNESS, pwmValue);
+			hprintf255(request, "<input type=\"range\" min=\"0\" max=\"100\" name=\"%s\" id=\"slider%i\" value=\"%i\" data-value-id=\"sliderValue%i\" oninput=\"updateSliderValue(this)\" onchange=\"submitSlider(this)\">", inputName, SPECIAL_CHANNEL_BRIGHTNESS, pwmValue, SPECIAL_CHANNEL_BRIGHTNESS);
 			hprintf255(request, "<input type=\"hidden\" name=\"%sIndex\" value=\"%i\">", inputName, SPECIAL_CHANNEL_BRIGHTNESS);
 			hprintf255(request, "<input  type=\"submit\" class='disp-none' value=\"Toggle %i\"/></form>", SPECIAL_CHANNEL_BRIGHTNESS);
 			poststr(request, "</td></tr>");
@@ -826,7 +821,7 @@ int http_fn_index(http_request_t* request) {
 			hprintf255(request, "<form action=\"index\" id=\"form%i\">", SPECIAL_CHANNEL_BASECOLOR);
 			// onchange would fire only if colour was changed
 			// onblur will fire every time
-			hprintf255(request, "<input type=\"color\" name=\"%s\" id=\"color%i\" value=\"#%s\"  oninput=\"this.form.submit()\" >", inputName, SPECIAL_CHANNEL_BASECOLOR, colorValue);
+			hprintf255(request, "<input type=\"color\" name=\"%s\" id=\"color%i\" value=\"#%s\"  onchange=\"this.form.submit()\" >", inputName, SPECIAL_CHANNEL_BASECOLOR, colorValue);
 			hprintf255(request, "<input type=\"hidden\" name=\"%sIndex\" value=\"%i\">", inputName, SPECIAL_CHANNEL_BASECOLOR);
 			hprintf255(request, "<input  type=\"submit\" class='disp-none' value=\"Toggle Light\"/></form>");
 			poststr(request, "</td></tr>");
@@ -855,12 +850,15 @@ int http_fn_index(http_request_t* request) {
 			long pwmKelvinMin = HASS_TO_KELVIN(led_temperature_max);
 
 			poststr(request, "<tr><td>");
-			hprintf255(request, "<h5>LED Temperature Slider %s (%ld K) (Warm <--- ---> Cool)</h5>", activeStr, pwmKelvin);
+			hprintf255(request, "<h5>LED Temperature Slider %s (<span id=\"sliderValue%i\">%ld</span> K) (Warm <--- ---> Cool)</h5>", activeStr, SPECIAL_CHANNEL_TEMPERATURE, pwmKelvin);
 			hprintf255(request, "<form class='r' action=\"index\" id=\"form%i\">", SPECIAL_CHANNEL_TEMPERATURE);
 
 			//(KELVIN_TEMPERATURE_MAX - KELVIN_TEMPERATURE_MIN) / (HASS_TEMPERATURE_MAX - HASS_TEMPERATURE_MIN) = 13
 			hprintf255(request, "<input type=\"range\" step='13' min=\"%ld\" max=\"%ld\" ", pwmKelvinMin, pwmKelvinMax);
-			hprintf255(request, "value=\"%ld\" onchange=\"submitTemperature(this);\"/>", pwmKelvin);
+			// a single value CTRange leaves no travel, so onchange can never fire and only a
+			// click can set it. Normal ranges are left alone, they would submit twice
+			const char *clickHandler = (pwmKelvinMin == pwmKelvinMax) ? " onclick=\"submitTemperature(this);\"" : "";
+			hprintf255(request, "value=\"%ld\" data-value-id=\"sliderValue%i\" oninput=\"updateSliderValue(this)\" onchange=\"submitTemperature(this);\"%s/>", pwmKelvin, SPECIAL_CHANNEL_TEMPERATURE, clickHandler);
 
 			hprintf255(request, "<input type=\"hidden\" name=\"%sIndex\" value=\"%i\"/>", inputName, SPECIAL_CHANNEL_TEMPERATURE);
 			hprintf255(request, "<input id=\"kelvin%i\" type=\"hidden\" name=\"%s\" />", SPECIAL_CHANNEL_TEMPERATURE, inputName);
@@ -870,12 +868,12 @@ int http_fn_index(http_request_t* request) {
 
 	}
 #endif
-#if defined(PLATFORM_BEKEN) || defined(WINDOWS)
+#if defined(PLATFORM_BEKEN) || defined(WINDOWS) || defined(PLATFORM_ARMINO)
 	if (DRV_IsRunning("PWMToggler")) {
 		DRV_Toggler_AddToHtmlPage(request);
 	}
 #endif
-#if defined(PLATFORM_BEKEN) || defined(WINDOWS)
+#if defined(PLATFORM_BEKEN) || defined(WINDOWS) || defined(PLATFORM_ARMINO)
 	if (DRV_IsRunning("httpButtons")) {
 		DRV_HTTPButtons_AddToHtmlPage(request);
 	}
@@ -916,7 +914,7 @@ int http_fn_index(http_request_t* request) {
 				hprintf255(request, "%i event handlers", i);
 				bFirst = false;
 			}
-#if defined(WINDOWS) || defined(PLATFORM_BEKEN)
+#if defined(WINDOWS) || defined(PLATFORM_BEKEN) || defined(PLATFORM_ARMINO)
 			i = CMD_GetCountActiveScriptThreads();
 			if (i) {
 				if (bFirst == false) {
@@ -1044,6 +1042,14 @@ typedef enum {
 	hprintf255(request, "<h5>Current fw: FW%i</h5>", current_fw_idx);
 #elif PLATFORM_RTL8710B || PLATFORM_RTL8720D || PLATFORM_REALTEK_NEW
 	hprintf255(request, "<h5>Current fw: FW%i</h5>", current_fw_idx + 1);
+#elif PLATFORM_XR809
+	image_seq_t running_seq = image_get_running_seq();
+	if (running_seq < IMAGE_SEQ_NUM) {
+		hprintf255(request, "<h5>Current fw: FW%u</h5>",
+			(unsigned int)running_seq);
+	} else {
+		hprintf255(request, "<h5>Current fw: Unknown</h5>");
+	}
 #elif PLATFORM_ECR6600
 	RST_TYPE reset_type = hal_get_reset_type();
 	const char* s;
@@ -1066,6 +1072,9 @@ typedef enum {
 	extern char reset_str[64];
 	hprintf255(request, "<h5>Current fw: FW%i</h5>", running_idx + 1);
 	hprintf255(request, "<h5>Reboot reason: %s</h5>", reset_str);
+#elif PLATFORM_ARMINO
+	extern char* misc_get_start_type_str(uint32_t start_type);
+	hprintf255(request, "<h5>Reboot reason: %i - %s</h5>", g_rebootReason, misc_get_start_type_str((uint32_t)g_rebootReason));
 #endif
 #if ENABLE_MQTT
 	if (CFG_GetMQTTHost()[0] == 0) {
@@ -1458,6 +1467,101 @@ int http_fn_cfg_ping(http_request_t* request) {
 	return 0;
 }
 #endif
+
+#if PLATFORM_BEKEN || PLATFORM_ARMINO
+// Scanning on the new Beken SDK is ASYNCHRONOUS: bk_wlan_start_scan() only queues
+// the request, and results may be read once the completion event arrives. The
+// sequence below is taken from demos/wifi/scan/wifi_scan.c in the SDK.
+//
+// The callback runs on the WiFi task, so it has to be a plain file scope function
+// rather than a nested one like in the Realtek branch above - a nested function
+// that has its address taken needs a trampoline on the stack, which will not
+// execute here.
+#define HTTP_WIFI_SCAN_TIMEOUT_MS 7000
+
+// Deliberately created once and never destroyed. The callback may arrive after we
+// gave up waiting, and giving a deleted semaphore would write into freed memory.
+static beken_semaphore_t g_wifiScanSem = NULL;
+
+static void HTTP_WiFiScanDone(void* ctxt, uint8_t param) {
+	if (g_wifiScanSem != NULL) {
+		rtos_set_semaphore(&g_wifiScanSem);
+	}
+}
+
+#if PLATFORM_BEKEN_NEW
+#define SECURITY_TYPE_NONE			BK_SECURITY_TYPE_NONE
+#define SECURITY_TYPE_WEP			BK_SECURITY_TYPE_WEP
+#define SECURITY_TYPE_WPA_TKIP		BK_SECURITY_TYPE_WPA_TKIP
+#define SECURITY_TYPE_WPA_AES		BK_SECURITY_TYPE_WPA_AES
+#define SECURITY_TYPE_WPA2_TKIP		BK_SECURITY_TYPE_WPA2_TKIP
+#define SECURITY_TYPE_WPA2_AES		BK_SECURITY_TYPE_WPA2_AES
+#define SECURITY_TYPE_WPA2_MIXED	BK_SECURITY_TYPE_WPA2_MIXED
+#define SECURITY_TYPE_AUTO			BK_SECURITY_TYPE_AUTO
+
+#define SC_SSID apList.ApList[i].ssid
+#define SC_CHANNEL apList.ApList[i].channel
+#define SC_RSSI apList.ApList[i].ApPower
+#define SC_SECURITY apList.ApList[i].security
+#define SC_FREE() if(apList.ApList != NULL) os_free(apList.ApList)
+#elif PLATFORM_ARMINO
+#define SECURITY_TYPE_NONE					WIFI_SECURITY_NONE
+#define SECURITY_TYPE_WEP					WIFI_SECURITY_WEP
+#define SECURITY_TYPE_WPA_TKIP				WIFI_SECURITY_WPA_TKIP
+#define SECURITY_TYPE_WPA_AES				WIFI_SECURITY_WPA_AES
+#define BK_SECURITY_TYPE_WPA_MIXED			WIFI_SECURITY_WPA_MIXED
+#define SECURITY_TYPE_WPA2_TKIP				WIFI_SECURITY_WPA2_TKIP
+#define SECURITY_TYPE_WPA2_AES				WIFI_SECURITY_WPA2_AES
+#define SECURITY_TYPE_WPA2_MIXED			WIFI_SECURITY_WPA2_MIXED
+#define BK_SECURITY_TYPE_WPA3_SAE			WIFI_SECURITY_WPA3_SAE
+#define BK_SECURITY_TYPE_WPA3_WPA2_MIXED	WIFI_SECURITY_WPA3_WPA2_MIXED
+#define BK_SECURITY_TYPE_EAP				WIFI_SECURITY_EAP
+#define BK_SECURITY_TYPE_OWE				WIFI_SECURITY_OWE
+#define SECURITY_TYPE_AUTO					WIFI_SECURITY_AUTO
+
+#define SC_SSID apList.ApList[i].ssid
+#define SC_CHANNEL apList.ApList[i].channel
+#define SC_RSSI apList.ApList[i].ApPower
+#define SC_SECURITY apList.ApList[i].security
+#define SC_FREE() if(apList.ApList != NULL) os_free(apList.ApList)
+
+#define bk_wlan_scan_ap_reg_cb(a) mhdr_scanu_reg_cb(a,0)
+#define bk_wlan_start_scan() do{ wifi_scan_config_t scan_config = {0}; bk_wifi_scan_start(scan_config); }while(0)
+#define bk_wlan_ap_is_up() 0
+#define wlan_ap_scan_result(a) NULL
+#else
+// only 32 chars in length, compared to new 33, so use strncpy
+#define SC_SSID scan_rst->res[i]->ssid
+#define SC_CHANNEL scan_rst->res[i]->channel
+#define SC_RSSI scan_rst->res[i]->level
+#define SC_SECURITY scan_rst->res[i]->security
+#define SC_FREE() if(scan_rst != NULL) sr_release_scan_results(scan_rst)
+#endif
+
+static const char* HTTP_WiFiSecurityName(wlan_sec_type_t sec) {
+	switch (sec) {
+	case SECURITY_TYPE_NONE: return "Open";
+	case SECURITY_TYPE_WEP: return "WEP";
+	case SECURITY_TYPE_WPA_TKIP: return "WPA-TKIP";
+	case SECURITY_TYPE_WPA_AES: return "WPA-AES";
+#if PLATFORM_BEKEN_NEW || PLATFORM_ARMINO
+	case BK_SECURITY_TYPE_WPA_MIXED: return "WPA-Mixed";
+#endif
+	case SECURITY_TYPE_WPA2_TKIP: return "WPA2-TKIP";
+	case SECURITY_TYPE_WPA2_AES: return "WPA2-AES";
+	case SECURITY_TYPE_WPA2_MIXED: return "WPA2-Mixed";
+	// old sdk sees WPA3 or mixed WPA3 as WPA2-AES
+#if PLATFORM_BEKEN_NEW || PLATFORM_ARMINO
+	case BK_SECURITY_TYPE_WPA3_SAE: return "WPA3-SAE";
+	case BK_SECURITY_TYPE_WPA3_WPA2_MIXED: return "WPA3/WPA2";
+	case BK_SECURITY_TYPE_EAP: return "EAP";
+	case BK_SECURITY_TYPE_OWE: return "OWE";
+#endif
+	default: return "Unknown";
+	}
+}
+#endif
+
 int http_fn_cfg_wifi(http_request_t* request) {
 	// for a test, show password as well...
 	char tmpA[128];
@@ -1495,32 +1599,6 @@ int http_fn_cfg_wifi(http_request_t* request) {
                        hprintf255(request, "[%i/%i] SSID: %s, Channel: %i, Signal %i<br>", (i+1), (int)ap_num, ap_info[i].ssid, ap_info[i].channel, ap_info[i].rssi);
                }
                vPortFree(ap_info);
-#elif defined(PLATFORM_BK7231T) && !defined(PLATFORM_BEKEN_NEW)
-		int i;
-
-		AP_IF_S* ar;
-		uint32_t num;
-
-		bk_printf("Scan begin...\r\n");
-		tuya_hal_wifi_all_ap_scan(&ar, &num);
-		bk_printf("Scan returned %i networks\r\n", num);
-		for (i = 0; i < num; i++) {
-			hprintf255(request, "[%i/%i] SSID: %s, Channel: %i, Signal %i<br>", i, (int)num, ar[i].ssid, ar[i].channel, ar[i].rssi);
-		}
-		tuya_hal_wifi_release_ap(ar);
-#elif defined(PLATFORM_BK7231N) && !defined(PLATFORM_BEKEN_NEW)
-		int i;
-
-		AP_IF_S* ar;
-		uint32_t num;
-
-		bk_printf("Scan begin...\r\n");
-		tuya_os_adapt_wifi_all_ap_scan(&ar, (unsigned int*)&num);
-		bk_printf("Scan returned %i networks\r\n", num);
-		for (i = 0; i < num; i++) {
-			hprintf255(request, "[%i/%i] SSID: %s, Channel: %i, Signal %i<br>", i + 1, (int)num, ar[i].ssid, ar[i].channel, ar[i].rssi);
-		}
-		tuya_os_adapt_wifi_release_ap(ar);
 #elif PLATFORM_ESPIDF || PLATFORM_ESP8266
 		// doesn't work in ap mode, only sta/apsta
 		uint16_t ap_count = 0, number = 30;
@@ -1655,6 +1733,69 @@ int http_fn_cfg_wifi(http_request_t* request) {
 			hprintf255(request, "</table><br>");
 		}
 
+#elif PLATFORM_BEKEN || PLATFORM_ARMINO
+		// Covers every target built against the new Beken SDK (BK7231T/N/U, BK7238,
+		// BK7252, BK7252N). The two Beken branches above only handle the old Tuya
+		// based SDKs, which is why all of these used to end up in the TODO case.
+		int i, num;
+
+		if (g_wifiScanSem == NULL) {
+			if (rtos_init_semaphore(&g_wifiScanSem, 1) != 0) {
+				g_wifiScanSem = NULL;
+			}
+		}
+
+		bk_wlan_scan_ap_reg_cb(HTTP_WiFiScanDone);
+		bk_wlan_start_scan();
+
+		if (g_wifiScanSem != NULL) {
+			rtos_get_semaphore(&g_wifiScanSem, HTTP_WIFI_SCAN_TIMEOUT_MS);
+		}
+		else {
+			rtos_delay_milliseconds(HTTP_WIFI_SCAN_TIMEOUT_MS);
+		}
+#if PLATFORM_BEKEN_NEW || PLATFORM_ARMINO
+		ScanResult_adv apList;
+		int res;
+		memset(&apList, 0, sizeof(apList));
+		// Read the results even if the event never arrived. In AP mode the scan
+		// takes a different path (wlan_ap_scan), and the completion event is
+		// emitted from the supplicant, so it is not guaranteed to reach us there.
+		// Reading anyway costs nothing and recovers that case.
+		if(bk_wlan_ap_is_up() > 0) res = wlan_ap_scan_result(&apList);
+		else res = wlan_sta_scan_result(&apList);
+		num = (res == 0 && apList.ApList != NULL) ? (int)apList.ApNum : 0;
+#else
+		// these are present in new SDK too, but it's freed before we are able to use it.
+		struct scanu_rst_upload* scan_rst;
+		scan_rst = sr_get_scan_results();
+		num = bk_wlan_get_scan_ap_result_numbers();
+#endif
+
+		if (num <= 0) poststr(request, "No networks found, or the scan has not finished yet - try again.<br>");
+		else {
+			hprintf255(request, "<table><tr><th>SSID</th><th>Channel</th><th>Signal</th><th>Security</th></tr>");
+			for(i = 0; i < num; i++) {
+				char ssid[33];
+				memset(&ssid, 0, sizeof(ssid));
+				strncpy((char*)&ssid, SC_SSID, 32);
+				hprintf255(request, "<tr><td>");
+				// The SSID comes from a foreign transmitter, so it has to be escaped.
+				// Otherwise a neighbour whose network name contains a tag would inject
+				// markup into this page.
+				poststr_escaped(request, *ssid ? ssid : "<hidden>");
+				hprintf255(request,
+					"</td><td>%i</td><td>%i</td><td>%s</td></tr>",
+					SC_CHANNEL,
+					SC_RSSI,
+					HTTP_WiFiSecurityName(SC_SECURITY));
+			}
+			hprintf255(request, "</table><br>");
+		}
+		SC_FREE();
+#elif PLATFORM_RTL8196C
+		extern void HAL_WiFi_Scan_HTML(http_request_t *request);
+		HAL_WiFi_Scan_HTML(request);
 #else
 		hprintf255(request, "TODO %s<br>", PLATFORM_MCU_NAME);
 #endif
@@ -2004,10 +2145,11 @@ HassDeviceInfo *hass_createEnumChannelInfo(int i) {
 		CMD_GenEnumValueTemplate(en, value_tmp, sizeof(value_tmp));
 		CMD_GenEnumCommandTemplate(en, command_tmp, sizeof(command_tmp));
 
-		strcpy(title, CHANNEL_GetLabel(i));
+		snprintf(title, sizeof(title), "%s", CHANNEL_GetLabel(i));
 		sprintf(stateTopic, "~/%i/get", i);
 		sprintf(cmdTopic, "~/%i/set", i);
 		dev_info = hass_createSelectEntityIndexedCustom(
+			i,
 			stateTopic,
 			cmdTopic,
 			en->numOptions,
@@ -2097,6 +2239,12 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 				if (BIT_CHECK(flagsChannelPublished, i)) {
 					continue;
 				}
+#if ENABLE_DRIVER_XIAOMI_COMPACT4
+				if (XiaomiCompact4_ShouldSkipGenericHassDiscovery(i)) {
+					BIT_SET(flagsChannelPublished, i);
+					continue;
+				}
+#endif
 				if (type == ChType_Dimmer) {
 					brightness_scale = 100;
 					dimmer = i;
@@ -2120,6 +2268,12 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 				if (BIT_CHECK(flagsChannelPublished, i)) {
 					continue;
 				}
+#if ENABLE_DRIVER_XIAOMI_COMPACT4
+				if (XiaomiCompact4_ShouldSkipGenericHassDiscovery(i)) {
+					BIT_SET(flagsChannelPublished, i);
+					continue;
+				}
+#endif
 				if (type == ChType_Toggle) {
 					toggle = i;
 					break;
@@ -2129,12 +2283,33 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 			if (toggle == -1 || dimmer == -1) {
 				break;
 			}
+#if ENABLE_DRIVER_TUYAMCU
+			// On a TuyaMCU LED these raw channels are not the light. Real state
+			// lives in led_dimmer / led_basecolor_rgb, which the ENABLE_LED_BASIC
+			// block below already publishes. Advertising this pair as well gives
+			// HA a second light entity that is permanently stuck at 0. See #2218.
+			//
+			// Mark them published rather than just breaking out: otherwise the
+			// relay loop further down picks the unclaimed toggle up and exposes
+			// it as a switch instead, which is the same dead channel wearing a
+			// different hat.
+			if (TuyaMCU_HasLED()) {
+				BIT_SET(flagsChannelPublished, toggle);
+				BIT_SET(flagsChannelPublished, dimmer);
+				break;
+			}
+#endif
 
 			BIT_SET(flagsChannelPublished, toggle);
 			BIT_SET(flagsChannelPublished, dimmer);
 			dev_info = hass_init_light_singleColor_onChannels(toggle, dimmer, brightness_scale);
 			MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
 			hass_free_device_info(dev_info);
+			// hass_free_device_info() takes the pointer by value and cannot clear
+			// this variable. The LED block below guards on "dev_info == NULL", so
+			// leaving it dangling makes that guard fail and the block then reads
+			// and re-frees freed memory. See issue #2230.
+			dev_info = NULL;
 			discoveryQueued = true;
 		}
 	}
@@ -2279,6 +2454,12 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 		if (BIT_CHECK(flagsChannelPublished, i)) {
 			continue;
 		}
+#if ENABLE_DRIVER_XIAOMI_COMPACT4
+		if (XiaomiCompact4_ShouldSkipGenericHassDiscovery(i)) {
+			BIT_SET(flagsChannelPublished, i);
+			continue;
+		}
+#endif
 		dev_info = 0;
 		switch (type)
 		{
@@ -2510,15 +2691,20 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 					// backlog setChannelType 3 OpenStopClose; scheduleHADiscovery 1
 					char stateTopic[16];
 					char cmdTopic[16];
-					// TODO: lengths
+					// CHANNEL_GetLabel returns a pointer to a shared static buffer
+					// for unlabelled channels, and hass_init_device_info calls it
+					// again internally - so copy the label before passing it on.
+					char title[64];
+					snprintf(title, sizeof(title), "%s", CHANNEL_GetLabel(i));
 					sprintf(stateTopic, "~/%i/get", i);
 					sprintf(cmdTopic, "~/%i/set", i);
 					dev_info = hass_createSelectEntityIndexed(
+						i,
 						stateTopic,
 						cmdTopic,
 						numOptions,
 						options,
-						CHANNEL_GetLabel(i)
+						title
 					);
 				}
 			}
@@ -2889,8 +3075,6 @@ int http_fn_cm(http_request_t* request) {
 				} else if (request->method == HTTP_POST || request->method == HTTP_PUT) {
 					http_getRawArg(request->bodystart, "cmnd", long_str_alloced, commandLen);
 				}
-				CMD_ExecuteCommand(long_str_alloced, COMMAND_FLAG_SOURCE_HTTP);
-
 				runHTTPCommandInternal(request, long_str_alloced);
 
 				free(long_str_alloced);
@@ -3132,7 +3316,7 @@ int http_fn_cfg_pins(http_request_t* request) {
 		si = PIN_GetPinRoleForPinIndex(i);
 		hprintf255(request, "f(\"");
 		if (alias) {
-#if defined(PLATFORM_BEKEN) || defined(WINDOWS)
+#if defined(PLATFORM_BEKEN) || defined(WINDOWS) || PLATFORM_ARMINO
 			hprintf255(request, "P%i (%s) ", i, alias);
 #else
 			poststr(request, alias);
@@ -3484,7 +3668,7 @@ int http_fn_cfg_dgr(http_request_t* request) {
 #endif
 
 void OTA_RequestDownloadFromHTTP(const char* s) {
-#if PLATFORM_BEKEN
+#if PLATFORM_BEKEN || PLATFORM_ARMINO
 	otarequest(s);
 #elif PLATFORM_ECR6600
 	extern int http_client_download_file(const char* url);
@@ -3577,7 +3761,7 @@ int http_fn_ota(http_request_t* request) {
 	poststr(request, "<h3>Sorry, OTA update not implemented for " DEVICENAME_PREFIX_FULL " </h3>");
 #else
 	poststr(request, "<p>It's recommended to use the OTA option in the Web Application, where you can easily drag and drop files.<br><br>If you have an HTTP server providing the OTA file, you may enter the URL below. "
-#if PLATFORM_BEKEN
+#if PLATFORM_BEKEN || PLATFORM_ARMINO
 	" On Beken platforms, the .rbl file is used for OTA updates."
 #endif
 	"</p>");

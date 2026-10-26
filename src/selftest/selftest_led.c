@@ -1018,15 +1018,125 @@ void Test_LEDDriver_RGB(int firstChannel) {
 	//SELFTEST_ASSERT_CHANNEL(firstChannel+2, 666);
 
 }
+void Test_LEDDriver_CW_SingleValueRange() {
+	// reset whole device
+	SIM_ClearOBK(0);
+
+	// CW bulb with only one white LED fitted, described by a single value CTRange
+	PIN_SetPinRoleForPinIndex(24, IOR_PWM);
+	PIN_SetPinChannelForPinIndex(24, 3);
+	PIN_SetPinRoleForPinIndex(26, IOR_PWM);
+	PIN_SetPinChannelForPinIndex(26, 4);
+
+	CMD_ExecuteCommand("led_enableAll 1", 0);
+	CMD_ExecuteCommand("CTRange 500 500", 0);
+
+	// a single white point drives both white channels, so whichever one has the LED lights up
+	CMD_ExecuteCommand("led_temperature 500", 0);
+	SELFTEST_ASSERT_CHANNEL(3, 100);
+	SELFTEST_ASSERT_CHANNEL(4, 100);
+
+	// a request outside the range lands on the same point instead of dividing by zero
+	CMD_ExecuteCommand("led_temperature 154", 0);
+	SELFTEST_ASSERT_CHANNEL(3, 100);
+	SELFTEST_ASSERT_CHANNEL(4, 100);
+}
+void Test_LEDDriver_CW_CTBoundedRange() {
+	// reset whole device
+	SIM_ClearOBK(0);
+
+	PIN_SetPinRoleForPinIndex(24, IOR_PWM);
+	PIN_SetPinChannelForPinIndex(24, 3);
+	PIN_SetPinRoleForPinIndex(26, IOR_PWM);
+	PIN_SetPinChannelForPinIndex(26, 4);
+
+	CMD_ExecuteCommand("led_enableAll 1", 0);
+
+	// the range narrowing under a set temperature is what a startup CTRange hits, with
+	// flag 12 having already restored one from flash
+	CMD_ExecuteCommand("CTRange 154 500", 0);
+	CMD_ExecuteCommand("led_temperature 154", 0);
+	SELFTEST_ASSERT_FLOATCOMPARE(LED_GetTemperature(), 154);
+
+	CMD_ExecuteCommand("CTRange 400 500", 0);
+	SELFTEST_ASSERT_FLOATCOMPARE(LED_GetTemperature(), 400);
+
+	CMD_ExecuteCommand("CTRange 154 300", 0);
+	SELFTEST_ASSERT_FLOATCOMPARE(LED_GetTemperature(), 300);
+
+	CMD_ExecuteCommand("CTRange 500 500", 0);
+	SELFTEST_ASSERT_FLOATCOMPARE(LED_GetTemperature(), 500);
+	SELFTEST_ASSERT_CHANNEL(3, 100);
+	SELFTEST_ASSERT_CHANNEL(4, 100);
+}
+void Test_LEDDriver_RGB_ColorBlendLimit() {
+	// reset whole device
+	SIM_ClearOBK(0);
+
+	PIN_SetPinRoleForPinIndex(24, IOR_PWM);
+	PIN_SetPinChannelForPinIndex(24, 1);
+	PIN_SetPinRoleForPinIndex(26, IOR_PWM);
+	PIN_SetPinChannelForPinIndex(26, 2);
+	PIN_SetPinRoleForPinIndex(9, IOR_PWM);
+	PIN_SetPinChannelForPinIndex(9, 3);
+
+	CMD_ExecuteCommand("led_enableAll 1", 0);
+	CMD_ExecuteCommand("led_dimmer 100", 0);
+
+	// off by default
+	CMD_ExecuteCommand("led_baseColor_rgb FFFFFF", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 100);
+	SELFTEST_ASSERT_CHANNEL(2, 100);
+	SELFTEST_ASSERT_CHANNEL(3, 100);
+
+	// full white is three channels at full, so each gets a third
+	CMD_ExecuteCommand("led_colorBlendLimit 1", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 33);
+	SELFTEST_ASSERT_CHANNEL(2, 33);
+	SELFTEST_ASSERT_CHANNEL(3, 33);
+
+	CMD_ExecuteCommand("led_colorBlendLimit 1.5", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 50);
+	SELFTEST_ASSERT_CHANNEL(2, 50);
+	SELFTEST_ASSERT_CHANNEL(3, 50);
+
+	// a single saturated channel never exceeds the limit
+	CMD_ExecuteCommand("led_colorBlendLimit 1", 0);
+	CMD_ExecuteCommand("led_baseColor_rgb FF0000", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 100);
+	SELFTEST_ASSERT_CHANNEL(2, 0);
+	SELFTEST_ASSERT_CHANNEL(3, 0);
+
+	// a blend under the limit is untouched
+	CMD_ExecuteCommand("led_baseColor_rgb 909000", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 28);
+	SELFTEST_ASSERT_CHANNEL(2, 28);
+	SELFTEST_ASSERT_CHANNEL(3, 0);
+
+	// a blend over the limit scales down with no hue drift
+	CMD_ExecuteCommand("led_baseColor_rgb FFFF00", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 50);
+	SELFTEST_ASSERT_CHANNEL(2, 50);
+	SELFTEST_ASSERT_CHANNEL(3, 0);
+
+	CMD_ExecuteCommand("led_colorBlendLimit 0", 0);
+	CMD_ExecuteCommand("led_baseColor_rgb FFFFFF", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 100);
+	SELFTEST_ASSERT_CHANNEL(2, 100);
+	SELFTEST_ASSERT_CHANNEL(3, 100);
+}
 void Test_LEDDriver() {
 
 	Test_LEDDriver_SingleColor();
 	Test_LEDDriver_CW_Alternate();
 	Test_LEDDriver_CW();
 	Test_LEDDriver_CW_OtherChannels();
+	Test_LEDDriver_CW_SingleValueRange();
+	Test_LEDDriver_CW_CTBoundedRange();
 	// support both indexing from 0 and 1
 	Test_LEDDriver_RGB(0);
 	Test_LEDDriver_RGB(1);
+	Test_LEDDriver_RGB_ColorBlendLimit();
 	Test_LEDDriver_RGBCW();
 	Test_LEDDriver_Palette();
 	Test_LEDDriver_BP5758_RGBCW();

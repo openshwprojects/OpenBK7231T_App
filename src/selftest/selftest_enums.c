@@ -28,10 +28,8 @@ void Test_Enum_LowMidH() {
 		"~", "obkEnumDemo",
 		"uniq_id", "Windows_Enum_select_13");
 
-	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY_4KEY("homeassistant", true, 0, 0,
-		"availability_topic", "~/connected",
-		"payload_available", "online",
-		"payload_not_available", "offline",
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY_TWOKEY("homeassistant", true, 0, 0,
+		"avty_t", "~/connected",
 		"uniq_id", "Windows_Enum_select_13");
 
 	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY_4KEY("homeassistant", true, 0, 0,
@@ -67,10 +65,8 @@ void Test_Enum_LowMidHighOff() {
 		"~", "obkEnumDemo",
 		"uniq_id", "Windows_Enum_select_12");
 
-	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY_4KEY("homeassistant", true, 0, 0,
-		"availability_topic", "~/connected",
-		"payload_available", "online",
-		"payload_not_available", "offline",
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY_TWOKEY("homeassistant", true, 0, 0,
+		"avty_t", "~/connected",
 		"uniq_id", "Windows_Enum_select_12");
 
 	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY_4KEY("homeassistant", true, 0, 0,
@@ -127,10 +123,8 @@ void Test_Enum_3opts() {
 		"~", "obkEnumDemo",
 		"uniq_id", "Windows_Enum_select_14");
 
-	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY_4KEY("homeassistant", true, 0, 0,
-		"availability_topic", "~/connected",
-		"payload_available", "online",
-		"payload_not_available", "offline",
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY_TWOKEY("homeassistant", true, 0, 0,
+		"avty_t", "~/connected",
 		"uniq_id", "Windows_Enum_select_14");
 
 	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY_4KEY("homeassistant", true, 0, 0,
@@ -199,10 +193,8 @@ void Test_Enum_BadOk() {
 		"~", "obkEnumDemo",
 		"uniq_id", "Windows_Enum_select_4");
 
-	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY_4KEY("homeassistant", true, 0, 0,
-		"availability_topic", "~/connected",
-		"payload_available", "online",
-		"payload_not_available", "offline",
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY_TWOKEY("homeassistant", true, 0, 0,
+		"avty_t", "~/connected",
 		"uniq_id", "Windows_Enum_select_4");
 
 	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY_4KEY("homeassistant", true, 0, 0,

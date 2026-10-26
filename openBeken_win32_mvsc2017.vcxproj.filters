@@ -75,6 +75,8 @@
     <ClCompile Include="src\driver\drv_soft_i2c.c" />
     <ClCompile Include="src\driver\drv_spi.c" />
     <ClCompile Include="src\driver\drv_ssdp.c" />
+    <ClCompile Include="src\driver\drv_ftp.c" />
+    <ClCompile Include="src\driver\drv_smb.c" />
     <ClCompile Include="src\driver\drv_tasmotaDeviceGroups.c" />
     <ClCompile Include="src\driver\drv_test_drivers.c" />
     <ClCompile Include="src\driver\drv_textScroller.c" />

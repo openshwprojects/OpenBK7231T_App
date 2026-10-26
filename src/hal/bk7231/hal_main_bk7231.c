@@ -3,9 +3,11 @@
 #include "../../logging/logging.h"
 #include "../../quicktick.h"
 
-
+#if !PLATFORM_ARMINO
 #include "../../beken378/app/config/param_config.h"
-
+#else
+uint32_t ms_to_tick_ratio = portTICK_RATE_MS;
+#endif
 
 // main timer tick every 1s
 beken_timer_t g_main_timer_1s;
@@ -191,7 +193,11 @@ void user_main(void)
 
   // initialise a one-shot timer, triggered by MQTT_TriggerRead() and others
   err = rtos_init_oneshot_timer(&g_timer_oneshot,
+#if PLATFORM_ARMINO
+                        bk_get_ms_per_tick(),
+#else
                         1,
+#endif
                         process_oneshot_timer,
                         (void *)0,
                         (void *)0);

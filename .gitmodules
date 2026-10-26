@@ -93,3 +93,7 @@
 	path = sdk/OpenGD32VW553
 	url = https://github.com/NonPIayerCharacter/OpenGD32VW553
 	branch = main
+[submodule "sdk/OpenBK7239N"]
+	path = sdk/OpenBK7239N
+	url = https://github.com/NonPIayerCharacter/OpenBK7239N
+	branch = master

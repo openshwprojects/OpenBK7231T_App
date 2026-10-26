@@ -359,6 +359,20 @@ static commandResult_t CMD_PowerSave(const void* context, const char* cmd, const
 	{
 		wifi_netlink_ps_mode_set(0, 0);
 	}
+#elif PLATFORM_ARMINO
+	if(bOn)
+	{
+		bk_wifi_ps_cmd_open(); // it's already on by default
+		if(bOn > 1) bk_wifi_send_listen_interval_req(10); // dtim 10
+		else bk_wifi_send_listen_interval_req(1);
+		if(bOn > 2) bk_pm_sleep_mode_set(PM_MODE_LOW_VOLTAGE);
+		//bk_wifi_send_sleep_mode_req(bOn); // 0, 1 or 2
+	}
+	else
+	{
+		bk_wifi_ps_cmd_close();
+		//bk_wifi_send_sleep_mode_req(0);
+	}
 #else
 	ADDLOG_INFO(LOG_FEATURE_CMD, "PowerSave is not implemented on this platform");
 #endif
@@ -390,6 +404,10 @@ static commandResult_t CMD_DeepSleep(const void* context, const char* cmd, const
 	return CMD_RES_OK;
 #elif defined(PLATFORM_BEKEN_NEW)
 	PS_DEEP_CTRL_PARAM params;
+	// see PINS_BeginDeepSleepWithPinWakeUp() - the struct must be zeroed, or the
+	// SDK gets stack garbage for the GPIO maps and for lpo_32k_src (the RTC
+	// clock source), and the device wakes at a random time or not at all
+	memset(&params, 0, sizeof(params));
 	params.sleep_mode = MANUAL_MODE_IDLE;
 	params.wake_up_way = PS_DEEP_WAKEUP_RTC;
 	params.sleep_time = timeMS;
@@ -464,6 +482,18 @@ static commandResult_t CMD_DeepSleep(const void* context, const char* cmd, const
 		remaining -= chunk;
 	}
 	HAL_RebootModule();
+#elif PLATFORM_ARMINO
+	alarm_info_t deep_sleep_alarm = {
+		"deep_ps",
+		(rtc_tick_t)((uint32_t)(timeMS * 1000) * AON_RTC_MS_TICK_CNT),
+		1,
+		NULL,
+		NULL
+	};
+	bk_alarm_unregister(AON_RTC_ID_1, deep_sleep_alarm.name);
+	bk_alarm_register(AON_RTC_ID_1, &deep_sleep_alarm);
+	bk_pm_wakeup_source_set(PM_WAKEUP_SOURCE_INT_RTC, NULL);
+	bk_pm_sleep_mode_set(PM_MODE_DEEP_SLEEP);
 #endif
 
 	return CMD_RES_OK;
@@ -565,7 +595,7 @@ static commandResult_t CMD_ClearAll(const void* context, const char* cmd, const 
 	CMD_ClearAllHandlers(0, 0, 0, 0);
 	RepeatingEvents_Cmd_ClearRepeatingEvents(0, 0, 0, 0);
 #if defined(WINDOWS) || defined(PLATFORM_BL602) || defined(PLATFORM_BEKEN) || defined(PLATFORM_LN882H) \
- || defined(PLATFORM_ESPIDF) || defined(PLATFORM_TR6260) || defined(PLATFORM_REALTEK)
+ || defined(PLATFORM_ESPIDF) || defined(PLATFORM_TR6260) || defined(PLATFORM_REALTEK) || defined(PLATFORM_ARMINO)
 	CMD_resetSVM(0, 0, 0, 0);
 #endif
 
@@ -729,14 +759,14 @@ static commandResult_t CMD_SafeMode(const void* context, const char* cmd, const 
 
 
 void CMD_UARTConsole_Init() {
-#if PLATFORM_BEKEN
+#if PLATFORM_BEKEN || PLATFORM_ARMINO
 	UART_InitUART(115200, 0, false);
 	cmd_uartInitIndex = get_g_uart_init_counter();
 	UART_InitReceiveRingBuffer(512);
 #endif
 }
 void CMD_UARTConsole_Run() {
-#if PLATFORM_BEKEN
+#if PLATFORM_BEKEN || PLATFORM_ARMINO
 	char a;
 	int i;
 	int totalSize;
@@ -772,7 +802,7 @@ void CMD_UARTConsole_Run() {
 #endif
 }
 void CMD_RunUartCmndIfRequired() {
-#if PLATFORM_BEKEN
+#if PLATFORM_BEKEN || PLATFORM_ARMINO
 	if (CFG_HasFlag(OBK_FLAG_CMD_ACCEPT_UART_COMMANDS)) {
 		if (cmd_uartInitIndex && cmd_uartInitIndex == get_g_uart_init_counter()) {
 			CMD_UARTConsole_Run();
@@ -1021,6 +1051,12 @@ static commandResult_t CMD_PowerSave_WFI(const void* context, const char* cmd, c
 	return CMD_RES_OK;
 }
 
+static commandResult_t CMD_Disconnect(const void *context, const char *cmd, const char *args, int cmdFlags)
+{
+	HAL_DisconnectFromWifi();
+	return CMD_RES_OK;
+}
+
 #if MQTT_USE_TLS
 static commandResult_t CMD_WebServer(const void* context, const char* cmd, const char* args, int cmdFlags) {	
 	int arg_count;
@@ -1189,6 +1225,12 @@ void CMD_Init_Early() {
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("IndexRefreshInterval", CMD_IndexRefreshInterval, NULL);
 
+	// cmddetail:{"name":"Disconnect","args":"",
+	// cmddetail:"descr":"WiFi disconnect",
+	// cmddetail:"fn":"CMD_Disconnect","file":"cmnds/cmd_main.c","requires":"",
+	// cmddetail:"examples":""}
+	CMD_RegisterCommand("Disconnect", CMD_Disconnect, NULL);
+
 #if MQTT_USE_TLS
 	//cmddetail:{"name":"WebServer","args":"[0 - Stop / 1 - Start]",
 	//cmddetail:"descr":"Setting state of WebServer",
@@ -1219,7 +1261,7 @@ void CMD_Init_Delayed() {
 	}
 #endif
 #if PLATFORM_BEKEN || WINDOWS || PLATFORM_BL602 || PLATFORM_ESPIDF || PLATFORM_ESP8266 \
-	|| PLATFORM_REALTEK || PLATFORM_ECR6600 || PLATFORM_XRADIO
+	|| PLATFORM_REALTEK || PLATFORM_ECR6600 || PLATFORM_XRADIO || PLATFORM_ARMINO
 	UART_AddCommands();
 #endif
 #if ENABLE_BL_TWIN

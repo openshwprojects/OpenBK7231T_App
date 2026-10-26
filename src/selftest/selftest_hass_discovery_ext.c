@@ -717,7 +717,7 @@ void Test_HassDiscovery_Enum() {
 
 	// channel 4
 	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY_3KEY("homeassistant/select", true, 0, 0,
-		"unique_id", "EnumFour",
+		"name", "EnumFour",
 		"state_topic", "~/4/get",
 		"command_topic", "~/4/set");
 	SELFTEST_ASSERT_JSON_VALUE_STRING_NESTED_ARRAY(0,"options",0,"Ok");
@@ -727,7 +727,7 @@ void Test_HassDiscovery_Enum() {
 
 	// channel 14
 	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY_3KEY("homeassistant/select", true, 0, 0,
-		"unique_id", "Enum14",
+		"name", "Enum14",
 		"state_topic", "~/14/get",
 		"command_topic", "~/14/set");
 	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant/select", true, 0, 0, "value_template", "{{ {1:'One Switch', 0:'Zero', 3:'Three', 99999:'Undefined'}[(value | int(99999))] | default(\"Undefined Enum [\"~value~\"]\") }}");

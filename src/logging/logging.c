@@ -33,6 +33,11 @@ int UART_PORT_INDEX = 1;
 #include "gd32vw55x_it.h"
 #include "rom_export.h"
 #include "uart_config.h"
+#elif PLATFORM_ARMINO
+#define UART_WRITE_BYTE uart_write_byte
+#define uart_is_tx_fifo_full(x) 0
+#define UART_PORT 0
+int UART_PORT_INDEX = 0;
 #endif
 
 extern uint8_t g_StartupDelayOver;
@@ -121,7 +126,7 @@ static int g_extraSocketToSendLOG = 0;
 static char g_loggingBuffer[LOGGING_BUFFER_SIZE];
 
 #define MAX_TCP_LOG_PORTS 2
-int tcp_log_ports[MAX_TCP_LOG_PORTS] = {-1};
+int tcp_log_ports[MAX_TCP_LOG_PORTS] = {-1, -1};
 
 
 void LOG_SetRawSocketCallback(int newFD)
@@ -162,7 +167,7 @@ static int tcpLogStarted = 0;
 
 commandResult_t log_command(const void* context, const char* cmd, const char* args, int cmdFlags);
 
-#if PLATFORM_BEKEN || PLATFORM_LN882H || PLATFORM_GD32VW553
+#if PLATFORM_BEKEN || PLATFORM_LN882H || PLATFORM_GD32VW553 || PLATFORM_ARMINO
 
 commandResult_t log_port(const void* context, const char* cmd, const char* args, int cmdFlags)
 {
@@ -216,6 +221,7 @@ commandResult_t log_port(const void* context, const char* cmd, const char* args,
 	int baud = Tokenizer_GetArgIntegerDefault(1, 1500000);
 	switch(idx)
 	{
+		default:
 		case -1:
 			usart_periph = LOG_UART;
 			break;
@@ -231,6 +237,23 @@ commandResult_t log_port(const void* context, const char* cmd, const char* args,
 	}
 	uart_config(usart_periph, baud > 0 ? baud : 1500000, false, false, false);
 	log_uart_change(usart_periph);
+#elif PLATFORM_ARMINO
+	switch(idx)
+	{
+		case -1:
+			UART_PORT_INDEX = -1;
+			bk_set_printf_enable(0);
+			return CMD_RES_OK;
+		default:
+			idx = 0;
+		case 0:
+		case 1:
+		case 2:
+			UART_PORT_INDEX = idx;
+			break;
+	}
+	shell_set_uart_port(UART_PORT_INDEX);
+	bk_set_printf_enable(1);
 #endif
 
 	return CMD_RES_OK;
@@ -319,7 +342,7 @@ static void initLog(void)
 	//cmddetail:"examples":"logStartup2lfs 15"}
 	CMD_RegisterCommand("logStartup2lfs", CMD_logStartup2lfs, NULL);
 #endif
-#if PLATFORM_BEKEN || PLATFORM_LN882H || PLATFORM_GD32VW553
+#if PLATFORM_BEKEN || PLATFORM_LN882H || PLATFORM_GD32VW553 || PLATFORM_ARMINO
 	//cmddetail:{"name":"logport","args":"[Index]",
 	//cmddetail:"descr":"Allows you to change log output port. On Beken, the UART1 is used for flashing and for TuyaMCU/BL0942, while UART2 is for log. Sometimes it might be easier for you to have log on UART1, so now you can just use this command like backlog uartInit 115200; logport 1 to enable logging on UART1..",
 	//cmddetail:"fn":"log_port","file":"logging/logging.c","requires":"",
@@ -348,7 +371,7 @@ void LOG_SetCommandHTTPRedirectReply(http_request_t* request) {
 
 
 
-#ifdef PLATFORM_BEKEN
+#if PLATFORM_BEKEN || PLATFORM_ARMINO
 // run serial via timer thread.
 	OSStatus OBK_rtos_callback_in_timer_thread( PendedFunction_t xFunctionToPend, void *pvParameter1, uint32_t ulParameter2, uint32_t delay_ms);
 	void RunSerialLog();
@@ -508,7 +531,7 @@ void addLogAdv(int level, int feature, const char* fmt, ...)
 	if (taken == pdTRUE) {
 		xSemaphoreGive(logMemory.mutex);
 	}
-#ifdef PLATFORM_BEKEN
+#if PLATFORM_BEKEN || PLATFORM_ARMINO
 	trigger_log_send();
 #endif	
 	if (log_delay != 0) 
@@ -561,7 +584,7 @@ static int getData(char* buff, int buffsize, int* tail) {
 	return count;
 }
 
-#if PLATFORM_BEKEN
+#if PLATFORM_BEKEN || PLATFORM_ARMINO
 
 // for T & N, we can send bytes if TX fifo is not full,
 // and not wait.
@@ -569,6 +592,9 @@ static int getData(char* buff, int buffsize, int* tail) {
 // H/W TX fifo seems to be 256 bytes!!!
 static int getSerial2() {
 	if (!initialised) return 0;
+#if PLATFORM_ARMINO
+	if(UART_PORT_INDEX < 0) return 0;
+#endif
 	int* tail = &logMemory.tailserial;
 	char c;
 	BaseType_t taken = xSemaphoreTake(logMemory.mutex, 100);
@@ -775,7 +801,7 @@ void startSerialLog() {
 
 #else
 
-#ifndef PLATFORM_BEKEN
+#if !PLATFORM_BEKEN && !PLATFORM_ARMINO
 	OSStatus err = kNoErr;
 	err = rtos_create_thread(NULL, BEKEN_APPLICATION_PRIORITY,
 		"log_serial",
@@ -831,7 +857,7 @@ void log_server_thread(beken_thread_arg_t arg)
 			if (client_fd >= 0)
 			{
 				strcpy(client_ip_str, inet_ntoa(client_addr.sin_addr));
-#ifdef PLATFORM_BEKEN
+#if PLATFORM_BEKEN || PLATFORM_ARMINO
 				// Just note the new client port, if we have an available slot out of the two we record.
 				int found_port_slot = 0;
 				for (int i = 0; i < MAX_TCP_LOG_PORTS; i++) {
@@ -873,7 +899,7 @@ void log_server_thread(beken_thread_arg_t arg)
 #define TCPLOGBUFSIZE 128
 static char tcplogbuf[TCPLOGBUFSIZE];
 
-#ifdef PLATFORM_BEKEN
+#if PLATFORM_BEKEN || PLATFORM_ARMINO
 static void send_to_tcp(){
 	int i;
 	for (i = 0; i < MAX_TCP_LOG_PORTS; i++){
@@ -906,7 +932,7 @@ static void send_to_tcp(){
 #endif
 
 // on beken, we trigger log send from timer thread
-#ifndef PLATFORM_BEKEN
+#if !PLATFORM_BEKEN && !PLATFORM_ARMINO
 
 // non-beken
 static void log_client_thread(beken_thread_arg_t arg)

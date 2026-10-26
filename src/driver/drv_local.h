@@ -137,6 +137,20 @@ void DRV_HTTPButtons_AddToHtmlPage(http_request_t *request);
 void DRV_InitHTTPButtons();
 #if ENABLE_HA_DISCOVERY
 void DRV_HTTPButtons_OnHassDiscovery(const char *topic);
+
+void BKSDCard_Init(void);
+void BKSDCard_OnEverySecond(void);
+void BKSDCard_StopDriver(void);
+void BKSDCard_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState);
+int BKSDCardFs_Mount(void);
+int BKSDCardFs_Unmount(void);
+int BKSDCardFs_IsMounted(void);
+int BKSDCardFs_LastResult(void);
+void BKSDCardFs_SetBase(unsigned int lba);
+unsigned int BKSDCardFs_GetBase(void);
+unsigned int BKSDCardFs_Reads(void);
+unsigned int BKSDCardFs_ReadFails(void);
+
 #endif
 
 void CHT83XX_Init();
@@ -162,6 +176,24 @@ void SGP_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState
 void SGP_OnEverySecond();
 void SGP_StopDriver();
 
+void BKCharge_Init(void);
+void BKCharge_OnEverySecond(void);
+void BKCharge_StopDriver(void);
+void BKCharge_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState);
+
+void BKAudio_Init(void);
+void BKAudio_OnEverySecond(void);
+void BKAudio_RunQuickTick(void);
+void BKAudio_StopDriver(void);
+void BKAudio_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState);
+
+void BKRTC_Init(void);
+void BKRTC_OnEverySecond(void);
+void BKRTC_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState);
+unsigned long long BKRTC_GetUptimeUs(void);
+unsigned int BKRTC_GetUptimeSeconds(void);
+unsigned int BKRTC_GetEpoch(void);
+int BKRTC_HasBase(void);
 void Batt_Init();
 void Batt_OnEverySecond();
 void Batt_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState);
@@ -219,6 +251,11 @@ void TCA9554_Init();
 void TCA9554_OnEverySecond();
 void TCA9554_OnChannelChanged(int ch, int value);
 
+void VKL060_Init();
+void VKL060_OnEverySecond();
+void VKL060_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState);
+void VKL060_StopDriver();
+
 void DMX_Init();
 void DMX_OnEverySecond();
 void DMX_Shutdown();
@@ -250,6 +287,18 @@ void Drawers_QuickTick();
 
 void HGS02_Init(void);
 void HGS02_RunEverySecond(void);
+
+void XiaomiCompact4_Init(void);
+void XiaomiCompact4_RunEverySecond(void);
+void XiaomiCompact4_RunQuickTick(void);
+void XiaomiCompact4_Stop(void);
+void XiaomiCompact4_OnChannelChanged(int ch, int value);
+void XiaomiCompact4_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState);
+bool XiaomiCompact4_ShouldSkipGenericHassDiscovery(int ch);
+bool XiaomiCompact4_ShouldUseCompactIndexLabels(int ch);
+#if ENABLE_HA_DISCOVERY
+void XiaomiCompact4_OnHassDiscovery(const char *topic);
+#endif
 
 void UART_TCP_Init(void);
 void UART_TCP_Deinit(void);

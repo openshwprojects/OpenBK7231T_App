@@ -22,11 +22,11 @@ jobs:
       new_release: ${{ steps.refs.outputs.new_release }}
     steps:
       - name: Source checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Semantic Release
         id: semantic
         if: github.ref == 'refs/heads/main' || github.ref_name == 'alpha'
-        uses: cycjimmy/semantic-release-action@v4
+        uses: cycjimmy/semantic-release-action@v5
         with:
           dry_run: true
           semantic_version: 21
@@ -61,14 +61,14 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
 
     - name: Checkout berry submodule
       run: |
         git submodule update --init --recursive libraries/berry
 
     - name: Setup MSBuild
-      uses: microsoft/setup-msbuild@v2
+      uses: microsoft/setup-msbuild@v3
 
     - name: Checkout simulator repository
       run: |
@@ -97,7 +97,7 @@ jobs:
         mkdir -Force output/${{ needs.refs.outputs.version }}
         cp obkSimulator_win32_${{ needs.refs.outputs.version }}.zip output/${{ needs.refs.outputs.version }}/obkSimulator_${{ needs.refs.outputs.version }}.zip
     - name: Upload build assets
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v6
       with:
         name: ${{ env.APP_NAME }}_${{ needs.refs.outputs.version }}_sim
         path: output/${{ needs.refs.outputs.version }}/obkSimulator_${{ needs.refs.outputs.version }}.zip
@@ -109,7 +109,7 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
 
     - name: Checkout berry submodule
       run: |
@@ -131,7 +131,7 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
 
     - name: Checkout berry submodule
       run: |
@@ -211,6 +211,12 @@ jobs:
           #  variant: default
           - platform: OpenGD32VW553
             variant: default
+          - platform: OpenBK7236
+            variant: default
+            gcc: 10.3-2021.10
+          - platform: OpenBK7239N
+            variant: default
+            gcc: 10.3-2021.10
 
           # extras for BK7231T
           - platform: OpenBK7231T
@@ -276,9 +282,9 @@ jobs:
             gcc: 10.3-2021.10
     steps:
       - name: Source checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         if: ${{ matrix.platform == 'OpenBL602' || matrix.platform == 'OpenRTL8721DA' || matrix.platform == 'OpenRTL8720E' || matrix.platform == 'OpenRDA5981' }}
         with:
           python-version: '3.10'
@@ -312,7 +318,7 @@ jobs:
         run: make APP_VERSION=${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }} APP_NAME=${{ matrix.platform }} VARIANT="${{ matrix.variant }}" ${{ matrix.platform }}
 
       - name: Save build assets
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: ${{ env.APP_NAME }}_${{ needs.refs.outputs.version }}_${{ matrix.platform }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}
           path: |
@@ -358,6 +364,10 @@ jobs:
             variant: 4M
             version: v5.5.2
             sdk: esp-idf
+          - platform: OpenESP32
+            variant: xiaomiCompact4
+            version: v5.5.2
+            sdk: esp-idf
           - platform: OpenESP32C2
             variant: 4M
             version: v5.5.2
@@ -393,10 +403,10 @@ jobs:
             sdk: OpenESP8266
     steps:
       - name: Source checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: ESP-IDF checkout
         if: ${{ matrix.platform != 'OpenESP8266' }}
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: espressif/esp-idf
           path: sdk/esp-idf
@@ -405,7 +415,7 @@ jobs:
 
       - name: OpenESP8266 checkout
         if: ${{ matrix.platform == 'OpenESP8266' }}
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: NonPIayerCharacter/OpenESP8266
           path: sdk/OpenESP8266
@@ -414,7 +424,7 @@ jobs:
           fetch-depth: '10'
           submodules: recursive
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         id: pysetup
         with:
           python-version: '3.10'
@@ -427,7 +437,7 @@ jobs:
           version: 1.0
       - name: Cache toolchain
         id: cache-toolchain
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.espressif # cache whole folder, not just dist
           key: ${{ matrix.sdk }}_toolchain_${{ matrix.version }}_${{ steps.pysetup.outputs.python-version }}
@@ -444,7 +454,7 @@ jobs:
           cd ../..
           make APP_VERSION=${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }} APP_NAME=${{ matrix.platform }} VARIANT="${{ matrix.variant }}" ${{ matrix.platform }}
       - name: Save build assets
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: ${{ env.APP_NAME }}_${{ needs.refs.outputs.version }}_${{ matrix.platform }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}
           path: |
@@ -466,20 +476,21 @@ jobs:
             variant: default
     steps:
       - name: Source checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Test native TXW81x packer
         run: python3 -m unittest discover -s tools/txw81x_pack/tests -v
       - name: Run make
         run: |
           make APP_VERSION=${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }} APP_NAME=${{ matrix.platform }} VARIANT="${{ matrix.variant }}" ${{ matrix.platform }}
       - name: Save build assets
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: ${{ env.APP_NAME }}_${{ needs.refs.outputs.version }}_${{ matrix.platform }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}
           path: |
             output/${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}/${{ matrix.platform }}_${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}.bin
             output/${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}/${{ matrix.platform }}_${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}_ota.img
           if-no-files-found: warn
+
   merge:
     name: Merge Artifacts
     runs-on: ubuntu-22.04
@@ -487,7 +498,7 @@ jobs:
     #if: always() && needs.refs.outputs.new_release == 'true' && (github.ref == 'refs/heads/main' || github.ref_name == 'alpha')
     steps:
       - name: Merge Artifacts
-        uses: actions/upload-artifact/merge@v4
+        uses: actions/upload-artifact/merge@v6
         with:
           name: ${{ env.APP_NAME }}_${{ needs.refs.outputs.version }}
           #delete-merged: true
@@ -499,15 +510,15 @@ jobs:
     if: always() && needs.refs.outputs.new_release == 'true' && (github.ref == 'refs/heads/main' || github.ref_name == 'alpha')
     steps:
       - name: Source checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Fetch build assets
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: ${{ env.APP_NAME }}_${{ needs.refs.outputs.version }}
           path: output/${{ needs.refs.outputs.version }}
       - name: Run Semantic Release
         id: semantic
-        uses: cycjimmy/semantic-release-action@v4
+        uses: cycjimmy/semantic-release-action@v5
         with:
           dry_run: false
           semantic_version: 21

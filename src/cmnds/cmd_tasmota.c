@@ -138,37 +138,37 @@ static commandResult_t powerAll(const void *context, const char *cmd, const char
 
 static commandResult_t cmnd_backlog_old(const void * context, const char *cmd, const char *args, int cmdFlags) {
 
-	const char *subcmd;
-	const char *p;
+	char *copy;
+	char *subcmd;
+	char *p;
 	int count = 0;
-	char copy[128];
-	char *c;
 	int localRes;
 	int res = CMD_RES_OK;
 	ADDLOG_DEBUG(LOG_FEATURE_CMD, "backlog [%s]", args);
 
-	subcmd = args;
-	p = args;
+	// split one copy in place - copying each command into char[128] silently cut it at 127
+	copy = strdup(args);
+	if (copy == 0) {
+		ADDLOG_ERROR(LOG_FEATURE_CMD, "backlog: out of memory");
+		return CMD_RES_ERROR;
+	}
+	subcmd = copy;
 	while (*subcmd) {
-		c = copy;
-		while (*p) {
-			if (*p == ';') {
-				p++;
-				break;
-			}
-			*(c) = *(p++);
-			if (c - copy < (sizeof(copy) - 1)) {
-				c++;
-			}
+		p = strchr(subcmd, ';');
+		if (p) {
+			*p = 0;
 		}
-		*c = 0;
 		count++;
-		localRes = CMD_ExecuteCommand(copy, cmdFlags);
+		localRes = CMD_ExecuteCommand(subcmd, cmdFlags);
 		if (localRes != CMD_RES_OK && localRes != CMD_RES_EMPTY_STRING) {
 			res = localRes;
 		}
-		subcmd = p;
+		if (p == 0) {
+			break;
+		}
+		subcmd = p + 1;
 	}
+	free(copy);
 	ADDLOG_DEBUG(LOG_FEATURE_CMD, "backlog executed %d", count);
 	return res;
 }

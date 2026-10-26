@@ -89,16 +89,20 @@ static void tcp_client_thread(tcp_thread_t* arg)
 		{
 			break;
 		}
+		if(strstr(request.received, "\r\n\r\n") != NULL &&
+		   (strncmp(request.received, "POST /api/lfs/", 14) == 0 ||
+		    strncmp(request.received, "POST /api/ota", 13) == 0))
+		{
+			break;
+		}
 		// grow by INCOMING_BUFFER_SIZE
 		request.receivedLenmax += INCOMING_BUFFER_SIZE;
 		char *newbuf = (char*)realloc(request.received, request.receivedLenmax + 2);
 		if(newbuf == NULL)
 		{
 			ADDLOG_ERROR(LOG_FEATURE_HTTP, "TCP Client realloc failed");
-			// no memory
-			//goto exit;
 			request.receivedLenmax -= INCOMING_BUFFER_SIZE;
-			continue;
+			break;
 		}
 		request.received = buf = newbuf;
 	}
@@ -247,7 +251,7 @@ static void tcp_server_thread(beken_thread_arg_t arg)
 	}
 	ADDLOG_EXTRADEBUG(LOG_FEATURE_HTTP, "Socket bound on 0.0.0.0:%i", HTTP_SERVER_PORT);
 
-	err = listen(listen_sock, 0);
+	err = listen(listen_sock, (int)max_socks);
 	if(err != 0)
 	{
 		ADDLOG_ERROR(LOG_FEATURE_HTTP, "Error occurred during listen");
@@ -322,7 +326,6 @@ static void tcp_server_thread(beken_thread_arg_t arg)
 					ADDLOG_ERROR(LOG_FEATURE_HTTP, "[sock=%d]: TCP Client thread creation failed!", sock[new_idx].fd);
 					lwip_close(sock[new_idx].fd);
 					sock[new_idx].fd = INVALID_SOCK;
-					goto error;
 				}
 			}
 		}

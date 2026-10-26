@@ -8,6 +8,7 @@ void HAL_PIN_Setup_Input_Pulldown(int index);
 void HAL_PIN_Setup_Input_Pullup(int index);
 void HAL_PIN_Setup_Input(int index);
 void HAL_PIN_Setup_Output(int index);
+void HAL_PIN_Setup_Output_Initial(int index, int value);
 void HAL_PIN_PWM_Stop(int index);
 void HAL_PIN_PWM_Start(int index, int freq);
 // Value range is 0 to 100, value is clamped
