@@ -1185,7 +1185,11 @@ static int lfs_erase(const struct lfs_config* c, lfs_block_t block)
 	return res;
 }
 
-#elif PLATFORM_TXW81X || PLATFORM_RDA5981 || PLATFORM_GD32VW553 || PLATFORM_ARMINO
+#elif PLATFORM_TXW81X || PLATFORM_RDA5981 || PLATFORM_GD32VW553 || PLATFORM_ARMINO || PLATFORM_RTL8196C
+
+int HAL_FlashRead(char *buffer, int readlen, int startaddr);
+int HAL_FlashWrite(char *buf, unsigned int len, unsigned int addr);
+int HAL_FlashEraseSector(int startaddr);
 
 static int lfs_read(const struct lfs_config* c, lfs_block_t block,
 	lfs_off_t off, void* buffer, lfs_size_t size)
