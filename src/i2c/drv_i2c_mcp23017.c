@@ -118,7 +118,7 @@ void DRV_I2C_MCP23017_OnChannelChanged(i2cDevice_t *dev, int channel, int iVal)
 
 	for(i = 0; i < 16; i++) {
 		if(mcp->pinMapping[i] == channel) {
-			addLogAdv(LOG_INFO, LOG_FEATURE_I2C,"DRV_I2C_MCP23017_OnChannelChanged: will set pin %i to %i for ch %i\n", i, iVal, channel);
+			addLogAdv(LOG_INFO, LOG_FEATURE_I2C,"DRV_I2C_MCP23017_OnChannelChanged: will set pin %i to %i for ch %i", i, iVal, channel);
 
 			// split 0-16 indices into two 8 bit ports - port A and port B
 			if(i>=8) {
@@ -130,10 +130,10 @@ void DRV_I2C_MCP23017_OnChannelChanged(i2cDevice_t *dev, int channel, int iVal)
 			}
 			mask = 1 << localBitIndex;
 			if(iVal) {
-				//addLogAdv(LOG_INFO, LOG_FEATURE_I2C,"DRV_I2C_MCP23017_OnChannelChanged: calling MCP23017_setBits mask %i\n", mask);
+				//addLogAdv(LOG_INFO, LOG_FEATURE_I2C,"DRV_I2C_MCP23017_OnChannelChanged: calling MCP23017_setBits mask %i", mask);
 				MCP23017_setBits(mcp, bank, mask);
 			} else {
-				//addLogAdv(LOG_INFO, LOG_FEATURE_I2C,"DRV_I2C_MCP23017_OnChannelChanged: calling MCP23017_clearBits mask %i\n", mask);
+				//addLogAdv(LOG_INFO, LOG_FEATURE_I2C,"DRV_I2C_MCP23017_OnChannelChanged: calling MCP23017_clearBits mask %i", mask);
 				MCP23017_clearBits(mcp, bank, mask);
 			}
 		}
@@ -153,13 +153,13 @@ commandResult_t DRV_I2C_MCP23017_MapPinToChannel(const void *context, const char
 	targetPin = Tokenizer_GetArgInteger(2);
 	targetChannel = Tokenizer_GetArgInteger(3);
 
-	addLogAdv(LOG_INFO, LOG_FEATURE_I2C,"DRV_I2C_MCP23017_MapPinToChannel: module %s, address %i, pin %i, ch %i\n", i2cModuleStr, address,targetPin,targetChannel );
+	addLogAdv(LOG_INFO, LOG_FEATURE_I2C,"DRV_I2C_MCP23017_MapPinToChannel: module %s, address %i, pin %i, ch %i", i2cModuleStr, address,targetPin,targetChannel );
 
 	busType = DRV_I2C_ParseBusType(i2cModuleStr);
 
 	mcp = (i2cDevice_MCP23017_t *)DRV_I2C_FindDeviceExt( busType, address,I2CDEV_MCP23017);
 	if(mcp == 0) {
-		addLogAdv(LOG_INFO, LOG_FEATURE_I2C,"DRV_I2C_MCP23017_MapPinToChannel: no such device exists\n" );
+		addLogAdv(LOG_INFO, LOG_FEATURE_I2C,"DRV_I2C_MCP23017_MapPinToChannel: no such device exists" );
 		return CMD_RES_BAD_ARGUMENT;
 	}
 
@@ -212,10 +212,10 @@ commandResult_t DRV_I2C_AddDevice_MCP23017(const void *context, const char *cmd,
 	busType = DRV_I2C_ParseBusType(i2cModuleStr);
 
 	if (DRV_I2C_FindDevice(busType, address)) {
-		addLogAdv(LOG_INFO, LOG_FEATURE_I2C, "DRV_I2C_AddDevice_MCP23017: there is already some device on this bus with such addr\n");
+		addLogAdv(LOG_INFO, LOG_FEATURE_I2C, "DRV_I2C_AddDevice_MCP23017: there is already some device on this bus with such addr");
 		return CMD_RES_BAD_ARGUMENT;
 	}
-	addLogAdv(LOG_INFO, LOG_FEATURE_I2C, "DRV_I2C_AddDevice_MCP23017: module %s, address %i\n", i2cModuleStr, address);
+	addLogAdv(LOG_INFO, LOG_FEATURE_I2C, "DRV_I2C_AddDevice_MCP23017: module %s, address %i", i2cModuleStr, address);
 
 
 	DRV_I2C_AddDevice_MCP23017_Internal(busType, address);

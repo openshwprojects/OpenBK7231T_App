@@ -83,6 +83,7 @@ void HAL_PIN_PWM_Stop(int index)
 	HAL_PWM_ChDeinit(g_pins[index].pwm);
 
 	HAL_XR_ConfigurePin(g_pins[index].port, g_pins[index].pin, GPIOx_Pn_F7_DISABLE, GPIO_PULL_NONE);
+	g_pins[index].max_duty = -1;
 }
 
 void HAL_PIN_PWM_Start(int index, int freq)
@@ -92,21 +93,29 @@ void HAL_PIN_PWM_Start(int index, int freq)
 	HAL_Status status = HAL_ERROR;
 	PWM_ClkParam clk_param;
 	PWM_ChInitParam ch_param;
-
 	clk_param.clk = PWM_CLK_HOSC;
 	clk_param.div = PWM_SRC_CLK_DIV_1;
-	status = HAL_PWM_GroupClkCfg(g_pins[index].pwm / 2, &clk_param);
-	if(status != HAL_OK) printf("HAL_PWM_GroupClkCfg error\r\n");
-
 	ch_param.hz = freq;
 	ch_param.mode = PWM_CYCLE_MODE;
 	ch_param.polarity = PWM_HIGHLEVE;
+	
+	if(g_pins[index].max_duty >= 0)
+	{
+		HAL_PWM_EnableCh(g_pins[index].pwm, PWM_CYCLE_MODE, 0);
+		HAL_PWM_ChDeinit(g_pins[index].pwm);
+		g_pins[index].max_duty = HAL_PWM_ChInit(g_pins[index].pwm, &ch_param);
+		HAL_PWM_EnableCh(g_pins[index].pwm, PWM_CYCLE_MODE, 1);
+		return;
+	}
+	
+	status = HAL_PWM_GroupClkCfg(g_pins[index].pwm / 2, &clk_param);
+	if(status != HAL_OK) printf("HAL_PWM_GroupClkCfg error\r\n");
 	g_pins[index].max_duty = HAL_PWM_ChInit(g_pins[index].pwm, &ch_param);
 	if(g_pins[index].max_duty == -1) printf("HAL_PWM_ChInit error\r\n");
-
+	
 	status = HAL_PWM_EnableCh(g_pins[index].pwm, PWM_CYCLE_MODE, 1);
 	if(status != HAL_OK) printf("HAL_PWM_EnableCh error\r\n");
-
+	
 	HAL_XR_ConfigurePin(g_pins[index].port, g_pins[index].pin, g_pins[index].pinmux_pwm, GPIO_PULL_NONE);
 }
 
@@ -121,7 +130,21 @@ void HAL_PIN_PWM_Update(int index, float value)
 	if(value > 100)
 		value = 100;
 
-	HAL_PWM_ChSetDutyRatio(g_pins[index].pwm, (g_pins[index].max_duty / 100) * value);
+	if(__get_IPSR() != 0)
+	{
+		__IO uint32_t* reg;
+		reg = &PWM->CH_REG[g_pins[index].pwm].PPR;
+
+		uint32_t p = *reg;
+		p &= ~PWM_PPR_ACT_CYCLE;
+		p |= (uint16_t)((g_pins[index].max_duty / 100) * value);
+		*reg = p;
+	}
+	else
+	{
+		// uses ms delay, not suitable for ISR
+		HAL_PWM_ChSetDutyRatio(g_pins[index].pwm, (g_pins[index].max_duty / 100) * value);
+	}
 }
 
 OBKInterruptHandler g_handlers[PLATFORM_GPIO_MAX];

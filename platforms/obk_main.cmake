@@ -65,7 +65,9 @@ set(OBKM_SRC
 	${OBK_SRCS}driver/drv_battery.c
 	${OBK_SRCS}driver/drv_bl0937.c
 	${OBK_SRCS}driver/drv_bl0942.c
+	${OBK_SRCS}driver/drv_bl0939.c
 	${OBK_SRCS}driver/drv_bl_shared.c
+	${OBK_SRCS}driver/drv_bmp280.c
 	${OBK_SRCS}driver/drv_bmpi2c.c
 	${OBK_SRCS}driver/drv_bp1658cj.c
 	${OBK_SRCS}driver/drv_bp5758d.c
@@ -157,15 +159,16 @@ set(OBKM_SRC
 	${OBK_SRCS}driver/drv_uart.c
 	${OBK_SRCS}driver/drv_uart_tcp.c
 	${OBK_SRCS}driver/drv_ucs1912.c
+	${OBK_SRCS}driver/drv_vkl060.c
 	${OBK_SRCS}driver/drv_wemo.c
 	${OBK_SRCS}driver/drv_widget.c
+	${OBK_SRCS}driver/drv_xiaomi_compact4.c
 	${OBK_SRCS}i2c/drv_i2c_ads1115.c
 	${OBK_SRCS}i2c/drv_i2c_lcd_pcf8574t.c
 	${OBK_SRCS}i2c/drv_i2c_main.c
 	${OBK_SRCS}i2c/drv_i2c_mcp23017.c
 	${OBK_SRCS}i2c/drv_i2c_tc74.c
 
-#	${OBK_SRCS}driver/drv_bmp280.c
 #	${OBK_SRCS}driver/drv_test_charts.c
 )
 

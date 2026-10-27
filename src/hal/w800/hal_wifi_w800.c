@@ -4,7 +4,7 @@
 
 #define LOG_FEATURE LOG_FEATURE_MAIN
 
-#include "../../new_common.h"
+#include "../../new_cfg.h"
 #include "../../logging/logging.h"
 #include "lwip/netdb.h"
 #include "lwip/netif.h"
@@ -244,6 +244,16 @@ static int connect_wifi_demo(char* ssid, char* pwd, obkStaticIP_t *ip)
 		tls_param_set(TLS_PARAM_ID_IP, ip_param, FALSE);
 		tls_mem_free(ip_param);
 	}
+
+#if defined(PLATFORM_W600)
+	u16 channel_list = 0;
+	if (tls_param_get(TLS_PARAM_ID_CHANNEL_LIST, (void*)&channel_list, TRUE) == TLS_PARAM_STATUS_OK &&
+		(channel_list == 0 || (channel_list & 0xC000)))
+	{
+		channel_list = 0x3FFF;
+		tls_param_set(TLS_PARAM_ID_CHANNEL_LIST, (void*)&channel_list, FALSE);
+	}
+#endif
 
 	ret = tls_wifi_connect((u8*)ssid, strlen(ssid), (u8*)pwd, strlen(pwd));
 	if (WM_SUCCESS == ret)

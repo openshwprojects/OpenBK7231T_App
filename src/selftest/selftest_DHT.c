@@ -20,6 +20,10 @@ void Test_DHT() {
 	PIN_SetPinChannel2ForPinIndex(9, 2);
 
 	Sim_RunSeconds(5.0f, false);
+	// After removing the role the driver should no longer update the channels.
+	// They must remain at the last values sampled while the DHT11 role was active.
+	SELFTEST_ASSERT_CHANNEL(1, 190);
+	SELFTEST_ASSERT_CHANNEL(2, 67);
 }
 
 

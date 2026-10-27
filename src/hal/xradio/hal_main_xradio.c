@@ -1,8 +1,11 @@
 #if PLATFORM_XRADIO
 
 #include "../../new_common.h"
+#include "common/framework/net_ctrl.h"
 #include "driver/chip/hal_gpio.h"
 #include "driver/chip/hal_prcm.h"
+#include "net/wlan/wlan.h"
+#include "net/wlan/wlan_ext_req.h"
 
 #if PLATFORM_XR806
 
@@ -20,14 +23,29 @@ size_t sram_free_heap_size(void)
 
 #endif
 
+extern float g_wifi_temperature;
 extern void Main_Init();
 extern void Main_OnEverySecond();
 static void obk_task(void* pvParameters)
 {
+#if PLATFORM_XR872 || PLATFORM_XR806
+	wlan_ext_temp_volt_get_t param;
+	uint8_t temp_sec = 10;
+#endif
 	vTaskDelay(50 / portTICK_PERIOD_MS);
 	Main_Init();
 	for(;;)
 	{
+#if PLATFORM_XR872 || PLATFORM_XR806
+		if(temp_sec >= 10)
+		{
+			wlan_ext_temp_volt_get_t param;
+			wlan_ext_request(g_wlan_netif, WLAN_EXT_CMD_GET_TEMP_VOLT, (int)&param);
+			g_wifi_temperature = (float)param.Temperature / 16.0f;
+			temp_sec = 0;
+		}
+		temp_sec++;
+#endif
 		vTaskDelay(1000 / portTICK_PERIOD_MS);
 		Main_OnEverySecond();
 	}
@@ -36,7 +54,6 @@ static void obk_task(void* pvParameters)
 
 void user_main(void)
 {
-	printf("%s\r\n", __func__);
 #if !PLATFORM_XR809
 	HAL_PRCM_SetWakeupDebClk0(0);
 #endif

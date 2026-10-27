@@ -2,6 +2,7 @@
 #include "../logging/logging.h"
 #include "drv_bl0937.h"
 #include "drv_bl0942.h"
+#include "drv_bl0939.h"
 #include "drv_bl_shared.h"
 #include "drv_neo6m.h"
 #include "drv_cse7766.h"
@@ -13,15 +14,19 @@
 #include "drv_public.h"
 #include "drv_mdns.h"
 #include "drv_ssdp.h"
+#include "drv_ftp.h"
+#include "drv_smb.h"
 #include "drv_test_drivers.h"
 #include "drv_tuyaMCU.h"
 #include "drv_girierMCU.h"
 #include "drv_uart.h"
+#include "drv_gaitekAC.h"
 #include "drv_ds1820_simple.h"
 #include "drv_ds1820_full.h"
 #include "drv_ds1820_common.h"
 #include "drv_ds3231.h"
 #include "drv_hlw8112.h"
+#include "drv_xiaomi_compact4.h"
 #include "drv_DCF77.h"
 #include "drv_shtxx.h"
 
@@ -173,6 +178,26 @@ static driver_t g_drivers[] = {
 	DRV_ESPHome_API_Deinit,                  // stopFunction
 	NULL,                                    // onChannelChanged
 	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
+	},
+#endif
+#if ENABLE_DRIVER_XIAOMI_COMPACT4
+	//drvdetail:{"name":"XiaomiCompact4",
+	//drvdetail:"title":"Xiaomi Smart Air Purifier 4 Compact",
+	//drvdetail:"descr":"Device-specific driver for Xiaomi Smart Air Purifier 4 Compact (zhimi.airp.cpa4) on ESP32-WROOM-32D hardware.",
+	//drvdetail:"requires":"ESP32"}
+	{ "XiaomiCompact4",                     // Driver Name
+	XiaomiCompact4_Init,                     // Init
+	XiaomiCompact4_RunEverySecond,           // onEverySecond
+	XiaomiCompact4_AppendInformationToHTTPIndexPage, // appendInformationToHTTPIndexPage
+	XiaomiCompact4_RunQuickTick,             // runQuickTick
+	XiaomiCompact4_Stop,                     // stopFunction
+	XiaomiCompact4_OnChannelChanged,         // onChannelChanged
+#if ENABLE_HA_DISCOVERY
+	XiaomiCompact4_OnHassDiscovery,          // onHassDiscovery
+#else
+	NULL,                                    // onHassDiscovery
+#endif
 	false,                                   // loaded
 	},
 #endif
@@ -428,7 +453,11 @@ static driver_t g_drivers[] = {
 	NULL,                                    // runQuickTick
 	NULL,                                    // stopFunction
 	NULL,                                    // onChannelChanged
+#if ENABLE_HA_DISCOVERY
+	DRV_HTTPButtons_OnHassDiscovery,        // onHassDiscovery
+#else
 	NULL,                                    // onHassDiscovery
+#endif
 	false,                                   // loaded
 	},
 #endif
@@ -621,6 +650,22 @@ static driver_t g_drivers[] = {
 	HLW8112SPI_Stop,                         // stopFunction
 	NULL,                                    // onChannelChanged
 	HLW8112_OnHassDiscovery,                 // onHassDiscovery
+	false,                                   // loaded
+	},
+#endif
+#if ENABLE_DRIVER_BL0939SPI
+	//drvdetail:{"name":"BL0939SPI",
+	//drvdetail:"title":"BL0939 SPI dual-channel bidirectional power meter",
+	//drvdetail:"descr":"BL0939 SPI driver for dual CT clamp bidirectional power meters. Requires BL0939_SCLK, BL0939_MOSI and BL0939_MISO pin roles.",
+	//drvdetail:"requires":""}
+	{ "BL0939SPI",                           // Driver Name
+	BL0939_SPI_Init,                         // Init
+	BL0939_SPI_RunEverySecond,               // onEverySecond
+	BL0939_AppendInformationToHTTPIndexPage, // appendInformationToHTTPIndexPage
+	NULL,                                    // runQuickTick
+	BL0939_SPI_Stop,                         // stopFunction
+	NULL,                                    // onChannelChanged
+	BL0939_OnHassDiscovery,                 // onHassDiscovery
 	false,                                   // loaded
 	},
 #endif
@@ -907,6 +952,38 @@ static driver_t g_drivers[] = {
 	NULL,                                    // appendInformationToHTTPIndexPage
 	DRV_SSDP_RunQuickTick,                   // runQuickTick
 	DRV_SSDP_Shutdown,                       // stopFunction
+	NULL,                                    // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
+	},
+#endif
+#if ENABLE_DRIVER_FTP && ENABLE_LITTLEFS
+	//drvdetail:{"name":"FTP",
+	//drvdetail:"title":"FTP",
+	//drvdetail:"descr":"RFC 959 FTP Server providing transparent access to LittleFS and mounted VFS volumes (such as USB drives).",
+	//drvdetail:"requires":""}
+	{ "FTP",                                 // Driver Name
+	DRV_FTP_Init,                            // Init
+	DRV_FTP_RunEverySecond,                  // onEverySecond
+	DRV_FTP_AppendInformationToHTTPIndexPage,// appendInformationToHTTPIndexPage
+	DRV_FTP_RunQuickTick,                    // runQuickTick
+	DRV_FTP_Shutdown,                        // stopFunction
+	NULL,                                    // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
+	},
+#endif
+#if ENABLE_DRIVER_SMB && ENABLE_LITTLEFS
+	//drvdetail:{"name":"SMB",
+	//drvdetail:"title":"SMB",
+	//drvdetail:"descr":"SMB2 network file share server (port 445) providing native Windows/Linux/macOS access to LittleFS and mounted VFS volumes.",
+	//drvdetail:"requires":""}
+	{ "SMB",                                 // Driver Name
+	DRV_SMB_Init,                            // Init
+	DRV_SMB_RunEverySecond,                  // onEverySecond
+	DRV_SMB_AppendInformationToHTTPIndexPage,// appendInformationToHTTPIndexPage
+	DRV_SMB_RunQuickTick,                    // runQuickTick
+	DRV_SMB_Shutdown,                        // stopFunction
 	NULL,                                    // onChannelChanged
 	NULL,                                    // onHassDiscovery
 	false,                                   // loaded
@@ -1400,6 +1477,70 @@ static driver_t g_drivers[] = {
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"Custom mechanism to measure battery level with ADC and an optional relay. See [example here](https://www.elektroda.com/rtvforum/topic3959103.html).",
 	//drvdetail:"requires":""}
+#if ENABLE_DRIVER_BKCHARGE
+	//drvdetail:{"name":"BKCharge",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"Reports the state of the BK7252N on-chip Li-ion charger: trickle, CC, CV, full, recharge and USB present. Publishes charging, charge_full and usb_power over MQTT and can drive a channel.",
+	//drvdetail:"requires":""}
+	{ "BKCharge",                            // Driver Name
+	BKCharge_Init,                                // Init
+	BKCharge_OnEverySecond,                       // onEverySecond
+	BKCharge_AppendInformationToHTTPIndexPage,    // appendInformationToHTTPIndexPage
+	NULL,                                    // runQuickTick
+	BKCharge_StopDriver,                          // stopFunction
+	NULL,                                    // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
+	},
+#endif
+#if ENABLE_DRIVER_BKSDCARD
+	//drvdetail:{"name":"BKSDCard",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"Drives the BK7252N SD host, reports the card in the slot and reads raw blocks.",
+	//drvdetail:"requires":""}
+	{ "BKSDCard",                            // Driver Name
+	BKSDCard_Init,                           // Init
+	BKSDCard_OnEverySecond,                  // onEverySecond
+	BKSDCard_AppendInformationToHTTPIndexPage, // appendInformationToHTTPIndexPage
+	NULL,                                    // runQuickTick
+	BKSDCard_StopDriver,                     // stopFunction
+	NULL,                                    // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
+	},
+#endif
+#if ENABLE_DRIVER_BKAUDIO
+	//drvdetail:{"name":"BKAudio",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"Captures from the BK7252N on-chip audio ADC and reports the level: RMS, peak, and a peak held until it is read. The ring buffer is drained from the quick tick, and the driver reports the sample rate it actually observes so that coverage can be checked.",
+	//drvdetail:"requires":""}
+	{ "BKAudio",                             // Driver Name
+	BKAudio_Init,                            // Init
+	BKAudio_OnEverySecond,                   // onEverySecond
+	BKAudio_AppendInformationToHTTPIndexPage, // appendInformationToHTTPIndexPage
+	BKAudio_RunQuickTick,                    // runQuickTick
+	BKAudio_StopDriver,                      // stopFunction
+	NULL,                                    // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
+	},
+#endif
+#if ENABLE_DRIVER_RTC
+	//drvdetail:{"name":"BKRTC",
+	//drvdetail:"title":"BK7252N RTC clock",
+	//drvdetail:"descr":"Keeps a wall clock on the always-on RTC counter of the BK7252N. The clock is anchored to NTP, re-anchored only when a fresh NTP response disagrees with it by five seconds or more, and the driver reports how far the software second counter has drifted from the hardware one.",
+	//drvdetail:"requires":""}
+	{ "BKRTC",                               // Driver Name
+	BKRTC_Init,                                // Init
+	BKRTC_OnEverySecond,                       // onEverySecond
+	BKRTC_AppendInformationToHTTPIndexPage,    // appendInformationToHTTPIndexPage
+	NULL,                                    // runQuickTick
+	NULL,                                    // stopFunction
+	NULL,                                    // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
+	},
+#endif
 	{ "Battery",                             // Driver Name
 	Batt_Init,                               // Init
 	Batt_OnEverySecond,                      // onEverySecond
@@ -1457,6 +1598,18 @@ static driver_t g_drivers[] = {
 	NULL,                                    // onChannelChanged
 	NULL,                                    // onHassDiscovery
 	false,                                   // loaded
+	},
+#endif
+#if ENABLE_DRIVER_GAITEKAC
+	{ "GaitekAC",
+	GaitekAC_Init,
+	GaitekAC_RunEverySecond,
+	NULL,
+	GaitekAC_RunQuickTick,
+	GaitekAC_Shutdown,
+	GaitekAC_OnChannelChanged,
+	NULL,
+	false,
 	},
 #endif
 #if PLATFORM_TXW81X
@@ -1537,6 +1690,22 @@ static driver_t g_drivers[] = {
 	NULL,                                    // onChannelChanged
 	NULL,                                    // onHassDiscovery
 	false,                                   // loaded
+	},
+#endif
+#if ENABLE_DRIVER_VKL060
+	//drvdetail:{"name":"VKL060",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"VKL060 segment LCD driver (soft I2C).",
+	//drvdetail:"requires":""}
+	{ "VKL060",                               // Driver Name
+	VKL060_Init,                             // Init
+	VKL060_OnEverySecond,                    // onEverySecond
+	VKL060_AppendInformationToHTTPIndexPage, // appendInformationToHTTPIndexPage
+	NULL,                                    // runQuickTick
+	VKL060_StopDriver,                       // stopFunction
+	NULL,                                    // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
 	}
 #endif
 	//{ "", NULL, NULL, NULL, NULL, NULL, NULL, NULL, false },
@@ -1556,6 +1725,15 @@ bool DRV_IsRunning(const char* name) {
 		}
 	}
 	return false;
+}
+
+void DRV_SavePowerMeterDriverStatistics(void) {
+#if ENABLE_DRIVER_HLW8112SPI
+	HLW8112_Save_Statistics();
+#endif
+#if ENABLE_DRIVER_BL0939SPI
+	BL0939_Save_Statistics();
+#endif
 }
 
 static SemaphoreHandle_t g_mutex = 0;
@@ -1674,29 +1852,29 @@ void DRV_StartDriver(const char* name) {
 #if (ENABLE_DRIVER_DS1820) && (ENABLE_DRIVER_DS1820_FULL)
 			twinrunning=false;
 			if (!stricmp("DS1820", name) && DRV_IsRunning("DS1820_FULL")){
-				addLogAdv(LOG_ERROR, LOG_FEATURE_MAIN, "Drv DS1820_FULL is already loaded - can't start DS1820, too.\n", name);
+				addLogAdv(LOG_ERROR, LOG_FEATURE_MAIN, "Drv DS1820_FULL is already loaded - can't start DS1820, too.", name);
 				twinrunning=true;
 				break;
 			}
 			if (!stricmp("DS1820_FULL", name) && DRV_IsRunning("DS1820")){
-				addLogAdv(LOG_ERROR, LOG_FEATURE_MAIN, "Drv DS1820 is already loaded - can't start DS1820_FULL, too.\n", name);
+				addLogAdv(LOG_ERROR, LOG_FEATURE_MAIN, "Drv DS1820 is already loaded - can't start DS1820_FULL, too.", name);
 				twinrunning=true;
 				break;
 			}
 #endif
 			if (g_drivers[i].bLoaded) {
-				addLogAdv(LOG_INFO, LOG_FEATURE_MAIN, "Drv %s is already loaded.\n", name);
+				addLogAdv(LOG_INFO, LOG_FEATURE_MAIN, "Drv %s is already loaded.", name);
 				bStarted = 1;
 				break;
 
 			}
 			else {
-				addLogAdv(LOG_INFO, LOG_FEATURE_MAIN, "Starting %s.\n", name);
+				addLogAdv(LOG_INFO, LOG_FEATURE_MAIN, "Starting %s.", name);
 				if (g_drivers[i].initFunc) {
 					g_drivers[i].initFunc();
 				}
 				g_drivers[i].bLoaded = true;
-				addLogAdv(LOG_INFO, LOG_FEATURE_MAIN, "Started %s.\n", name);
+				addLogAdv(LOG_INFO, LOG_FEATURE_MAIN, "Started %s.", name);
 				bStarted = 1;
 				break;
 			}
@@ -1707,7 +1885,7 @@ void DRV_StartDriver(const char* name) {
 #else
 	if (!bStarted) {
 #endif
-		addLogAdv(LOG_INFO, LOG_FEATURE_MAIN, "Driver %s is not known in this build.\n", name);
+		addLogAdv(LOG_INFO, LOG_FEATURE_MAIN, "Driver %s is not known in this build.", name);
 		addLogAdv(LOG_INFO, LOG_FEATURE_MAIN, "Available drivers: ");
 		for (i = 0; i < g_numDrivers; i++) {
 			if (i == 0) {

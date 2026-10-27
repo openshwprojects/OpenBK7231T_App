@@ -39,7 +39,7 @@ void Cse7761Write(uint32_t reg, uint32_t data) {
 		len++;
 	}
 
-	addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "CSE7761 send %i\n", len);
+	addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "CSE7761 send %i", len);
 	for (int i = 0; i < len; i++) {
 		UART_SendByte(buffer[i]);
 	}
@@ -71,7 +71,7 @@ bool Cse7761ReadOnce(uint32_t log_level, uint32_t reg, uint32_t size, uint32_t* 
 	//	}
 	//}
 
-	addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "CSE7761 rec %i\n", rcvd);
+	addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "CSE7761 rec %i", rcvd);
 	if (!rcvd) {
 		//AddLog(LOG_LEVEL_DEBUG_MORE, PSTR("C61: Rx none"));
 		return false;
@@ -139,10 +139,10 @@ void CSE7761_Init(void) {
 }
 
 void CSE7761_RunEverySecond(void) {
-    //addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"UART buffer size %i\n", UART_GetDataSize());
+    //addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"UART buffer size %i", UART_GetDataSize());
 
 	int syscon = Cse7761Read(0x00, 2);      // Default 0x0A04
-   addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"CSE7761 syscon %i\n", syscon);
+   addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"CSE7761 syscon %i", syscon);
 
 
 	CSE7761_TryToGetNextCSE7761Packet();

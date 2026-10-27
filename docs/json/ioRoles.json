@@ -736,6 +736,62 @@
     "driver": ""
   },
   {
+    "name": "ShutterA",
+    "title": "ShutterA Pin",
+    "descr": "Shutter relay A.",
+    "enum": "IOR_ShutterA",
+    "file": "new_pins.h",
+    "driver": "RC"
+  },
+  {
+    "name": "ShutterB",
+    "title": "ShutterB Pin",
+    "descr": "Shutter relay B.",
+    "enum": "IOR_ShutterB",
+    "file": "new_pins.h",
+    "driver": "RC"
+  },
+  {
+    "name": "Button_ShutterUp",
+    "title": "Button_ShutterUp Pin",
+    "descr": "Pressing this button will start shutter up move. Double click will stop move.",
+    "enum": "IOR_Button_ShutterUp",
+    "file": "new_pins.h",
+    "driver": "RC"
+  },
+  {
+    "name": "Button_ShutterDown",
+    "title": "Button_ShutterDown Pin",
+    "descr": "Pressing this button will start shutter down move. Double click will stop move.",
+    "enum": "IOR_Button_ShutterDown",
+    "file": "new_pins.h",
+    "driver": "RC"
+  },
+  {
+    "name": "BL0939_SCLK",
+    "title": "BL0939 SCLK Pin",
+    "descr": "Software SPI clock pin for BL0939 SPI energy measuring devices.",
+    "enum": "IOR_BL0939_SCLK",
+    "file": "new_pins.h",
+    "driver": "BL0939SPI"
+  },
+  {
+    "name": "BL0939_MOSI",
+    "title": "BL0939 MOSI Pin",
+    "descr": "Software SPI MOSI/SDI pin for BL0939 SPI energy measuring devices.",
+    "enum": "IOR_BL0939_MOSI",
+    "file": "new_pins.h",
+    "driver": "BL0939SPI"
+  },
+  {
+    "name": "BL0939_MISO",
+    "title": "BL0939 MISO Pin",
+    "descr": "Software SPI MISO/SDO pin for BL0939 SPI energy measuring devices.",
+    "enum": "IOR_BL0939_MISO",
+    "file": "new_pins.h",
+    "driver": "BL0939SPI"
+  },
+  {
     "name": "Total_Options",
     "title": "TODO",
     "descr": "Current total number of available IOR roles",

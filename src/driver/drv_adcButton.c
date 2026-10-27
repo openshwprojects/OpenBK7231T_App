@@ -72,7 +72,7 @@ void DRV_ADCButtonDoMeasurement() {
 
 	newButton = chooseButton(adcValue);
 
-	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "ADC %i -> button %i (total %i)\r\n", adcValue, newButton, g_numRanges);
+	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "ADC %i -> button %i (total %i)", adcValue, newButton, g_numRanges);
 
 	if (newButton != g_prevButton) {
 		EventHandlers_FireEvent(CMD_EVENT_ADC_BUTTON, newButton);

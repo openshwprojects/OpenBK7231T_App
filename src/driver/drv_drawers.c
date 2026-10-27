@@ -28,7 +28,7 @@ static int g_ambient_color = 0xFF0000;
 static int DR_LedIndex(http_request_t* request) {
 	char tmp[8];
 	if (!http_getArg(request->url, "params", tmp, sizeof(tmp))) {
-		ADDLOG_INFO(LOG_FEATURE_CMD, "DR_LedIndex: missing params\n");
+		ADDLOG_INFO(LOG_FEATURE_CMD, "DR_LedIndex: missing params");
 		return 0;
 	}
 	int index = atoi(tmp);
@@ -54,7 +54,7 @@ static void applyAmbient() {
 static int DR_LedEnableAmbient(http_request_t* request) {
 	char tmp[16];
 	if (!http_getArg(request->url, "params", tmp, sizeof(tmp))) {
-		ADDLOG_INFO(LOG_FEATURE_CMD, "DR_LedEnableAmbient: missing params\n");
+		ADDLOG_INFO(LOG_FEATURE_CMD, "DR_LedEnableAmbient: missing params");
 		return 0;
 	}
 	g_bEnableAmbient = atoi(tmp);
@@ -64,7 +64,7 @@ static int DR_LedEnableAmbient(http_request_t* request) {
 static int DR_LedAmbientColor(http_request_t* request) {
 	char tmp[16];
 	if (!http_getArg(request->url, "params", tmp, sizeof(tmp))) {
-		ADDLOG_INFO(LOG_FEATURE_CMD, "DR_LedAmbientColor: missing params\n");
+		ADDLOG_INFO(LOG_FEATURE_CMD, "DR_LedAmbientColor: missing params");
 		return 0;
 	}
 	g_ambient_color = atoi(tmp);
@@ -74,7 +74,7 @@ static int DR_LedAmbientColor(http_request_t* request) {
 static int DR_LedOnColor(http_request_t* request) {
 	char tmp[16];
 	if (!http_getArg(request->url, "params", tmp, sizeof(tmp))) {
-		ADDLOG_INFO(LOG_FEATURE_CMD, "DR_LedOnColor: missing params\n");
+		ADDLOG_INFO(LOG_FEATURE_CMD, "DR_LedOnColor: missing params");
 		return 0;
 	}
 	g_on_color = atoi(tmp);
@@ -83,7 +83,7 @@ static int DR_LedOnColor(http_request_t* request) {
 static int DR_LedOffColor(http_request_t* request) {
 	char tmp[16];
 	if (!http_getArg(request->url, "params", tmp, sizeof(tmp))) {
-		ADDLOG_INFO(LOG_FEATURE_CMD, "DR_LedOffColor: missing params\n");
+		ADDLOG_INFO(LOG_FEATURE_CMD, "DR_LedOffColor: missing params");
 		return 0;
 	}
 	g_off_color = atoi(tmp);
@@ -92,7 +92,7 @@ static int DR_LedOffColor(http_request_t* request) {
 static int DR_LedOnTimeout(http_request_t* request) {
 	char tmp[16];
 	if (!http_getArg(request->url, "params", tmp, sizeof(tmp))) {
-		ADDLOG_INFO(LOG_FEATURE_CMD, "DR_LedOnTimeout: missing params\n");
+		ADDLOG_INFO(LOG_FEATURE_CMD, "DR_LedOnTimeout: missing params");
 		return 0;
 	}
 	g_on_timeout_ms = atoi(tmp);
@@ -166,7 +166,7 @@ void Drawers_QuickTick() {
 #if ENABLE_DRIVER_SM16703P
 		SM16703P_Show();
 #else
-		ADDLOG_INFO(LOG_FEATURE_CMD, "ERROR! Drawers driver requires SM16703P\n");
+		ADDLOG_INFO(LOG_FEATURE_CMD, "ERROR! Drawers driver requires SM16703P");
 #endif
 		g_changes = 0;
 	}

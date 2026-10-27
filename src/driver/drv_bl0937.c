@@ -107,8 +107,8 @@ void BL0937_Init_Pins()
 	HAL_PIN_Setup_Input_Pullup(GPIO_HLW_CF1);
 	HAL_PIN_Setup_Input_Pullup(GPIO_HLW_CF);
 
-	HAL_AttachInterrupt(GPIO_HLW_CF, INTERRUPT_STUB, HlwCfInterrupt);
-	HAL_AttachInterrupt(GPIO_HLW_CF1, INTERRUPT_STUB, HlwCf1Interrupt);
+	HAL_AttachInterrupt(GPIO_HLW_CF, INTERRUPT_FALLING, HlwCfInterrupt);
+	HAL_AttachInterrupt(GPIO_HLW_CF1, INTERRUPT_FALLING, HlwCf1Interrupt);
 
 	g_vc_pulses = 0;
 	g_p_pulses = 0;
@@ -226,7 +226,7 @@ void BL0937_RunEverySecond(void)
 	xPassedTicks = xTaskGetTickCount();
 	ticksElapsed = (xPassedTicks - pulseStamp);
 	pulseStamp = xPassedTicks;
-	//addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"Voltage pulses %i, current %i, power %i\n", res_v, res_c, res_p);
+	//addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"Voltage pulses %i, current %i, power %i", res_v, res_c, res_p);
 
 	PwrCal_Scale(res_v, res_c, res_p, &final_v, &final_c, &final_p);
 

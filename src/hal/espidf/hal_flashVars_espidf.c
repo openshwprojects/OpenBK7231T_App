@@ -23,7 +23,7 @@ void HAL_FlashVars_IncreaseBootCount()
 
 int HAL_FlashVars_GetChannelValue(int ch)
 {
-	char channel[4];
+	char channel[6];
 	sprintf(channel, "ch%i", ch);
 	int32_t value = 0;
 	InitFlashIfNeeded();
@@ -36,12 +36,12 @@ int HAL_FlashVars_GetChannelValue(int ch)
 
 void HAL_FlashVars_SaveChannel(int index, int value)
 {
-	char channel[4];
+	char channel[6];
 	sprintf(channel, "ch%i", index);
 	InitFlashIfNeeded();
 	nvs_handle_t handle = 0;
 	nvs_open("config", NVS_READWRITE, &handle);
-	nvs_set_i16(handle, channel, value);
+	nvs_set_i32(handle, channel, value);
 	nvs_commit(handle);
 	nvs_close(handle);
 }

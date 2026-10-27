@@ -12,19 +12,32 @@
 #include "../hal/hal_adc.h"
 #include "drv_battery.h"
 
+#if PLATFORM_BK7239N || PLATFORM_BK7236N
+#define ADC_RESOLUTION_BITS 14
+#else
+#define ADC_RESOLUTION_BITS 12
+#endif
+
 static int g_pin_adc = 0, channel_adc = 0, g_pin_rel = 0, g_battcycle = 1, g_battcycleref = 10;
 //static int channel_rel = 0;
 static float g_battvoltage = 0.0, g_battlevel = 0.0;
 static int g_lastbattvoltage = 0, g_lastbattlevel = 0;
-static float g_vref = 2400, g_vdivider = 2.29, g_maxbatt = 3000, g_minbatt = 2000, g_adcbits = 4096;
+static float g_vref = 2400, g_vdivider = 2.29, g_maxbatt = 3000, g_minbatt = 2000, g_adcbits = 1 << ADC_RESOLUTION_BITS;
+static bool g_vdividerFromUser = false;
 
 static void Batt_Measure() {
 	//this command has only been tested on CBU
 	float batt_ref, batt_res, vref;
 	int writeVal = 1;
-	ADDLOG_INFO(LOG_FEATURE_DRV, "DRV_BATTERY : Measure Battery volt en perc");
+	int raw;
+	ADDLOG_INFO(LOG_FEATURE_DRV, "DRV_BATTERY: Measure Battery volt en perc");
 	g_pin_adc = PIN_FindPinIndexForRole(IOR_BAT_ADC, g_pin_adc);
-	if (PIN_FindPinIndexForRole(IOR_BAT_Relay, -1) == -1 && PIN_FindPinIndexForRole(IOR_BAT_Relay_n, -1) == -1) {
+	if (g_vdividerFromUser == false
+		&& PIN_FindPinIndexForRole(IOR_BAT_Relay, -1) == -1
+		&& PIN_FindPinIndexForRole(IOR_BAT_Relay_n, -1) == -1) {
+		if (g_vdivider != 1) {
+			ADDLOG_INFO(LOG_FEATURE_DRV, "DRV_BATTERY: no relay pin and no divider given, ignoring divider %f and measuring directly", g_vdivider);
+		}
 		g_vdivider = 1;
 	}
 	// if divider equal to 1 then no need for relay activation
@@ -42,7 +55,7 @@ static void Batt_Measure() {
 	//HAL_ADC_Init(g_pin_adc);
 	g_battlevel = HAL_ADC_Read(g_pin_adc);
 	if (g_battlevel < 1024) {
-		ADDLOG_INFO(LOG_FEATURE_DRV, "DRV_BATTERY : ADC Value low device not on battery");
+		ADDLOG_INFO(LOG_FEATURE_DRV, "DRV_BATTERY: ADC Value low device not on battery");
 	}
 	if (g_vdivider > 1) {
 		//CHANNEL_Set(channel_rel, 1, 0);
@@ -51,15 +64,22 @@ static void Batt_Measure() {
 		}
 		rtos_delay_milliseconds(10);
 	}
-	g_battvoltage = HAL_ADC_Read(g_pin_adc);
-	ADDLOG_DEBUG(LOG_FEATURE_DRV, "DRV_BATTERY : ADC binary Measurement : %f and channel %i", g_battvoltage, channel_adc);
+	raw = HAL_ADC_Read(g_pin_adc);
+	// switch the divider back off on both paths, so a failed conversion
+	// cannot leave it powered until the next measurement
 	if (g_vdivider > 1) {
 		if (g_pin_rel > 0) {
 			HAL_PIN_SetOutputValue(g_pin_rel, !writeVal);
 		}
 		//CHANNEL_Set(channel_rel, 0, 0);
 	}
-	ADDLOG_DEBUG(LOG_FEATURE_DRV, "DRV_BATTERY : Calculation with param : %f %f %f", g_vref, g_adcbits, g_vdivider);
+	if (raw < 0) {
+		ADDLOG_INFO(LOG_FEATURE_DRV, "DRV_BATTERY: ADC read failed (%i), keeping %i mV", raw, g_lastbattvoltage);
+		return;
+	}
+	g_battvoltage = raw;
+	ADDLOG_DEBUG(LOG_FEATURE_DRV, "DRV_BATTERY: ADC binary Measurement: %f and channel %i", g_battvoltage, channel_adc);
+	ADDLOG_DEBUG(LOG_FEATURE_DRV, "DRV_BATTERY: Calculation with param: %f %f %f", g_vref, g_adcbits, g_vdivider);
 	// batt_value = batt_value / vref / 12bits value should be 10 un doc ... but on CBU is 12 ....
 	vref = g_vref / g_adcbits;
 	g_battvoltage = g_battvoltage * vref;
@@ -67,7 +87,7 @@ static void Batt_Measure() {
 	g_battvoltage = g_battvoltage * g_vdivider;
 	batt_ref = g_maxbatt - g_minbatt;
 	batt_res = g_battvoltage - g_minbatt;
-	ADDLOG_DEBUG(LOG_FEATURE_DRV, "DRV_BATTERY : Ref battery: %f, rest battery %f", batt_ref, batt_res);
+	ADDLOG_DEBUG(LOG_FEATURE_DRV, "DRV_BATTERY: Ref battery: %f, rest battery %f", batt_ref, batt_res);
 	g_battlevel = (batt_res / batt_ref) * 100;
 	if (g_battlevel < 0)
 		g_battlevel = 0;
@@ -80,7 +100,7 @@ static void Batt_Measure() {
 #endif
 	g_lastbattlevel = (int)g_battlevel;
 	g_lastbattvoltage = (int)g_battvoltage;
-	ADDLOG_INFO(LOG_FEATURE_DRV, "DRV_BATTERY : battery voltage : %f and percentage %f%%", g_battvoltage, g_battlevel);
+	ADDLOG_INFO(LOG_FEATURE_DRV, "DRV_BATTERY: battery voltage: %f and percentage %f%%", g_battvoltage, g_battlevel);
 }
 void Simulator_Force_Batt_Measure() {
 	Batt_Measure();
@@ -113,6 +133,7 @@ commandResult_t Battery_Setup(const void* context, const char* cmd, const char* 
 	g_maxbatt = Tokenizer_GetArgFloat(1);
 	if (Tokenizer_GetArgsCount() > 2) {
 		g_vdivider = Tokenizer_GetArgFloat(2);
+		g_vdividerFromUser = true;
 	}
 	if (Tokenizer_GetArgsCount() > 3) {
 		g_vref = Tokenizer_GetArgFloat(3);
@@ -121,7 +142,7 @@ commandResult_t Battery_Setup(const void* context, const char* cmd, const char* 
 		g_adcbits = Tokenizer_GetArgFloat(4);
 	}
 
-	ADDLOG_INFO(LOG_FEATURE_CMD, "Battery Setup : Min %f Max %f Vref %f adcbits %f vdivider %f", g_minbatt, g_maxbatt, g_vref, g_adcbits, g_vdivider);
+	ADDLOG_INFO(LOG_FEATURE_CMD, "Battery Setup: Min %f Max %f Vref %f adcbits %f vdivider %f", g_minbatt, g_maxbatt, g_vref, g_adcbits, g_vdivider);
 
 	return CMD_RES_OK;
 }
@@ -139,7 +160,7 @@ commandResult_t Battery_cycle(const void* context, const char* cmd, const char* 
 	}
 	g_battcycleref = Tokenizer_GetArgFloat(0);
 
-	ADDLOG_INFO(LOG_FEATURE_CMD, "Battery Cycle : Measurement will run every %i seconds", g_battcycleref);
+	ADDLOG_INFO(LOG_FEATURE_CMD, "Battery Cycle: Measurement will run every %i seconds", g_battcycleref);
 
 	return CMD_RES_OK;
 }
@@ -171,7 +192,7 @@ void Batt_OnEverySecond() {
 	if (g_battcycle > 0) {
 		--g_battcycle;
 	}
-	ADDLOG_DEBUG(LOG_FEATURE_DRV, "DRV_BATTERY : Measurement will run in  %i cycle", g_battcycle);
+	ADDLOG_DEBUG(LOG_FEATURE_DRV, "DRV_BATTERY: Measurement will run in %i cycle", g_battcycle);
 
 
 }

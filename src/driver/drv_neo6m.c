@@ -227,11 +227,11 @@ static void parseGPS(char *data)
     s_gps.ew = Nvalue[NMEA_LONG_DIR][0] ? Nvalue[NMEA_LONG_DIR][0] : '?';
 
     // Apply fake lat/long overrides if set (for testing)
-    ADDLOG_DEBUG(LOG_FEATURE_DRV, "NEO6M: fakelat=%s  Nvalue[NMEA_LAT]=%s", fakelat, Nvalue[NMEA_LAT]);
+    ADDLOG_DEBUG(LOG_FEATURE_DRV, "NEO6M: fakelat=%s Nvalue[NMEA_LAT]=%s", fakelat, Nvalue[NMEA_LAT]);
     if (*fakelat && strlen(fakelat) <= strlen(Nvalue[NMEA_LAT]))
         memcpy(Nvalue[NMEA_LAT], fakelat, strlen(fakelat));	// intentionally no '\0' copy -- overwrites digits only
 
-    ADDLOG_DEBUG(LOG_FEATURE_DRV, "NEO6M: fakelong=%s  Nvalue[NMEA_LONG]=%s", fakelong, Nvalue[NMEA_LONG]);
+    ADDLOG_DEBUG(LOG_FEATURE_DRV, "NEO6M: fakelong=%s Nvalue[NMEA_LONG]=%s", fakelong, Nvalue[NMEA_LONG]);
     if (*fakelong && strlen(fakelong) <= strlen(Nvalue[NMEA_LONG]))
         memcpy(Nvalue[NMEA_LONG], fakelong, strlen(fakelong));	// intentionally no '\0' copy -- overwrites digits only
 

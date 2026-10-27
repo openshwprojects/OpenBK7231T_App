@@ -42,7 +42,7 @@ int http_rest_post_flash(http_request_t* request, int startaddr, int maxaddr)
 		int res = libota_write_fw(request->contentLength, startaddr, writebuf, writelen);
 		if(res != -1)
 		{
-			ADDLOG_ERROR(LOG_FEATURE_OTA, "libota_write_fw,res:%d\n", res);
+			ADDLOG_ERROR(LOG_FEATURE_OTA, "libota_write_fw,res:%d", res);
 			ret = -1;
 			goto update_ota_exit;
 		}

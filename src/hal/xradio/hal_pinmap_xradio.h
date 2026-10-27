@@ -25,4 +25,6 @@ typedef struct
 extern xrpin_t g_pins[];
 extern int g_numPins;
 
+void HAL_XR_ConfigurePin(GPIO_Port port, GPIO_Pin pin, GPIO_WorkMode mode, GPIO_PullType pull);
+
 #endif // PLATFORM_XRADIO

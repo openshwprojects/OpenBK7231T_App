@@ -45,6 +45,11 @@ void HAL_PIN_Setup_Output(int index) {
 	bl_gpio_enable_output(index, 1,0);
 	bl_gpio_output_set(index, 0);
 }
+void HAL_PIN_Setup_Output_Initial(int index, int value) {
+	// Preload the output latch before switching the pin from its current function to GPIO.
+	bl_gpio_output_set(index, value ? 1 : 0);
+	bl_gpio_enable_output(index, 1, 0);
+}
 
 void HAL_PIN_PWM_Stop(int index) {
 	int pwm;
@@ -66,7 +71,7 @@ void HAL_PIN_PWM_Start(int index, int freq) {
 		return;
 	}
 
-	//addLogAdv(LOG_INFO, LOG_FEATURE_MAIN,"HAL_PIN_PWM_Start: pin %i chose pwm %i\r\n",index,pwm);
+	//addLogAdv(LOG_INFO, LOG_FEATURE_MAIN,"HAL_PIN_PWM_Start: pin %i chose pwm %i",index,pwm);
     //  Frequency must be between 2000 and 800000
 	if(freq < 2000) freq = 2000;
 	bl_pwm_init(pwm, index, freq);
@@ -92,7 +97,7 @@ void HAL_PIN_PWM_Update(int index, float value) {
 --> Followed by PWM Output 0 (Low) for the remaining 75% of the PWM Cycle
 */
 
-	//addLogAdv(LOG_INFO, LOG_FEATURE_MAIN,"HAL_PIN_PWM_Update: pin %i had pwm %i, set %i\r\n",index,pwm,value);
+	//addLogAdv(LOG_INFO, LOG_FEATURE_MAIN,"HAL_PIN_PWM_Update: pin %i had pwm %i, set %i",index,pwm,value);
 	bl_pwm_set_duty(pwm, duty);
 
 }

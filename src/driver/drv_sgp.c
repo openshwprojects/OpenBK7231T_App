@@ -65,12 +65,12 @@ void SGP_Readmeasure() {
 		CHANNEL_Set(channel_co2, (int)(g_co2), 0);
 		CHANNEL_Set(channel_tvoc, (int)(g_tvoc), 0);
 	}
-	addLogAdv(LOG_INFO, LOG_FEATURE_SENSOR, "SGP_Measure: CO2 :%.1f ppm tvoc:%.0f ppb", g_co2, g_tvoc);
+	addLogAdv(LOG_INFO, LOG_FEATURE_SENSOR, "SGP_Measure: CO2:%.1f ppm tvoc:%.0f ppb", g_co2, g_tvoc);
 }
 
 // StopDriver SGP
 void SGP_StopDriver() {
-	addLogAdv(LOG_INFO, LOG_FEATURE_SENSOR, "SGP : Stopping Driver and reset sensor");
+	addLogAdv(LOG_INFO, LOG_FEATURE_SENSOR, "SGP: Stopping Driver and reset sensor");
 }
 
 
@@ -89,7 +89,7 @@ void SGP_GetBaseline()
 	Soft_I2C_ReadBytes(&g_sgpI2C, buff, 6);
 	Soft_I2C_Stop(&g_sgpI2C);
 
-	addLogAdv(LOG_INFO, LOG_FEATURE_SENSOR, "SGP : baseline : %02X %02X %02X %02X", buff[0], buff[1], buff[3], buff[4]);
+	addLogAdv(LOG_INFO, LOG_FEATURE_SENSOR, "SGP: baseline: %02X %02X %02X %02X", buff[0], buff[1], buff[3], buff[4]);
 }
 commandResult_t SGP_GetBaselinecmd(const void* context, const char* cmd, const char* args, int cmdFlags)
 {
@@ -118,7 +118,7 @@ void SGP_GetVersion()
 	product_type = (uint8_t)((feature_set_version & 0xF000) >> 12);
 	feature_set_version = feature_set_version & 0x00FF;
 
-	addLogAdv(LOG_INFO, LOG_FEATURE_SENSOR, "SGP : Version : %i %i ", feature_set_version, product_type);
+	addLogAdv(LOG_INFO, LOG_FEATURE_SENSOR, "SGP: Version: %i %i", feature_set_version, product_type);
 }
 commandResult_t SGP_GetVersioncmd(const void* context, const char* cmd, const char* args, int cmdFlags)
 {
@@ -132,7 +132,7 @@ void SGP_SoftReset()
 	Soft_I2C_WriteByte(&g_sgpI2C, 0x00);			//Clear status
 	Soft_I2C_WriteByte(&g_sgpI2C, 0x06);          //clear status
 	Soft_I2C_Stop(&g_sgpI2C);
-	addLogAdv(LOG_INFO, LOG_FEATURE_SENSOR, "SGP : SOFT RESET");
+	addLogAdv(LOG_INFO, LOG_FEATURE_SENSOR, "SGP: SOFT RESET");
 }
 commandResult_t SGP_SoftResetcmd(const void* context, const char* cmd, const char* args, int cmdFlags)
 {
@@ -146,7 +146,7 @@ void SGP_INIT_BASELINE()
 	Soft_I2C_WriteByte(&g_sgpI2C, 0x20);
 	Soft_I2C_WriteByte(&g_sgpI2C, 0x03);
 	Soft_I2C_Stop(&g_sgpI2C);
-	addLogAdv(LOG_INFO, LOG_FEATURE_SENSOR, "SGP : Launch INIT Baseline");
+	addLogAdv(LOG_INFO, LOG_FEATURE_SENSOR, "SGP: Launch INIT Baseline");
 }
 
 
@@ -193,12 +193,12 @@ commandResult_t SGP_cycle(const void* context, const char* cmd, const char* args
 
 	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_DONT_EXPAND);
 	if (Tokenizer_GetArgsCount() < 1) {
-		ADDLOG_INFO(LOG_FEATURE_CMD, "SHT Cycle : Need integer args for seconds cycle");
+		ADDLOG_INFO(LOG_FEATURE_CMD, "SHT Cycle: Need integer args for seconds cycle");
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	g_sgpcycleref = Tokenizer_GetArgFloat(0);
 
-	ADDLOG_INFO(LOG_FEATURE_CMD, "SGP Cycle : Measurement will run every %i seconds", g_sgpcycleref);
+	ADDLOG_INFO(LOG_FEATURE_CMD, "SGP Cycle: Measurement will run every %i seconds", g_sgpcycleref);
 
 	return CMD_RES_OK;
 }
@@ -250,7 +250,7 @@ void SGP_OnEverySecond()
 	if (g_sgpcycle > 0) {
 		--g_sgpcycle;
 	}
-	ADDLOG_DEBUG(LOG_FEATURE_DRV, "DRV_SGP : Measurement will run in %i cycle", g_sgpcycle);
+	ADDLOG_DEBUG(LOG_FEATURE_DRV, "DRV_SGP: Measurement will run in %i cycle", g_sgpcycle);
 }
 
 void SGP_AppendInformationToHTTPIndexPage(http_request_t* request, int bPreState)

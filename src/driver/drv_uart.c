@@ -125,7 +125,7 @@ void UART_AppendByteToReceiveRingBufferEx(int auartindex, int rc) {
   uartbuf_t* fuartbuf = UART_GetBufFromPort(auartindex);
   if (fuartbuf->g_recvBufSize <= 0) {
       //if someone (uartFakeHex) send data without init, and if flag 26 changes(UART)
-      addLogAdv(LOG_ERROR, LOG_FEATURE_DRV, "UART %i not initialized\n",auartindex);
+      addLogAdv(LOG_ERROR, LOG_FEATURE_DRV, "UART %i not initialized",auartindex);
       //return;
       UART_InitReceiveRingBufferEx(auartindex,UART_DEFAULT_BUFIZE);
     }
@@ -170,7 +170,7 @@ void UART_SendByte(byte b) {
 
 commandResult_t CMD_UART_Send_Hex(const void *context, const char *cmd, const char *args, int cmdFlags) {
     if (!(*args)) {
-		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "CMD_UART_Send_Hex: requires 1 argument (hex string, like FFAABB00CCDD\n");
+		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "CMD_UART_Send_Hex: requires 1 argument (hex string, like FFAABB00CCDD");
         return CMD_RES_NOT_ENOUGH_ARGUMENTS;
     }
     while (*args) {
@@ -200,7 +200,7 @@ commandResult_t CMD_UART_FakeHex(const void *context, const char *cmd, const cha
 
 	//curCnt = 0;
     if (!(*args)) {
-		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "CMD_UART_FakeHex: requires 1 argument (hex string, like FFAABB00CCDD\n");
+		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "CMD_UART_FakeHex: requires 1 argument (hex string, like FFAABB00CCDD");
         return CMD_RES_NOT_ENOUGH_ARGUMENTS;
     }
     while (*args) {
@@ -214,7 +214,7 @@ commandResult_t CMD_UART_FakeHex(const void *context, const char *cmd, const cha
 		//rawData[curCnt] = b;
 		//curCnt++;
 		//if(curCnt>=sizeof(rawData)) {
-		//  addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"CMD_UART_FakeHex: sorry, given string is too long\n");
+		//  addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"CMD_UART_FakeHex: sorry, given string is too long");
 		//  return -1;
 		//}
 
@@ -229,7 +229,7 @@ commandResult_t CMD_UART_FakeHex(const void *context, const char *cmd, const cha
 commandResult_t CMD_UART_Send_ASCII(const void *context, const char *cmd, const char *args, int cmdFlags) {
 	//const char *args = CMD_GetArg(1);
     if (!(*args)) {
-		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "CMD_UART_Send_ASCII: requires 1 argument (hex string, like hellp world\n");
+		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "CMD_UART_Send_ASCII: requires 1 argument (hex string, like hellp world");
         return CMD_RES_NOT_ENOUGH_ARGUMENTS;
     }
     while (*args) {

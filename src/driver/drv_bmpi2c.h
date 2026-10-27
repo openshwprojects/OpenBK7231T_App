@@ -215,10 +215,10 @@ struct
 	int8_t   range_sw_err;
 } BME68X_calib;
 
-int32_t adc_T, adc_P, adc_H, t_fine;
-uint8_t chip_id = 0;
-BMP180_res bmp180_res = BMP180_UHR;
-bool isHumidityAvail = false;
+static int32_t adc_T, adc_P, adc_H, t_fine;
+static uint8_t chip_id = 0;
+static BMP180_res bmp180_res = BMP180_UHR;
+static bool isHumidityAvail = false;
 
 unsigned short BMP_Read(unsigned short ack)
 {
@@ -258,6 +258,19 @@ uint16_t BMP_Read16(uint8_t reg_addr)
 	Soft_I2C_Stop(&g_softI2C);
 
 	return(b1 | (b2 << 8));
+}
+
+uint16_t BMP_Read16BE(uint8_t reg_addr)
+{
+	Soft_I2C_Start(&g_softI2C, g_softI2C.address8bit);
+	Soft_I2C_WriteByte(&g_softI2C, reg_addr);
+	Soft_I2C_Stop(&g_softI2C);
+	Soft_I2C_Start(&g_softI2C, g_softI2C.address8bit | 1);
+	uint8_t b1 = BMP_Read(1);
+	uint8_t b2 = BMP_Read(0);
+	Soft_I2C_Stop(&g_softI2C);
+
+	return((uint16_t)b1 << 8 | b2);
 }
 
 BMP_mode GetMode(int val)
@@ -346,19 +359,19 @@ void ReadCalibData_BMX280()
 
 void ReadCalibData_BMP180()
 {
-	BMP180_calib.AC1 = BMP_Read16(BMP180_REG_AC1);
-	BMP180_calib.AC2 = BMP_Read16(BMP180_REG_AC2);
-	BMP180_calib.AC3 = BMP_Read16(BMP180_REG_AC3);
-	BMP180_calib.AC4 = BMP_Read16(BMP180_REG_AC4);
-	BMP180_calib.AC5 = BMP_Read16(BMP180_REG_AC5);
-	BMP180_calib.AC6 = BMP_Read16(BMP180_REG_AC6);
+	BMP180_calib.AC1 = BMP_Read16BE(BMP180_REG_AC1);
+	BMP180_calib.AC2 = BMP_Read16BE(BMP180_REG_AC2);
+	BMP180_calib.AC3 = BMP_Read16BE(BMP180_REG_AC3);
+	BMP180_calib.AC4 = BMP_Read16BE(BMP180_REG_AC4);
+	BMP180_calib.AC5 = BMP_Read16BE(BMP180_REG_AC5);
+	BMP180_calib.AC6 = BMP_Read16BE(BMP180_REG_AC6);
 
-	BMP180_calib.B1	 = BMP_Read16(BMP180_REG_B1);
-	BMP180_calib.B2	 = BMP_Read16(BMP180_REG_B2);
+	BMP180_calib.B1	 = BMP_Read16BE(BMP180_REG_B1);
+	BMP180_calib.B2	 = BMP_Read16BE(BMP180_REG_B2);
 
-	BMP180_calib.MB	 = BMP_Read16(BMP180_REG_MB);
-	BMP180_calib.MC	 = BMP_Read16(BMP180_REG_MC);
-	BMP180_calib.MD	 = BMP_Read16(BMP180_REG_MD);
+	BMP180_calib.MB	 = BMP_Read16BE(BMP180_REG_MB);
+	BMP180_calib.MC	 = BMP_Read16BE(BMP180_REG_MC);
+	BMP180_calib.MD	 = BMP_Read16BE(BMP180_REG_MD);
 }
 
 void ReadCalibData_BME68X()
@@ -666,7 +679,7 @@ uint32_t BMP180_ReadData(int32_t* temp)
 
 	BMP_Write8(BMX_REG_CONTROL, BMP180_TEMP_CTRL);
 	delay_ms(5);
-	UT = BMP_Read16(BMP180_REG_ADC_MSB);
+	UT = BMP_Read16BE(BMP180_REG_ADC_MSB);
 	uint8_t delay = 0, res = 0;
 	switch(bmp180_res)
 	{
@@ -681,16 +694,14 @@ uint32_t BMP180_ReadData(int32_t* temp)
 	Soft_I2C_WriteByte(&g_softI2C, BMP180_REG_ADC_MSB);
 	Soft_I2C_Stop(&g_softI2C);
 	Soft_I2C_Start(&g_softI2C, g_softI2C.address8bit | 1);
-	UP = BMP_Read(1);
-	UP <<= 8 | BMP_Read(1);
-	UP <<= 8 | BMP_Read(0);
+	UP = ((int32_t)BMP_Read(1) << 16) | ((int32_t)BMP_Read(1) << 8) | BMP_Read(0);
 	Soft_I2C_Stop(&g_softI2C);
 	UP >>= (8 - bmp180_res);
 
 	int32_t BX1 = ((UT - (int32_t)BMP180_calib.AC6) * (int32_t)BMP180_calib.AC5) >> 15;
-	int32_t BX2 = ((int32_t)BMP180_calib.MC << 11) / (X1 + (int32_t)BMP180_calib.MD);
+	int32_t BX2 = ((int32_t)BMP180_calib.MC << 11) / (BX1 + (int32_t)BMP180_calib.MD);
 	B5 = BX1 + BX2;
-	*temp = ((B5 + 8) >> 4);
+	*temp = ((B5 + 8) >> 4) * 10;
 
 	B6 = B5 - 4000;
 	X1 = ((int32_t)BMP180_calib.B2 * ((B6 * B6) >> 12)) >> 11;

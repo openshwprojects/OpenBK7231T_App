@@ -66,6 +66,8 @@ float g_hsv_v = 1; // 0 to 1
 float g_cfg_colorScaleToChannel = 100.0f/255.0f;
 float g_brightness0to100 = 100.0f;
 float g_brightnessScale = 1.0f;
+// ceiling on R+G+B as a multiple of one channel at full, 0 = off
+float g_colorBlendLimit = 0.0f;
 float rgb_used_corr[3];   // RGB correction currently used
 // for smart dimmer, etc
 int led_defaultDimmerDeltaForHold = 10;
@@ -262,8 +264,7 @@ void LED_I2CDriver_WriteRGBCW(float* finalRGBCW) {
 			// the format is RGBCW
 			// Emulate C with RGB
 			LED_CalculateEmulatedCool(finalRGBCW[3], finalRGBCW);
-			// C is unused
-			finalRGBCW[3] = 0;
+			// keep C unchanged, because it is the lerp value for emulated cool LED
 			// keep W unchanged
 		}
 	}
@@ -598,13 +599,25 @@ void apply_smart_light() {
 			CHANNEL_Set_FloatPWM(firstChannelIndex+1, value_brightness, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
 		}
 	} else {
+		float gammaColors[5] = { 0, 0, 0, 0, 0 };
+		if(g_lightEnableAll) {
+			for(i = 0; i < maxPossibleIndexToSet; i++) {
+				gammaColors[i] = led_gamma_correction (i, led_baseColors[i]);
+			}
+			if(g_lightMode == Light_RGB && g_colorBlendLimit > 0) {
+				float cap = 255.0f * g_colorBlendLimit;
+				float sum = gammaColors[0] + gammaColors[1] + gammaColors[2];
+				if(sum > cap) {
+					for(i = 0; i < 3; i++) {
+						gammaColors[i] *= cap / sum;
+					}
+				}
+			}
+		}
 		for(i = 0; i < maxPossibleIndexToSet; i++) {
-			float final = 0.0f;
+			float final = gammaColors[i];
 
 			baseRGBCW[i] = led_baseColors[i];
-			if(g_lightEnableAll) {
-				final = led_gamma_correction (i, led_baseColors[i]);
-			}
 			if(g_lightMode == Light_Temperature) {
 				// skip channels 0, 1, 2
 				// (RGB)
@@ -712,9 +725,9 @@ void apply_smart_light() {
 
 void led_gamma_list (void) { // list RGB gamma settings
 	led_gamma_enable_channel_messages = 1;
-	addLogAdv (LOG_INFO, LOG_FEATURE_CFG, "RGB  cal %f %f %f",
+	addLogAdv (LOG_INFO, LOG_FEATURE_CFG, "RGB cal %f %f %f",
 		g_cfg.led_corr.rgb_cal[0], g_cfg.led_corr.rgb_cal[1], g_cfg.led_corr.rgb_cal[2]);
-	addLogAdv (LOG_INFO, LOG_FEATURE_CFG, "LED  gamma %.2f  brtMinRGB %.2f%%  brtMinCW %.2f%%",
+	addLogAdv (LOG_INFO, LOG_FEATURE_CFG, "LED gamma %.2f brtMinRGB %.2f%% brtMinCW %.2f%%",
 		g_cfg.led_corr.led_gamma, g_cfg.led_corr.rgb_bright_min, g_cfg.led_corr.cw_bright_min);
 }
 
@@ -857,6 +870,14 @@ void LED_SetTemperature0to1Range(float f) {
 float LED_GetTemperature0to1Range() {
 	float f;
 
+	// A single value CTRange is one point, so return an even warm/cool split.
+	// There are three cases this covers:
+	//   only a cool LED - the cool channel lights it, the warm channel drives nothing
+	//   only a warm LED - the warm channel lights it, the cool channel drives nothing
+	//   both LEDs       - both light, and the single point is the blend of the two
+	if (led_temperature_max == led_temperature_min)
+		return 0.5f;
+
 	f = (led_temperature_current - led_temperature_min);
 	f = f / (led_temperature_max - led_temperature_min);
 	if(f<0)
@@ -913,15 +934,17 @@ static commandResult_t temperature(const void *context, const char *cmd, const c
 	int tmp;
 	//if (!wal_strnicmp(cmd, "POWERALL", 8)){
 
+	Tokenizer_TokenizeString(args, 0);
+
         ADDLOG_DEBUG(LOG_FEATURE_CMD, " temperature (%s) received with args %s",cmd,args);
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
 
-		Tokenizer_TokenizeString(args, 0);
 
-		tmp = Tokenizer_GetArgInteger(0);
-
-		LED_SetTemperature(tmp, 1);
-
-		return CMD_RES_OK;
+	tmp = Tokenizer_GetArgInteger(0);
+	LED_SetTemperature(tmp, 1);
+	return CMD_RES_OK;
 	//}
 	//return 0;
 }
@@ -995,6 +1018,9 @@ static commandResult_t enableAll(const void *context, const char *cmd, const cha
         ADDLOG_DEBUG(LOG_FEATURE_CMD, " enableAll (%s) received with args %s",cmd,args);
 
 		Tokenizer_TokenizeString(args, 0);
+		if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
+			return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+		}
 
 		a = Tokenizer_GetArg(0);
 		if (a && !stricmp(a, "toggle")) {
@@ -1179,6 +1205,9 @@ static commandResult_t add_temperature(const void *context, const char *cmd, con
 	int bWrapAroundInsteadOfHold;
 
 	Tokenizer_TokenizeString(args, 0);
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 2)) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
 
 	iVal = Tokenizer_GetArgInteger(0);
 	bWrapAroundInsteadOfHold = Tokenizer_GetArgInteger(1);
@@ -1192,9 +1221,12 @@ static commandResult_t add_dimmer(const void *context, const char *cmd, const ch
 	int addMode;
 
 	Tokenizer_TokenizeString(args, 0);
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
 
 	iVal = Tokenizer_GetArgInteger(0);
-	addMode = Tokenizer_GetArgInteger(1);
+	addMode = Tokenizer_GetArgIntegerDefault(1,0);
 
 	LED_AddDimmer(iVal, addMode, 0);
 
@@ -1205,6 +1237,9 @@ static commandResult_t dimmer(const void *context, const char *cmd, const char *
 		int iVal = 0;
 
         ADDLOG_DEBUG(LOG_FEATURE_CMD, " dimmer (%s) received with args %s",cmd,args);
+	if (!args || args[0] == '\0') {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
 
 		// according to Elektroda.com users, domoticz sends following string:
 		// {"brightness":52,"state":"ON"}
@@ -1384,6 +1419,9 @@ commandResult_t LED_SetBaseColor_HSB(const void *context, const char *cmd, const
 	const char *p;
 
 	Tokenizer_TokenizeString(args, 0);
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {	// especially important here: if ArgsCount is 0, it would proceed to els, fetching 3 invalid values!!
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
 	if (Tokenizer_GetArgsCount() == 1) {
 		p = args;
 		hue = atoi(p);
@@ -1584,8 +1622,22 @@ static commandResult_t lerpSpeed(const void *context, const char *cmd, const cha
 static commandResult_t cmdDimmerScale(const void *context, const char *cmd, const char *args, int cmdFlags) {
 	// Use tokenizer, so we can use variables (eg. $CH11 as variable)
 	Tokenizer_TokenizeString(args, 0);
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
 
 	g_brightnessScale = Tokenizer_GetArgFloat(0);
+
+	apply_smart_light();
+	return CMD_RES_OK;
+}
+static commandResult_t cmdColorBlendLimit(const void *context, const char *cmd, const char *args, int cmdFlags) {
+	Tokenizer_TokenizeString(args, 0);
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+
+	g_colorBlendLimit = Tokenizer_GetArgFloat(0);
 
 	apply_smart_light();
 	return CMD_RES_OK;
@@ -1633,6 +1685,16 @@ static commandResult_t ctRange(const void *context, const char *cmd, const char 
 
 	led_temperature_min = Tokenizer_GetArgFloat(0);
 	led_temperature_max = Tokenizer_GetArgFloat(1);
+	// flag 12 restores a temperature before this runs, so it can be outside the new range
+	if (led_temperature_current < led_temperature_min)
+		led_temperature_current = led_temperature_min;
+	if (led_temperature_current > led_temperature_max)
+		led_temperature_current = led_temperature_max;
+	// update the warm/cool split that was computed against the old range
+	LED_SetTemperature(led_temperature_current, false);
+	if (g_lightMode == Light_Temperature) {
+		apply_smart_light();
+	}
 
 	return CMD_RES_OK;
 }
@@ -1673,6 +1735,9 @@ static commandResult_t setSaturation(const void *context, const char *cmd, const
 
 	// Use tokenizer, so we can use variables (eg. $CH11 as variable)
 	Tokenizer_TokenizeString(args, 0);
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
 
 	f = Tokenizer_GetArgFloat(0);
 
@@ -1693,6 +1758,9 @@ static commandResult_t setHue(const void *context, const char *cmd, const char *
 
 	// Use tokenizer, so we can use variables (eg. $CH11 as variable)
 	Tokenizer_TokenizeString(args, 0);
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
 
 	f = Tokenizer_GetArgFloat(0);
 
@@ -1713,6 +1781,7 @@ void NewLED_InitCommands(){
 	int pwmCount;
 
 	g_brightnessScale = 1.0f;
+	g_colorBlendLimit = 0.0f;
 
 	// set, but do not apply (force a refresh)
 	LED_SetTemperature(led_temperature_current,0);
@@ -1860,6 +1929,11 @@ void NewLED_InitCommands(){
 	//cmddetail:"fn":"cmdDimmerScale","file":"cmnds/cmd_newLEDDriver.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("led_dimmerScale", cmdDimmerScale, NULL);
+	//cmddetail:{"name":"led_colorBlendLimit","args":"[Limit]",
+	//cmddetail:"descr":"Limits blended RGB colors to the given multiple of one color channel at full, after gamma and RGB calibration. A blend over the limit dims all three channels together, so the hue does not drift, and a single saturated color is never reduced at 1 or more. 0 (the default) disables it; 1 matches many stock Tuya bulbs.",
+	//cmddetail:"fn":"cmdColorBlendLimit","file":"cmnds/cmd_newLEDDriver.c","requires":"",
+	//cmddetail:"examples":"led_colorBlendLimit 1"}
+	CMD_RegisterCommand("led_colorBlendLimit", cmdColorBlendLimit, NULL);
 
 	
 	//cmddetail:{"name":"SPC","args":"[Index][RGB]",

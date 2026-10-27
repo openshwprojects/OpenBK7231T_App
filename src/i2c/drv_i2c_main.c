@@ -126,14 +126,14 @@ int DRV_I2C_Begin(int dev_adr, int busID) {
 	else if (busID == I2C_BUS_I2C2) {
 		i2c_hdl = ddev_open("i2c2", &status, oflag);
 	} else {
-		addLogAdv(LOG_INFO, LOG_FEATURE_I2C,"DRV_I2C_Begin bus type %i not supported!\n",busID);
+		addLogAdv(LOG_INFO, LOG_FEATURE_I2C,"DRV_I2C_Begin bus type %i not supported!",busID);
 		return 1;
 	}
     if(DD_HANDLE_UNVALID == i2c_hdl){
-		addLogAdv(LOG_INFO, LOG_FEATURE_I2C,"DRV_I2C_Begin ddev_open failed, status %i!\n",status);
+		addLogAdv(LOG_INFO, LOG_FEATURE_I2C,"DRV_I2C_Begin ddev_open failed, status %i!",status);
 		return 1;
 	}
-	addLogAdv(LOG_INFO, LOG_FEATURE_I2C,"DRV_I2C_Begin ddev_open OK, adr %i!\n",dev_adr);
+	addLogAdv(LOG_INFO, LOG_FEATURE_I2C,"DRV_I2C_Begin ddev_open OK, adr %i!",dev_adr);
 
     i2c_operater.salve_id = dev_adr;
 
@@ -207,7 +207,7 @@ commandResult_t DRV_I2C_Scan(const void *context, const char *cmd, const char *a
 		bool bOk = Soft_I2C_Start(&g_softI2C, (a << 1) + 0);
 		Soft_I2C_Stop(&g_softI2C);
 		if (bOk) {
-			addLogAdv(LOG_INFO, LOG_FEATURE_I2C, "Address 0x%x (dec %i)\n", a, a);
+			addLogAdv(LOG_INFO, LOG_FEATURE_I2C, "Address 0x%x (dec %i)", a, a);
 		}
 		rtos_delay_milliseconds(5);
 	}
@@ -260,7 +260,7 @@ void DRV_I2C_EverySecond()
 
 	cur = g_i2c_devices;
 	while(cur) {
-		//addLogAdv(LOG_INFO, LOG_FEATURE_I2C,"DRV_I2C_EverySecond: going to run device of type %i with addr %i\n", cur->type, cur->addr);
+		//addLogAdv(LOG_INFO, LOG_FEATURE_I2C,"DRV_I2C_EverySecond: going to run device of type %i with addr %i", cur->type, cur->addr);
 		DRC_I2C_RunDevice(cur);
 		cur = cur->next;
 	}
@@ -270,7 +270,7 @@ void I2C_OnChannelChanged(int channel,int iVal) {
 
 	cur = g_i2c_devices;
 	while(cur) {
-		//addLogAdv(LOG_INFO, LOG_FEATURE_I2C,"DRV_I2C_EverySecond: going to run device of type %i with addr %i\n", cur->type, cur->addr);
+		//addLogAdv(LOG_INFO, LOG_FEATURE_I2C,"DRV_I2C_EverySecond: going to run device of type %i with addr %i", cur->type, cur->addr);
 		if (cur->channelChange) {
 			cur->channelChange(cur, channel, iVal);
 		}

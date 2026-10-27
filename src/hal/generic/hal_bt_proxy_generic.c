@@ -79,6 +79,11 @@ bool __attribute__((weak)) HAL_BTProxy_IsInit(void)
 	return false;
 }
 
+void __attribute__((weak)) HAL_BTProxy_FilterDuplicates(bool isActive)
+{
+
+}
+
 #if ENABLE_BT_PROXY
 
 static commandResult_t CMD_SetBTScanMode(const void* context, const char* cmd, const char* args, int cmdFlags)
@@ -128,6 +133,17 @@ static commandResult_t CMD_BTDeinit(const void* context, const char* cmd, const 
 	return CMD_RES_OK;
 }
 
+static commandResult_t CMD_BTFilterDuplicates(const void* context, const char* cmd, const char* args, int cmdFlags)
+{
+	Tokenizer_TokenizeString(args, 0);
+
+	int isActive = Tokenizer_GetArgIntegerDefault(0, 0);
+	if(isActive != 0 && isActive != 1)
+		return CMD_RES_BAD_ARGUMENT;
+	HAL_BTProxy_FilterDuplicates(isActive);
+	return CMD_RES_OK;
+}
+
 #endif
 
 void HAL_BTProxy_RegisterCommands(void)
@@ -163,6 +179,11 @@ void HAL_BTProxy_RegisterCommands(void)
 	//cmddetail:"fn":"CMD_BTDeinit","file":"hal/generic/hal_bt_proxy_generic.c","requires":"ENABLE_BT_PROXY",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("BTDeinit", CMD_BTDeinit, NULL);
+	//cmddetail:{"name":"BTFilterDuplicates","args":"[isActive]",
+	//cmddetail:"descr":"BT filter duplicates",
+	//cmddetail:"fn":"CMD_BTFilterDuplicates","file":"hal/generic/hal_bt_proxy_generic.c","requires":"ENABLE_BT_PROXY",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("BTFilterDuplicates", CMD_BTFilterDuplicates, NULL);
 #endif
 
 	HAL_BTProxy_RegisterPlatformCommands();

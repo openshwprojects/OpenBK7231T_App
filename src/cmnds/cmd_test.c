@@ -261,7 +261,7 @@ static commandResult_t cmnd_lfs_test1(const void * context, const char *cmd, con
 				lfsres = lfs_file_read(&lfs, &file, &a, 1);
 				cnt++;
 			} while (lfsres > 0);
-			ADDLOG_INFO(LOG_FEATURE_CMD, "cmnd_lfs_test1: Stopped at char %i\n", cnt);
+			ADDLOG_INFO(LOG_FEATURE_CMD, "cmnd_lfs_test1: Stopped at char %i", cnt);
 
 			lfs_file_close(&lfs, &file);
 			ADDLOG_INFO(LOG_FEATURE_CMD, "cmnd_lfs_test1: closed file %s", args);
@@ -302,7 +302,7 @@ static commandResult_t cmnd_lfs_test2(const void * context, const char *cmd, con
 					lfsres = lfs_file_read(&lfs, file, &a, 1);
 					cnt++;
 				} while (lfsres > 0);
-				ADDLOG_INFO(LOG_FEATURE_CMD, "cmnd_lfs_test2: Stopped at char %i\n", cnt);
+				ADDLOG_INFO(LOG_FEATURE_CMD, "cmnd_lfs_test2: Stopped at char %i", cnt);
 
 				lfs_file_close(&lfs, file);
 				ADDLOG_INFO(LOG_FEATURE_CMD, "cmnd_lfs_test2: closed file %s", args);

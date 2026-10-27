@@ -10,7 +10,7 @@ set(BERRY_MODULEPATH "${OBK_SRCS}berry/modules")
 include(../obk_main.cmake)
 include(../../libraries/berry.cmake)
 
-ameba_list_append(public_definitions LWIP_NETIF_HOSTNAME=1 TCP_MSL=1000)
+ameba_list_append(public_definitions LWIP_NETIF_HOSTNAME=1 TCP_MSL=1000 RTK_BLE_ISO_SUPPORT=1)
 ameba_global_define(${public_definitions})
 
 add_compile_definitions(
@@ -37,6 +37,16 @@ target_compile_options(
 	"$<$<COMPILE_LANGUAGE:C>:-Wno-strict-prototypes>"
 )
 
+target_compile_options(
+	${c_MCU_PROJ_CONFIG} INTERFACE
+	-Os
+)
+
+target_link_options(
+	${c_MCU_PROJ_CONFIG} INTERFACE
+	-Wl,--wrap=vApplicationIdleHook
+)
+
 target_include_directories(
 	${CURRENT_LIB_NAME} PRIVATE
 	../../include
@@ -54,6 +64,7 @@ target_sources(
 	${OBK_SRCS}hal/realtek/hal_pins_realtek.c
 	${OBK_SRCS}hal/realtek/hal_ota_realtek.c
 	${OBK_SRCS}hal/realtek/hal_wifi_realtek_new.c
+	${OBK_SRCS}hal/realtek/rtl8721da/hal_bt_proxy_rtl8721da.c
 	${OBK_SRCS}hal/realtek/rtl8721da/hal_main_rtl8721da.c
 	${OBK_SRCS}hal/realtek/rtl8720e/hal_pins_rtl8720e.c
 	${OBK_SRCS}hal/realtek/rtl8721da/hal_uart_rtl8721da.c

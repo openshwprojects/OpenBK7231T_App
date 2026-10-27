@@ -1,16 +1,39 @@
-#ifdef PLATFORM_BL602
+#if PLATFORM_BL602 || PLATFORM_BL616
 
-#include <hal_boot2.h>
-#include <utils_sha256.h>
-#include <bl_mtd.h>
-#include <bl_flash.h>
 #include "../../obk_config.h"
 #include "../../new_common.h"
 #include "../../new_cfg.h"
 #include "../../httpserver/new_http.h"
 #include "../../logging/logging.h"
 #include "lwip/sockets.h"
-
+#if PLATFORM_BL_NEW
+#include "bflb_boot2.h"
+#include "bflb_mtd.h"
+#include "bflb_ota.h"
+#include "bflb_flash.h"
+#define bl_flash_read bflb_flash_read
+#define bl_mtd_handle_t bflb_mtd_handle_t
+#define bl_mtd_open bflb_mtd_open
+#define HALPartition_Entry_Config bflb_partition_config_t
+#define bl_boot2_get_active_entries bflb_boot2_get_active_entries
+#define bl_mtd_close bflb_mtd_close
+#define bl_mtd_erase bflb_mtd_erase
+#define bl_mtd_write bflb_mtd_write
+#define bl_boot2_update_ptable bflb_boot2_update_ptable
+#define bl_mtd_close bflb_mtd_close
+#define iot_sha256_context sha256_context
+#define hal_boot2_get_active_partition bflb_boot2_get_active_partition
+#define hal_boot2_get_active_entries bflb_boot2_get_active_entries
+#define hal_boot2_update_ptable bflb_boot2_update_ptable
+#define hal_update_mfg_ptable bflb_update_mfg_ptable
+#define BL_MTD_PARTITION_NAME_FW_DEFAULT BFLB_MTD_PARTITION_NAME_FW_DEFAULT
+#define BL_MTD_OPEN_FLAG_BACKUP BFLB_MTD_OPEN_FLAG_BACKUP
+#else
+#include <hal_boot2.h>
+#include <bl_mtd.h>
+#include <bl_flash.h>
+#endif
+#include <utils_sha256.h>
 
 typedef struct ota_header {
 	union {
@@ -25,7 +48,9 @@ typedef struct ota_header {
 			uint8_t ver_software[16];
 
 			uint8_t sha256[32];
+#if !PLATFORM_BL_NEW
 			uint32_t unpacked_len;//full len
+#endif
 		} s;
 		uint8_t _pad[512];
 	} u;
@@ -96,9 +121,9 @@ int http_rest_post_flash(http_request_t* request, int startaddr, int maxaddr)
 	uint8_t* recv_buffer;
 	struct sockaddr_in dest;
 	iot_sha256_context ctx;
-	uint8_t sha256_result[32];
-	uint8_t sha256_img[32];
-	bl_mtd_handle_t handle;
+	__attribute__((aligned(32))) uint8_t sha256_result[32];
+	__attribute__((aligned(32))) uint8_t sha256_img[32];
+	__attribute__((aligned(32))) bl_mtd_handle_t handle;
 	//init_ota(startaddr);
 
 
@@ -112,7 +137,8 @@ int http_rest_post_flash(http_request_t* request, int startaddr, int maxaddr)
 		return http_rest_error(request, -20, "Open Default FW partition failed");
 	}
 
-	recv_buffer = pvPortMalloc(OTA_PROGRAM_SIZE);
+	recv_buffer = os_malloc(OTA_PROGRAM_SIZE);
+	if(!recv_buffer) return http_rest_error(request, -20, "os_malloc failed");
 
 	unsigned int buffer_offset, flash_offset, ota_addr;
 	uint32_t bin_size, part_size, running_size;
@@ -128,7 +154,7 @@ int http_rest_post_flash(http_request_t* request, int startaddr, int maxaddr)
 	if (hal_boot2_get_active_entries(BOOT2_PARTITION_TYPE_FW, &ptEntry))
 	{
 		printf("PtTable_Get_Active_Entries fail\r\n");
-		vPortFree(recv_buffer);
+		os_free(recv_buffer);
 		bl_mtd_close(handle);
 		return http_rest_error(request, -20, "PtTable_Get_Active_Entries fail");
 	}
@@ -161,7 +187,7 @@ int http_rest_post_flash(http_request_t* request, int startaddr, int maxaddr)
 		bl_mtd_erase(handle, erase_offset, erase_len);
 		printf("[OTA] Erased:  %lu / %lu \r\n", erase_offset, erase_len);
 		erase_offset += erase_len;
-		rtos_delay_milliseconds(100);
+		rtos_delay_milliseconds(10);
 	}
 	printf("[OTA] Done\r\n");
 
@@ -238,15 +264,17 @@ int http_rest_post_flash(http_request_t* request, int startaddr, int maxaddr)
 			{
 				return http_rest_error(request, -20, "Too large bin");
 			}
+#if !PLATFORM_BL_NEW
 			if (ota_header->u.s.unpacked_len != 0xFFFFFFFF && running_size < ota_header->u.s.unpacked_len)
 			{
 				ADDLOG_ERROR(LOG_FEATURE_OTA, "Unpacked OTA image size (%u) is bigger than running partition size (%u)", ota_header->u.s.unpacked_len, running_size);
 				return http_rest_error(request, -20, "");
 			}
+#endif
 			//ADDLOG_DEBUG(LOG_FEATURE_OTA, "%d bytes to write", writelen);
 			//add_otadata((unsigned char*)writebuf, writelen);
 
-			printf("Flash takes %i. ", useLen);
+			ADDLOG_DEBUG(LOG_FEATURE_OTA, "Writelen %i at 0x%X", useLen, flash_offset);
 			utils_sha256_update(&ctx, (byte*)useBuf, useLen);
 			bl_mtd_write(handle, flash_offset, useLen, (byte*)useBuf);
 			flash_offset += useLen;
@@ -256,6 +284,7 @@ int http_rest_post_flash(http_request_t* request, int startaddr, int maxaddr)
 		startaddr += writelen;
 		towrite -= writelen;
 
+		taskYIELD();
 
 		if (towrite > 0)
 		{
@@ -294,7 +323,7 @@ int http_rest_post_flash(http_request_t* request, int startaddr, int maxaddr)
 	hal_boot2_update_ptable(&ptEntry);
 	printf("[OTA] [TCP] Rebooting\r\n");
 	//close_ota();
-	vPortFree(recv_buffer);
+	os_free(recv_buffer);
 	utils_sha256_free(&ctx);
 	bl_mtd_close(handle);
 
@@ -312,7 +341,4 @@ int HAL_FlashRead(char*buffer, int readlen, int startaddr) {
 	return res;
 }
 
-
 #endif // PLATFORM_BL602
-
-

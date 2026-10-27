@@ -229,9 +229,9 @@ void fix_DSTforEvents(int minutes){
 	clockEvent_t *e;
 	e = clock_events;
 	while (e) {
-//		addLogAdv(LOG_INFO, LOG_FEATURE_CMD,"fix_DSTforEvents(%i) - testing  %s",minutes,e->command);
+//		addLogAdv(LOG_INFO, LOG_FEATURE_CMD,"fix_DSTforEvents(%i) - testing %s",minutes,e->command);
 		if (e->command && e->sunflags) {	// only for (future) sunflag events
-//		addLogAdv(LOG_INFO, LOG_FEATURE_CMD,"fix_DSTforEvents(%i) - fixing  %s",minutes,e->command);
+//		addLogAdv(LOG_INFO, LOG_FEATURE_CMD,"fix_DSTforEvents(%i) - fixing %s",minutes,e->command);
 			int h = minutes/60;
 			int m = minutes % 60;
 			e->hour += h;
@@ -486,9 +486,9 @@ int TIME_Print_EventList() {
 				sprintf(sun," (sunset)");
 			}
 		}
-		addLogAdv(LOG_INFO, LOG_FEATURE_CMD, "Ev %i - %02i:%02i:%02i%s, days 0x%02x, cmd %s\n", (int)e->id, (int)e->hour, (int)e->minute, (int)e->second, sun, (int)e->weekDayFlags, e->command);
+		addLogAdv(LOG_INFO, LOG_FEATURE_CMD, "Ev %i - %02i:%02i:%02i%s, days 0x%02x, cmd %s", (int)e->id, (int)e->hour, (int)e->minute, (int)e->second, sun, (int)e->weekDayFlags, e->command);
 #else
-		addLogAdv(LOG_INFO, LOG_FEATURE_CMD, "Ev %i - %02i:%02i:%02i, days 0x%02x, cmd %s\n", (int)e->id, (int)e->hour, (int)e->minute, (int)e->second, (int)e->weekDayFlags, e->command);
+		addLogAdv(LOG_INFO, LOG_FEATURE_CMD, "Ev %i - %02i:%02i:%02i, days 0x%02x, cmd %s", (int)e->id, (int)e->hour, (int)e->minute, (int)e->second, (int)e->weekDayFlags, e->command);
 #endif
 		t++;
 		e = e->next;

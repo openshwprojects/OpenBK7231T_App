@@ -20,6 +20,16 @@ int http_rest_post_flash(http_request_t* request, int startaddr, int maxaddr)
 
 	ADDLOG_DEBUG(LOG_FEATURE_OTA, "OTA post len %d", request->contentLength);
 
+#if ENABLE_DRIVER_IR || ENABLE_DRIVER_IRREMOTEESP
+	if(DRV_IsRunning("IR")) DRV_StopDriver("IR");
+#endif
+#if ENABLE_DRIVER_TINYIR_NEC
+	if(DRV_IsRunning("TinyIR_NEC")) DRV_StopDriver("TinyIR_NEC");
+#endif
+#if ENABLE_DRIVER_RC
+	if(DRV_IsRunning("RC")) DRV_StopDriver("RC");
+#endif
+
 	bool recvfp = true;
 
 	ota_status_t ota_update_rest_init(void* url)

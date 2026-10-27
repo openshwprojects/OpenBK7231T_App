@@ -21,7 +21,7 @@ int cmd_uartInitIndex = 0;
 #if ENABLE_LITTLEFS
 #include "../littlefs/our_lfs.h"
 #endif
-#ifdef PLATFORM_BL602
+#if PLATFORM_BL602 && !PLATFORM_BL_NEW
 #include <wifi_mgmr_ext.h>
 #include "bl_flash.h"
 #include "bl602_hbn.h"
@@ -76,6 +76,10 @@ int g_sleepfactor = 1;
 #endif
 #elif PLATFORM_ECR6600
 #include "psm_system.h"
+#elif PLATFORM_GD32VW553
+#include "gd32vw55x.h"
+#include "gd32vw55x_platform.h"
+#include "log_uart.h"
 #endif
 
 #define HASH_SIZE 128
@@ -175,6 +179,17 @@ static commandResult_t CMD_PowerSave(const void* context, const char* cmd, const
 	}
 	else {
 		wifi_mgmr_sta_ps_exit();
+	}
+#elif PLATFORM_BL_NEW
+	void bl_pm_enter_ps(void);
+	void bl_pm_exit_ps(void);
+	if(bOn)
+	{
+		bl_pm_enter_ps();
+	}
+	else
+	{
+		bl_pm_exit_ps();
 	}
 #elif defined(PLATFORM_LN882H) || PLATFORM_LN8825
 	// this will be applied after WiFi connect
@@ -287,11 +302,12 @@ static commandResult_t CMD_PowerSave(const void* context, const char* cmd, const
 #endif
 		wifi_disable_powersave();
 	}
-#elif PLATFORM_XRADIO
+#elif PLATFORM_XRADIO && !PLATFORM_XR806 // XR806 has power save on by default, and this increases power consumption compared to default settings
 	if(g_powersave)
 	{
 		wlan_set_ps_mode(g_wlan_netif, 1);
 		wlan_ext_ps_cfg_t ps_cfg;
+		//wlan_ext_request(g_wlan_netif, WLAN_EXT_CMD_SET_BCN_WIN_US, 2300);
 		memset(&ps_cfg, 0, sizeof(wlan_ext_ps_cfg_t));
 		ps_cfg.ps_mode = 1;
 		ps_cfg.ps_idle_period = 40;
@@ -332,6 +348,31 @@ static commandResult_t CMD_PowerSave(const void* context, const char* cmd, const
 	{
 		wland_set_sta_sleep(0);
 	}
+#elif PLATFORM_GD32VW553
+	if(bOn)
+	{
+		//wifi_netlink_enable_vif_ps(0);
+		wifi_netlink_ps_mode_set(0, 0);
+		wifi_netlink_ps_mode_set(0, 1);
+	}
+	else
+	{
+		wifi_netlink_ps_mode_set(0, 0);
+	}
+#elif PLATFORM_ARMINO
+	if(bOn)
+	{
+		bk_wifi_ps_cmd_open(); // it's already on by default
+		if(bOn > 1) bk_wifi_send_listen_interval_req(10); // dtim 10
+		else bk_wifi_send_listen_interval_req(1);
+		if(bOn > 2) bk_pm_sleep_mode_set(PM_MODE_LOW_VOLTAGE);
+		//bk_wifi_send_sleep_mode_req(bOn); // 0, 1 or 2
+	}
+	else
+	{
+		bk_wifi_ps_cmd_close();
+		//bk_wifi_send_sleep_mode_req(0);
+	}
 #else
 	ADDLOG_INFO(LOG_FEATURE_CMD, "PowerSave is not implemented on this platform");
 #endif
@@ -351,6 +392,7 @@ static commandResult_t CMD_DeepSleep(const void* context, const char* cmd, const
 	}
 
 	timeMS = Tokenizer_GetArgInteger(0);
+
 	HAL_DisconnectFromWifi();
 #if defined(PLATFORM_BEKEN) && !defined(PLATFORM_BEKEN_NEW)
 	// It requires a define in SDK file:
@@ -362,6 +404,10 @@ static commandResult_t CMD_DeepSleep(const void* context, const char* cmd, const
 	return CMD_RES_OK;
 #elif defined(PLATFORM_BEKEN_NEW)
 	PS_DEEP_CTRL_PARAM params;
+	// see PINS_BeginDeepSleepWithPinWakeUp() - the struct must be zeroed, or the
+	// SDK gets stack garbage for the GPIO maps and for lpo_32k_src (the RTC
+	// clock source), and the device wakes at a random time or not at all
+	memset(&params, 0, sizeof(params));
 	params.sleep_mode = MANUAL_MODE_IDLE;
 	params.wake_up_way = PS_DEEP_WAKEUP_RTC;
 	params.sleep_time = timeMS;
@@ -380,7 +426,7 @@ static commandResult_t CMD_DeepSleep(const void* context, const char* cmd, const
 #elif PLATFORM_XRADIO
 	HAL_Wakeup_SetTimer_mS(timeMS * DS_MS_TO_S);
 	pm_enter_mode(DEEP_SLEEP);
-#elif PLATFORM_BL602
+#elif PLATFORM_BL602 && !PLATFORM_BL_NEW
 	HBN_APP_CFG_Type cfg = {
 		.useXtal32k = 0,
 		.sleepTime = timeMS,
@@ -408,6 +454,46 @@ static commandResult_t CMD_DeepSleep(const void* context, const char* cmd, const
 	// this works fine, but wifi will not receive anything after waking up, and only full power cycle will fix it up.
 	drv_rtc_set_alarm_relative(timeMS * 1000 * 33);
 	psm_enter_deep_sleep();
+#elif PLATFORM_GD32VW553
+	delay_ms(50);
+	wifi_netlink_wifi_close();
+	rcu_periph_clock_disable(RCU_ADC);
+	rcu_periph_clock_disable(RCU_GPIOA);
+	rcu_periph_clock_disable(RCU_GPIOB);
+	rcu_periph_clock_disable(RCU_GPIOC);
+	rcu_periph_clock_disable(RCU_PKCAU);
+	rcu_periph_clock_disable(RCU_CAU);
+	rcu_periph_clock_disable(RCU_HAU);
+	trng_close(0);
+	uint32_t remaining = timeMS;
+	while(remaining > 0)
+	{
+		uint32_t chunk = remaining > 10 ? 10 : remaining;
+		uint32_t ticks = chunk * 430;
+		FWDGT_CTL = FWDGT_KEY_RELOAD;
+		HAL_Delay_us(75);
+		exti_init(RTC_WAKEUP_EXTI_LINE, EXTI_INTERRUPT, EXTI_TRIG_RISING);
+		rtc_flag_clear(RTC_STAT_WTF);
+		rtc_wakeup_disable();
+		rtc_wakeup_timer_set(ticks * 5);
+		rtc_wakeup_enable();
+		pmu_to_deepsleepmode(PMU_LDO_LOWPOWER, PMU_LOWDRIVER_ENABLE, WFI_CMD);
+
+		remaining -= chunk;
+	}
+	HAL_RebootModule();
+#elif PLATFORM_ARMINO
+	alarm_info_t deep_sleep_alarm = {
+		"deep_ps",
+		(rtc_tick_t)((uint32_t)(timeMS * 1000) * AON_RTC_MS_TICK_CNT),
+		1,
+		NULL,
+		NULL
+	};
+	bk_alarm_unregister(AON_RTC_ID_1, deep_sleep_alarm.name);
+	bk_alarm_register(AON_RTC_ID_1, &deep_sleep_alarm);
+	bk_pm_wakeup_source_set(PM_WAKEUP_SOURCE_INT_RTC, NULL);
+	bk_pm_sleep_mode_set(PM_MODE_DEEP_SLEEP);
 #endif
 
 	return CMD_RES_OK;
@@ -509,7 +595,7 @@ static commandResult_t CMD_ClearAll(const void* context, const char* cmd, const 
 	CMD_ClearAllHandlers(0, 0, 0, 0);
 	RepeatingEvents_Cmd_ClearRepeatingEvents(0, 0, 0, 0);
 #if defined(WINDOWS) || defined(PLATFORM_BL602) || defined(PLATFORM_BEKEN) || defined(PLATFORM_LN882H) \
- || defined(PLATFORM_ESPIDF) || defined(PLATFORM_TR6260) || defined(PLATFORM_REALTEK)
+ || defined(PLATFORM_ESPIDF) || defined(PLATFORM_TR6260) || defined(PLATFORM_REALTEK) || defined(PLATFORM_ARMINO)
 	CMD_resetSVM(0, 0, 0, 0);
 #endif
 
@@ -673,14 +759,14 @@ static commandResult_t CMD_SafeMode(const void* context, const char* cmd, const 
 
 
 void CMD_UARTConsole_Init() {
-#if PLATFORM_BEKEN
+#if PLATFORM_BEKEN || PLATFORM_ARMINO
 	UART_InitUART(115200, 0, false);
 	cmd_uartInitIndex = get_g_uart_init_counter();
 	UART_InitReceiveRingBuffer(512);
 #endif
 }
 void CMD_UARTConsole_Run() {
-#if PLATFORM_BEKEN
+#if PLATFORM_BEKEN || PLATFORM_ARMINO
 	char a;
 	int i;
 	int totalSize;
@@ -716,7 +802,7 @@ void CMD_UARTConsole_Run() {
 #endif
 }
 void CMD_RunUartCmndIfRequired() {
-#if PLATFORM_BEKEN
+#if PLATFORM_BEKEN || PLATFORM_ARMINO
 	if (CFG_HasFlag(OBK_FLAG_CMD_ACCEPT_UART_COMMANDS)) {
 		if (cmd_uartInitIndex && cmd_uartInitIndex == get_g_uart_init_counter()) {
 			CMD_UARTConsole_Run();
@@ -965,6 +1051,12 @@ static commandResult_t CMD_PowerSave_WFI(const void* context, const char* cmd, c
 	return CMD_RES_OK;
 }
 
+static commandResult_t CMD_Disconnect(const void *context, const char *cmd, const char *args, int cmdFlags)
+{
+	HAL_DisconnectFromWifi();
+	return CMD_RES_OK;
+}
+
 #if MQTT_USE_TLS
 static commandResult_t CMD_WebServer(const void* context, const char* cmd, const char* args, int cmdFlags) {	
 	int arg_count;
@@ -1133,6 +1225,12 @@ void CMD_Init_Early() {
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("IndexRefreshInterval", CMD_IndexRefreshInterval, NULL);
 
+	// cmddetail:{"name":"Disconnect","args":"",
+	// cmddetail:"descr":"WiFi disconnect",
+	// cmddetail:"fn":"CMD_Disconnect","file":"cmnds/cmd_main.c","requires":"",
+	// cmddetail:"examples":""}
+	CMD_RegisterCommand("Disconnect", CMD_Disconnect, NULL);
+
 #if MQTT_USE_TLS
 	//cmddetail:{"name":"WebServer","args":"[0 - Stop / 1 - Start]",
 	//cmddetail:"descr":"Setting state of WebServer",
@@ -1163,7 +1261,7 @@ void CMD_Init_Delayed() {
 	}
 #endif
 #if PLATFORM_BEKEN || WINDOWS || PLATFORM_BL602 || PLATFORM_ESPIDF || PLATFORM_ESP8266 \
-	|| PLATFORM_REALTEK || PLATFORM_ECR6600 || PLATFORM_XRADIO
+	|| PLATFORM_REALTEK || PLATFORM_ECR6600 || PLATFORM_XRADIO || PLATFORM_ARMINO
 	UART_AddCommands();
 #endif
 #if ENABLE_BL_TWIN

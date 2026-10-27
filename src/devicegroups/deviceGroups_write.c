@@ -9,7 +9,7 @@ int DGR_BeginWriting(bitMessage_t *msg, const char *groupName, unsigned short se
 		//
 		// It should not happen, do not waste flash space for warning text...
 		//
-		//addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"DGR_BeginWriting: no space for header\n");
+		//addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"DGR_BeginWriting: no space for header");
 		return 1;
 	}
 
@@ -17,7 +17,7 @@ int DGR_BeginWriting(bitMessage_t *msg, const char *groupName, unsigned short se
 		//
 		// It should not happen, do not waste flash space for warning text...
 		//
-		//addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"DGR_BeginWriting: no space for group name\n");
+		//addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"DGR_BeginWriting: no space for group name");
 		return 1;
 	}
 
@@ -25,7 +25,7 @@ int DGR_BeginWriting(bitMessage_t *msg, const char *groupName, unsigned short se
 		//
 		// It should not happen, do not waste flash space for warning text...
 		//
-		//addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"DGR_BeginWriting: no space for sequence\n");
+		//addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"DGR_BeginWriting: no space for sequence");
 		return 1;
 	}
 
@@ -33,7 +33,7 @@ int DGR_BeginWriting(bitMessage_t *msg, const char *groupName, unsigned short se
 		//
 		// It should not happen, do not waste flash space for warning text...
 		//
-		//addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"DGR_BeginWriting: no space for flags\n");
+		//addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"DGR_BeginWriting: no space for flags");
 		return 1;
 	}
 	return 0;

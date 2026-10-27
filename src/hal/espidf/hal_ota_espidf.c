@@ -35,7 +35,7 @@ int http_rest_post_flash(http_request_t* request, int startaddr, int maxaddr)
 
 	ADDLOG_DEBUG(LOG_FEATURE_OTA, "OTA post len %d", request->contentLength);
 
-	ADDLOG_DEBUG(LOG_FEATURE_OTA, "Ota start!\r\n");
+	ADDLOG_DEBUG(LOG_FEATURE_OTA, "Ota start!");
 	esp_err_t err;
 	esp_ota_handle_t update_handle = 0;
 	const esp_partition_t* update_partition = NULL;

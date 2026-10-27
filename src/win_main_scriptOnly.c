@@ -85,8 +85,8 @@ int __cdecl main(void)
     addLogAdv(1,1, "History Index: %ld<br>JSON Stats: %s <br>", energyCounterMinutesIndex,
                     (energyCounterStatsJSONEnable == true) ? "enabled" : "disabled");
 
-	    //ADDLOGF_INFO("mqtt req %i/%i, free mem %i\n", mqtt_cur,mqtt_max,mqtt_mem);
-	  addLogAdv(1,1, "%sTime %i, idle %i/s, free %d, MQTT %i(%i), bWifi %i, secondsWithNoPing %i, socks %i/%i\n",
+	    //ADDLOGF_INFO("mqtt req %i/%i, free mem %i", mqtt_cur,mqtt_max,mqtt_mem);
+	  addLogAdv(1,1, "%sTime %i, idle %i/s, free %d, MQTT %i(%i), bWifi %i, secondsWithNoPing %i, socks %i/%i",
 		  "[TEST]", 123, 555,95000,1, 6, 
             1, -1, 3, 64);
     printf("Consumption Reset Time: %04d-%02d-%02d %02d:%02d:%02d",

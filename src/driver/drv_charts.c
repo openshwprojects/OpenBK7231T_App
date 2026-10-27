@@ -656,7 +656,7 @@ static commandResult_t CMD_Chart_Add(const void *context, const char *cmd, const
 		float f = Tokenizer_GetArgFloat(i);
 		if (i > g_chart->numVars){
 //			ADDLOG_ERROR(LOG_FEATURE_CMD, "Can't set value %f for var %i, only %i vars defined (starting with 0)!",f, i-1, g_chart->numVars);
-			ADDLOG_ERROR(LOG_FEATURE_CMD, "Can't set value %f for var %i, only var %s%i defined!",f, i-1,  g_chart->numVars>1? "0-":"",g_chart->numVars-1);
+			ADDLOG_ERROR(LOG_FEATURE_CMD, "Can't set value %f for var %i, only var %s%i defined!",f, i-1, g_chart->numVars>1? "0-":"",g_chart->numVars-1);
 			bk_printf("CHARTS: Can't set value %f for var %i, only var %s%i defined!\n",f, i-1,  g_chart->numVars>1? "0-":"",g_chart->numVars-1);
 		return CMD_RES_BAD_ARGUMENT;
 		}

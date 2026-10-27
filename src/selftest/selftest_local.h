@@ -28,6 +28,7 @@ void SelfTest_Failed(const char *file, const char *function, int line, const cha
 #define SELFTEST_ASSERT_PIN_BOOLEAN(pinIndex, res) SELFTEST_ASSERT((SIM_GetSimulatedPinValue(pinIndex) == res));
 #define SELFTEST_ASSERT_ARGUMENT(argumentIndex, res) SELFTEST_ASSERT(!strcmp(Tokenizer_GetArg(argumentIndex), res));
 #define SELFTEST_ASSERT_ARGUMENT_INTEGER(argumentIndex, res) SELFTEST_ASSERT((Tokenizer_GetArgInteger(argumentIndex) == res));
+#define SELFTEST_ASSERT_ARGUMENT_FLOAT(argumentIndex, res) SELFTEST_ASSERT((Tokenizer_GetArgFloat(argumentIndex) == res));
 #define SELFTEST_ASSERT_ARGUMENTS_COUNT(wantedCount) SELFTEST_ASSERT((Tokenizer_GetArgsCount() == wantedCount));
 #define SELFTEST_ASSERT_JSON_VALUE_STRING(obj, varName, res) SELFTEST_ASSERT(!strcmp(Test_GetJSONValue_String(varName, obj), res));
 #define SELFTEST_ASSERT_JSON_ONE_OF_TWO_VALUES_STRING(obj, varName, res, res2) SELFTEST_ASSERT(!strcmp(Test_GetJSONValue_String(varName, obj), res) || !strcmp(Test_GetJSONValue_String(varName, obj), res2));

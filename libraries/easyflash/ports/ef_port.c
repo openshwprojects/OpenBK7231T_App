@@ -97,6 +97,14 @@ typedef void* QueueHandle_t;
 extern int hal_flash_lock(void);
 extern int hal_flash_unlock(void);
 
+#elif PLATFORM_BL_NEW
+
+#include "bflb_mtd.h"
+
+__attribute__((aligned(32))) static bflb_mtd_handle_t handle;
+uint32_t ENV_AREA_SIZE;
+uint32_t SECTOR_NUM;
+
 #elif WINDOWS
 
 #include "framework.h"
@@ -181,7 +189,11 @@ void xSemaphoreGive(QueueHandle_t handle)
 /* default ENV set for user */
 static const ef_env default_env_set[] =
 {
+#if PLATFORM_BL_NEW
+	{"boot_times", "3", 1}
+#else
 	{"nv_version","0.01"}
+#endif
 };
 
 QueueHandle_t ef_mutex;
@@ -201,7 +213,43 @@ EfErrCode ef_port_init(ef_env const** default_env, size_t* default_env_size)
 	*default_env = default_env_set;
 	*default_env_size = sizeof(default_env_set) / sizeof(default_env_set[0]);
 
+#if configUSE_RECURSIVE_MUTEXES && PLATFORM_BL_NEW
+	ef_mutex = xSemaphoreCreateRecursiveMutex();
+#else
 	ef_mutex = xSemaphoreCreateMutex();
+#endif
+
+#if PLATFORM_BL_NEW
+	int ret;
+	__attribute__((aligned(32))) bflb_mtd_info_t info;
+
+	ret = bflb_mtd_open(BFLB_MTD_PARTITION_NAME_PSM, &handle, BFLB_MTD_OPEN_FLAG_BUSADDR);
+	if(ret < 0)
+	{
+		EF_INFO("[EF] [PART] [XIP] error when get PSM partition %d\r\n", ret);
+		puts("[EF] [PART] [XIP] Dead Loop. Reason: no Valid PSM partition found\r\n");
+		while(1)
+		{
+		}
+	}
+	memset(&info, 0, sizeof(info));
+	bflb_mtd_info(handle, &info);
+	EF_INFO("[EF] Found Valid PSM partition, XIP Addr %08x, flash addr %08x, size %d\r\n",
+		info.xip_addr,
+		info.offset,
+		info.size
+	);
+	if(info.size < 8 * 1024)
+	{
+		printf("[ERROR]psm partition is less than 8k,easyflash can not work!");
+		while(1);
+	}
+	ENV_AREA_SIZE = (info.size / EF_ERASE_MIN_SIZE) * EF_ERASE_MIN_SIZE;
+	SECTOR_NUM = ENV_AREA_SIZE / EF_ERASE_MIN_SIZE;
+	printf("ENV AREA SIZE %ld, SECTOR NUM %ld\r\n", ENV_AREA_SIZE, SECTOR_NUM);
+
+	printf("*default_env_size = 0x%08x\r\n", *default_env_size);
+#endif
 
 	return result;
 }
@@ -243,6 +291,12 @@ EfErrCode ef_port_read(uint32_t addr, uint32_t* buf, size_t size)
 	hal_flash_lock();
 	flash_read((char*)buf, (unsigned long)size, addr);
 	hal_flash_unlock();
+	return EF_NO_ERR;
+#elif PLATFORM_BL_NEW
+	if(bflb_mtd_read(handle, addr, size, (uint8_t*)buf) < 0)
+	{
+		return EF_READ_ERR;
+	}
 	return EF_NO_ERR;
 #endif
 }
@@ -325,6 +379,12 @@ EfErrCode ef_port_erase(uint32_t addr, size_t size)
 
 	return EF_NO_ERR;
 
+#elif PLATFORM_BL_NEW
+	if(bflb_mtd_erase(handle, addr, size) < 0)
+	{
+		return EF_ERASE_ERR;
+	}
+	return EF_NO_ERR;
 #endif
 	return result;
 }
@@ -391,6 +451,12 @@ EfErrCode ef_port_write(uint32_t addr, const uint32_t* buf, size_t size)
 	hal_flash_unlock();
 
 	return EF_NO_ERR;
+#elif PLATFORM_BL_NEW
+	if(bflb_mtd_write(handle, addr, size, (const uint8_t*)buf) < 0)
+	{
+		return EF_WRITE_ERR;
+	}
+	return EF_NO_ERR;
 #endif
 }
 
@@ -399,7 +465,11 @@ EfErrCode ef_port_write(uint32_t addr, const uint32_t* buf, size_t size)
  */
 void ef_port_env_lock(void)
 {
+#if configUSE_RECURSIVE_MUTEXES && PLATFORM_BL_NEW
+	xSemaphoreTakeRecursive(ef_mutex, 0xFFFFFFFF);
+#else
 	xSemaphoreTake(ef_mutex, 0xFFFFFFFF);
+#endif
 }
 
 /**
@@ -407,7 +477,11 @@ void ef_port_env_lock(void)
  */
 void ef_port_env_unlock(void)
 {
+#if configUSE_RECURSIVE_MUTEXES && PLATFORM_BL_NEW
+	xSemaphoreGiveRecursive(ef_mutex);
+#else
 	xSemaphoreGive(ef_mutex);
+#endif
 }
 
 /**

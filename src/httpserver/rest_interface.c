@@ -16,7 +16,7 @@
 
 #define DEFAULT_FLASH_LEN 0x200000
 
-#if PLATFORM_RTL8710A
+#if PLATFORM_RTL8710A || PLATFORM_GD32VW553
 #undef DEFAULT_FLASH_LEN
 #define DEFAULT_FLASH_LEN 0x400000
 #elif PLATFORM_RTL8720D || PLATFORM_REALTEK_NEW
@@ -30,7 +30,7 @@ extern uint8_t flash_size_8720;
 #include "../cmnds/cmd_public.h"
 
 #ifndef OBK_DISABLE_ALL_DRIVERS
-#include "../driver/drv_local.h"
+#include "../driver/drv_public.h"
 #endif
 
 #define MAX_JSON_VALUE_LENGTH   128
@@ -199,6 +199,12 @@ static int http_rest_post(http_request_t* request) {
 	}
 	if (!strcmp(request->url, "api/ota")) {
 		OTA_IncrementProgress(1);
+#if ENABLE_BT_PROXY
+		HAL_BTProxy_StopScan();
+#endif
+#if ENABLE_DRIVER_XIAOMI_COMPACT4 && !defined(OBK_DISABLE_ALL_DRIVERS)
+		DRV_ShutdownAllDrivers();
+#endif
 		int r = 0;
 #if PLATFORM_BEKEN
 		r = http_rest_post_flash(request, START_ADR_OF_BK_PARTITION_OTA, LFS_BLOCKS_END);
@@ -206,7 +212,7 @@ static int http_rest_post(http_request_t* request) {
 		r = http_rest_post_flash(request, -1, -1);
 #elif PLATFORM_W800
 		r = http_rest_post_flash(request, -1, -1);
-#elif PLATFORM_BL602
+#elif PLATFORM_BL602 || PLATFORM_BL_NEW
 		r = http_rest_post_flash(request, -1, -1);
 #elif PLATFORM_LN882H || PLATFORM_LN8825
 		r = http_rest_post_flash(request, -1, -1);
@@ -216,12 +222,18 @@ static int http_rest_post(http_request_t* request) {
 		r = http_rest_post_flash(request, 0, -1);
 #elif PLATFORM_ECR6600 || PLATFORM_TR6260
 		r = http_rest_post_flash(request, -1, -1);
-#elif PLATFORM_XRADIO && !PLATFORM_XR809
+#elif PLATFORM_XRADIO
 		r = http_rest_post_flash(request, 0, -1);
 #elif PLATFORM_TXW81X
 		r = http_rest_post_flash(request, 0, -1);
-#elif PLATFORM_RDA5981
+#elif PLATFORM_RDA5981 || PLATFORM_RTL8196C
 		r = http_rest_post_flash(request, 0, -1);
+#elif PLATFORM_GD32VW553
+		r = http_rest_post_flash(request, 0, -1);
+#elif PLATFORM_ARMINO
+		extern uint32_t g_ota_start_addr;
+		extern uint32_t g_ota_end_addr;
+		r = http_rest_post_flash(request, g_ota_start_addr, g_ota_end_addr);
 #else
 		// TODO
 		ADDLOG_ERROR(LOG_FEATURE_API, "No OTA");
@@ -239,6 +251,8 @@ static int http_rest_post(http_request_t* request) {
 
 
 #if ENABLE_LITTLEFS
+	// FIXME: this is beken (non-armino) only
+#if PLATFORM_BEKEN
 	if (!strcmp(request->url, "api/fsblock")) {
 		if (lfs_present()) {
 			release_lfs();
@@ -265,6 +279,7 @@ static int http_rest_post(http_request_t* request) {
 		init_lfs(0);
 		return res;
 	}
+#endif
 	if (!strncmp(request->url, "api/lfs/", 8)) {
 		return http_rest_post_lfs_file(request);
 	}
@@ -287,6 +302,8 @@ static int http_rest_post(http_request_t* request) {
 
 static int http_rest_app(http_request_t* request) {
 	const char* webhost = CFG_GetWebappRoot();
+	const char* webhostSeparator = "/";
+	size_t webhostLen;
 //	const char* ourip = HAL_GetMyIPString(); //CFG_GetOurIP();
 	http_setup(request, httpMimeTypeHTML);
 //	if (webhost && ourip) {
@@ -295,6 +312,11 @@ static int http_rest_app(http_request_t* request) {
 // know our ip (and port) inside the browser (JS "location").
 // Knowing/using the port from location.host is very usefull e.g. in simulator ;-) 
 	if (webhost) {
+		webhostLen = strlen(webhost);
+		if (webhostLen > 0 && webhost[webhostLen - 1] == '/') {
+			webhostSeparator = "";
+		}
+
 		poststr(request, htmlDoctype);
 
 		poststr(request, "<head><title>");
@@ -303,8 +325,8 @@ static int http_rest_app(http_request_t* request) {
 
 		poststr(request, htmlShortcutIcon);
 		poststr(request, htmlHeadMeta);
-		hprintf255(request, "<script>var root='%s',device='http://'+location.host;</script>", webhost);
-		hprintf255(request, "<script src='%s/startup.js'></script>", webhost);
+		hprintf255(request, "<script>var root='%s%s',device='http://'+location.host;</script>", webhost, webhostSeparator);
+		hprintf255(request, "<script src='%s%sstartup.js'></script>", webhost, webhostSeparator);
 		poststr(request, "</head><body></body></html>");
 	}
 	else {
@@ -472,7 +494,11 @@ static int http_rest_get_lfs_file(http_request_t* request) {
 
 	fpath = os_malloc(strlen(request->url) - strlen("api/lfs/") + 1);
 
+#if PLATFORM_RTL8196C
+	buff = os_malloc(16384);
+#else
 	buff = os_malloc(1024);
+#endif
 	file = os_malloc(sizeof(lfs_file_t));
 	memset(file, 0, sizeof(lfs_file_t));
 
@@ -585,6 +611,12 @@ static int http_rest_get_lfs_file(http_request_t* request) {
 				else if (EndsWith(fpath, ".ico")) {
 					mimetype = "image/x-icon";
 				}
+				else if (EndsWith(fpath, ".jpg") || EndsWith(fpath, ".jpeg")) {
+					mimetype = "image/jpeg";
+				}
+				else if (EndsWith(fpath, ".png")) {
+					mimetype = "image/png";
+				}
 			}
 
 			if (isGzip) {
@@ -596,6 +628,24 @@ static int http_rest_get_lfs_file(http_request_t* request) {
 			//#if ENABLE_OBK_BERRY
 			//			http_runBerryFile(request, fpath);
 			//#else
+#if PLATFORM_RTL8196C
+			poststr(request, NULL);
+			do {
+				len = lfs_file_read(&lfs, file, buff, 16384);
+				if (len > 0) {
+					total += len;
+					int sent = 0;
+					while (sent < len) {
+						int r = send(request->fd, buff + sent, len - sent, 0);
+						if (r <= 0) {
+							len = -1;
+							break;
+						}
+						sent += r;
+					}
+				}
+			} while (len > 0);
+#else
 			do {
 				len = lfs_file_read(&lfs, file, buff, 1024);
 				total += len;
@@ -604,6 +654,7 @@ static int http_rest_get_lfs_file(http_request_t* request) {
 					postany(request, buff, len);
 				}
 			} while (len > 0);
+#endif
 			//#endif
 			lfs_file_close(&lfs, file);
 			ADDLOG_DEBUG(LOG_FEATURE_API, "%d total bytes read", total);
@@ -731,7 +782,7 @@ static int http_rest_post_lfs_file(http_request_t* request) {
 
 	//ADDLOG_DEBUG(LOG_FEATURE_API, "LFS write of %s len %d", fpath, request->contentLength);
 
-	lfsres = lfs_file_open(&lfs, file, fpath, LFS_O_RDWR | LFS_O_CREAT);
+	lfsres = lfs_file_open(&lfs, file, fpath, LFS_O_RDWR | LFS_O_CREAT | LFS_O_TRUNC);
 	if (lfsres >= 0) {
 		//ADDLOG_DEBUG(LOG_FEATURE_API, "opened %s");
 		int towrite = request->bodylen;
@@ -751,12 +802,20 @@ static int http_rest_post_lfs_file(http_request_t* request) {
 			goto exit;
 		}
 
+#if PLATFORM_RTL8196C
+		char* rx_stream_buf = os_malloc(16384);
+#endif
 		do {
 			loops++;
 #if ENABLE_LFS_SPI
 			if (loops > 50) {
 				loops = 0;
 				rtos_delay_milliseconds(1);
+			}
+#elif PLATFORM_RTL8196C
+			if (loops > 64) {
+				loops = 0;
+				rtos_yield();
 			}
 #else
 			if (loops > 10) {
@@ -776,13 +835,26 @@ static int http_rest_post_lfs_file(http_request_t* request) {
 			}
 			towrite -= len;
 			if (towrite > 0) {
+#if PLATFORM_RTL8196C
+				if (rx_stream_buf) {
+					writebuf = rx_stream_buf;
+					writelen = recv(request->fd, writebuf, 16384, 0);
+				} else {
+					writebuf = request->received;
+					writelen = recv(request->fd, writebuf, request->receivedLenmax, 0);
+				}
+#else
 				writebuf = request->received;
 				writelen = recv(request->fd, writebuf, request->receivedLenmax, 0);
+#endif
 				if (writelen < 0) {
 					ADDLOG_DEBUG(LOG_FEATURE_API, "recv returned %d - end of data - remaining %d", writelen, towrite);
 				}
 			}
 		} while ((towrite > 0) && (writelen >= 0));
+#if PLATFORM_RTL8196C
+		if (rx_stream_buf) os_free(rx_stream_buf);
+#endif
 
 		// no more data
 		lfs_file_truncate(&lfs, file, total);

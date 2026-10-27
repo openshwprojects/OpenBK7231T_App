@@ -14,9 +14,32 @@ void Test_IF_Inside_Backlog() {
 	PIN_SetPinRoleForPinIndex(26, IOR_PWM);
 	PIN_SetPinChannelForPinIndex(26, 2);
 
+	// Non-LED test: verify that "if" works correctly when nested inside a backlog alias.
+	// Uses plain channels so this runs regardless of ENABLE_LED_BASIC.
+	CMD_ExecuteCommand("alias pick_val backlog if $CH10>7&&$CH10<19 then setChannel 20 200; if $CH10<=7||$CH10>=19 then setChannel 20 500;", 0);
+
+	// hour 10 -> day -> channel 20 = 200
+	CMD_ExecuteCommand("setChannel 10 10", 0);
+	CMD_ExecuteCommand("pick_val", 0);
+	SELFTEST_ASSERT_CHANNEL(20, 200);
+
+	// hour 3 -> night -> channel 20 = 500
+	CMD_ExecuteCommand("setChannel 10 3", 0);
+	CMD_ExecuteCommand("pick_val", 0);
+	SELFTEST_ASSERT_CHANNEL(20, 500);
+
+	// hour 12 -> day -> channel 20 = 200
+	CMD_ExecuteCommand("setChannel 10 12", 0);
+	CMD_ExecuteCommand("pick_val", 0);
+	SELFTEST_ASSERT_CHANNEL(20, 200);
+
+	// hour 22 -> night -> channel 20 = 500
+	CMD_ExecuteCommand("setChannel 10 22", 0);
+	CMD_ExecuteCommand("pick_val", 0);
+	SELFTEST_ASSERT_CHANNEL(20, 500);
 
 #if ENABLE_LED_BASIC
-
+	// LED-specific variant: same logic but driving led_temperature instead
 	CMD_ExecuteCommand("led_enableAll 1", 0);
 
 	CMD_ExecuteCommand("alias day_lights backlog led_temperature 200", 0);

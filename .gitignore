@@ -41,3 +41,6 @@ enc_temp_folder/**
 *.su
 /.idea/**
 *.so
+*.i
+*.ii
+*.s

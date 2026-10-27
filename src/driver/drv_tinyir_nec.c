@@ -180,9 +180,9 @@ void TinyIR_NEC_Init()
 	if(recvpin == -1)
 	{
 		recvpin = PIN_FindPinIndexForRole(IOR_IRRecv_nPup, recvpin);
-		if(recvpin >= 0) HAL_PIN_Setup_Input_Pullup(recvpin);
+		if(recvpin >= 0) HAL_PIN_Setup_Input(recvpin);
 	}
-	else HAL_PIN_Setup_Input(recvpin);
+	else HAL_PIN_Setup_Input_Pullup(recvpin);
 
 	if(recvpin < 0) return;
 

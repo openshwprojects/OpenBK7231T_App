@@ -81,7 +81,7 @@ void HAL_Configuration_GenerateMACForThisModule(unsigned char* out)
 	{
 		return;
 	}
-	ADDLOG_DEBUG(LOG_FEATURE_CFG, "read mac addr from eFuse fail\n");
+	ADDLOG_DEBUG(LOG_FEATURE_CFG, "read mac addr from eFuse fail");
 	sysinfo_gen_mac_by_chipid(out);
 	for(i = 0; i < 6; ++i)
 	{

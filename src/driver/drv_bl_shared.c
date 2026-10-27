@@ -406,7 +406,7 @@ commandResult_t BL09XX_SetupEnergyStatistic(const void *context, const char *cmd
             energyCounterMinutes = NULL;
             energyCounterSampleCount = sample_count;
         }
-        addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "Sample Count:    %d", energyCounterSampleCount);
+        addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "Sample Count: %d", energyCounterSampleCount);
         if (energyCounterSampleInterval != sample_time)
         {
             /* change sample time */            
@@ -861,6 +861,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
     //in twin mode, for ix0 is last OBK_CONSUMPTION_YESTERDAY, for ix1 ,OBK_CONSUMPTION_TODAY
     if ((i > OBK_CONSUMPTION_STORED_LAST[asensdatasetix]) && (i <= OBK_CONSUMPTION__DAILY_LAST)) continue;
 #endif
+	if (isnan(sensdataset->sensors[i].lastReading)) continue;
       // send update only if there was a big change or if certain time has passed
     // Do not send message with every measurement. 
     diff = (float)sensdataset->sensors[i].lastSentValue - (float)sensdataset->sensors[i].lastReading;
@@ -992,6 +993,15 @@ void BL_Shared_Init(void) {
       sensdataset->sensors[i].noChangeFrame = 0;
       sensdataset->sensors[i].lastReading = 0;
     }
+	sensdataset->sensors[OBK_FREQUENCY].lastReading = NAN;
+#if ENABLE_BL_TWIN
+	for(i = OBK__FIRST; i <= OBK__LAST; i++)
+	{
+		sensdataset1->sensors[i].noChangeFrame = 0;
+		sensdataset1->sensors[i].lastReading = 0;
+	}
+	sensdataset1->sensors[OBK_FREQUENCY].lastReading = NAN;
+#endif
     {
 
       if (energyCounterStatsEnable == true)
@@ -1011,7 +1021,7 @@ void BL_Shared_Init(void) {
         energyCounterMinutesIndex = 0;
       }
 
-      addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "Read ENERGYMETER values sz=%d\n", sizeof(ENERGY_METERING_DATA));
+      addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "Read ENERGYMETER values sz=%d", sizeof(ENERGY_METERING_DATA));
 
       HAL_GetEnergyMeterStatus(&data);
       sensdataset->sensors[OBK_CONSUMPTION_TOTAL].lastReading = data.TotalConsumption;
@@ -1075,6 +1085,20 @@ void BL_Shared_Init(void) {
 float DRV_GetReading(energySensor_t type) 
 {
 	return (float)datasetlist[BL_SENSORS_IX_0].sensors[type].lastReading;
+}
+
+int BL_HasEnergySensorReadingEx(int asensdatasetix, energySensor_t type)
+{
+	if (asensdatasetix < 0) return false;
+	if (asensdatasetix >= BL_SENSDATASETS_COUNT) return false;
+	if (type < OBK__FIRST) return false;
+	if (type > OBK__LAST) return false;
+	return !isnan(datasetlist[asensdatasetix].sensors[type].lastReading);
+}
+
+int BL_HasEnergySensorReading(energySensor_t type)
+{
+	return BL_HasEnergySensorReadingEx(BL_SENSORS_IX_0, type);
 }
 
 #if ENABLE_BL_TWIN

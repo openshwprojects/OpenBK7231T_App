@@ -19,7 +19,7 @@ static s16 obk_uart_rx(u16 len)
 	//u8 *buf=malloc(READ_BUF_SIZE);
 	//int i;
 	//if (! buf ){ 
-	//	addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "W800 obk_uart_rx - malloc failed!\r\n");
+	//	addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "W800 obk_uart_rx - malloc failed!");
 	//	return WM_FAILED;
 	//}
 	while(len)

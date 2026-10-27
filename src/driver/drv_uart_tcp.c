@@ -268,7 +268,7 @@ error:
 		(beken_thread_arg_t)0);
 	if(err != kNoErr)
 	{
-		ADDLOG_ERROR(LOG_FEATURE_DRV, "create \"UART TCP Restart\" thread failed with %i!\r\n", err);
+		ADDLOG_ERROR(LOG_FEATURE_DRV, "create \"UART TCP Restart\" thread failed with %i!", err);
 	}
 }
 
@@ -285,7 +285,7 @@ void Start_UART_TCP(void* arg)
 		(beken_thread_arg_t)0);
 	if(err != kNoErr)
 	{
-		ADDLOG_ERROR(LOG_FEATURE_DRV, "create \"UART_TCP_TRX\" thread failed with %i!\r\n", err);
+		ADDLOG_ERROR(LOG_FEATURE_DRV, "create \"UART_TCP_TRX\" thread failed with %i!", err);
 	}
 	rtos_suspend_thread(NULL);
 }

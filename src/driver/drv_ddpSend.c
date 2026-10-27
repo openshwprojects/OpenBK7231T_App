@@ -192,7 +192,7 @@ void DRV_DDPSend_Init()
 	g_socket_ddpSend = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 	if (g_socket_ddpSend < 0) {
 		g_socket_ddpSend = -1;
-		addLogAdv(LOG_ERROR, LOG_FEATURE_HTTP, "DRV_DDPSend_Init: failed to do socket\n");
+		addLogAdv(LOG_ERROR, LOG_FEATURE_HTTP, "DRV_DDPSend_Init: failed to do socket");
 		return;
 	}
 	//cmddetail:{"name":"DDP_Send","args":"IP host pixelsize delay pData",

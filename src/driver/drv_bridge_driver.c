@@ -48,7 +48,7 @@ commandResult_t Bridge_Pulse_length(const void *context, const char *cmd, const 
     }
 
     bridge_pulse_len = pulse_len;
-    addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "Bridge Pulse Length: %i\n", bridge_pulse_len);
+    addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "Bridge Pulse Length: %i", bridge_pulse_len);
 
     return CMD_RES_OK;
 }
@@ -60,18 +60,18 @@ void Bridge_driver_Init()
     int i;
     int ch = 0;
 
-    addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "Bridge Driver Init.\n");	
+    addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "Bridge Driver Init.");	
    
     ch_count = PIN_CountPinsWithRole(IOR_BridgeForward);
     if (ch_count != PIN_CountPinsWithRole(IOR_BridgeReverse))
     {
-        addLogAdv(LOG_WARN, LOG_FEATURE_DRV, "Bridge Driver Pins mismatched \n");
+        addLogAdv(LOG_WARN, LOG_FEATURE_DRV, "Bridge Driver Pins mismatched ");
     }
 
     if (ch_count>0)
     {
         /* Bridge channel detected */
-        addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "Detected %i bridge channels\n", ch_count);
+        addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "Detected %i bridge channels", ch_count);
         if (br_ctrl != NULL)
             os_free(br_ctrl);
         /* Allocate memeory */
@@ -115,10 +115,10 @@ void Bridge_driver_Init()
         {
             br_ctrl[ch].channel = PIN_GetPinChannelForPinIndex(br_ctrl[ch].GPIO_HLW_FWD);
             br_ctrl[ch].new_state = CHANNEL_Get(br_ctrl[ch].channel);
-            addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "BR%i GPIO_HLW_FWD = %i\n", ch, br_ctrl[ch].GPIO_HLW_FWD);
-            addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "BR%i GPIO_HLW_REV = %i\n", ch, br_ctrl[ch].GPIO_HLW_REV);
-            addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "BR%i Channel      = %i\n", ch, br_ctrl[ch].channel);
-            addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "BR%i New State    = %i\n", ch, br_ctrl[ch].new_state);
+            addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "BR%i GPIO_HLW_FWD = %i", ch, br_ctrl[ch].GPIO_HLW_FWD);
+            addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "BR%i GPIO_HLW_REV = %i", ch, br_ctrl[ch].GPIO_HLW_REV);
+            addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "BR%i Channel      = %i", ch, br_ctrl[ch].channel);
+            addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "BR%i New State    = %i", ch, br_ctrl[ch].new_state);
         }
     } else {
         /* No Bridge drivers defined */
@@ -159,7 +159,7 @@ void Bridge_driver_QuickFrame()
                 br_ctrl[ch].pulseCnt--;
                 if (br_ctrl[ch].pulseCnt == 0)
                 {
-                    addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "Bridge Driver: %lu :PULSE Complete. HOLD\n", (unsigned long)xTaskGetTickCount());
+                    addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "Bridge Driver: %lu :PULSE Complete. HOLD", (unsigned long)xTaskGetTickCount());
                     HAL_PIN_SetOutputValue(br_ctrl[ch].GPIO_HLW_FWD, 0);
                     HAL_PIN_SetOutputValue(br_ctrl[ch].GPIO_HLW_REV, 0);
                 }
@@ -167,7 +167,7 @@ void Bridge_driver_QuickFrame()
             else if (br_ctrl[ch].current_state < br_ctrl[ch].new_state)
             {
                 /* Detected change in state - Forward Move */
-                addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "Bridge Driver: %lu : FORWARD PULSE\n", (unsigned long)xTaskGetTickCount());
+                addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "Bridge Driver: %lu : FORWARD PULSE", (unsigned long)xTaskGetTickCount());
                 br_ctrl[ch].pulseLen = bridge_pulse_len;
                 br_ctrl[ch].pulseCnt = br_ctrl[ch].pulseLen;
                 HAL_PIN_SetOutputValue(br_ctrl[ch].GPIO_HLW_FWD, 1);
@@ -177,7 +177,7 @@ void Bridge_driver_QuickFrame()
             else if (br_ctrl[ch].current_state > br_ctrl[ch].new_state)
             {
                 /* Detected change in state - Reverse Move */
-                addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "Bridge Driver: %lu : REVERSE PULSE\n", (unsigned long)xTaskGetTickCount());
+                addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "Bridge Driver: %lu : REVERSE PULSE", (unsigned long)xTaskGetTickCount());
                 br_ctrl[ch].current_state = br_ctrl[ch].new_state;
                 br_ctrl[ch].pulseLen = bridge_pulse_len;
                 br_ctrl[ch].pulseCnt = br_ctrl[ch].pulseLen;
@@ -200,7 +200,7 @@ void Bridge_driver_OnChannelChanged(int ch, int value)
         {
             if (br_ctrl[i].channel == ch)
             {
-                addLogAdv(LOG_DEBUG, LOG_FEATURE_DRV, "Bridge Driver OnChannelChanged: CH:%i VAL:%i\n", ch, value);
+                addLogAdv(LOG_DEBUG, LOG_FEATURE_DRV, "Bridge Driver OnChannelChanged: CH:%i VAL:%i", ch, value);
                 br_ctrl[i].new_state = value;
             }
         }

@@ -8,7 +8,13 @@ Although this repository is named `OpenBK7231T_App`, it has evolved into a multi
 -   [BK7231M](https://www.elektroda.com/rtvforum/topic4058227.html), this is a non-Tuya version of BK7231N with `00000000` keys, sometimes labelled as Belon BL2028. [example1](https://www.elektroda.com/rtvforum/topic4056377.html) [example2](https://www.elektroda.com/rtvforum/topic4086986.html)
 -   T34 (flash as if [standard BK7231N](https://developer.tuya.com/en/docs/iot/t34-module-datasheet?id=Ka0l4h5zvg6j8)), see [flashing trick](https://www.elektroda.com/rtvforum/topic4036975.html)
 -   BL2028N ([BL2028N is a Belon version of BK7231N](https://www.elektroda.com/rtvforum/viewtopic.php?p=20262533#20262533))
+-   BK7236
 -   BK7238 (eg XH-CB3S) (see [tutorial for 1$ board](https://www.elektroda.com/rtvforum/topic4106397.html#21440428))
+-   BK7239N (eg HLK-B300)
+-   T1 (eg T1-3S, T1-U), see BK7238
+-   T2 (eg T2-U), see BK7231N
+-   T3 (eg T3-3S, T3-U), see BK7236
+-   T7 (eg T7-U), see BK7239N
 -   BK7231S/BK7231U - BK7231S is the original non-Tuya version of BK7231T. BK7231U is a version intended for cameras/displays. Usually comes with 00000000 keys. If flashing via SPI, can be updated to use BK7231T firmware built with zero keys. (eg C-8133U [LED driver boards](https://www.elektroda.com/rtvforum/topic4071547.html), HLK-B30 [Dev Board](https://fccid.io/2AD56HLK-B30/User-Manual/User-Manual-4894335.pdf))
 -   [XR809](https://www.elektroda.com/rtvforum/topic3806769.html) (eg [XR3](https://developer.tuya.com/en/docs/iot/xr3-datasheet?id=K98s9168qi49g)) ([Example](https://www.elektroda.com/rtvforum/topic4063735.html))
 -   XR806 (eg T103C-HL, [WXU](https://developer.tuya.com/en/docs/iot/wxu-module-datasheet?id=Kc2xk9qlk04so), Allwinner [Dev Board](https://www.elektroda.com/rtvforum/topic4109971.html), see [development thread](https://www.elektroda.com/rtvforum/topic4118139.html))
@@ -20,7 +26,7 @@ Although this repository is named `OpenBK7231T_App`, it has evolved into a multi
 -   [T6605](https://www.elektroda.com/rtvforum/viewtopic.php?p=21721681#21721681) Flash as WinnerMicro W600
 -   [LN882H](https://www.elektroda.com/rtvforum/topic4027545.html) by Lightning Semi - [datasheet](https://www.elektroda.com/rtvforum/topic4027545.html), see [flashing how-to](https://www.elektroda.com/rtvforum/topic4028087.html), see [sample device teardown and flashing](https://www.elektroda.com/rtvforum/topic4032240.html), see [new flash tool](https://www.elektroda.com/rtvforum/topic4045532.html), see [dev board](https://www.elektroda.com/rtvforum/topic4050274.html)
 -   Windows, via [simulator](https://www.elektroda.com/rtvforum/topic4046056.html)
--   ESP32 (original), ESP32-S2, ESP32-S3, ESP32-C2, ESP32-C3, ESP32-C6 (working well - guide to be released soon, [development topic](https://www.elektroda.com/rtvforum/topic4074860.html))
+-   ESP32 (original), ESP32-S2, ESP32-S3, ESP32-C2, ESP32-C3, ESP32-C5, ESP32-C6, ESP32-C61 [development topic](https://www.elektroda.com/rtvforum/topic4074860.html))
 -   ESP8266/ESP8285 (1MB variant without OTA, 2MB or more with OTA)
 -   RTL8711AM (Ameba1 family, with SDRAM only. Can't be flashed via UART, only JTAG or SPI) (eg [WRG1](https://developer.tuya.com/en/docs/iot/wrg1-datasheet?id=K97rig6mscj8e), see [development thread](https://www.elektroda.com/rtvforum/viewtopic.php?p=21452754#21452754))
 -   RTL8710B (AmebaZ family) (eg [T102_V1.0](https://fccid.io/2ASKS-T102), [W302/T102_V1.0](https://fcc.report/FCC-ID/2AU7O-T102V11), [T112_V1.1](https://fccid.io/2AU7O-T102V11), [WR2](https://developer.tuya.com/en/docs/iot/wifiwr2module?id=K9605tko0juc3), [WR3E](https://developer.tuya.com/en/docs/iot/wr3e-module-datasheet?id=K9elwlqbfosbc), BW14)
@@ -34,6 +40,9 @@ Although this repository is named `OpenBK7231T_App`, it has evolved into a multi
 -   TXW81X (eg TXW817-810, see [development thread](https://www.elektroda.com/rtvforum/topic4033757.html))
 -   RDA5981 (eg RDA5981AM, RDA5981BM, WRD2L, TYWRD3S, HLK-M50, see [development thread](https://www.elektroda.com/rtvforum/topic4105474.html), see [guide](https://www.elektroda.com/rtvforum/topic4148573.html))
 -   LN8825B (eg SCW-T503)
+-   BL616/BL618 (eg Ai-M62-12F, Ai-M61-32S)
+-   GD32VW553 (eg GD32VW553-MINI, GD32VW553-UNIFI)
+-   RTL8196C (Realtek MIPS router SoC with SDRAM, as found in many cheap home routers, eg Cyfrowy Polsat LT-6408n; WiFi AP/STA and Ethernet, OTA via web/TCP, runs with LittleFS, FTP and SMB drivers, see [development thread](https://www.elektroda.com/rtvforum/topic4179473.html) and [router teardown and bootloader analysis](https://www.elektroda.com/rtvforum/topic4173841.html))
 
 Please use automatically compiled binaries from the Releases tab. To build OpenBeken yourself for any supported platform, fork our version of the submodule SDK first, and then check out this app repository alongside it. Details further down. Alternatively consider using the easier [override method.](https://www.elektroda.com/rtvforum/topic4082682.html)
 
@@ -101,6 +110,7 @@ OpenBeken features:
 -   Easily configurable via commands (see [tutorial](https://www.elektroda.com/rtvforum/topic3947241.html))
 -   Thanks to keeping Tasmota standard, OBK has basic compatibility with [ioBroker](https://www.youtube.com/watch?v=x4p3JHXbK1E&ab_channel=Elektrodacom) and similar systems through TELE/STAT/CMND MQTT packets, Tasmota Control app is also supported
 -   [DDP lighting protocol support](https://www.elektroda.com/rtvforum/topic4040325.html) ("startDriver DDP" in autoexec.bat/short startup command), works with xLights,
+-   FTP server driver ("startDriver FTP", RFC 959) and SMB2 network share driver ("startDriver SMB", port 445) giving transparent access to LittleFS and mounted VFS volumes (such as USB drives) from Windows/Linux/macOS file managers (currently enabled for RTL8196C and the simulator, can be enabled per platform in obk_config.h)
 -   Can be scripted to even [work with shutters](https://www.elektroda.com/rtvforum/topic3972935.html), see also [second shutters script](https://www.elektroda.com/rtvforum/viewtopic.php?p=20910126#20910126)
 -   Password-protected Web security [see tutorial](https://www.elektroda.com/rtvforum/topic4021160.html)
 -   Advanced deep sleep with GPIO/timer wakeup and [hybrid power save systems](https://youtu.be/eupL16eB7BA), fully scriptable, can be configured to last longer than Tuya
@@ -121,7 +131,7 @@ There is also a bit more outdated [WIKI](https://github.com/openshwprojects/Open
 
 # Building
 
-OpenBeken supports [online builds](https://www.elektroda.com/rtvforum/viewtopic.php?p=20946719#20946719) for all platforms (BK7231T, BK7231N, BK7238, XR809, BL602, W600, W800, ESP32, RTL8710A, RTL8710B, RTL87X0C, RTL8720D/CS, TR6260, ECR6600, LN882H), but if you want to compile it yourself, see [BUILDING.md](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/BUILDING.md)
+OpenBeken supports [online builds](https://www.elektroda.com/rtvforum/viewtopic.php?p=20946719#20946719) for all platforms, but if you want to compile it yourself, see [BUILDING.md](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/BUILDING.md)
 
 # Developer Guides
 
@@ -133,7 +143,7 @@ OpenBeken supports [online builds](https://www.elektroda.com/rtvforum/viewtopic.
 
 # Flashing
 
-See our [GUI easy flash tool](https://github.com/openshwprojects/BK7231GUIFlashTool) for BK7231N, BK7231T, BK7231M, BK7238, BK7252N, BK7252U, BL2028N, T34, BL602, ECR6600, LN882H, RDA5981, RTL8710B, RTL8710C, RTL8720D / RTL8720CS, W800, and W600 (write-only). Also see [FLASHING.md](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/FLASHING.md)
+See our [GUI easy flash tool](https://github.com/openshwprojects/BK7231GUIFlashTool) for BK7231N, BK7231T, BK7231M, BK7231U, BK7236, BK7238, BK7239N, BK7252N, BK7252U, BL602, BL616, ECR6600, ESP32 (and variants), ESP8266, GD32VW553, LN882H, LN8825, RDA5981, RTL8710B, RTL87x0C, RTL8720D, RTL87x1DA, RTL87x0E, TR6260, W800, W600 (write-only), XR806, XR809, XR872. Also see [FLASHING.md](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/FLASHING.md)
 
 Repository of flash tools for [all other supported platforms](https://github.com/openshwprojects/FlashTools/tree/main)
 

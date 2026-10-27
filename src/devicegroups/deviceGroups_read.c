@@ -110,7 +110,7 @@ int DGR_Parse(const byte *data, int len, dgrDevice_t *dev, struct sockaddr *addr
 						addLogAdv(LOG_DEBUG, LOG_FEATURE_DGR,"[OFF]");
 					}
 				}
-				addLogAdv(LOG_DEBUG, LOG_FEATURE_DGR,"\n");
+				addLogAdv(LOG_DEBUG, LOG_FEATURE_DGR,"");
 			} else {
 				MSG_SkipBytes(&msg,4);
 			}

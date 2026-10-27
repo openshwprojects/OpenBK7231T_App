@@ -240,7 +240,7 @@ void HAL_PrintNetworkInfo()
 			ap_info.dhcp_mode,
 			get_security_type(ap_info.security)
 			);
-		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "ip=%s,gate=%s,mask=%s,dns=%s\r\n",
+		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "ip=%s,gate=%s,mask=%s,dns=%s",
 			ap_info.local_ip_addr,
 			ap_info.gateway_ip_addr,
 			ap_info.net_mask,
@@ -297,7 +297,7 @@ void wl_status(void* ctxt)
 {
 
 	rw_evt_type stat = *((rw_evt_type*)ctxt);
-	//ADDLOGF_INFO("wl_status %d\r\n", stat);
+	//ADDLOGF_INFO("wl_status %d", stat);
 
 	switch (stat) {
 	case RW_EVT_STA_IDLE:
@@ -395,7 +395,7 @@ void HAL_ConnectToWiFi(const char* oob_ssid, const char* connect_key, obkStaticI
 	}
 	network_cfg.wifi_retry_interval = 100;
 
-	//ADDLOGF_INFO("ssid:%s key:%s\r\n", network_cfg.wifi_ssid, network_cfg.wifi_key);
+	//ADDLOGF_INFO("ssid:%s key:%s", network_cfg.wifi_ssid, network_cfg.wifi_key);
 
 	bk_wlan_start_sta(&network_cfg);
 }
@@ -474,7 +474,7 @@ int HAL_SetupWiFiOpenAccessPoint(const char* ssid)
 	strcpy((char*)wNetConfig.dns_server_ip_addr, APP_DRONE_DEF_NET_GW);
 
 
-	ADDLOGF_INFO("no flash configuration, use default\r\n");
+	ADDLOGF_INFO("no flash configuration, use default");
 	mac = (unsigned char*)&ap_info.bssid.array;
 	// this is MAC for Access Point, it's different than Client one
 	// see wifi_get_mac_address source
@@ -503,7 +503,7 @@ int HAL_SetupWiFiOpenAccessPoint(const char* ssid)
 
 	if (1)
 	{
-		ADDLOGF_INFO("set ip info: %s,%s,%s\r\n",
+		ADDLOGF_INFO("set ip info: %s,%s,%s",
 			wNetConfig.local_ip_addr,
 			wNetConfig.net_mask,
 			wNetConfig.dns_server_ip_addr);
@@ -511,7 +511,7 @@ int HAL_SetupWiFiOpenAccessPoint(const char* ssid)
 
 	if (1)
 	{
-		ADDLOGF_INFO("ssid:%s  key:%s mode:%d\r\n", wNetConfig.wifi_ssid, wNetConfig.wifi_key, wNetConfig.wifi_mode);
+		ADDLOGF_INFO("ssid:%s key:%s mode:%d", wNetConfig.wifi_ssid, wNetConfig.wifi_key, wNetConfig.wifi_mode);
 	}
 	//{
 	//	IPStatusTypedef ipStatus;
