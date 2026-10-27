@@ -7,7 +7,7 @@ set -eu
 ROOT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
 SDK_ROOT="$ROOT_DIR/sdk/OpenTXW81X"
 PROJECT_DIR="$SDK_ROOT/project"
-PACKER="$ROOT_DIR/tools/txw81x_pack/txw81x_pack.py"
+PACKER="$ROOT_DIR/platforms/TXW81X/txw81x_pack.py"
 LOADER="$SDK_ROOT/sdk/chip/txw81x/loader_compress.bin"
 PYTHON=${PYTHON:-python3}
 
