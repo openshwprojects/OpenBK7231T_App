@@ -1,0 +1,3 @@
+# Keep runtime assertion checks, but omit their verbose strings so the 2 MB
+# variant fits both OTA partitions. Use the abort address to locate failures.
+CONFIG_COMPILER_OPTIMIZATION_ASSERTIONS_SILENT=y
