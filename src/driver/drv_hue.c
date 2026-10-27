@@ -23,10 +23,12 @@
 // Relay enumeration and MAC-derived light IDs adapted from Switch-Gang.
 
 static char *buffer_out = 0;
-static char *g_serial = 0;
-static char *g_userID = 0;
-static char *g_uid = 0;
-static char *g_bridgeID = 0;
+// Fixed-size bridge identities need no heap allocations. The Hue username is
+// the final three MAC bytes, i.e. the last six characters of the serial number.
+static char g_serial[13];
+static const char *const g_userID = g_serial + 6;
+static char g_uid[37];
+static char g_bridgeID[17];
 static unsigned int g_lightBase;
 static char g_lightMAC[18];
 static int outBufferLen = 0;
@@ -47,25 +49,10 @@ const  char *hue_resp = "HTTP/1.1 200 OK\r\n"
    "SERVER: Linux/3.14.0 UPnP/1.0 IpBridge/1.24.0\r\n"  // was 1.17
    "hue-bridgeid: %s\r\n";
 
-// ARGUMENTS: uuid
-const  char *hue_resp1 = "ST: upnp:rootdevice\r\n"
-  "USN: uuid:%s::upnp:rootdevice\r\n"
-  "\r\n";
-
-// ARGUMENTS: uuid and uuid
-const  char *hue_resp2 =  "ST: uuid:%s\r\n"
-   "USN: uuid:%s\r\n"
-   "\r\n";
-
-// ARGUMENTS: uuid
-const  char *hue_resp3 = "ST: urn:schemas-upnp-org:device:Basic:1\r\n"
-   "USN: uuid:%s::urn:schemas-upnp-org:device:Basic:1\r\n"
-   "\r\n";
-
 void DRV_HUE_Send_Advert_To(struct sockaddr_in *addr) {
-	const char *tails[] = { hue_resp1, hue_resp2, hue_resp3 };
+	const char *targets[] = { "upnp:rootdevice", g_uid, "urn:schemas-upnp-org:device:Basic:1" };
 	int i, headerLen;
-	if (!g_uid)
+	if (!g_uid[0])
 		return;
 	stat_searchesReceived++;
 	if (!buffer_out) {
@@ -79,7 +66,9 @@ void DRV_HUE_Send_Advert_To(struct sockaddr_in *addr) {
 		headerLen = snprintf(buffer_out, outBufferLen, hue_resp, HAL_GetMyIPString(), g_bridgeID);
 		if (headerLen < 0 || headerLen >= outBufferLen)
 			return;
-		snprintf(buffer_out + headerLen, outBufferLen - headerLen, tails[i], g_uid, g_uid);
+		snprintf(buffer_out + headerLen, outBufferLen - headerLen,
+			"ST: %s%s\r\nUSN: uuid:%s%s%s\r\n\r\n", i == 1 ? "uuid:" : "", targets[i], g_uid,
+			i == 1 ? "" : "::", i == 1 ? "" : targets[i]);
 		DRV_SSDP_SendReply(addr, buffer_out);
 	}
 }
@@ -123,7 +112,6 @@ const char *g_hue_setup_5 = "</UDN>"
    "\r\n";
 
 static int HUE_Setup(http_request_t* request) {
-	addLogAdv(LOG_INFO, LOG_FEATURE_HTTP, "HUE description.xml requested");
 	http_setup(request, httpMimeTypeXML);
 	poststr(request, g_hue_setup_1);
 	poststr(request, HAL_GetMyIPString());
@@ -152,13 +140,17 @@ static unsigned int HUE_LightId(int ch) {
 	return g_lightBase | (unsigned int)(ch + 1);
 }
 
-static int HUE_Error(http_request_t *request, int type, const char *description) {
-	addLogAdv(LOG_WARN, LOG_FEATURE_HTTP, "HUE error %d at %s: %s", type, request->url, description);
+static int HUE_Error(http_request_t *request, int type) {
+	// Share standard descriptions instead of storing a string at each call site.
+	static const char *const descriptions[] = {
+		"", "", "Invalid request body", "Resource not available",
+		"Method not available", "", "Parameter not available", "Invalid value"
+	};
 	http_setup(request, httpMimeTypeJson);
 	hprintf255(request, "[{\"error\":{\"type\":%d,\"address\":\"/", type);
 	poststr_escapedForJSON(request, request->url);
 	poststr(request, "\",\"description\":\"");
-	poststr(request, description);
+	poststr(request, descriptions[type]);
 	poststr(request, "\"}}]");
 	poststr(request, NULL);
 	return 1;
@@ -200,15 +192,14 @@ static void HUE_PrintLights(http_request_t *request) {
 }
 
 static void HUE_PrintConfig(http_request_t *request) {
-	unsigned char mac[8];
-	WiFI_GetMacAddress((char*)mac);
 	poststr(request, "{\"name\":\"");
 	poststr_escapedForJSON(request, (char*)CFG_GetDeviceName());
-	hprintf255(request, "\",\"mac\":\"%02x:%02x:%02x:%02x:%02x:%02x\",\"dhcp\":true,",
-		mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
-	hprintf255(request, "\"ipaddress\":\"%s\",\"bridgeid\":\"%s\",", HAL_GetMyIPString(), g_bridgeID);
-	hprintf255(request, "\"swversion\":\"01041302\",\"apiversion\":\"1.17.0\","
-		"\"linkbutton\":true,\"portalservices\":false,\"whitelist\":{\"%s\":{\"name\":\"Alexa\"}}}", g_userID);
+	// Even with a 15-character IPv4 address this fragment fits hprintf255.
+	hprintf255(request, "\",\"mac\":\"%s\",\"dhcp\":true,"
+		"\"ipaddress\":\"%s\",\"bridgeid\":\"%s\","
+		"\"swversion\":\"01041302\",\"apiversion\":\"1.17.0\","
+		"\"linkbutton\":true,\"portalservices\":false,\"whitelist\":{\"%s\":{\"name\":\"Alexa\"}}}",
+		g_lightMAC, HAL_GetMyIPString(), g_bridgeID, g_userID);
 }
 
 static int HUE_SkipSpace(const char *body, int pos, int length) {
@@ -220,80 +211,75 @@ static int HUE_SkipSpace(const char *body, int pos, int length) {
 
 static int HUE_SetStateComplete(http_request_t *request, int ch) {
 	jsmn_parser parser;
-	jsmntok_t tokens[32];
+	// Object plus two key/value pairs: on and optional transitiontime.
+	jsmntok_t tokens[5];
 	const char *body = request->bodystart;
 	int count, i, pos, on = -1, transition = -1;
 	if (!body || request->bodylen <= 0 || request->bodylen < request->contentLength)
-		return HUE_Error(request, 2, "Missing or incomplete JSON body");
-	addLogAdv(LOG_INFO, LOG_FEATURE_HTTP, "HUE state JSON: %.*s", request->bodylen < 160 ? request->bodylen : 160, body);
+		return HUE_Error(request, 2);
 	jsmn_init(&parser);
-	count = jsmn_parse(&parser, body, request->bodylen, tokens, 32);
+	count = jsmn_parse(&parser, body, request->bodylen, tokens, sizeof(tokens) / sizeof(tokens[0]));
 	if (count < 1 || tokens[0].type != JSMN_OBJECT || count != 1 + 2 * tokens[0].size)
-		return HUE_Error(request, 2, "Invalid state object");
+		return HUE_Error(request, 2);
 	// jsmn tokenizes permissively; also check JSON separators and trailing data.
 	pos = HUE_SkipSpace(body, 0, request->bodylen);
 	if (pos != tokens[0].start)
-		return HUE_Error(request, 2, "Invalid JSON object");
+		return HUE_Error(request, 2);
 	pos++;
 	for (i = 1; i < count; i += 2) {
 		pos = HUE_SkipSpace(body, pos, request->bodylen);
 		if (tokens[i].type != JSMN_STRING || pos != tokens[i].start - 1)
-			return HUE_Error(request, 2, "Invalid JSON property");
+			return HUE_Error(request, 2);
 		pos = HUE_SkipSpace(body, tokens[i].end + 1, request->bodylen);
 		if (pos >= request->bodylen || body[pos++] != ':')
-			return HUE_Error(request, 2, "Missing JSON colon");
+			return HUE_Error(request, 2);
 		pos = HUE_SkipSpace(body, pos, request->bodylen);
 		if (pos != tokens[i + 1].start - (tokens[i + 1].type == JSMN_STRING))
-			return HUE_Error(request, 2, "Invalid JSON value");
+			return HUE_Error(request, 2);
 		pos = tokens[i + 1].end + (tokens[i + 1].type == JSMN_STRING);
 		pos = HUE_SkipSpace(body, pos, request->bodylen);
 		if (i + 2 < count) {
 			if (pos >= request->bodylen || body[pos++] != ',')
-				return HUE_Error(request, 2, "Missing JSON comma");
+				return HUE_Error(request, 2);
 		}
-	}
-	pos = HUE_SkipSpace(body, pos, request->bodylen);
-	if (pos >= request->bodylen || body[pos++] != '}'
-		|| HUE_SkipSpace(body, pos, request->bodylen) != request->bodylen)
-		return HUE_Error(request, 2, "Invalid JSON terminator");
-	// Validate every field before touching the hardware. Match complete boolean
-	// tokens, accepting whitespace and property ordering without substring hacks.
-	for (i = 1; i < count; i += 2) {
 		jsmntok_t *value = &tokens[i + 1];
 		int len = value->end - value->start;
 		if (jsoneq(body, &tokens[i], "transitiontime") == 0) {
 			int digit;
 			if (transition != -1 || value->type != JSMN_PRIMITIVE || len < 1 || len > 5)
-				return HUE_Error(request, 7, "Invalid transitiontime");
+				return HUE_Error(request, 7);
 			transition = 0;
 			for (digit = 0; digit < len; digit++) {
 				char c = body[value->start + digit];
 				if (c < '0' || c > '9')
-					return HUE_Error(request, 7, "Invalid transitiontime");
+					return HUE_Error(request, 7);
 				transition = transition * 10 + c - '0';
 			}
 			if (transition > 65535 || (len > 1 && body[value->start] == '0'))
-				return HUE_Error(request, 7, "Invalid transitiontime");
+				return HUE_Error(request, 7);
 			// Binary relays have no fade: accept Hue timing metadata and switch immediately.
 			continue;
 		}
 		if (jsoneq(body, &tokens[i], "on") != 0)
-			return HUE_Error(request, 6, "Parameter not available for an On/Off light");
+			return HUE_Error(request, 6);
 		if (on != -1 || value->type != JSMN_PRIMITIVE)
-			return HUE_Error(request, 7, "Invalid on value");
+			return HUE_Error(request, 7);
 		if (len == 4 && !memcmp(body + value->start, "true", 4))
 			on = 1;
 		else if (len == 5 && !memcmp(body + value->start, "false", 5))
 			on = 0;
 		else
-			return HUE_Error(request, 7, "Expected a boolean on value");
+			return HUE_Error(request, 7);
 	}
+	pos = HUE_SkipSpace(body, pos, request->bodylen);
+	if (pos >= request->bodylen || body[pos++] != '}'
+		|| HUE_SkipSpace(body, pos, request->bodylen) != request->bodylen)
+		return HUE_Error(request, 2);
 	if (on == -1)
-		return HUE_Error(request, 6, "Missing on parameter");
+		return HUE_Error(request, 6);
 	CHANNEL_Set(ch, on, 0);
 	stat_eventsReceived++;
 	http_setup(request, httpMimeTypeJson);
-	addLogAdv(LOG_INFO, LOG_FEATURE_HTTP, "HUE channel %d set to %d", ch, on);
 	hprintf255(request, "[{\"success\":{\"/lights/%u/state/on\":%s}}", HUE_LightId(ch), on ? "true" : "false");
 	if (transition != -1)
 		hprintf255(request, ",{\"success\":{\"/lights/%u/state/transitiontime\":%d}}", HUE_LightId(ch), transition);
@@ -312,10 +298,10 @@ static int HUE_SetState(http_request_t *request, int ch) {
 	if (length <= have)
 		return HUE_SetStateComplete(request, ch);
 	if (length > 512 || have < 0 || request->fd <= 0)
-		return HUE_Error(request, 2, "Invalid or incomplete state body");
+		return HUE_Error(request, 2);
 	body = malloc(length + 1);
 	if (!body)
-		return HUE_Error(request, 2, "No memory for state body");
+		return HUE_Error(request, 2);
 	if (have && request->bodystart)
 		memcpy(body, request->bodystart, have);
 	while (have < length) {
@@ -332,7 +318,7 @@ static int HUE_SetState(http_request_t *request, int ch) {
 	}
 	if (have != length) {
 		free(body);
-		return HUE_Error(request, 2, "Incomplete state body");
+		return HUE_Error(request, 2);
 	}
 	body[length] = 0;
 	original = request->bodystart;
@@ -347,7 +333,7 @@ static int HUE_SetState(http_request_t *request, int ch) {
 }
 
 static bool HUE_IsNativeAPI(const char *path) {
-	const char *names[] = { "info", "pins", "channels", "channelTypes", "logconfig",
+	static const char *const names[] = { "info", "pins", "channels", "channelTypes", "logconfig",
 		"seriallog", "fsblock", "lfs", "run", "del", "flash", "bt_scan", "reboot", "ota", "cmnd" };
 	size_t i;
 	for (i = 0; i < sizeof(names) / sizeof(names[0]); i++) {
@@ -359,11 +345,16 @@ static bool HUE_IsNativeAPI(const char *path) {
 }
 
 static bool HUE_IsResource(const char *resource) {
-	return !strcmp(resource, "lights") || !strncmp(resource, "lights/", 7)
-		|| !strcmp(resource, "config") || !strcmp(resource, "groups")
-		|| !strcmp(resource, "schedules") || !strcmp(resource, "scenes")
-		|| !strcmp(resource, "sensors") || !strcmp(resource, "rules")
-		|| !strcmp(resource, "resourcelinks");
+	static const char *const names[] = { "lights", "config", "groups", "schedules",
+		"scenes", "sensors", "rules", "resourcelinks" };
+	size_t i;
+	if (!strncmp(resource, "lights/", 7))
+		return true;
+	for (i = 0; i < sizeof(names) / sizeof(names[0]); i++) {
+		if (!strcmp(resource, names[i]))
+			return true;
+	}
+	return false;
 }
 
 int HUE_APICall(http_request_t *request) {
@@ -371,7 +362,7 @@ int HUE_APICall(http_request_t *request) {
 	unsigned int id = 0;
 	int ch;
 	bool issuedUser;
-	if (!g_uid || !DRV_IsRunning("HUE") || !request->url)
+	if (!g_uid[0] || !DRV_IsRunning("HUE") || !request->url)
 		return 0;
 	path = request->url;
 	if (*path == '/')
@@ -383,7 +374,7 @@ int HUE_APICall(http_request_t *request) {
 		path++;
 	if (!*path) {
 		if (request->method != HTTP_POST)
-			return HUE_Error(request, 4, "Use POST to create a user");
+			return HUE_Error(request, 4);
 		http_setup(request, httpMimeTypeJson);
 		hprintf255(request, "[{\"success\":{\"username\":\"%s\"}}]", g_userID);
 		poststr(request, NULL);
@@ -397,23 +388,22 @@ int HUE_APICall(http_request_t *request) {
 	// must return Hue JSON instead of falling through to OpenBeken's REST UI.
 	if (!strcmp(path, "config") || !strcmp(path, "config/")) {
 		if (request->method != HTTP_GET)
-			return HUE_Error(request, 4, "Method not available");
-		addLogAdv(LOG_INFO, LOG_FEATURE_HTTP, "HUE discovery configuration requested");
+			return HUE_Error(request, 4);
 		http_setup(request, httpMimeTypeJson);
 		HUE_PrintConfig(request);
 		poststr(request, NULL);
 		return 1;
 	}
 	resource = strchr(path, '/');
-	issuedUser = (resource ? (size_t)(resource - path) : strlen(path)) == strlen(g_userID)
-		&& !strncmp(path, g_userID, strlen(g_userID));
+	issuedUser = (resource ? (size_t)(resource - path) : strlen(path)) == 6
+		&& !strncmp(path, g_userID, 6);
 	// Emulators accept placeholder/cached Hue usernames for Hue resources.
 	// Keep unrecognized API routes available to native OpenBeken handlers.
 	if (!issuedUser && (resource ? !HUE_IsResource(resource + 1) : strcmp(path, "nouser")))
 		return 0;
 	addLogAdv(LOG_INFO, LOG_FEATURE_HTTP, "HUE API method %d URL %s", request->method, request->url);
 	if (resource == path || !*path)
-		return HUE_Error(request, 3, "Missing username");
+		return HUE_Error(request, 3);
 	resource = resource ? resource + 1 : "";
 	if (!strncmp(resource, "lights/", 7)) {
 		path = resource + 7;
@@ -421,22 +411,19 @@ int HUE_APICall(http_request_t *request) {
 		while (*end >= '0' && *end <= '9') {
 			// IDs have at most 31 bits; bound each step before multiplication.
 			if (id > (2147483647u - (*end - '0')) / 10)
-				return HUE_Error(request, 3, "Invalid light ID");
+				return HUE_Error(request, 3);
 			id = id * 10 + (*end++ - '0');
 		}
 		ch = (int)(id & 127) - 1;
 		if (end == path || !HUE_IsLight(ch) || id != HUE_LightId(ch))
-			return HUE_Error(request, 3, "Light does not exist");
+			return HUE_Error(request, 3);
 		if (!strcmp(end, "/state") && request->method == HTTP_PUT) {
-			addLogAdv(LOG_INFO, LOG_FEATURE_HTTP, "HUE PUT %s body %d/%d: %.*s", request->url,
-				request->bodylen, request->contentLength, request->bodylen < 160 ? request->bodylen : 160,
-				request->bodystart ? request->bodystart : "");
 			return HUE_SetState(request, ch);
 		}
 		if (request->method != HTTP_GET)
-			return HUE_Error(request, 4, "Method not available");
+			return HUE_Error(request, 4);
 		if (*end && strcmp(end, "/state"))
-			return HUE_Error(request, 3, "Resource does not exist");
+			return HUE_Error(request, 3);
 		http_setup(request, httpMimeTypeJson);
 		if (*end)
 			HUE_PrintState(request, ch);
@@ -444,9 +431,9 @@ int HUE_APICall(http_request_t *request) {
 			HUE_PrintLight(request, ch);
 	} else {
 		if (request->method != HTTP_GET)
-			return HUE_Error(request, 4, "Method not available");
+			return HUE_Error(request, 4);
 		if (*resource && !HUE_IsResource(resource))
-			return HUE_Error(request, 3, "Resource does not exist");
+			return HUE_Error(request, 3);
 		http_setup(request, httpMimeTypeJson);
 		if (!*resource) {
 			poststr(request, "{\"lights\":");
@@ -467,30 +454,14 @@ int HUE_APICall(http_request_t *request) {
 
 // Startup: backlog startDriver SSDP; startDriver Hue
 void HUE_Init() {
-	char tmp[64];
 	unsigned char mac[8];
-	if (g_uid)
+	if (g_uid[0])
 		return;
 	WiFI_GetMacAddress((char*)mac);
 	snprintf(g_lightMAC, sizeof(g_lightMAC), "%02x:%02x:%02x:%02x:%02x:%02x", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
 	g_lightBase = (((unsigned int)mac[3] << 16) | ((unsigned int)mac[4] << 8) | mac[5]) << 7;
-	snprintf(tmp, sizeof(tmp), "%02X%02X%02X", mac[3], mac[4], mac[5]);
-	g_userID = strdup(tmp);
-	snprintf(tmp, sizeof(tmp), "%02X%02X%02X%02X%02X%02X", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
-	g_serial = strdup(tmp);
-	snprintf(tmp, sizeof(tmp), "%02X%02X%02XFFFE%02X%02X%02X", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
-	g_bridgeID = strdup(tmp);
-	if (!g_userID || !g_serial || !g_bridgeID) {
-		free(g_userID); free(g_serial); free(g_bridgeID);
-		g_userID = g_serial = g_bridgeID = NULL;
-		return;
-	}
-	snprintf(tmp, sizeof(tmp), "f6543a06-da50-11ba-8d8f-%s", g_serial);
-	g_uid = strdup(tmp);
-	if (!g_uid) {
-		free(g_userID); free(g_serial); free(g_bridgeID);
-		g_userID = g_serial = g_bridgeID = NULL;
-		return;
-	}
+	snprintf(g_serial, sizeof(g_serial), "%02X%02X%02X%02X%02X%02X", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+	snprintf(g_bridgeID, sizeof(g_bridgeID), "%.6sFFFE%s", g_serial, g_userID);
+	snprintf(g_uid, sizeof(g_uid), "f6543a06-da50-11ba-8d8f-%s", g_serial);
 	HTTP_RegisterCallback("/description.xml", HTTP_GET, HUE_Setup, 0);
 }

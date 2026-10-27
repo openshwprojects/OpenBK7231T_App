@@ -3,13 +3,14 @@ int running = 3, values[CHANNEL_MAX], outputs[CHANNEL_MAX];
 static char response[32768], packets[8][1024];
 static int packetCount, finishes;
 int test_fd = 0;
+char test_ip[16] = "192.0.2.10";
 static int (*wemoEvent)(http_request_t*), (*wemoSetup)(http_request_t*);
 const char httpMimeTypeJson[] = "application/json", httpMimeTypeXML[] = "text/xml";
 void HUE_Init(void);
 void WEMO_Init(void);
 int HUE_APICall(http_request_t*);
 bool DRV_IsRunning(const char *name) { return running & (!strcasecmp(name,"HUE") ? 1 : 2); }
-const char *HAL_GetMyIPString(void) { return "192.0.2.10"; }
+const char *HAL_GetMyIPString(void) { return test_ip; }
 void WiFI_GetMacAddress(char *mac) { const unsigned char m[] = {0x50,0x12,0x34,0xff,0xff,0xff}; memcpy(mac,m,6); }
 const char *CFG_GetDeviceName(void) { return "Switch & \"Salon\""; }
 bool CHANNEL_HasLabel(int ch) { return ch == 1; }
@@ -30,7 +31,7 @@ int poststr(http_request_t *r,const char *s) {
 }
 // Match firmware's 255-character formatting limit.
 int hprintf255(http_request_t *r,const char *fmt,...) {
- char b[256]; va_list ap; va_start(ap,fmt); vsnprintf(b,sizeof(b),fmt,ap); va_end(ap); return poststr(r,b);
+ char b[256]; va_list ap; va_start(ap,fmt); vsnprintf(b,255,fmt,ap); va_end(ap); return poststr(r,b);
 }
 void poststr_escapedForJSON(http_request_t *r,char *s) {
  for (;*s;s++) { char b[8]; if (*s=='"'||*s=='\\') { b[0]='\\';b[1]=*s;b[2]=0; }
@@ -56,7 +57,7 @@ const char *call(int wemo,int method,const char *url,const char *body,int length
  if(response[0] && finishes!=1) abort();
  return response;
 }
-void reset(void) { memset(values,0,sizeof(values));memset(outputs,0,sizeof(outputs));outputs[1]=1;outputs[2]=1;outputs[63]=2;running=3;packetCount=0; }
+void reset(void) { memset(values,0,sizeof(values));memset(outputs,0,sizeof(outputs));outputs[1]=1;outputs[2]=1;outputs[63]=2;running=3;packetCount=0;strcpy(test_ip,"192.0.2.10"); }
 void init(void) { HUE_Init(); WEMO_Init(); }
 const char *packet(int i) { return i<packetCount?packets[i]:NULL; }
 

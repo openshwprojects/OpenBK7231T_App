@@ -56,7 +56,7 @@ class Alexa(unittest.TestCase):
         return json.loads(self.call('api/FFFFFF/lights'))
 
     def test_auth_and_routes(self):
-        self.assertIn('username', json.loads(self.call('/api', 'POST', '{}'))[0]['success'])
+        self.assertEqual('FFFFFF', json.loads(self.call('/api', 'POST', '{}'))[0]['success']['username'])
         self.assertIn('username', json.loads(self.call('api/', 'POST', '{}'))[0]['success'])
         self.assertEqual('', self.call('apiary'))
         for url in ('api', 'api/FFFFFF/missing', 'api/FFFFFF/lights/nope', 'api/FFFFFF/lights/99999999999999'):
@@ -135,6 +135,19 @@ class Alexa(unittest.TestCase):
             self.assertIn('error', reply[0])
             self.assertEqual(0, self.values[1])
 
+    def test_state_validation_is_atomic(self):
+        i = next(iter(self.lights()))
+        for body in ('{"on":true,"transitiontime":0} trailing',
+                     '{"on":true,"transitiontime":0,}',
+                     '{"on":true "transitiontime":0}',
+                     '{"transitiontime":0,"on":true,}',
+                     '{"on":true,"transitiontime":0,"transitiontime":1}'):
+            with self.subTest(body=body):
+                reply = json.loads(self.call(f'api/FFFFFF/lights/{i}/state', 'PUT', body))
+                self.assertIn('error', reply[0])
+                self.assertTrue(reply[0]['error']['description'])
+                self.assertEqual([0]*64, list(self.values))
+
     def test_fragmented_body(self):
         i = next(iter(self.lights()))
         for prefix in (b'', b'{"on":'):
@@ -170,9 +183,18 @@ class Alexa(unittest.TestCase):
         self.assertEqual(self.lights(), all_data['lights'])
         self.assertEqual('192.0.2.10', all_data['config']['ipaddress'])
         self.assertEqual('501234FFFEFFFFFF', all_data['config']['bridgeid'])
+        self.assertEqual('50:12:34:ff:ff:ff', all_data['config']['mac'])
         self.assertEqual(all_data['config'], json.loads(self.call('api/FFFFFF/config')))
         for name in ('groups', 'schedules', 'scenes', 'sensors', 'rules', 'resourcelinks'):
             self.assertEqual({}, json.loads(self.call('api/FFFFFF/'+name)))
+
+    def test_config_fits_http_format_buffer(self):
+        ip = (c.c_char * 16).in_dll(lib, 'test_ip')
+        ip.value = b'255.255.255.255'
+        config = json.loads(self.call('api/config'))
+        self.assertEqual('255.255.255.255', config['ipaddress'])
+        self.assertEqual({'FFFFFF': {'name': 'Alexa'}}, config['whitelist'])
+        self.assertEqual(config, json.loads(self.call('api/FFFFFF'))['config'])
 
     def test_stopped_driver_and_reinit(self):
         c.c_int.in_dll(lib, 'running').value = 0
@@ -183,6 +205,8 @@ class Alexa(unittest.TestCase):
 
     def test_hue_discovery_datagrams(self):
         lib.DRV_HUE_Send_Advert_To(None)
+        uuid = 'f6543a06-da50-11ba-8d8f-501234FFFFFF'
+        targets = ('upnp:rootdevice', 'uuid:'+uuid, 'urn:schemas-upnp-org:device:Basic:1')
         for i in range(3):
             data = lib.packet(i).decode()
             self.assertTrue(data.startswith('HTTP/1.1 200 OK\r\n'))
@@ -191,6 +215,9 @@ class Alexa(unittest.TestCase):
             self.assertIn('\r\nST: ', data)
             self.assertIn('\r\nUSN: uuid:', data)
             self.assertTrue(data.endswith('\r\n\r\n'))
+            self.assertIn(f'\r\nST: {targets[i]}\r\n', data)
+            suffix = '' if i == 1 else '::'+targets[i]
+            self.assertIn(f'\r\nUSN: uuid:{uuid}{suffix}\r\n', data)
             if i == 2:
                 self.assertIn('::urn:schemas-upnp-org:device:Basic:1\r\n', data)
 
