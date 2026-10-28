@@ -441,7 +441,7 @@ void IR_Proxy_Init(void)
 	if(recvpin == -1 && sendpin == -1) return;
 
 	float real_period;
-	ir_chan = HAL_RequestHWTimer(30, &real_period, DRV_IR_Proxy_ISR, NULL);
+	ir_chan = HAL_RequestHWTimer(50, &real_period, DRV_IR_Proxy_ISR, NULL);
 
 	tick_us = real_period;
 	frame_gap_ticks = (uint32_t)(IR_FRAME_GAP_US / real_period + 0.5f);
