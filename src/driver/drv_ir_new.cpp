@@ -13,6 +13,7 @@ extern "C" {
 #include "../logging/logging.h"
 #include "../obk_config.h"
 #include "../cmnds/cmd_public.h"
+#include "../httpserver/hass.h"
 #include "../hal/hal_pins.h"
 #include "../hal/hal_generic.h"
 #include "../hal/hal_hwtimer.h"
@@ -166,7 +167,7 @@ SpoofIrReceiver IrReceiver;
 #include "../libraries/IRremoteESP8266/src/IRsend.h"
 #include "../libraries/IRremoteESP8266/src/IRrecv.h"
 #include "../libraries/IRremoteESP8266/src/IRutils.h"
-#ifdef ENABLE_IRAC
+#ifdef ENABLE_IRAC_DESCRIBE
 #include "../libraries/IRremoteESP8266/src/IRac.h"
 #endif
 #include "../libraries/IRremoteESP8266/src/IRproto.h"
@@ -177,7 +178,9 @@ SpoofIrReceiver IrReceiver;
 // we simply note the numbers into a rolling buffer, assume the first is a mark()
 // and then every 50us service the rolling buffer, changing the PWM from 0 duty to 50% duty
 // appropriately.
-#define SEND_MAXBITS 128
+// a 128 bit Fujitsu A/C frame needs ~260 queue entries, so make the queue bigger than drv_ir.h's default
+#undef SEND_MAXBITS
+#define SEND_MAXBITS 192
 
 class myIRsend : public IRsend {
 public:
@@ -185,6 +188,7 @@ public:
 		sendPin = aSendPin;
 		our_us = 0;
 		our_ms = 0;
+		lastduty = -1;
 		resetsendqueue();
 	}
 	~myIRsend() { }
@@ -240,6 +244,8 @@ public:
 
 		HAL_PIN_PWM_Start(sendPin, freq);
 		//HAL_PIN_PWM_Update(sendPin, duty);
+		// force the ISR to write the output state again
+		lastduty = -1;
 	}
 
 	void resetsendqueue() {
@@ -272,6 +278,8 @@ public:
 
 	uint8_t sendPin;
 	uint32_t pwmduty;
+	// last duty written to the PWM by the ISR, so we only touch the hardware on a change
+	int32_t lastduty;
 
 	uint32_t our_ms;
 	float our_us;
@@ -341,7 +349,12 @@ extern "C" void DRV_IR_ISR(void* arg)
 				duty = 0;
 			}
 		}
-		HAL_PIN_PWM_Update(pIRsend->sendPin, duty);
+		// HAL_PIN_PWM_Update is slow (float maths + PWM register writes), so do not call it
+		// every 50us tick - that made the timer ISR run at ~74us instead of 50us on BK7231T
+		if ((int32_t)duty != pIRsend->lastduty) {
+			pIRsend->lastduty = (int32_t)duty;
+			HAL_PIN_PWM_Update(pIRsend->sendPin, duty);
+		}
 	}
 
 	// is someone really wants rx and TX at the same time, then allow it.
@@ -621,30 +634,419 @@ extern "C" commandResult_t IR_Param(const void *context, const char *cmd, const 
 
 
 #ifdef ENABLE_IRAC
-extern "C" commandResult_t IR_AC_Cmd(const void *context, const char *cmd, const char *args_in, int cmdFlags) {
-	if (!args_in) return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+#include "../libraries/IRremoteESP8266/src/ir_Fujitsu.h"
 
-	char args[64];
-	strncpy(args, args_in, sizeof(args) - 1);
-	args[sizeof(args) - 1] = 0;
+// Air conditioner state, driven by Home Assistant "climate" MQTT commands
+// (ACMode, TargetTemperature, FanMode, SwingV) and by frames received from the real remote.
+// Only Fujitsu is supported for now.
+// IRac itself can't be used for sending: it uses its own IRsend with busy-wait delays, which are
+// no-ops here. So we only use IRFujitsuAC to build the state bytes and send them via our queued pIRsend.
+static bool g_acEnabled = false;
+static bool g_acPower = false;
+static bool g_acDirty = false;
+// MQTT state publishing is deferred until the IR frame has gone out: network activity stalls the 50us timer ISR
+// and a stalled ISR corrupts the frame being sent
+static bool g_acPublishPending = false;
+// After a restart the state is restored from the retained topics we published earlier (they arrive
+// right after the MQTT subscribe), so HA does not get reset to off/cool/24. Nothing is published
+// until the restore window is over.
+static bool g_acRestoreWait = true;
+static bool g_acRestoreStarted = false;
+static int g_acRestoreDeadline = 0;
+static uint8_t g_acMode = kFujitsuAcModeCool;
+static int g_acTemp = 24;
+static uint8_t g_acFan = kFujitsuAcFanAuto;
+static uint8_t g_acSwing = kFujitsuAcSwingOff;
+// 10C heat ("frost protection", the "10C HEAT" button) state: fan mode + the Clean bit, only on some models
+static bool g_ac10C = false;
+static fujitsu_ac_remote_model_t g_acModel = fujitsu_ac_remote_model_t::ARRAH2E;
 
-	// split arg at hyphen;
-	char *p = args;
-	while (*p && (*p != '-') && (*p != ' ')) {
-		p++;
+static const char *g_acFanOptions[] = { "auto", "low", "medium", "high", "quiet" };
+static const uint8_t g_acFanValues[] = { kFujitsuAcFanAuto, kFujitsuAcFanLow, kFujitsuAcFanMed, kFujitsuAcFanHigh, kFujitsuAcFanQuiet };
+static const char *g_acSwingOptions[] = { "off", "on" };
+// index is the Fujitsu mode value (auto, cool, dry, fan, heat)
+static const char *g_acModeNames[] = { "auto", "cool", "dry", "fan_only", "heat" };
+static const char *g_acModelNames[] = { "ARRAH2E", "ARDB1", "ARREB1E", "ARJW2", "ARRY4", "ARREW4E" };
+
+// HA preset name for the 10C heat mode
+#define IRAC_PRESET_FROST "Frost protection"
+// setpoint of the 10C heat mode, shown as the target temperature while it is active
+static const int kIracFrostTemp = 10;
+
+static bool IRAC_Model10CSupported() {
+	return g_acModel == fujitsu_ac_remote_model_t::ARRAH2E || g_acModel == fujitsu_ac_remote_model_t::ARREW4E;
+}
+
+static bool IRAC_Equals(const char *a, const char *b) {
+	return wal_stricmp(a, b) == 0;
+}
+
+static void IRAC_PublishState() {
+	int fanIx = 0;
+	for (int i = 0; i < (int)(sizeof(g_acFanValues) / sizeof(g_acFanValues[0])); i++) {
+		if (g_acFanValues[i] == g_acFan) fanIx = i;
 	}
-	int ournamelen = (p - args);
-	if ((*p != '-') && (*p != ' ')) {
-		ADDLOG_ERROR(LOG_FEATURE_IR, (char *)"IRAC cmnd not valid [%s] ", args);
-		return CMD_RES_BAD_ARGUMENT;
+	// 10C heat keeps the unit on and heating, so report that as heat
+	MQTT_PublishMain_StringString("ACMode", g_acPower ? (g_ac10C ? "heat" : g_acModeNames[g_acMode]) : "off", OBK_PUBLISH_FLAG_RETAIN);
+	MQTT_PublishMain_StringString("PresetMode", g_ac10C ? IRAC_PRESET_FROST : "none", OBK_PUBLISH_FLAG_RETAIN);
+	// 10C heat has a fixed 10C setpoint; g_acTemp keeps the previous one for when frost protection ends
+	MQTT_PublishMain_StringInt("TargetTemperature", g_ac10C ? kIracFrostTemp : g_acTemp, OBK_PUBLISH_FLAG_RETAIN);
+	MQTT_PublishMain_StringString("FanMode", g_acFanOptions[fanIx], OBK_PUBLISH_FLAG_RETAIN);
+	MQTT_PublishMain_StringString("SwingV", (g_acSwing & kFujitsuAcSwingVert) ? "on" : "off", OBK_PUBLISH_FLAG_RETAIN);
+}
+
+// builds the full remote state and queues it for sending
+static void IRAC_SendState() {
+	if (!pIRsend) {
+		return;
 	}
-	//	decode_type_t protocol = strToDecodeType(args);
+	IRFujitsuAC ac(0, g_acModel);
+	ac.setModel(g_acModel);
+	if (g_acPower) {
+		ac.setMode(g_acMode);
+		ac.setTemp((float)g_acTemp);
+		ac.setFanSpeed(g_acFan);
+		ac.setSwing(g_acSwing);
+		if (g_ac10C) {
+			// forces fan mode, fan auto, swing off, power on and sets the 10C bit (needs a supporting model)
+			ac.set10CHeat(true);
+		}
+		ac.on();
+	}
+	else {
+		ac.off();
+	}
+	pIRsend->sendFujitsuAC(ac.getRaw(), ac.getStateLength());
+	ADDLOG_INFO(LOG_FEATURE_IR, (char *)"IRAC sent: %s %s power %d mode %d temp %d fan %d swing %d 10C %d len %d",
+		"FUJITSU_AC", g_acModelNames[(int)g_acModel - 1], (int)g_acPower, (int)g_acMode, g_acTemp, (int)g_acFan, (int)g_acSwing, (int)g_ac10C,
+		(int)ac.getStateLength());
+}
 
-	ADDLOG_ERROR(LOG_FEATURE_IR, (char *)"IRAC cmnd not implemented yet", args);
+// called from DRV_IR_RunFrame, so rapid bursts of commands from HA are not sent while the previous frame is still going out
+static void IRAC_RunFrame() {
+	// the state published at boot is lost when MQTT isn't connected yet, so publish again on (re)connect
+	static bool wasConnected = false;
+	bool connected = Main_HasMQTTConnected() != 0;
+	// only track the connection once A/C control is on, so a connect that happened before IRAC was enabled is not missed
+	if (g_acEnabled) {
+		if (connected && !wasConnected) {
+			g_acPublishPending = true;
+		}
+		wasConnected = connected;
+		if (connected && !g_acRestoreStarted) {
+			// first connect since boot: give the retained state a moment to arrive
+			g_acRestoreStarted = true;
+			g_acRestoreDeadline = g_secondsElapsed + 3;
+		}
+	}
+	if (g_acRestoreWait && g_acRestoreStarted && g_secondsElapsed >= g_acRestoreDeadline) {
+		g_acRestoreWait = false;
+		ADDLOG_INFO(LOG_FEATURE_IR, (char *)"IRAC restore window closed");
+	}
+	if (!pIRsend) {
+		if (g_acPublishPending && !g_acRestoreWait) {
+			g_acPublishPending = false;
+			IRAC_PublishState();
+		}
+		return;
+	}
+	if (pIRsend->timecount != 0 || pIRsend->currentsendtime != 0) {
+		return;
+	}
+	if (g_acDirty) {
+		g_acDirty = false;
+		// a command is newer than anything we could still restore
+		g_acRestoreWait = false;
+		IRAC_SendState();
+		return;
+	}
+	if (g_acPublishPending && !g_acRestoreWait) {
+		g_acPublishPending = false;
+		IRAC_PublishState();
+	}
+}
 
+// updates our state from a frame received from the real remote (so HA follows the physical remote)
+static void IRAC_OnReceived(const decode_results *results) {
+	if (results->decode_type != decode_type_t::FUJITSU_AC) {
+		return;
+	}
+	IRFujitsuAC ac(0, g_acModel);
+	if (!ac.setRaw(results->state, results->bits / 8)) {
+		return;
+	}
+	// always log this, it shows which remote model the frame looks like
+	ADDLOG_INFO(LOG_FEATURE_IR, (char *)"IRAC rx: model %s cmd 0x%02X long %d power %d mode %d temp %d fan %d swing %d 10C %d",
+		g_acModelNames[(int)ac.getModel() - 1], (int)ac.getCmd(), (int)ac.isLongCode(), (int)ac.getPower(), (int)ac.getMode(),
+		(int)ac.getTemp(), (int)ac.getFanSpeed(), (int)ac.getSwing(), (int)ac.get10CHeat());
+	if (!g_acEnabled) {
+		return;
+	}
+	// the real remote is the newest information we have
+	g_acRestoreWait = false;
+	if (ac.getCmd() == kFujitsuAcCmdTurnOff) {
+		g_acPower = false;
+		g_ac10C = false;
+	}
+	else if (ac.isLongCode()) {
+		g_acPower = true;
+		g_ac10C = ac.get10CHeat();
+		if (ac.getMode() <= kFujitsuAcModeHeat) g_acMode = ac.getMode();
+		g_acTemp = (int)ac.getTemp();
+		if (ac.getFanSpeed() <= kFujitsuAcFanQuiet) g_acFan = ac.getFanSpeed();
+		g_acSwing = ac.getSwing();
+	}
+	IRAC_PublishState();
+}
+
+// Called for every non-empty publish on <clientId>/<name>/get, which includes our own retained A/C state.
+// While the restore window is open this puts the state we published before a restart back, without sending anything.
+extern "C" void DRV_IR_OnRetainedState(const char *topic, const char *payload, int len) {
+	if (!g_acEnabled || !g_acRestoreWait || g_acDirty) {
+		return;
+	}
+	// topic is <clientId>/<name>/get, and the client id can contain slashes itself
+	int tlen = (int)strlen(topic);
+	if (tlen < 5 || strcmp(topic + tlen - 4, "/get")) {
+		return;
+	}
+	const char *end = topic + tlen - 4;
+	const char *name = end;
+	while (name > topic && name[-1] != '/') {
+		name--;
+	}
+	char nameBuf[24];
+	char val[24];
+	if (end - name >= (int)sizeof(nameBuf) || len <= 0 || len >= (int)sizeof(val)) {
+		return;
+	}
+	memcpy(nameBuf, name, end - name);
+	nameBuf[end - name] = 0;
+	memcpy(val, payload, len);
+	val[len] = 0;
+
+	if (IRAC_Equals(nameBuf, "ACMode")) {
+		if (IRAC_Equals(val, "off")) {
+			g_acPower = false;
+		}
+		else {
+			for (int i = 0; i < 5; i++) {
+				if (IRAC_Equals(val, g_acModeNames[i])) {
+					g_acMode = (uint8_t)i;
+					g_acPower = true;
+				}
+			}
+		}
+	}
+	else if (IRAC_Equals(nameBuf, "PresetMode")) {
+		g_ac10C = IRAC_Model10CSupported() && IRAC_Equals(val, IRAC_PRESET_FROST);
+	}
+	else if (IRAC_Equals(nameBuf, "TargetTemperature")) {
+		// frost protection publishes its fixed 10, which is not a setpoint to go back to
+		int t = atoi(val);
+		if (t >= (int)kFujitsuAcMinTemp && t <= (int)kFujitsuAcMaxTemp) {
+			g_acTemp = t;
+		}
+	}
+	else if (IRAC_Equals(nameBuf, "FanMode")) {
+		for (int i = 0; i < (int)(sizeof(g_acFanValues) / sizeof(g_acFanValues[0])); i++) {
+			if (IRAC_Equals(val, g_acFanOptions[i])) g_acFan = g_acFanValues[i];
+		}
+	}
+	else if (IRAC_Equals(nameBuf, "SwingV")) {
+		if (IRAC_Equals(val, "on")) g_acSwing |= kFujitsuAcSwingVert;
+		else if (IRAC_Equals(val, "off")) g_acSwing &= ~kFujitsuAcSwingVert;
+	}
+	else {
+		return;
+	}
+	ADDLOG_INFO(LOG_FEATURE_IR, (char *)"IRAC restored %s = %s", nameBuf, val);
+}
+
+extern "C" commandResult_t IR_ACMode_Cmd(const void *context, const char *cmd, const char *args, int cmdFlags) {
+	if (!args || !*args) return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	g_ac10C = false;
+	if (IRAC_Equals(args, "off")) {
+		g_acPower = false;
+	}
+	else {
+		int mode = -1;
+		for (int i = 0; i < 5; i++) {
+			if (IRAC_Equals(args, g_acModeNames[i])) mode = i;
+		}
+		if (mode < 0 && IRAC_Equals(args, "fan")) mode = kFujitsuAcModeFan;
+		if (mode < 0) {
+			ADDLOG_ERROR(LOG_FEATURE_IR, (char *)"ACMode: unknown mode %s (off, auto, cool, dry, fan_only, heat)", args);
+			return CMD_RES_BAD_ARGUMENT;
+		}
+		g_acMode = (uint8_t)mode;
+		g_acPower = true;
+	}
+	g_acDirty = true;
+	g_acPublishPending = true;
 	return CMD_RES_OK;
 }
+
+extern "C" commandResult_t IR_ACTemp_Cmd(const void *context, const char *cmd, const char *args, int cmdFlags) {
+	if (!args || !*args) return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	int t = (int)(atof(args) + 0.5f);
+	if (t <= kIracFrostTemp && IRAC_Model10CSupported()) {
+		// the 10C setpoint (HA slider minimum) selects frost protection
+		g_ac10C = true;
+		g_acPower = true;
+		g_acDirty = true;
+		g_acPublishPending = true;
+		return CMD_RES_OK;
+	}
+	if (t < (int)kFujitsuAcMinTemp) t = (int)kFujitsuAcMinTemp;
+	if (t > (int)kFujitsuAcMaxTemp) t = (int)kFujitsuAcMaxTemp;
+	g_acTemp = t;
+	// choosing a normal temperature ends frost protection
+	g_ac10C = false;
+	if (g_acPower) g_acDirty = true;
+	g_acPublishPending = true;
+	return CMD_RES_OK;
+}
+
+extern "C" commandResult_t IR_ACFan_Cmd(const void *context, const char *cmd, const char *args, int cmdFlags) {
+	if (!args || !*args) return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	for (int i = 0; i < (int)(sizeof(g_acFanValues) / sizeof(g_acFanValues[0])); i++) {
+		if (IRAC_Equals(args, g_acFanOptions[i])) {
+			g_acFan = g_acFanValues[i];
+			if (g_acPower) g_acDirty = true;
+			g_acPublishPending = true;
+			return CMD_RES_OK;
+		}
+	}
+	ADDLOG_ERROR(LOG_FEATURE_IR, (char *)"FanMode: unknown mode %s (auto, low, medium, high, quiet)", args);
+	return CMD_RES_BAD_ARGUMENT;
+}
+
+extern "C" commandResult_t IR_ACSwingV_Cmd(const void *context, const char *cmd, const char *args, int cmdFlags) {
+	if (!args || !*args) return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	if (IRAC_Equals(args, "on") || IRAC_Equals(args, "1")) {
+		g_acSwing |= kFujitsuAcSwingVert;
+	}
+	else if (IRAC_Equals(args, "off") || IRAC_Equals(args, "0")) {
+		g_acSwing &= ~kFujitsuAcSwingVert;
+	}
+	else {
+		return CMD_RES_BAD_ARGUMENT;
+	}
+	if (g_acPower) g_acDirty = true;
+	g_acPublishPending = true;
+	return CMD_RES_OK;
+}
+
+// PresetMode "Frost protection"|none - the 10C heat mode (the "10C HEAT" button on the remote)
+extern "C" commandResult_t IR_ACPreset_Cmd(const void *context, const char *cmd, const char *args, int cmdFlags) {
+	if (!args || !*args) return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	if (IRAC_Equals(args, IRAC_PRESET_FROST) || IRAC_Equals(args, "frost") || IRAC_Equals(args, "frost_protection")) {
+		if (!IRAC_Model10CSupported()) {
+			ADDLOG_ERROR(LOG_FEATURE_IR, (char *)"PresetMode: 10C heat needs model ARRAH2E or ARREW4E, current is %s", g_acModelNames[(int)g_acModel - 1]);
+			return CMD_RES_BAD_ARGUMENT;
+		}
+		g_ac10C = true;
+		g_acPower = true;
+	}
+	else if (IRAC_Equals(args, "none") || IRAC_Equals(args, "off") || IRAC_Equals(args, "0")) {
+		g_ac10C = false;
+	}
+	else {
+		return CMD_RES_BAD_ARGUMENT;
+	}
+	g_acDirty = true;
+	g_acPublishPending = true;
+	return CMD_RES_OK;
+}
+
+// IRAC Fujitsu [model] - enables the A/C (and the Home Assistant climate entity), model name or 1-6
+extern "C" commandResult_t IR_AC_Cmd(const void *context, const char *cmd, const char *args_in, int cmdFlags) {
+	if (!args_in || !*args_in) {
+		// no arguments - resend current state
+		g_acDirty = true;
+		return CMD_RES_OK;
+	}
+	char proto[24];
+	char model[24];
+	model[0] = 0;
+	int n = sscanf(args_in, "%23s %23s", proto, model);
+	if (n < 1 || !(IRAC_Equals(proto, "fujitsu") || IRAC_Equals(proto, "fujitsu_ac"))) {
+		ADDLOG_ERROR(LOG_FEATURE_IR, (char *)"IRAC: only Fujitsu is supported for now, e.g. IRAC Fujitsu ARREB1E");
+		return CMD_RES_BAD_ARGUMENT;
+	}
+	if (n == 2) {
+		int found = 0;
+		for (int i = 0; i < 6; i++) {
+			if (IRAC_Equals(model, g_acModelNames[i]) || atoi(model) == (i + 1)) found = i + 1;
+		}
+		if (!found) {
+			ADDLOG_ERROR(LOG_FEATURE_IR, (char *)"IRAC: unknown model %s (ARRAH2E ARDB1 ARREB1E ARJW2 ARRY4 ARREW4E)", model);
+			return CMD_RES_BAD_ARGUMENT;
+		}
+		g_acModel = (fujitsu_ac_remote_model_t)found;
+	}
+	g_acEnabled = true;
+	ADDLOG_INFO(LOG_FEATURE_IR, (char *)"IRAC enabled: Fujitsu model %s", g_acModelNames[(int)g_acModel - 1]);
+	g_acPublishPending = true;
+	return CMD_RES_OK;
+}
+
+#if ENABLE_HA_DISCOVERY
+extern "C" void DRV_IR_DoDiscovery(const char *topic) {
+	if (!g_acEnabled) {
+		return;
+	}
+	HassDeviceInfo *dev_info = hass_createHVAC(IRAC_Model10CSupported() ? (float)kIracFrostTemp : kFujitsuAcMinTemp, kFujitsuAcMaxTemp, 1.0f,
+		g_acFanOptions, sizeof(g_acFanOptions) / sizeof(g_acFanOptions[0]),
+		g_acSwingOptions, sizeof(g_acSwingOptions) / sizeof(g_acSwingOptions[0]),
+		NULL, 0);
+	// show the room temperature on the climate card: use the first channel set up as a temperature
+	// (e.g. TuyaMCU dp 101 as temperature_div10) instead of the unused ~/CurrentTemperature/get
+	for (int ch = 0; ch < CHANNEL_MAX; ch++) {
+		int type = CHANNEL_GetType(ch);
+		if (type == ChType_Temperature || type == ChType_Temperature_div10) {
+			char buf[16];
+			snprintf(buf, sizeof(buf), "~/%i/get", ch);
+			cJSON_ReplaceItemInObject(dev_info->root, "current_temperature_topic", cJSON_CreateString(buf));
+			if (type == ChType_Temperature_div10) {
+				cJSON_AddStringToObject(dev_info->root, "current_temperature_template", "{{ (value | float / 10) | round(1) }}");
+			}
+			break;
+		}
+	}
+	// same for the humidity (e.g. TuyaMCU dp 102 as Humidity), published as a plain percentage
+	for (int ch = 0; ch < CHANNEL_MAX; ch++) {
+		if (CHANNEL_GetType(ch) == ChType_Humidity) {
+			char buf[16];
+			snprintf(buf, sizeof(buf), "~/%i/get", ch);
+			cJSON_AddStringToObject(dev_info->root, "current_humidity_topic", buf);
+			break;
+		}
+	}
+	if (IRAC_Model10CSupported()) {
+		// 10C heat as a "frost" preset; HA uses "none" for no preset
+		char buf[96];
+		snprintf(buf, sizeof(buf), "cmnd/%s/PresetMode", CFG_GetMQTTClientId());
+		cJSON_AddStringToObject(dev_info->root, "preset_mode_command_topic", buf);
+		cJSON_AddStringToObject(dev_info->root, "preset_mode_state_topic", "~/PresetMode/get");
+		cJSON *presets = cJSON_CreateArray();
+		cJSON_AddItemToArray(presets, cJSON_CreateString(IRAC_PRESET_FROST));
+		cJSON_AddItemToObject(dev_info->root, "preset_modes", presets);
+	}
+	MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
+	hass_free_device_info(dev_info);
+	// published from IRAC_RunFrame, once the IR queue is idle and the restore window is over
+	g_acPublishPending = true;
+}
+#endif
 #endif //ENABLE_IRAC
+
+#if !(defined(ENABLE_IRAC) && ENABLE_HA_DISCOVERY)
+// no A/C support or no HA discovery in this build, but drv_main.c still references this
+extern "C" void DRV_IR_DoDiscovery(const char *topic) {
+}
+#endif
 
 
 // test routine to start IR RX and TX
@@ -683,6 +1085,10 @@ extern "C" void DRV_IR_Init() {
 
 		//TODO: we should specify buffer size (now set to 1024), timeout (now 90ms) and tolerance 
 		 ourReceiver = new IRrecv(pin);
+		 // The receiver module stretches marks / shortens spaces by ~70us, and the Fujitsu A/C decoder
+		 // has no excess allowance, so the library default of 25% rejects many valid frames.
+		 // IRParam can still override this at runtime.
+		 ourReceiver->setTolerance(35);
 		 ourReceiver->enableIRIn(pup);
 	}
 
@@ -707,12 +1113,37 @@ extern "C" void DRV_IR_Init() {
 			//cmddetail:"fn":"IR_Send_Cmd","file":"driver/drv_ir_new.cpp","requires":"ENABLE_DRIVER_IRREMOTEESP (IRremoteESP8266)",
 			//cmddetail:"examples":""}
 			CMD_RegisterCommand("IRSend", IR_Send_Cmd, NULL);
-			//cmddetail:{"name":"IRAC","args":"[TODO]",
-			//cmddetail:"descr":"Sends IR commands for HVAC control (TODO)",
-			//cmddetail:"fn":"IR_AC_Cmd","file":"driver/drv_ir_new.cpp","requires":"ENABLE_DRIVER_IRREMOTEESP (IRremoteESP8266)",
+			//cmddetail:{"name":"IRAC","args":"[Protocol] [Model]",
+			//cmddetail:"descr":"Enables HVAC (air conditioner) control and the Home Assistant climate entity. Currently only Fujitsu: IRAC Fujitsu ARRAH2E. Then use ACMode, TargetTemperature, FanMode, SwingV and PresetMode Frost protection|none (10C heat). Without arguments resends the current state.",
+			//cmddetail:"fn":"IR_AC_Cmd","file":"driver/drv_ir_new.cpp","requires":"",
 			//cmddetail:"examples":""}
 			#ifdef ENABLE_IRAC
 			CMD_RegisterCommand("IRAC", IR_AC_Cmd, NULL);
+			//cmddetail:{"name":"ACMode","args":"[off|auto|cool|dry|fan_only|heat]",
+			//cmddetail:"descr":"Sets the air conditioner mode and sends it, after IRAC. Used by the Home Assistant climate entity.",
+			//cmddetail:"fn":"IR_ACMode_Cmd","file":"driver/drv_ir_new.cpp","requires":"",
+			//cmddetail:"examples":""}
+			CMD_RegisterCommand("ACMode", IR_ACMode_Cmd, NULL);
+			//cmddetail:{"name":"TargetTemperature","args":"[Temp]",
+			//cmddetail:"descr":"Sets the air conditioner target temperature (16-30) and sends it, after IRAC. On models with the 10C heat mode, 10 selects it.",
+			//cmddetail:"fn":"IR_ACTemp_Cmd","file":"driver/drv_ir_new.cpp","requires":"",
+			//cmddetail:"examples":""}
+			CMD_RegisterCommand("TargetTemperature", IR_ACTemp_Cmd, NULL);
+			//cmddetail:{"name":"FanMode","args":"[auto|low|medium|high|quiet]",
+			//cmddetail:"descr":"Sets the air conditioner fan mode and sends it, after IRAC.",
+			//cmddetail:"fn":"IR_ACFan_Cmd","file":"driver/drv_ir_new.cpp","requires":"",
+			//cmddetail:"examples":""}
+			CMD_RegisterCommand("FanMode", IR_ACFan_Cmd, NULL);
+			//cmddetail:{"name":"SwingV","args":"[on|off]",
+			//cmddetail:"descr":"Sets the air conditioner vertical swing and sends it, after IRAC.",
+			//cmddetail:"fn":"IR_ACSwingV_Cmd","file":"driver/drv_ir_new.cpp","requires":"",
+			//cmddetail:"examples":""}
+			CMD_RegisterCommand("SwingV", IR_ACSwingV_Cmd, NULL);
+			//cmddetail:{"name":"PresetMode","args":"[Frost protection|none]",
+			//cmddetail:"descr":"Turns the 10C heat mode of the air conditioner on or off (models ARRAH2E and ARREW4E), after IRAC.",
+			//cmddetail:"fn":"IR_ACPreset_Cmd","file":"driver/drv_ir_new.cpp","requires":"",
+			//cmddetail:"examples":""}
+			CMD_RegisterCommand("PresetMode", IR_ACPreset_Cmd, NULL);
 			#endif //ENABLE_IRAC
 			//cmddetail:{"name":"IREnable","args":"[Str][1or0]",
 			//cmddetail:"descr":"Enable/disable aspects of IR.  IREnable RXTX 0/1 - enable Rx whilst Tx.  IREnable [protocolname] 0/1 - enable/disable a specified protocol",
@@ -745,7 +1176,7 @@ void dump(decode_results *results) {
 	// Call this after IRrecv::decode()
 	ADDLOG_INFO(LOG_FEATURE_IR, resultToHumanReadableBasic(results).c_str());
 
-	#ifdef ENABLE_IRAC
+	#ifdef ENABLE_IRAC_DESCRIBE
 	if (hasACState(results->decode_type))
 	{
 		ADDLOG_INFO(LOG_FEATURE_IR, IRAcUtils::resultAcToString(results).c_str());
@@ -762,6 +1193,9 @@ extern "C" void DRV_IR_RunFrame() {
 	if (ir_counter) {
 		//ADDLOG_INFO(LOG_FEATURE_IR, (char *)"IR counter: %u", ir_counter);
 	}
+#ifdef ENABLE_IRAC
+	IRAC_RunFrame();
+#endif
 	if (pIRsend) {
 		if (pIRsend->overflows) {
 			ADDLOG_DEBUG(LOG_FEATURE_IR, (char *)"##### IR send overflows %d", (int)pIRsend->overflows);
@@ -778,6 +1212,9 @@ extern "C" void DRV_IR_RunFrame() {
 		if (ourReceiver->decode(&results)) {
 			// TODO: find a better way?
 			String proto_name = typeToString(results.decode_type, results.repeat).c_str();
+#ifdef ENABLE_IRAC
+			IRAC_OnReceived(&results);
+#endif
 
 			#if 0 // TODO: implement different masking
 			if (!(gIRProtocolEnable & (1 << (int)results.decode_type))) {
@@ -816,10 +1253,11 @@ extern "C" void DRV_IR_RunFrame() {
 					snprintf(out, sizeof(out), "IR %s,%d,%s", proto_name.c_str(), (int)results.bits, resultToHexidecimal(&results).c_str());
 					ADDLOG_INFO(LOG_FEATURE_IR, (char *)out);
 				} else {
-					#ifdef ENABLE_IRAC
+					snprintf(out, sizeof(out), "IR %s,%d", proto_name.c_str(), (int)results.bits);
+					#ifdef ENABLE_IRAC_DESCRIBE
 					String description = IRAcUtils::resultAcToString(&results);
 					ADDLOG_INFO(LOG_FEATURE_IR, (char *)"IRAC %s", description.c_str());
-					#endif //ENABLE_IRAC
+					#endif //ENABLE_IRAC_DESCRIBE
 				}
 				// if user wants us to publish every received IR data, do it now
 				if (CFG_HasFlag(OBK_FLAG_IR_PUBLISH_RECEIVED)) {
