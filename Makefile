@@ -33,6 +33,9 @@ else ifeq ($(VARIANT),battery)
 OBK_VARIANT = 7
 else ifeq ($(VARIANT),btproxy)
 OBK_VARIANT = 8
+else ifeq ($(VARIANT),xiaomiCompact4)
+OBK_VARIANT = 10
+ESP_FSIZE = 4MB
 else ifeq ($(VARIANT),2M)
 OBK_VARIANT = 1
 ESP_FSIZE = 2MB
@@ -46,6 +49,11 @@ else
 OBK_VARIANT = 0
 endif
 $(info VARIANT is $(VARIANT), OBK_VARIANT is $(OBK_VARIANT))
+
+ESP32_BUILD_DIR = platforms/ESP-IDF/build-32
+ifeq ($(OBK_VARIANT), 10)
+ESP32_BUILD_DIR = platforms/ESP-IDF/build-32-xiaomi
+endif
 
 #TARGET_PLATFORM ?= bk7231t
 #APPS_BUILD_PATH ?= ../bk7231t_os
@@ -238,6 +246,8 @@ else ifeq ($(OBK_VARIANT), 2)
 	cp platforms/ESP-IDF/partitions-4mb.csv platforms/ESP-IDF/partitions.csv
 else ifeq ($(OBK_VARIANT), 3)
 	cp platforms/ESP-IDF/partitions-2mb.csv platforms/ESP-IDF/partitions.csv
+else ifeq ($(OBK_VARIANT), 10)
+	cp platforms/ESP-IDF/partitions-4mb.csv platforms/ESP-IDF/partitions.csv
 endif
 	@if [ -e platforms/ESP-IDF/pre_build.sh ]; then \
 		echo "prebuild found for ESP-IDF"; \
@@ -402,7 +412,7 @@ prebuild_OpenTXW81X: berry
 
 prebuild_OpenBL616: berry
 	git submodule update --init --recursive --depth=1 sdk/bouffalo_sdk
-	if [ ! -e platforms/BL616/gcc ]; then cd platforms/BL616 && git clone https://github.com/bouffalolab/toolchain_gcc_t-head_linux.git gcc --depth=1; fi 
+	if [ ! -e platforms/BL616/xuantie-gcc-riscv-v2.6.1-linux-x86_64 ]; then cd platforms/BL616 && wget https://github.com/bouffalolab/toolchain/releases/download/default/xuantie-gcc-riscv-v2.6.1-linux-x86_64.tar.xz && tar xJf xuantie-gcc-riscv-v2.6.1-linux-x86_64.tar.xz; fi 
 	@if [ -e platforms/BL616/pre_build.sh ]; then \
 		echo "prebuild found for OpenBL616"; \
 		sh platforms/BL616/pre_build.sh; \
@@ -411,7 +421,7 @@ prebuild_OpenBL616: berry
 
 prebuild_OpenBL602_ALT: berry
 	git submodule update --init --recursive --depth=1 sdk/bouffalo_sdk
-	if [ ! -e platforms/BL616/gcc ]; then cd platforms/BL616 && git clone https://github.com/bouffalolab/toolchain_gcc_t-head_linux.git gcc --depth=1; fi 
+	if [ ! -e platforms/BL616/xuantie-gcc-riscv-v2.6.1-linux-x86_64 ]; then cd platforms/BL616 && wget https://github.com/bouffalolab/toolchain/releases/download/default/xuantie-gcc-riscv-v2.6.1-linux-x86_64.tar.xz && tar xJf xuantie-gcc-riscv-v2.6.1-linux-x86_64.tar.xz; fi 
 	@if [ -e platforms/BL602_ALT/pre_build.sh ]; then \
 		echo "prebuild found for OpenBL602_ALT"; \
 		sh platforms/BL602_ALT/pre_build.sh; \
@@ -586,11 +596,11 @@ OpenLN8825: prebuild_OpenLN8825 sdk/OpenLN8825/project/OpenBeken/app
 
 .PHONY: OpenESP32
 OpenESP32: prebuild_ESPIDF
-	IDF_TARGET="esp32" APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT) cmake platforms/ESP-IDF -B platforms/ESP-IDF/build-32 
-	IDF_TARGET="esp32" APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT) cmake --build ./platforms/ESP-IDF/build-32 -j $(shell nproc)
+	IDF_TARGET="esp32" APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT) cmake platforms/ESP-IDF -B $(ESP32_BUILD_DIR)
+	IDF_TARGET="esp32" APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT) cmake --build ./$(ESP32_BUILD_DIR) -j $(shell nproc)
 	mkdir -p output/$(APP_VERSION)
-	python3 -m esptool -c esp32 merge_bin -o output/$(APP_VERSION)/OpenESP32_$(APP_VERSION).factory.bin --flash_mode dio --flash_size $(ESP_FSIZE) 0x1000 ./platforms/ESP-IDF/build-32/bootloader/bootloader.bin 0x8000 ./platforms/ESP-IDF/build-32/partition_table/partition-table.bin 0x10000 ./platforms/ESP-IDF/build-32/OpenBeken.bin
-	cp ./platforms/ESP-IDF/build-32/OpenBeken.bin output/$(APP_VERSION)/OpenESP32_$(APP_VERSION).img
+	python3 -m esptool -c esp32 merge_bin -o output/$(APP_VERSION)/OpenESP32_$(APP_VERSION).factory.bin --flash_mode dio --flash_size $(ESP_FSIZE) 0x1000 ./$(ESP32_BUILD_DIR)/bootloader/bootloader.bin 0x8000 ./$(ESP32_BUILD_DIR)/partition_table/partition-table.bin 0x10000 ./$(ESP32_BUILD_DIR)/OpenBeken.bin
+	cp ./$(ESP32_BUILD_DIR)/OpenBeken.bin output/$(APP_VERSION)/OpenESP32_$(APP_VERSION).img
 
 .PHONY: OpenESP32C3
 OpenESP32C3: prebuild_ESPIDF
@@ -848,14 +858,14 @@ OpenRDA5981: prebuild_OpenRDA5981
 
 .PHONY: OpenBL616
 OpenBL616: prebuild_OpenBL616
-	cd ./platforms/BL616 && PATH="$(PATH):$(PWD)/platforms/BL616/gcc/bin" $(MAKE) CHIP=bl616 BOARD=bl616dk APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT)
+	cd ./platforms/BL616 && PATH="$(PWD)/platforms/BL616/xuantie-gcc-riscv-v2.6.1-linux-x86_64/bin:$(PATH)" $(MAKE) CHIP=bl616 BOARD=bl616dk APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT)
 	mkdir -p output/$(APP_VERSION)
 	cp ./platforms/BL616/build/build_out/OpenBeken_bl616.bin output/$(APP_VERSION)/OpenBL616_${APP_VERSION}.bin
 	cp ./platforms/BL616/build/build_out/OpenBeken_bl616.xz.ota output/$(APP_VERSION)/OpenBL616_${APP_VERSION}_OTA.bin.xz.ota
 
 .PHONY: OpenBL602_ALT
 OpenBL602_ALT: prebuild_OpenBL602_ALT
-	cd ./platforms/BL602_ALT && PATH="$(PATH):$(PWD)/platforms/BL616/gcc/bin" $(MAKE) CHIP=bl602 BOARD=bl602dk APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT)
+	cd ./platforms/BL602_ALT && PATH="$(PWD)/platforms/BL616/xuantie-gcc-riscv-v2.6.1-linux-x86_64/bin:$(PATH)" $(MAKE) CHIP=bl602 BOARD=bl602dk APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT)
 	mkdir -p output/$(APP_VERSION)
 	dd conv=notrunc bs=1K skip=4 if=platforms/BL602_ALT/build/build_out/OpenBeken_bl602.bin of=output/$(APP_VERSION)/OpenBL602_ALT_${APP_VERSION}.bin
 	cp ./platforms/BL602_ALT/build/build_out/OpenBeken_bl602.xz.ota output/$(APP_VERSION)/OpenBL602_ALT_${APP_VERSION}_OTA.bin.xz.ota
@@ -881,6 +891,22 @@ OpenBK7236: prebuild_OpenBK7236
 	mkdir -p output/$(APP_VERSION)
 	cp sdk/OpenBK7239N/build/bk7236/BK7236/package/all-app.bin output/$(APP_VERSION)/OpenBK7236_QIO_$(APP_VERSION).bin
 	cp sdk/OpenBK7239N/build/bk7236/BK7236/package/app_pack.rbl output/$(APP_VERSION)/OpenBK7236_${APP_VERSION}.rbl
+
+OPENRTL8196C_SDK ?= $(firstword $(wildcard sdk/OpenRTL8196C ../OpenRTL8196C))
+
+.PHONY: prebuild_OpenRTL8196C OpenRTL8196C
+prebuild_OpenRTL8196C: berry
+	@if [ -e platforms/RTL8196C/pre_build.sh ]; then \
+		echo "prebuild found for OpenRTL8196C"; \
+		sh platforms/RTL8196C/pre_build.sh; \
+	else echo "prebuild for OpenRTL8196C not found ... "; \
+	fi
+
+OpenRTL8196C: prebuild_OpenRTL8196C
+	python3 $(OPENRTL8196C_SDK)/tools/build_obk.py --obk "$(CURDIR)" --ver "$(APP_VERSION)"
+	mkdir -p output/$(APP_VERSION)
+	cp $(OPENRTL8196C_SDK)/build/obk/openbeken_rtl8196c.bin output/$(APP_VERSION)/OpenRTL8196C_$(APP_VERSION).bin
+	cp $(OPENRTL8196C_SDK)/build/obk/openbeken_rtl8196c.img output/$(APP_VERSION)/OpenRTL8196C_$(APP_VERSION)_ota.img
 
 # Add custom Makefile if required
 -include custom.mk
@@ -908,6 +934,7 @@ clean:
 	-test -d ./sdk/beken_freertos_sdk && $(MAKE) -C sdk/beken_freertos_sdk clean
 	-test -d ./sdk/OpenTXW81X && $(MAKE) -C sdk/OpenTXW81X/project clean
 	-test -d ./sdk/OpenRDA5981 && $(MAKE) -C sdk/OpenRDA5981 clean
+	-test -n "$(OPENRTL8196C_SDK)" && $(RM) -r $(OPENRTL8196C_SDK)/build/obk
 	-test -d ./sdk/OpenLN882H/build && cmake --build ./sdk/OpenLN882H/build --target clean
 	-test -d ./platforms/ESP-IDF/build-32 && cmake --build ./platforms/ESP-IDF/build-32 --target clean
 	-test -d ./platforms/ESP-IDF/build-c3 && cmake --build ./platforms/ESP-IDF/build-c3 --target clean

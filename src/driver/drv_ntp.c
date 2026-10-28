@@ -99,6 +99,8 @@ commandResult_t NTP_SetServer(const void *context, const char *cmd, const char *
 	}
     newValue = Tokenizer_GetArg(0);
     CFG_SetNTPServer(newValue);
+    NTP_Shutdown();
+    g_ntp_delay = 0;
     addLogAdv(LOG_INFO, LOG_FEATURE_NTP, "NTP server set to %s", newValue);
     return CMD_RES_OK;
 }
@@ -149,12 +151,16 @@ void NTP_Init() {
     
     g_ntp_syncinterval = Tokenizer_GetArgIntegerDefault(1, 60);
 
+    NTP_Shutdown();
+    g_ntp_delay = 0;
     addLogAdv(LOG_INFO, LOG_FEATURE_NTP, "NTP driver initialized with server=%s, offset=%d, syncing every %i seconds", CFG_GetNTPServer(), g_timeOffsetSeconds, g_ntp_syncinterval);
     g_synced = false;
 }
 
 // if driver is stopped, we need to make sure, we don't keep NTP in state "synched"
 void NTP_Stop() {
+    NTP_Shutdown();
+    g_ntp_delay = 0;
     addLogAdv(LOG_INFO, LOG_FEATURE_NTP, "NTP driver stopped");
     g_synced = false;
 }
