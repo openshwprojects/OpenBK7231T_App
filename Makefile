@@ -921,6 +921,7 @@ OpenRTL8196C: prebuild_OpenRTL8196C
 	mkdir -p output/$(APP_VERSION)
 	cp $(OPENRTL8196C_SDK)/build/obk/openbeken_rtl8196c.bin output/$(APP_VERSION)/OpenRTL8196C_$(APP_VERSION).bin
 	cp $(OPENRTL8196C_SDK)/build/obk/openbeken_rtl8196c.img output/$(APP_VERSION)/OpenRTL8196C_$(APP_VERSION)_ota.img
+	MIPS_GCC_BIN="$${MIPS_GCC_BIN:-$(MIPS_MTI_BIN)}" python3 $(OPENRTL8196C_SDK)/tools/mkinstall.py -o output/$(APP_VERSION)/OpenRTL8196C_QIO_$(APP_VERSION).bin
 
 # Add custom Makefile if required
 -include custom.mk
