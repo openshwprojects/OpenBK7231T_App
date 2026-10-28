@@ -217,6 +217,8 @@ jobs:
           - platform: OpenBK7239N
             variant: default
             gcc: 10.3-2021.10
+          - platform: OpenRTL8196C
+            variant: default
 
           # extras for BK7231T
           - platform: OpenBK7231T
@@ -304,6 +306,13 @@ jobs:
         with:
           release: ${{ matrix.gcc }}
           path-env-var: ARM_NONE_EABI_GCC_PATH
+
+      - name: Cache MIPS toolchain
+        if: ${{ matrix.platform == 'OpenRTL8196C' }}
+        uses: actions/cache@v5
+        with:
+          path: sdk/mips-mti-elf  # filled by the Makefile's prebuild_OpenRTL8196C on a cache miss
+          key: codescape-mips-mti-elf-2019.09-03
 
       - name: Install arm-none-eabi-gcc
         if: ${{ matrix.gcc == 'apt' }}

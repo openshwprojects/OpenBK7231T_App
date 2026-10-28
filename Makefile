@@ -892,10 +892,24 @@ OpenBK7236: prebuild_OpenBK7236
 	cp sdk/OpenBK7239N/build/bk7236/BK7236/package/all-app.bin output/$(APP_VERSION)/OpenBK7236_QIO_$(APP_VERSION).bin
 	cp sdk/OpenBK7239N/build/bk7236/BK7236/package/app_pack.rbl output/$(APP_VERSION)/OpenBK7236_${APP_VERSION}.rbl
 
-OPENRTL8196C_SDK ?= $(firstword $(wildcard sdk/OpenRTL8196C ../OpenRTL8196C))
+OPENRTL8196C_SDK ?= $(or $(firstword $(wildcard sdk/OpenRTL8196C ../OpenRTL8196C)),sdk/OpenRTL8196C)
+OPENRTL8196C_GIT ?= https://github.com/openshwprojects/OpenRTL8196C.git
+# Codescape MIPS bare-metal GCC, downloaded here unless MIPS_GCC_BIN is set or the SDK has its own toolchain/
+MIPS_MTI_VERSION = 2019.09-03
+MIPS_MTI_DIR = sdk/mips-mti-elf
+MIPS_MTI_BIN = $(CURDIR)/$(MIPS_MTI_DIR)/mips-mti-elf/$(MIPS_MTI_VERSION)/bin
+MIPS_MTI_URL = https://codescape.mips.com/components/toolchain/$(MIPS_MTI_VERSION)/Codescape.GNU.Tools.Package.$(MIPS_MTI_VERSION).for.MIPS.MTI.Bare.Metal.CentOS-6.x86_64.tar.gz
 
 .PHONY: prebuild_OpenRTL8196C OpenRTL8196C
 prebuild_OpenRTL8196C: berry
+	if [ ! -e $(OPENRTL8196C_SDK)/tools/build_obk.py ]; then git clone --depth=1 $(OPENRTL8196C_GIT) $(OPENRTL8196C_SDK); fi
+	if [ -z "$$MIPS_GCC_BIN" ] && [ ! -e $(MIPS_MTI_BIN)/mips-mti-elf-gcc ] && \
+	   ! ls $(OPENRTL8196C_SDK)/toolchain/mips-mti-elf/*/bin/mips-mti-elf-gcc* >/dev/null 2>&1; then \
+		mkdir -p $(MIPS_MTI_DIR) && \
+		curl -sSfL $(MIPS_MTI_URL) | tar -xz -C $(MIPS_MTI_DIR) \
+			mips-mti-elf/$(MIPS_MTI_VERSION)/bin mips-mti-elf/$(MIPS_MTI_VERSION)/libexec \
+			mips-mti-elf/$(MIPS_MTI_VERSION)/lib/gcc mips-mti-elf/$(MIPS_MTI_VERSION)/mips-mti-elf/bin; \
+	fi
 	@if [ -e platforms/RTL8196C/pre_build.sh ]; then \
 		echo "prebuild found for OpenRTL8196C"; \
 		sh platforms/RTL8196C/pre_build.sh; \
@@ -903,7 +917,7 @@ prebuild_OpenRTL8196C: berry
 	fi
 
 OpenRTL8196C: prebuild_OpenRTL8196C
-	python3 $(OPENRTL8196C_SDK)/tools/build_obk.py --obk "$(CURDIR)" --ver "$(APP_VERSION)"
+	MIPS_GCC_BIN="$${MIPS_GCC_BIN:-$(MIPS_MTI_BIN)}" python3 $(OPENRTL8196C_SDK)/tools/build_obk.py --obk "$(CURDIR)" --ver "$(APP_VERSION)"
 	mkdir -p output/$(APP_VERSION)
 	cp $(OPENRTL8196C_SDK)/build/obk/openbeken_rtl8196c.bin output/$(APP_VERSION)/OpenRTL8196C_$(APP_VERSION).bin
 	cp $(OPENRTL8196C_SDK)/build/obk/openbeken_rtl8196c.img output/$(APP_VERSION)/OpenRTL8196C_$(APP_VERSION)_ota.img

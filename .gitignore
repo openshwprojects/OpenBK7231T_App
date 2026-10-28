@@ -1,4 +1,7 @@
 output/**
+# fetched by prebuild_OpenRTL8196C
+/sdk/OpenRTL8196C/
+/sdk/mips-mti-elf/
 **/*.o
 **/*.oo
 **/*.obj
