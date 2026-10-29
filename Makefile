@@ -1,6 +1,13 @@
 # HACK - if COMPILE_PREX defined then we are being called running from original build_app.sh script in standard SDK
 # Required to not break old build_app.sh script lines 74-77
 MBEDTLS=output/mbedtls-2.28.5
+ifeq ($(VARIANT),tailscale)
+CFG_USE_TAILSCALE ?= 1
+else
+CFG_USE_TAILSCALE ?= 0
+endif
+export CFG_USE_TAILSCALE
+
 ifdef COMPILE_PREX
 all:
 	@echo Calling original build_app.sh script
@@ -94,6 +101,12 @@ endif
 berry: berry_init
 	@[ "$(shell diff -rq libraries/berry/generate libraries/berry/temp)" ] && (echo "[Prebuild berry] regenerate resources" && cp -r libraries/berry/temp/* libraries/berry/generate) || echo "[Prebuild berry] resources are not different"
 
+.PHONY: tailscale_init
+tailscale_init:
+ifeq ($(CFG_USE_TAILSCALE),1)
+	git submodule update --init libraries/tailscalec
+endif
+
 # Create symlink for App into SDK folder structure
 sdk/OpenBK7231T/apps/$(APP_NAME):
 	@echo Create symlink for $(APP_NAME) into sdk folder
@@ -151,7 +164,7 @@ sdk/OpenLN8825/project/OpenBeken/app:
 .PHONY: prebuild_OpenRTL87X0C prebuild_OpenBK7238 prebuild_OpenBK7231N_ALT prebuild_OpenBK7231U
 .PHONY: prebuild_OpenBK7231N_ALT prebuild_OpenBK7231T_ALT prebuild_OpenBK7252
 
-prebuild_OpenBK7231N: berry
+prebuild_OpenBK7231N: berry tailscale_init
 	git submodule update --init --recursive --depth=1 sdk/OpenBK7231N
 	@if [ -e platforms/BK7231N/pre_build.sh ]; then \
 		echo "prebuild found for OpenBK7231N"; \

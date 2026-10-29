@@ -10,6 +10,10 @@ SRC_C += $(BERRY_SRC_C)
 CPPDEFINES += -DOBK_VARIANT=$(OBK_VARIANT)
 CPPDEFINES += -D__FILE__=\"\" -Wno-builtin-macro-redefined
 
+ifeq ($(CFG_USE_TAILSCALE),1)
+include $(OBK_DIR)/platforms/tailscale.mk
+endif
+
 ifeq ($(TARGET_PLATFORM),bk7231n)
 
 CFG_USE_MQTT_TLS ?= 0
