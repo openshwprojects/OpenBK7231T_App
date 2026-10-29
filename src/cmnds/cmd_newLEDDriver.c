@@ -599,10 +599,28 @@ void apply_smart_light() {
 			CHANNEL_Set_FloatPWM(firstChannelIndex+1, value_brightness, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
 		}
 	} else {
+		float whiteBlendBaseRGBCW[5];
+		bool bWhiteBlendMode = CFG_HasFlag(OBK_FLAG_LED_WHITE_BLEND_MODE)
+			&& g_lightMode == Light_RGB
+			&& !CFG_HasFlag(OBK_FLAG_LED_FORCE_MODE_RGB);
+
+		for (i = 0; i < 5; i++) {
+			whiteBlendBaseRGBCW[i] = led_baseColors[i];
+		}
+
+		if (bWhiteBlendMode) {
+			float white = MIN(led_baseColors[0], MIN(led_baseColors[1], led_baseColors[2]));
+			for (i = 0; i < 3; i++) {
+				whiteBlendBaseRGBCW[i] = led_baseColors[i] - white;
+			}
+			whiteBlendBaseRGBCW[3] = 0;
+			whiteBlendBaseRGBCW[4] = white;
+		}
+
 		float gammaColors[5] = { 0, 0, 0, 0, 0 };
 		if(g_lightEnableAll) {
 			for(i = 0; i < maxPossibleIndexToSet; i++) {
-				gammaColors[i] = led_gamma_correction (i, led_baseColors[i]);
+				gammaColors[i] = led_gamma_correction (i, whiteBlendBaseRGBCW[i]);
 			}
 			if(g_lightMode == Light_RGB && g_colorBlendLimit > 0) {
 				float cap = 255.0f * g_colorBlendLimit;
@@ -614,10 +632,11 @@ void apply_smart_light() {
 				}
 			}
 		}
+
 		for(i = 0; i < maxPossibleIndexToSet; i++) {
 			float final = gammaColors[i];
 
-			baseRGBCW[i] = led_baseColors[i];
+			baseRGBCW[i] = whiteBlendBaseRGBCW[i];
 			if(g_lightMode == Light_Temperature) {
 				// skip channels 0, 1, 2
 				// (RGB)
@@ -629,7 +648,7 @@ void apply_smart_light() {
 			}
 			else if (g_lightMode == Light_RGB) {
 				// skip channels 3, 4
-				if (i >= 3)
+				if ((!bWhiteBlendMode && i >= 3) || (bWhiteBlendMode && i == 3))
 				{
 					baseRGBCW[i] = 0;
 					final = 0;
