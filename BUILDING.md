@@ -63,6 +63,8 @@ make APP_NAME=OpenBK7238 FLASH_SIZE=4M OpenBK7238
 The outputs then carry a `_4M` suffix, and the QIO image is packed with the 4 MB
 bootloader (the shipped one with the 4 MB table in its tail; see
 `tools/beken_packager/make_bootloader_4m.py` in the SDK).
+Switching between the two sizes needs no `make clean`: the app's objects are
+rebuilt when the size changes.
 
 ## Building for XR809
 
