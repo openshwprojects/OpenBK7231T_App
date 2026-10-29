@@ -746,7 +746,12 @@ ifeq ($(FLASH_SIZE), 4M)
 BK7238_SED += -e 's/^\(\#define CFG_FLASH_SELECTION_TYPE[ \t]*\)FLASH_SELECTION_TYPE_2M/\1FLASH_SELECTION_TYPE_4M/'
 BK7238_SUFFIX = _4M
 endif
+# The app's objects (out/app) do not depend on the SDK's config header, so a
+# change of flash size since the last build throws them away (as does a tree
+# built before this stamp existed); the SDK's own objects already rebuild.
+# out/.obk_flash_size remembers the last size.
 OpenBK7238: prebuild_OpenBK7238
+	if [ ! -f sdk/beken_freertos_sdk/out/.obk_flash_size ] || [ "$$(cat sdk/beken_freertos_sdk/out/.obk_flash_size)" != "$(FLASH_SIZE)" ]; then rm -rf sdk/beken_freertos_sdk/out/app; fi
 ifneq ($(strip $(BK7238_SED)),)
 	cd sdk/beken_freertos_sdk && \
 	cp -f beken378/app/config/sys_config_bk7238.h beken378/app/config/sys_config_bk7238.h.bak && \
@@ -758,6 +763,7 @@ ifneq ($(strip $(BK7238_SED)),)
 else
 	cd sdk/beken_freertos_sdk && ARM_GCC_TOOLCHAIN=$(PWD)/sdk/beken_freertos_sdk/toolchain/arm-none-eabi/bin/ OBK_VARIANT=$(OBK_VARIANT) sh build.sh bk7238 $(APP_VERSION)
 endif
+	mkdir -p sdk/beken_freertos_sdk/out && echo "$(FLASH_SIZE)" > sdk/beken_freertos_sdk/out/.obk_flash_size
 	mkdir -p output/$(APP_VERSION)
 	cp sdk/beken_freertos_sdk/out/bk7238.bin output/$(APP_VERSION)/OpenBK7238$(BK7238_SUFFIX)_${APP_VERSION}.bin
 	cp sdk/beken_freertos_sdk/out/bk7238_QIO.bin output/$(APP_VERSION)/OpenBK7238$(BK7238_SUFFIX)_QIO_${APP_VERSION}.bin

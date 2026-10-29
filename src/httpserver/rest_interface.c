@@ -1402,7 +1402,7 @@ static int http_rest_post_flash_advanced(http_request_t* request) {
 	sres = sscanf(params, "%x", &startaddr);
 	if (sres == 1 && startaddr >= START_ADR_OF_BK_PARTITION_OTA) {
 		// allow up to end of flash
-		return http_rest_post_flash(request, startaddr, 0x200000);
+		return http_rest_post_flash(request, startaddr, DEFAULT_FLASH_LEN);
 	}
 	return http_rest_error(request, -1, "invalid url");
 }
