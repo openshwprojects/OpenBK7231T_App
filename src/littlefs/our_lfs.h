@@ -53,11 +53,19 @@
 #define LFS_BLOCKS_END 0x1D0000
 
 #elif PLATFORM_BK7238
-// start 0x1000 after OTA addr (OTA start 0x132000)
+// LittleFS lives inside the OTA partition, 0x1000 after its start, so its
+// bounds follow the partition table the SDK was built with (sys_config.h):
+// OTA is 0x132000-0x1E0000 on the 2 MB table, 0x286000-0x3E0000 on the 4 MB one.
+#include "sys_config.h"
+#if CFG_FLASH_SELECTION_TYPE == FLASH_SELECTION_TYPE_4M
+#define LFS_BLOCKS_START 0x287000
+#define LFS_BLOCKS_START_MIN 0x287000
+#define LFS_BLOCKS_END 0x3E0000
+#else
 #define LFS_BLOCKS_START 0x133000
 #define LFS_BLOCKS_START_MIN 0x133000
-// end of OTA flash / before RF firmware (OTA end 0x1E0000)
 #define LFS_BLOCKS_END 0x1E0000
+#endif
 
 #elif PLATFORM_BK7252N
 // start 0x1000 after OTA addr

@@ -732,11 +732,30 @@ OpenRTL8720E: prebuild_OpenRTL8720E
 	cp sdk/ameba-rtos/amebalite_gcc_project/ota_all.bin output/$(APP_VERSION)/OpenRTL8720E_$(APP_VERSION)_ota.img
 
 .PHONY: OpenBK7238
-OpenBK7238: prebuild_OpenBK7238
+# The SDK's sys_config_bk7238.h hard-wires the 2 MB partition table. BK7238 boards
+# with 4 MB flash (e.g. Sonoff's S61 plugs) are built with FLASH_SIZE=4M, which
+# selects the SDK's 4 MB table: the OTA slot, config sector and RF-calibration
+# partition then sit where a 4 MB stock image (and its bootloader) keep them.
+# The edits are made on a copy of the header for the build and undone after.
+BK7238_SED =
+BK7238_SUFFIX =
 ifeq ($(OBK_VARIANT), 8)
+BK7238_SED += -e 's/\#if 0\/\/BTPROXY/\#if 1/'
+endif
+ifeq ($(FLASH_SIZE), 4M)
+BK7238_SED += -e 's/^\(\#define CFG_FLASH_SELECTION_TYPE[ \t]*\)FLASH_SELECTION_TYPE_2M/\1FLASH_SELECTION_TYPE_4M/'
+BK7238_SUFFIX = _4M
+endif
+# The app's objects (out/app) do not depend on the SDK's config header, so a
+# change of flash size since the last build throws them away (as does a tree
+# built before this stamp existed); the SDK's own objects already rebuild.
+# out/.obk_flash_size remembers the last size.
+OpenBK7238: prebuild_OpenBK7238
+	if [ ! -f sdk/beken_freertos_sdk/out/.obk_flash_size ] || [ "$$(cat sdk/beken_freertos_sdk/out/.obk_flash_size)" != "$(FLASH_SIZE)" ]; then rm -rf sdk/beken_freertos_sdk/out/app; fi
+ifneq ($(strip $(BK7238_SED)),)
 	cd sdk/beken_freertos_sdk && \
 	cp -f beken378/app/config/sys_config_bk7238.h beken378/app/config/sys_config_bk7238.h.bak && \
-	sed -i 's/#if 0\/\/BTPROXY/#if 1/' beken378/app/config/sys_config_bk7238.h && \
+	sed -i $(BK7238_SED) beken378/app/config/sys_config_bk7238.h && \
 	ARM_GCC_TOOLCHAIN=$(PWD)/sdk/beken_freertos_sdk/toolchain/arm-none-eabi/bin/ OBK_VARIANT=$(OBK_VARIANT) sh build.sh bk7238 $(APP_VERSION); \
 	rc=$$?; \
 	mv -f beken378/app/config/sys_config_bk7238.h.bak beken378/app/config/sys_config_bk7238.h; \
@@ -744,11 +763,12 @@ ifeq ($(OBK_VARIANT), 8)
 else
 	cd sdk/beken_freertos_sdk && ARM_GCC_TOOLCHAIN=$(PWD)/sdk/beken_freertos_sdk/toolchain/arm-none-eabi/bin/ OBK_VARIANT=$(OBK_VARIANT) sh build.sh bk7238 $(APP_VERSION)
 endif
+	mkdir -p sdk/beken_freertos_sdk/out && echo "$(FLASH_SIZE)" > sdk/beken_freertos_sdk/out/.obk_flash_size
 	mkdir -p output/$(APP_VERSION)
-	cp sdk/beken_freertos_sdk/out/bk7238.bin output/$(APP_VERSION)/OpenBK7238_${APP_VERSION}.bin
-	cp sdk/beken_freertos_sdk/out/bk7238_QIO.bin output/$(APP_VERSION)/OpenBK7238_QIO_${APP_VERSION}.bin
-	cp sdk/beken_freertos_sdk/out/app.rbl output/$(APP_VERSION)/OpenBK7238_${APP_VERSION}.rbl
-	cp sdk/beken_freertos_sdk/out/bk7238_UA.bin output/$(APP_VERSION)/OpenBK7238_UA_${APP_VERSION}.bin
+	cp sdk/beken_freertos_sdk/out/bk7238.bin output/$(APP_VERSION)/OpenBK7238$(BK7238_SUFFIX)_${APP_VERSION}.bin
+	cp sdk/beken_freertos_sdk/out/bk7238_QIO.bin output/$(APP_VERSION)/OpenBK7238$(BK7238_SUFFIX)_QIO_${APP_VERSION}.bin
+	cp sdk/beken_freertos_sdk/out/app.rbl output/$(APP_VERSION)/OpenBK7238$(BK7238_SUFFIX)_${APP_VERSION}.rbl
+	cp sdk/beken_freertos_sdk/out/bk7238_UA.bin output/$(APP_VERSION)/OpenBK7238$(BK7238_SUFFIX)_UA_${APP_VERSION}.bin
 
 .PHONY: OpenBK7231U
 OpenBK7231U: prebuild_OpenBK7231U
