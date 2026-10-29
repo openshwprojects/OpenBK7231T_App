@@ -838,8 +838,8 @@ OpenECR6600: prebuild_OpenECR6600
 	
 .PHONY: OpenTXW81X
 OpenTXW81X: prebuild_OpenTXW81X
-	cd sdk/OpenTXW81X/project && make APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT) -j $(shell nproc) && \
-	./BinScript.exe BinScript.BinScript > /dev/null && ./makecode.exe > /dev/null
+	$(MAKE) -C sdk/OpenTXW81X/project APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT) -j $(shell nproc)
+	sh platforms/TXW81X/package_native.sh
 	mkdir -p output/$(APP_VERSION)
 	cp sdk/OpenTXW81X/project/APP.bin output/$(APP_VERSION)/OpenTXW81X_$(APP_VERSION).bin
 	cp sdk/OpenTXW81X/project/APP_compress.bin output/$(APP_VERSION)/OpenTXW81X_$(APP_VERSION)_ota.img
