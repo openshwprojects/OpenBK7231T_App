@@ -107,6 +107,23 @@ void Test_FakeHTTPClientPacket_POST(const char *tg, const char *data) {
 	sprintf(buffer, http_post_template1, tg, dataLen, data);
 	Test_FakeHTTPClientPacket_Generic();
 }
+const char *http_put_template1 = "PUT /%s HTTP/1.1\r\n"
+"Host: 127.0.0.1\r\n"
+"Content-Type: application/json\r\n"
+"Content-Length: %i\r\n"
+"\r\n"
+"%s";
+
+void Test_FakeHTTPClientPacket_PUT_withJSONReply(const char *tg, const char *data) {
+	int dataLen = strlen(data);
+
+	sprintf(buffer, http_put_template1, tg, dataLen, data);
+	Test_FakeHTTPClientPacket_Generic();
+	Test_GetJSONValue_Setup(replyAt);
+}
+cJSON *Test_GetLastJSON() {
+	return g_json;
+}
 void Test_FakeHTTPClientPacket_POST_withJSONReply(const char *tg, const char *data) {
 	Test_FakeHTTPClientPacket_POST(tg, data);
 	Test_GetJSONValue_Setup(replyAt);

@@ -303,6 +303,7 @@ void Win_DoUnitTests()
 	Test_Pins();
 	Test_Http();
 	Test_Http_LED();
+	Test_Hue();
 	Test_DeviceGroups();
 
 	// Just to be sure
