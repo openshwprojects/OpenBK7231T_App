@@ -473,7 +473,7 @@ bool IRrecv::decodeGoodweather(decode_results* results, uint16_t offset,
     DPRINT("DEBUG: inverted = ");
     DPRINTLN(itoa(inverted,tmp,10));
     if (data != (inverted ^ 0xFF)) return false;  // Data integrity failed.
-    dataSoFar |= (uint64_t)data << dataBitsSoFar;
+    dataSoFar |= static_cast<uint64_t>(data) << dataBitsSoFar;
   }
 
   // Footer.
