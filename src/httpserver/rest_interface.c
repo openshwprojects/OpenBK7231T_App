@@ -739,8 +739,10 @@ static int http_rest_get_lfs_delete(http_request_t* request) {
 }
 
 static int http_rest_post_lfs_file(http_request_t* request) {
-	int len;
+	int len = 0;
 	int lfsres;
+	int existed;
+	struct lfs_info info;
 	int total = 0;
 	int loops = 0;
 
@@ -782,7 +784,8 @@ static int http_rest_post_lfs_file(http_request_t* request) {
 
 	//ADDLOG_DEBUG(LOG_FEATURE_API, "LFS write of %s len %d", fpath, request->contentLength);
 
-	lfsres = lfs_file_open(&lfs, file, fpath, LFS_O_RDWR | LFS_O_CREAT | LFS_O_TRUNC);
+	existed = lfs_stat(&lfs, fpath, &info) >= 0;
+	lfsres = lfs_file_open(&lfs, file, fpath, LFS_O_RDWR | LFS_O_CREAT);
 	if (lfsres >= 0) {
 		//ADDLOG_DEBUG(LOG_FEATURE_API, "opened %s");
 		int towrite = request->bodylen;
@@ -855,6 +858,18 @@ static int http_rest_post_lfs_file(http_request_t* request) {
 #if PLATFORM_RTL8196C
 		if (rx_stream_buf) os_free(rx_stream_buf);
 #endif
+
+		if (len < 0) {
+			// an errored file is not synced on close, so an existing file keeps its old content
+			lfs_file_close(&lfs, file);
+			if (!existed) {
+				lfs_remove(&lfs, fpath);
+			}
+			request->responseCode = HTTP_RESPONSE_SERVER_ERROR;
+			http_setup(request, httpMimeTypeJson);
+			hprintf255(request, "{\"fname\":\"%s\",\"error\":%d}", fpath, len);
+			goto exit;
+		}
 
 		// no more data
 		lfs_file_truncate(&lfs, file, total);
