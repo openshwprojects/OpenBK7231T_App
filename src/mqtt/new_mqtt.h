@@ -148,6 +148,9 @@ const char* MQTT_RemoveClientFromTopic(const char* topic, const char *prefix);
 // are working...
 int MQTT_Post_Received(const char *topic, int topiclen, const unsigned char *data, int datalen);
 int MQTT_Post_Received_Str(const char *topic, const char *data);
+#ifdef WINDOWS
+void MQTT_Test_ReceiveInPieces(const char* topic, const char* payload, int pieceLen);
+#endif
 
 void MQTT_GetStats(int* outUsed, int* outMax, int* outFreeMem);
 
