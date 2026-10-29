@@ -667,18 +667,24 @@ int channelGet(obk_mqtt_request_t* request) {
 	int channel = 0;
 	const char* p;
 
-	// we only support here publishes with emtpy value, otherwise we would get into
-	// a loop where we receive a get, and then send get reply with val, and receive our own get
-	if (request->receivedLen) {
-		return 1;
-	}
-
 	addLogAdv(LOG_DEBUG, LOG_FEATURE_MQTT, "channelGet topic %i with arg %s", request->topic, request->received);
 
 	p = MQTT_RemoveClientFromTopic(request->topic,0);
 
 	if (p == NULL) {
 		return 0;
+	}
+
+	// Ignore other callbacks sharing the device prefix, such as infrared/send.
+	const char* suffix = strchr(p, '/');
+	if (suffix == NULL || strcmp(suffix, "/get")) {
+		return 0;
+	}
+
+	// we only support here publishes with emtpy value, otherwise we would get into
+	// a loop where we receive a get, and then send get reply with val, and receive our own get
+	if (request->receivedLen) {
+		return 1;
 	}
 
 	addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "channelGet part topic %s", p);
