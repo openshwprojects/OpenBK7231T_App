@@ -850,6 +850,12 @@
 #endif
 
 
+// for testing: enable new driver SHTxx for all platforms instead of SHT3X
+#if ENABLE_DRIVER_SHT3X
+#define ENABLE_DRIVER_SHTXX                                            1
+#undef ENABLE_DRIVER_SHT3X
+#endif
+
 // ensure no log2lfs without LFS present
 #if ! ENABLE_LITTLEFS
 #undef ENABLE_LOG2LFS
