@@ -23,6 +23,10 @@
 extern uint8_t flash_size_8720;
 #undef DEFAULT_FLASH_LEN
 #define DEFAULT_FLASH_LEN (flash_size_8720 << 20)
+#elif PLATFORM_BEKEN
+// 1, 2 or 4 MB, whichever partition table the firmware was built with
+#undef DEFAULT_FLASH_LEN
+#define DEFAULT_FLASH_LEN (HAL_Beken_FlashLength())
 #endif
 
 #include "../new_cfg.h"
