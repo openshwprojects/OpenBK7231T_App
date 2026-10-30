@@ -492,6 +492,7 @@ void IR_Proxy_Init(void)
 		snprintf(cbtopicsub, sizeof(cbtopicsub), "%s/infrared/send", clientId);
 		MQTT_RegisterCallback(cbtopicbase, cbtopicsub, 0, IRSendMQTTMessage); // FIXME: ID 0 because otherwise mqtt message will be caught by channelGet handler
 		HAL_PIN_PWM_Start(sendpin, IR_MODULATION_HZ);
+		HAL_PIN_PWM_Update(sendpin, 0);
 	}
 
 	HAL_HWTimerStart(ir_chan);
