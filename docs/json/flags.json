@@ -88,7 +88,7 @@
     "enum": "OBK_FLAG_LED_REMEMBERLASTSTATE",
     "title": "todo",
     "file": "new_pins.h",
-    "descr": "[LED] Remember LED driver state (RGBCW, enable, brightness, temperature) after reboot"
+    "descr": "[LED] Remember LED driver state (RGBCW/RGBW, enable, brightness, temperature) after reboot"
   },
   {
     "index": "13",
@@ -362,5 +362,12 @@
     "title": "todo",
     "file": "new_pins.h",
     "descr": "[WiFi] (RTL/BK/BL602) Enhanced fast connect by saving AP data to flash (preferable with Flag 37 & static ip). Quick reset 3 times to connect normally"
+  },
+  {
+    "index": "52",
+    "enum": "OBK_FLAG_LED_4PWM_RGBW_MODE",
+    "title": "todo",
+    "file": "new_pins.h",
+    "descr": "[LED] Enables independent management of RGB vs White only modes for 4 PWMs"
   }
 ]

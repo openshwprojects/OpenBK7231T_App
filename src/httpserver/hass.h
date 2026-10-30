@@ -28,6 +28,9 @@ typedef enum {
 	/// @brief RGB + temperature (5 PWM or LED driver)
 	LIGHT_RGBCW,
 
+	/// @brief RGB + independent White (4 PWM, flag 52)
+	LIGHT_RGBW,
+
 	/// @brief Power sensors (voltage, current, power)
 	ENERGY_METER_SENSOR,
 
