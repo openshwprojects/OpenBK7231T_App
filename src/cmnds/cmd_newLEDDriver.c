@@ -1909,9 +1909,9 @@ void NewLED_InitCommands(){
 	//cmddetail:"examples":"led_gammaCtrl on"}
     CMD_RegisterCommand("led_gammaCtrl", led_gamma_control, NULL);
 	//cmddetail:{"name":"CTRange","args":"[MinRange][MaxRange]",
-	//cmddetail:"descr":"This sets the temperature range for display. Default is 154-500. Reversing the range (min greater than max) inverts the temperature direction, for CCT hardware that maps the warm and cold channels backwards. The value is not saved across reboots, so put CTRange in the startup command to keep the direction after each boot.",
+	//cmddetail:"descr":"This sets the temperature range for display. Default is 154-500. A reversed range (min greater than max) inverts the temperature direction on CCT hardware that maps the warm and cold channels backwards. Caveats: while the range is reversed, relative adjustments (add_temperature, SmartButtonForLEDs hold) degenerate, and applying the command snaps the current temperature to the new max without an MQTT led_temperature update. Swapping the cold and warm channel assignments is the persistent fix when it works; on CCT hardware using the alternate CW mode (flag 8) the channel swap did not change the output direction in my tests and the reversed range was the working option. The value is not saved, reapply it from autoexec.bat or the short startup command.",
 	//cmddetail:"fn":"ctRange","file":"cmnds/cmd_newLEDDriver.c","requires":"",
-	//cmddetail:"examples":"CTRange 500 154 # inverted direction for a CCT bulb with swapped channels"}
+	//cmddetail:"examples":"CTRange 500 154"}
 	CMD_RegisterCommand("CTRange", ctRange, NULL);
 	//cmddetail:{"name":"DimmerDelta","args":"[DeltaValue]",
 	//cmddetail:"descr":"This sets the delta value for SmartDimmer/SmartButtonForLEDs hold event. This determines the amount of change of dimmer per hold event.",
