@@ -186,6 +186,13 @@ void HAL_PIN_PWM_Update(int index, float value)
 	if(pin->pwm == NULL) return;
 #endif
 	pwmout_write(pin->pwm, value / 100);
+#if PLATFORM_RTL8710B || PLATFORM_RTL8720D
+	// CCR=0 still emits a one-clock pulse on RTL8710B; disable zero-duty output.
+	if(value <= 0)
+		pwmout_stop(pin->pwm);
+	else
+		pwmout_start(pin->pwm);
+#endif
 }
 
 unsigned int HAL_GetGPIOPin(int index)

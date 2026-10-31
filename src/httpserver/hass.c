@@ -139,6 +139,14 @@ void hass_populate_unique_id(ENTITY_TYPE type, int index, char* uniq_id, int ase
 	case HASS_SELECT:
 		sprintf(uniq_id, "%s_%s", longDeviceName, "select");
 		break;
+#if ENABLE_DRIVER_IR_PROXY
+	case HASS_IRRECV:
+		sprintf(uniq_id, "%s_%s", longDeviceName, "infrared_r");
+		break;
+	case HASS_IRSEND:
+		sprintf(uniq_id, "%s_%s", longDeviceName, "infrared_s");
+		break;
+#endif
 	default:
 		// TODO: USE type here as well?
 		// If type is not set, and we use "sensor" naming, we can easily make collision
@@ -215,6 +223,12 @@ void hass_populate_device_config_channel(ENTITY_TYPE type, char* uniq_id, HassDe
 	case HASS_BUTTON:
 		sprintf(info->channel, "button/%s/config", uniq_id);
 		break;
+#if ENABLE_DRIVER_IR_PROXY
+	case HASS_IRRECV:
+	case HASS_IRSEND:
+		sprintf(info->channel, "infrared/%s/config", uniq_id);
+		break;
+#endif
 	default:
 		sprintf(info->channel, "sensor/%s/config", uniq_id);
 		break;
@@ -649,6 +663,14 @@ HassDeviceInfo* hass_init_device_info(ENTITY_TYPE type, int index, const char* p
 		case HASS_BUTTON:
 			sprintf(g_hassBuffer, "%s" , "");
 			break;
+#if ENABLE_DRIVER_IR_PROXY
+		case HASS_IRRECV:
+			sprintf(g_hassBuffer, "IR Receiver");
+			break;
+		case HASS_IRSEND:
+			sprintf(g_hassBuffer, "IR Transmitter");
+			break;
+#endif
 		case HASS_READONLYENUM:
 		default:
 			sprintf(g_hassBuffer, "%s", CHANNEL_GetLabel(index));

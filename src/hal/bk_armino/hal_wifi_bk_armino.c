@@ -304,12 +304,15 @@ void HAL_FastConnectToWiFi(const char* oob_ssid, const char* connect_key, obkSta
 		sta_cfg.security = fcdata.security_type;
 		sta_cfg.is_user_fast_connect = 1;
 		sta_cfg.is_not_support_auto_fci = 1;
-		sta_cfg.psk_len = 64;
-		sta_cfg.psk_calculated = true;
+		if(fcdata.security_type > WIFI_SECURITY_WEP && fcdata.security_type < WIFI_SECURITY_WPA3_SAE)
+		{
+			sta_cfg.psk_len = 64;
+			sta_cfg.psk_calculated = true;
+			memcpy(sta_cfg.psk, fcdata.psk, 64);
+		}
 		strcpy((char *)sta_cfg.ssid, oob_ssid);
 		strcpy((char *)sta_cfg.password, connect_key);
 		memcpy(sta_cfg.bssid, fcdata.bssid, sizeof(fcdata.bssid));
-		memcpy(sta_cfg.psk, fcdata.psk, 64);
 		g_bStaticIP = false;
 		if(ip->localIPAddr[0] != 0)
 		{
