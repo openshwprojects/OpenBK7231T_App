@@ -92,5 +92,6 @@ bool TuyaMCU_IsLEDRunning();
 
 void Shutter_MoveByIndex(int index, float frac, bool bStopOnDuplicate);
 
+
 #endif /* __DRV_PUBLIC_H__ */
 
