@@ -56,6 +56,36 @@ static HLW8112_UpdateData_t last_update_data = {
 static int stat_save_count_down = HLW8112_SAVE_COUNTER;
 int GPIO_HLW_SCSN = 9;
 
+// --- MQTT publish throttling -------------------------------------------------
+// Follows the pattern of drv_bl_shared.c and drv_roomba.c for min frames and
+// forced heartbeat, but with per-channel thresholds and tracking.
+// VCPPublishIntervals command is re-used for user-facing configuration of
+// min frames and heartbeat (as per BL meter family) because when HLW8112 is
+// built, the BL code is not included so will not collide.
+static int HLW8112_changeDoNotSendMinFrames = 5;    // min seconds between publishes
+static int HLW8112_changeSendAlwaysFrames   = 60;   // forced heartbeat (seconds)
+
+// Per-channel publish threshold, in the same units as the float passed to
+// CHANNEL_Set in HLW8112_ScaleAndUpdate. Based on the BL defaults
+// (0.25 V, 0.002 A, 0.25 W, 0.02 Hz, 0.1 Wh).
+static const float HLW8112_changeThreshold[12] = {
+	[HLW8112_Channel_Voltage]          = 0.25f,   // volts (v_rms / 10)
+	[HLW8112_Channel_Frequency]        = 0.02f,   // raw freq units
+	[HLW8112_Channel_PowerFactor]      = 0.01f,   // pf
+	[HLW8112_Channel_current_A]        = 0.002f,  // amps
+	[HLW8112_Channel_current_B]        = 0.002f,
+	[HLW8112_Channel_power_A]          = 0.25f,   // watts (pa / 10)
+	[HLW8112_Channel_power_B]          = 0.25f,
+	[HLW8112_Channel_apparent_power_A] = 0.25f,
+	[HLW8112_Channel_export_A]         = 0.1f,    // value passed * 1000
+	[HLW8112_Channel_export_B]         = 0.1f,
+	[HLW8112_Channel_import_A]         = 0.1f,
+	[HLW8112_Channel_import_B]         = 0.1f,
+};
+static float HLW8112_lastSentValue[12];
+static int   HLW8112_noChangeFrame[12];
+static bool  HLW8112_publishedOnce = false;
+
 #pragma region HLW8112 utils
 
 #if HLW8112_SPI_RAWACCESS
@@ -315,10 +345,18 @@ void HLW8112_Set_EnergyStat(HLW8112_Channel_t channel, float import, float expor
 		data = &energy_acc_b;
 		counter_reg = HLW8112_REG_PFCntPB;
 		CHANNEL_Set(HLW8112_Channel_export_B, export * 1000, 0);
+		HLW8112_lastSentValue[HLW8112_Channel_export_B] = export * 1000.0f;
+		HLW8112_noChangeFrame[HLW8112_Channel_export_B] = 0;
 		CHANNEL_Set(HLW8112_Channel_import_B, import * 1000, 0);
+		HLW8112_lastSentValue[HLW8112_Channel_import_B] = import * 1000.0f;
+		HLW8112_noChangeFrame[HLW8112_Channel_import_B] = 0;
 	}else {
 		CHANNEL_Set(HLW8112_Channel_export_A, export * 1000, 0);
+		HLW8112_lastSentValue[HLW8112_Channel_export_A] = export * 1000.0f;
+		HLW8112_noChangeFrame[HLW8112_Channel_export_A] = 0;
 		CHANNEL_Set(HLW8112_Channel_import_A, import * 1000, 0);
+		HLW8112_lastSentValue[HLW8112_Channel_import_A] = import * 1000.0f;
+		HLW8112_noChangeFrame[HLW8112_Channel_import_A] = 0;
 	}
 
 	HLW8112_WriteRegister16(counter_reg,0);
@@ -480,6 +518,20 @@ static commandResult_t HLW8112_a(const void *context, const char *cmd, const cha
 }
 #endif
 
+// Sets the MQTT publish throttle: arg0 = minimum seconds between publishes
+// (changeDoNotSendMinFrames), arg1 = forced heartbeat interval in seconds
+// (changeSendAlwaysFrames). Same name/semantics as the BL meter command so it
+// can be placed in autoexec.bat exactly as documented, e.g. "VCPPublishIntervals 10 120".
+static commandResult_t HLW8112_VCPPublishIntervals(const void *context, const char *cmd, const char *args, int cmdFlags) {
+	Tokenizer_TokenizeString(args, 0);
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 2)) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+	HLW8112_changeDoNotSendMinFrames = Tokenizer_GetArgInteger(0);
+	HLW8112_changeSendAlwaysFrames = Tokenizer_GetArgInteger(1);
+	return CMD_RES_OK;
+}
+
 void HLW8112_addCommads(void){
 	//cmddetail:{"name":"HLW8112_SetClock","args":"TODO",
 	//cmddetail:"descr":"",
@@ -501,6 +553,11 @@ void HLW8112_addCommads(void){
 	//cmddetail:"fn":"HLW8112_ClearEnergy","file":"driver/drv_hlw8112.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("clear_energy", HLW8112_ClearEnergy, NULL);
+	//cmddetail:{"name":"VCPPublishIntervals","args":"[MinDelayBetweenPublishes][ForcedPublishInterval]",
+	//cmddetail:"descr":"Throttles HLW8112 MQTT publishing: minimum seconds between publishes and forced heartbeat interval (seconds).",
+	//cmddetail:"fn":"HLW8112_VCPPublishIntervals","file":"driver/drv_hlw8112.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("VCPPublishIntervals", HLW8112_VCPPublishIntervals, NULL);
 #if HLW8112_SPI_RAWACCESS
 	//cmddetail:{"name":"HLW8112_write_reg","args":"TODO",
 	//cmddetail:"descr":"",
@@ -917,6 +974,29 @@ void HLW8112_ScalePowerFactor(uint32_t regValue, int16_t* value){
 	}
 }
 
+
+// Publish on a force flag
+// OR when the value moved more than its threshold and at least 
+//  changeDoNotSendMinFrames have elapsed
+// OR when changeSendAlwaysFrames have elapsed (forced heartbeat).
+// Track the float value pre-CHANNEL_Set because CHANNEL_Set_Ex compares integers and
+// would never see sub-integer change; publish with CHANNEL_SET_FLAG_FORCE so the
+// integer-equality short-circuit cannot suppress a due heartbeat.
+static void HLW8112_PublishIfNeeded(int channel, float newValue, bool force) {
+	float diff = newValue - HLW8112_lastSentValue[channel];
+	if (force ||
+		((fabsf(diff) > HLW8112_changeThreshold[channel]) &&
+		 (HLW8112_noChangeFrame[channel] >= HLW8112_changeDoNotSendMinFrames)) ||
+		(HLW8112_noChangeFrame[channel] >= HLW8112_changeSendAlwaysFrames)) {
+		HLW8112_noChangeFrame[channel] = 0;
+		HLW8112_lastSentValue[channel] = newValue;
+		CHANNEL_Set(channel, (int)newValue, CHANNEL_SET_FLAG_FORCE);
+	} else {
+		HLW8112_noChangeFrame[channel]++;
+	}
+}
+
+
 static void HLW8112_ScaleAndUpdate(HLW8112_Data_t* data) {
 
 	int16_t power_factor;
@@ -984,18 +1064,24 @@ static void HLW8112_ScaleAndUpdate(HLW8112_Data_t* data) {
 
 	// update
 	
-	CHANNEL_Set(HLW8112_Channel_Voltage, last_update_data.v_rms / 10.0, 0);
-	CHANNEL_Set(HLW8112_Channel_Frequency,last_update_data.freq , 0);
-	CHANNEL_Set(HLW8112_Channel_PowerFactor, last_update_data.pf, 0);
-	CHANNEL_Set(HLW8112_Channel_current_B, last_update_data.ib_rms, 0);
-	CHANNEL_Set(HLW8112_Channel_current_A,last_update_data.ia_rms , 0);
-	CHANNEL_Set(HLW8112_Channel_power_B, last_update_data.pb / 10.0, 0);
-	CHANNEL_Set(HLW8112_Channel_power_A, last_update_data.pa / 10.0, 0);
-	CHANNEL_Set(HLW8112_Channel_apparent_power_A, last_update_data.ap / 10.0, 0);
-	CHANNEL_Set(HLW8112_Channel_export_B, last_update_data.eb->Export * 1000, 0);
-	CHANNEL_Set(HLW8112_Channel_export_A, last_update_data.ea->Export * 1000, 0);
-	CHANNEL_Set(HLW8112_Channel_import_B, last_update_data.eb->Import * 1000, 0);
-	CHANNEL_Set(HLW8112_Channel_import_A, last_update_data.ea->Import * 1000, 0);
+	// First frame after boot force-publishes every channel; later frames throttle.
+	// Using a one-shot flag (not lastSentValue seeding) avoids any dependency on
+	// when VCPPublishIntervals runs from autoexec.bat relative to driver init.
+	bool force = !HLW8112_publishedOnce;
+	HLW8112_publishedOnce = true;
+
+	HLW8112_PublishIfNeeded(HLW8112_Channel_Voltage,          last_update_data.v_rms / 10.0f,        force);
+	HLW8112_PublishIfNeeded(HLW8112_Channel_Frequency,        (float)last_update_data.freq,          force);
+	HLW8112_PublishIfNeeded(HLW8112_Channel_PowerFactor,      (float)last_update_data.pf,            force);
+	HLW8112_PublishIfNeeded(HLW8112_Channel_current_B,        (float)last_update_data.ib_rms,        force);
+	HLW8112_PublishIfNeeded(HLW8112_Channel_current_A,        (float)last_update_data.ia_rms,        force);
+	HLW8112_PublishIfNeeded(HLW8112_Channel_power_B,          last_update_data.pb / 10.0f,           force);
+	HLW8112_PublishIfNeeded(HLW8112_Channel_power_A,          last_update_data.pa / 10.0f,           force);
+	HLW8112_PublishIfNeeded(HLW8112_Channel_apparent_power_A, last_update_data.ap / 10.0f,           force);
+	HLW8112_PublishIfNeeded(HLW8112_Channel_export_B,         last_update_data.eb->Export * 1000.0f, force);
+	HLW8112_PublishIfNeeded(HLW8112_Channel_export_A,         last_update_data.ea->Export * 1000.0f, force);
+	HLW8112_PublishIfNeeded(HLW8112_Channel_import_B,         last_update_data.eb->Import * 1000.0f, force);
+	HLW8112_PublishIfNeeded(HLW8112_Channel_import_A,         last_update_data.ea->Import * 1000.0f, force);
 }
 
 #pragma endregion
