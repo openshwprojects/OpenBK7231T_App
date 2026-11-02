@@ -208,6 +208,7 @@ void Shift_OnChannelChanged(int ch, int value);
 
 void PIR_Init();
 void PIR_OnEverySecond();
+void PIR_OnQuickTick();
 void PIR_OnChannelChanged(int ch, int value);
 void PIR_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState);
 
