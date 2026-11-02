@@ -10,6 +10,9 @@ void BL_ProcessUpdate(float voltage, float current, float power,
                       float frequency, float energyWh);
 void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState);
 void BL09XX_SaveEmeteringStatistics();
+#if ENABLE_BL_POWER_LIMIT && ENABLE_HA_DISCOVERY
+void BL_PowerLimit_OnHassDiscovery(const char *topic);
+#endif
 
 #define BL_SENSORS_IX_0 0
 #if ENABLE_BL_TWIN
