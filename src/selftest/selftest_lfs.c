@@ -130,6 +130,18 @@ void Test_LFS() {
 	CMD_ExecuteCommand("lfs_appendInt numbers.txt 15+16", 0);
 	Test_FakeHTTPClientPacket_GET("api/lfs/numbers.txt");
 	SELFTEST_ASSERT_HTML_REPLY("value is 2023, and 31");
+
+	// a utf-8 bom at the start of a script must not glue itself to the first command
+	Test_FakeHTTPClientPacket_POST("api/lfs/bom.txt", "\xEF\xBB\xBF" "setChannel 16 7\nsetChannel 17 8\n");
+	CMD_ExecuteCommand("exec bom.txt", 0);
+	SELFTEST_ASSERT_CHANNEL(16, 7);
+	SELFTEST_ASSERT_CHANNEL(17, 8);
+	CMD_ExecuteCommand("setChannel 16 0", 0);
+	CMD_ExecuteCommand("setChannel 17 0", 0);
+	CMD_ExecuteCommand("startScript bom.txt", 0);
+	Sim_RunFrames(10, false);
+	SELFTEST_ASSERT_CHANNEL(16, 7);
+	SELFTEST_ASSERT_CHANNEL(17, 8);
 }
 
 #endif
