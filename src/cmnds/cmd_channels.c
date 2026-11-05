@@ -275,7 +275,15 @@ static commandResult_t CMD_SetPinRole(const void *context, const char *cmd, cons
 	}
 	role = Tokenizer_GetArg(1);
 
-	roleIndex = PIN_ParsePinRoleName(role);
+	// role by index or by name, like the pin argument
+	if (Tokenizer_IsArgInteger(1)) {
+		roleIndex = Tokenizer_GetArgInteger(1);
+		if (roleIndex < 0 || roleIndex >= IOR_Total_Options)
+			roleIndex = IOR_Total_Options;
+	}
+	else {
+		roleIndex = PIN_ParsePinRoleName(role);
+	}
 	if(roleIndex == IOR_Total_Options) {
 		ADDLOG_INFO(LOG_FEATURE_CMD, "Unknown role");
 		return CMD_RES_BAD_ARGUMENT;
@@ -558,7 +566,7 @@ void CMD_InitChannelCommands(){
 	//cmddetail:"fn":"CMD_ClampChannel","file":"cmnds/cmd_channels.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("ClampChannel", CMD_ClampChannel, NULL);
-	//cmddetail:{"name":"SetPinRole","args":"[PinRole][RoleIndexOrName]",
+	//cmddetail:{"name":"SetPinRole","args":"[PinIndexOrName][RoleIndexOrName]",
 	//cmddetail:"descr":"This allows you to set a pin role, for example a Relay role, or Button, etc. Usually it's easier to do this through WWW panel, so you don't have to use this command.",
 	//cmddetail:"fn":"CMD_SetPinRole","file":"cmnds/cmd_channels.c","requires":"",
 	//cmddetail:"examples":""}
