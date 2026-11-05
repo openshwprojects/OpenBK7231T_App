@@ -185,6 +185,7 @@ public:
 		sendPin = aSendPin;
 		our_us = 0;
 		our_ms = 0;
+		lastduty = -1;
 		resetsendqueue();
 	}
 	~myIRsend() { }
@@ -240,6 +241,8 @@ public:
 
 		HAL_PIN_PWM_Start(sendPin, freq);
 		//HAL_PIN_PWM_Update(sendPin, duty);
+		// force the ISR to write the output state again
+		lastduty = -1;
 	}
 
 	void resetsendqueue() {
@@ -272,6 +275,8 @@ public:
 
 	uint8_t sendPin;
 	uint32_t pwmduty;
+	// last duty written to the PWM by the ISR, so we only touch the hardware on a change
+	int32_t lastduty;
 
 	uint32_t our_ms;
 	float our_us;
@@ -341,7 +346,12 @@ extern "C" void DRV_IR_ISR(void* arg)
 				duty = 0;
 			}
 		}
-		HAL_PIN_PWM_Update(pIRsend->sendPin, duty);
+		// HAL_PIN_PWM_Update is slow (float maths + PWM register writes), so do not call it
+		// every 50us tick - that made the timer ISR run at ~74us instead of 50us on BK7231T
+		if ((int32_t)duty != pIRsend->lastduty) {
+			pIRsend->lastduty = (int32_t)duty;
+			HAL_PIN_PWM_Update(pIRsend->sendPin, duty);
+		}
 	}
 
 	// is someone really wants rx and TX at the same time, then allow it.
