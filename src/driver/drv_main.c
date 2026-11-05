@@ -840,7 +840,11 @@ static driver_t g_drivers[] = {
 	DRV_IR_RunFrame,                         // runQuickTick
 	DRV_IR_Deinit,                           // stopFunction
 	NULL,                                    // onChannelChanged
+#if ENABLE_DRIVER_IRREMOTEESP
+	DRV_IR_DoDiscovery,                      // onHassDiscovery
+#else
 	NULL,                                    // onHassDiscovery
+#endif
 	false,                                   // loaded
 	},
 #endif
