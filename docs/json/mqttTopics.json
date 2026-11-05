@@ -104,6 +104,11 @@
 		"topic": "OBK_DEV_NAME/RESULT",
 		"example": "{ \"IrReceived\": { \"Protocol\": \"Samsung\", \"Bits\": 32, \"Data\": \"0xEE110707\" } }",
 		"description": "Sent if Tasmota syntax IR publish is enabled in flags. NOTE: we may fix it and add tele prefix soon?"
+		},
+		{
+			"topic": "OBK_DEV_NAME/tm/TYPE/DPID",
+			"example": "60",
+			"description": "TuyaMCU only. Sent for every report of a dpID linked with linkTuyaMCUOutputToChannel [dpId] MQTT. TYPE is the type the MCU reports: raw, bool, val, str, enum or bitmap. Bool, val and enum payloads are decimal, raw and bitmap are hex, str is the text itself. There is no channel behind it, so it is read-only."
 		}
 	],
 	"listens": [
