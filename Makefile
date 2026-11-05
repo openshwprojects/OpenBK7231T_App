@@ -898,17 +898,21 @@ OPENRTL8196C_GIT ?= https://github.com/openshwprojects/OpenRTL8196C.git
 MIPS_MTI_VERSION = 2019.09-03
 MIPS_MTI_DIR = sdk/mips-mti-elf
 MIPS_MTI_BIN = $(CURDIR)/$(MIPS_MTI_DIR)/mips-mti-elf/$(MIPS_MTI_VERSION)/bin
+# newlib C headers (C++ ones skipped): mkinstall.py's stage-2 build compiles fatfs against <string.h>
+MIPS_MTI_INC = $(CURDIR)/$(MIPS_MTI_DIR)/mips-mti-elf/$(MIPS_MTI_VERSION)/mips-mti-elf/include
 MIPS_MTI_URL = https://codescape.mips.com/components/toolchain/$(MIPS_MTI_VERSION)/Codescape.GNU.Tools.Package.$(MIPS_MTI_VERSION).for.MIPS.MTI.Bare.Metal.CentOS-6.x86_64.tar.gz
 
 .PHONY: prebuild_OpenRTL8196C OpenRTL8196C
 prebuild_OpenRTL8196C: berry
 	if [ ! -e $(OPENRTL8196C_SDK)/tools/build_obk.py ]; then git clone --depth=1 $(OPENRTL8196C_GIT) $(OPENRTL8196C_SDK); fi
-	if [ -z "$$MIPS_GCC_BIN" ] && [ ! -e $(MIPS_MTI_BIN)/mips-mti-elf-gcc ] && \
+	if [ -z "$$MIPS_GCC_BIN" ] && { [ ! -e $(MIPS_MTI_BIN)/mips-mti-elf-gcc ] || [ ! -e $(MIPS_MTI_INC)/string.h ]; } && \
 	   ! ls $(OPENRTL8196C_SDK)/toolchain/mips-mti-elf/*/bin/mips-mti-elf-gcc* >/dev/null 2>&1; then \
 		mkdir -p $(MIPS_MTI_DIR) && \
 		curl -sSfL $(MIPS_MTI_URL) | tar -xz -C $(MIPS_MTI_DIR) \
+			--exclude=mips-mti-elf/$(MIPS_MTI_VERSION)/mips-mti-elf/include/c++ \
 			mips-mti-elf/$(MIPS_MTI_VERSION)/bin mips-mti-elf/$(MIPS_MTI_VERSION)/libexec \
-			mips-mti-elf/$(MIPS_MTI_VERSION)/lib/gcc mips-mti-elf/$(MIPS_MTI_VERSION)/mips-mti-elf/bin; \
+			mips-mti-elf/$(MIPS_MTI_VERSION)/lib/gcc mips-mti-elf/$(MIPS_MTI_VERSION)/mips-mti-elf/bin \
+			mips-mti-elf/$(MIPS_MTI_VERSION)/mips-mti-elf/include; \
 	fi
 	@if [ -e platforms/RTL8196C/pre_build.sh ]; then \
 		echo "prebuild found for OpenRTL8196C"; \
