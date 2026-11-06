@@ -177,6 +177,8 @@ jobs:
             variant: default
           - platform: OpenW600
             variant: default
+          - platform: OpenTXW81X
+            variant: default
           - platform: OpenLN882H
             variant: default
             gcc: 10.3-2021.10
@@ -473,43 +475,10 @@ jobs:
             output/${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}/${{ matrix.platform }}_1MB_${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}.factory.bin
           if-no-files-found: warn
 
-  build_txw81x:
-    name: Build TXW81X
-    needs: refs
-    runs-on: windows-latest
-    defaults:
-      run:
-        shell: wsl-bash {0}
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - platform: OpenTXW81X
-            variant: default
-    steps:
-      - name: Source checkout
-        uses: actions/checkout@v5
-      - uses: Vampire/setup-wsl@v7
-        with:
-          wsl-version: 1
-          distribution: Ubuntu-22.04
-          additional-packages: make
-      - name: Run make
-        run: |
-          make APP_VERSION=${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }} APP_NAME=${{ matrix.platform }} VARIANT="${{ matrix.variant }}" ${{ matrix.platform }}
-      - name: Save build assets
-        uses: actions/upload-artifact@v6
-        with:
-          name: ${{ env.APP_NAME }}_${{ needs.refs.outputs.version }}_${{ matrix.platform }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}
-          path: |
-            output/${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}/${{ matrix.platform }}_${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}.bin
-            output/${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}/${{ matrix.platform }}_${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}_ota.img
-          if-no-files-found: warn
-
   merge:
     name: Merge Artifacts
     runs-on: ubuntu-22.04
-    needs: [refs, build, build2, build_idf, build_txw81x]
+    needs: [refs, build, build2, build_idf]
     #if: always() && needs.refs.outputs.new_release == 'true' && (github.ref == 'refs/heads/main' || github.ref_name == 'alpha')
     steps:
       - name: Merge Artifacts
