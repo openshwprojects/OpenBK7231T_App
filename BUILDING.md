@@ -45,6 +45,27 @@ The output binaries can be found at `apps/<appname>/output/<appversion>`.
 Same as for BK7231T, but use BK7231N SDK and you also might need to rename project directory from OpenBK7231T_App to OpenBK7231N_App:
 https://github.com/openshwprojects/OpenBK7231N
 
+## Building for BK7238
+
+```
+make APP_NAME=OpenBK7238 OpenBK7238
+```
+
+builds for a 2 MB flash, the common case. BK7238 modules with a 4 MB flash
+(Sonoff's S61 plugs, for one) use the SDK's 4 MB partition table instead, so
+their OTA slot, config sector and RF-calibration partition sit where the
+module's stock image and bootloader keep them:
+
+```
+make APP_NAME=OpenBK7238 FLASH_SIZE=4M OpenBK7238
+```
+
+The outputs then carry a `_4M` suffix, and the QIO image is packed with the 4 MB
+bootloader (the shipped one with the 4 MB table in its tail; see
+`tools/beken_packager/make_bootloader_4m.py` in the SDK).
+Switching between the two sizes needs no `make clean`: the app's objects are
+rebuilt when the size changes.
+
 ## Building for XR809
 
 Get XR809 SDK:

@@ -10,8 +10,28 @@
 #include "../../httpserver/new_http.h"
 #include "../../driver/drv_public.h"
 #include "../../driver/drv_bl_shared.h"
+#include "BkDriverFlash.h"
 
 static unsigned char *sector = (void *)0;
+
+unsigned int HAL_Beken_OTAPartitionStart(void) {
+	bk_logic_partition_t *pt = bk_flash_get_info(BK_PARTITION_OTA);
+	if (pt == NULL || pt->partition_length == 0)
+		return 0x132000;    // the 2 MB layout, as before
+	return pt->partition_start_addr;
+}
+
+unsigned int HAL_Beken_FlashLength(void) {
+	unsigned int end = 0, size = 0x100000;
+	for (int i = 0; i < BK_PARTITION_MAX; i++) {
+		bk_logic_partition_t *pt = bk_flash_get_info((bk_partition_t)i);
+		if (pt && pt->partition_length && pt->partition_start_addr + pt->partition_length > end)
+			end = pt->partition_start_addr + pt->partition_length;
+	}
+	while (size < end)
+		size <<= 1;
+	return size;
+}
 int sectorlen = 0;
 unsigned int addr = 0xff000;
 #define SECTOR_SIZE 0x1000

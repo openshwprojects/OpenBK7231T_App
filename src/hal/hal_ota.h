@@ -1,13 +1,17 @@
 #ifndef __OTA_H__
 #define __OTA_H__
 
-// NOTE: this offset was taken from BkDriverFlash.c
-// search for BK_PARTITION_OTA
-
-#if PLATFORM_BK7231T
-#define START_ADR_OF_BK_PARTITION_OTA 0x132000
-#elif PLATFORM_BK7231N
-#define START_ADR_OF_BK_PARTITION_OTA 0x12A000
+#if PLATFORM_BEKEN
+// The Beken SDK keeps one partition table per flash size (BkDriverFlash.c) and
+// selects it by CFG_FLASH_SELECTION_TYPE, so the OTA slot is not one address:
+// 0x132000 on the 2 MB table, 0x286000 on the 4 MB one. Read it from the table
+// the firmware was built with rather than hard-coding a layout.
+unsigned int HAL_Beken_OTAPartitionStart(void);
+// The flash size the partition table implies (end of the highest partition,
+// rounded up to a power of two). The flash-ID table is not used for this: it
+// does not know every part and answers 2 MB for the ones it does not.
+unsigned int HAL_Beken_FlashLength(void);
+#define START_ADR_OF_BK_PARTITION_OTA (HAL_Beken_OTAPartitionStart())
 #else
 // TODO
 #define START_ADR_OF_BK_PARTITION_OTA 0x132000
