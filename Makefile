@@ -834,7 +834,7 @@ OpenECR6600: prebuild_OpenECR6600
 	cd sdk/OpenECR6600 && make BOARD_DIR=$(ECRDIR)/Boards/ecr6600/standalone APP_NAME=OpenBeken TOPDIR=$(ECRDIR) GCC_PATH=$(ECRDIR)/tool/nds32le-elf-mculib-v3s/bin/ APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT) REL_V=OpenECR6600_$(APP_VERSION) all
 	mkdir -p output/$(APP_VERSION)
 	cp $(ECRDIR)/build/OpenBeken/ECR6600F_standalone_OpenBeken_allinone.bin output/$(APP_VERSION)/OpenECR6600_$(APP_VERSION).bin
-	cp $(ECRDIR)/build/OpenBeken/ECR6600F_OpenBeken_Compress_ota_packeg.bin output/$(APP_VERSION)/OpenECR6600_$(APP_VERSION)_ota.img
+	cp $(ECRDIR)/build/OpenBeken/ECR6600F_OpenBeken_Compress_ota_packeg_OpenECR6600_$(APP_VERSION).bin output/$(APP_VERSION)/OpenECR6600_$(APP_VERSION)_ota.img
 	
 .PHONY: OpenTXW81X
 OpenTXW81X: prebuild_OpenTXW81X

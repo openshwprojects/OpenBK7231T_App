@@ -622,7 +622,7 @@
 #elif PLATFORM_ECR6600
 
 #define ENABLE_HA_DISCOVERY						1
-// #define ENABLE_SEND_POSTANDGET				1
+#define ENABLE_SEND_POSTANDGET				1
 #define ENABLE_MQTT								1
 #define ENABLE_LITTLEFS							1
 #define NEW_TCP_SERVER							1
@@ -645,6 +645,7 @@
 #define ENABLE_DRIVER_BL0942					1
 #define ENABLE_DRIVER_BL0937					1
 #define ENABLE_OBK_BERRY						1
+#define ENABLE_DRIVER_MDNS						1
 
 //#define ENABLE_DRIVER_DCF77					1
 

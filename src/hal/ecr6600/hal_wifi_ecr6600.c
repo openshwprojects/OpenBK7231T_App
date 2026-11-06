@@ -16,7 +16,8 @@
 static void (*g_wifiStatusCallback)(int code) = NULL;
 extern system_event_cb_t s_event_handler_cb;
 uint8_t wmac[6] = { 0 };
-uint8_t g_enable_cmw = 0;
+//uint8_t g_enable_cmw = 0;
+extern uint8_t g_enable_cmw;
 
 bool g_bStaticIP = false, mac_init = false;
 
@@ -248,11 +249,12 @@ int HAL_SetupWiFiOpenAccessPoint(const char* ssid)
 	set_softap_ipconfig(&if_ip);
 
 	struct dhcps_lease dhcp_cfg_info;
-	dhcp_cfg_info.enable = true;
+	//dhcp_cfg_info.enable = true;
+	dhcp_cfg_info.mask = DHCP_SERVER_MASK_IP;
 	IP_ADDR4(&dhcp_cfg_info.start_ip, 192, 168, 4, 100);
 	IP_ADDR4(&dhcp_cfg_info.end_ip, 192, 168, 4, 150);
 
-	wifi_softap_set_dhcps_lease(&dhcp_cfg_info);
+	dhcps_lease_info_set(&dhcp_cfg_info);
 	return 0;
 }
 
