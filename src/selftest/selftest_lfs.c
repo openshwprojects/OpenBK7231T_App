@@ -2,6 +2,38 @@
 
 #include "selftest_local.h"
 
+// POST of a file that does not fit must report the error (#2260)
+static void Test_LFS_PostWriteError() {
+	// larger than the whole 32 KiB simulator filesystem
+	static char big[40 * 1024];
+
+	memset(big, 'x', sizeof(big) - 1);
+	big[sizeof(big) - 1] = 0;
+
+	CMD_ExecuteCommand("lfs_format", 0);
+	Test_FakeHTTPClientPacket_POST("api/lfs/keep.txt", "ORIGINAL");
+
+	// overwriting an existing file fails and keeps the old content
+	Test_FakeHTTPClientPacket_POST_withJSONReply("api/lfs/keep.txt", big);
+	SELFTEST_ASSERT_JSON_VALUE_EXISTS(0, "error");
+	SELFTEST_ASSERT(Test_GetJSONValue_Generic("size", 0) == 0);
+	Test_FakeHTTPClientPacket_GET("api/lfs/keep.txt");
+	SELFTEST_ASSERT_HTML_REPLY("ORIGINAL");
+
+	// a new file fails and is not left behind empty
+	Test_FakeHTTPClientPacket_POST_withJSONReply("api/lfs/new.txt", big);
+	SELFTEST_ASSERT_JSON_VALUE_EXISTS(0, "error");
+	SELFTEST_ASSERT(Test_GetJSONValue_Generic("size", 0) == 0);
+	Test_FakeHTTPClientPacket_GET("api/lfs/new.txt");
+	SELFTEST_ASSERT_HTML_REPLY("{\"fname\":\"new.txt\",\"error\":-2}");
+
+	// a file that fits still works
+	Test_FakeHTTPClientPacket_POST_withJSONReply("api/lfs/new.txt", "fits");
+	SELFTEST_ASSERT_JSON_VALUE_INTEGER(0, "size", 4);
+	Test_FakeHTTPClientPacket_GET("api/lfs/new.txt");
+	SELFTEST_ASSERT_HTML_REPLY("fits");
+}
+
 void Test_LFS() {
 	char buffer[64];
 	
@@ -130,6 +162,8 @@ void Test_LFS() {
 	CMD_ExecuteCommand("lfs_appendInt numbers.txt 15+16", 0);
 	Test_FakeHTTPClientPacket_GET("api/lfs/numbers.txt");
 	SELFTEST_ASSERT_HTML_REPLY("value is 2023, and 31");
+
+	Test_LFS_PostWriteError();
 }
 
 #endif
