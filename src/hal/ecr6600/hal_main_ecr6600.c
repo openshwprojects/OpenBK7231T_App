@@ -3,7 +3,7 @@
 #include "oshal.h"
 #include "cli.h"
 #include "flash.h"
-#include "sdk_version.h"
+#include "eswin_sdk_version.h"
 #include "psm_system.h"
 
 #define DFE_VAR
