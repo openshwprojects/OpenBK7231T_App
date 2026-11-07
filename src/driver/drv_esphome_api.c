@@ -252,15 +252,6 @@ static bool pb_parse_fields(uint8_t* payload, int size, pb_fields_t* out)
 	return true;
 }
 
-static void ESPHome_API_Send_AddrHandle(uint32_t msg_type, uint64_t address, uint16_t handle)
-{
-	uint8_t payload[32];
-	uint8_t* ptr = payload;
-	pb_encode_varint_field(&ptr, 1, address);
-	pb_encode_varint_field(&ptr, 2, handle);
-	ESPHome_API_SendFrame(msg_type, payload, ptr - payload, false);
-}
-
 static void ESPHome_API_Send_AddrResult(uint32_t msg_type, uint64_t address, bool ok, int error)
 {
 	uint8_t payload[32];
@@ -271,7 +262,28 @@ static void ESPHome_API_Send_AddrResult(uint32_t msg_type, uint64_t address, boo
 	ESPHome_API_SendFrame(msg_type, payload, ptr - payload, false);
 }
 
+// Also used by the non-GATT fallback (requests rejected with an ATT error).
+void ESPHome_API_BT_OnError(uint64_t address, uint16_t handle, int error)
+{
+	uint8_t payload[32];
+	uint8_t* ptr = payload;
+	pb_encode_varint_field(&ptr, 1, address);
+	pb_encode_varint_field(&ptr, 2, handle);
+	pb_encode_varint_field(&ptr, 3, (uint32_t)error);
+	ADDLOG_INFO(LOG_FEATURE_DRV, "ESPHomeAPI: GATT error handle 0x%04X err %d", handle, error);
+	ESPHome_API_SendFrame(ESPHOME_MSG_BluetoothGATTErrorResponse, payload, ptr - payload, false);
+}
+
 #if ENABLE_BT_PROXY_GATT
+
+static void ESPHome_API_Send_AddrHandle(uint32_t msg_type, uint64_t address, uint16_t handle)
+{
+	uint8_t payload[32];
+	uint8_t* ptr = payload;
+	pb_encode_varint_field(&ptr, 1, address);
+	pb_encode_varint_field(&ptr, 2, handle);
+	ESPHome_API_SendFrame(msg_type, payload, ptr - payload, false);
+}
 
 void ESPHome_API_BT_OnConnection(uint64_t address, bool connected, uint16_t mtu, int error)
 {
@@ -379,17 +391,6 @@ void ESPHome_API_BT_OnWrite(uint64_t address, uint16_t handle)
 void ESPHome_API_BT_OnNotifyAck(uint64_t address, uint16_t handle)
 {
 	ESPHome_API_Send_AddrHandle(ESPHOME_MSG_BluetoothGATTNotifyResponse, address, handle);
-}
-
-void ESPHome_API_BT_OnError(uint64_t address, uint16_t handle, int error)
-{
-	uint8_t payload[32];
-	uint8_t* ptr = payload;
-	pb_encode_varint_field(&ptr, 1, address);
-	pb_encode_varint_field(&ptr, 2, handle);
-	pb_encode_varint_field(&ptr, 3, (uint32_t)error);
-	ADDLOG_INFO(LOG_FEATURE_DRV, "ESPHomeAPI: GATT error handle 0x%04X err %d", handle, error);
-	ESPHome_API_SendFrame(ESPHOME_MSG_BluetoothGATTErrorResponse, payload, ptr - payload, false);
 }
 
 void ESPHome_API_BT_OnConnectionsFreeChanged(void)
