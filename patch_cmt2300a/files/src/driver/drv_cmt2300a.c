@@ -26,8 +26,10 @@
  *   cmtsensor {"Channel":1,"Temperature":21.5,"Humidity":45,"Id":"5A","Battery":1,"Interval":60,"Protocol":"Nexus"}
  *                      Funksensor nachbilden, Kanal 1..8 (Name an beliebiger Stelle, Standard Nexus).
  *                      Sendet sofort und danach alle <Intervall> s von selbst (0 = nur einmal).
- *   cmtsensor <Kanal> <Protokoll>   Protokoll eines Kanals wechseln (Werte bleiben)
- *   cmtsensor <Kanal> off   virtuellen Sensor abschalten
+ *                      Optional "Slot":1..8 (nur JSON): Speicherplatz getrennt vom Kanal im
+ *                      Telegramm, z.B. zwei Stationen je Kanal 1. Ohne Slot gilt Slot = Kanal.
+ *   cmtsensor <Slot> <Protokoll>    Protokoll eines Platzes wechseln (Werte bleiben)
+ *   cmtsensor <Slot> off    virtuellen Sensor abschalten
  *   cmtsensor protocols     sendefaehige Sensor-Protokolle
  *   cmtproto [<Name|Nr|all> on|off]   alle Empfangsprotokolle mit Zaehlern / ein-, ausschalten
  *   cmtproto voll on|off               gekuerzte Pakete (Rauschen ohne Pause davor, gleitendes
@@ -3420,9 +3422,10 @@ static int cmt_stx_find(int dev)
 	return -1;
 }
 
+/* Speicherplaetze 1..CMT_VS_SLOTS; ch = Kanal im Telegramm (ohne "Slot" gleich der Platznummer) */
 static struct
 {
-	int active, dev, id, tenth, hum, bat, interval;
+	int active, dev, ch, id, tenth, hum, bat, interval;
 	uint32_t lastMs;
 } s_vs[CMT_VS_SLOTS];
 
@@ -3458,10 +3461,10 @@ static void cmt_u64_bytes(uint64_t d, int nbits, uint8_t *b)
 		b[i] = (uint8_t)(x >> (56 - 8 * i));
 }
 
-/* Telegramm(e) fuer Kanal ch als Rohbits in r. Rueckgabe 1 = ok */
-static int cmt_vs_encode(int ch, cmt_txreq_t *r)
+/* Telegramm(e) fuer Speicherplatz slot als Rohbits in r. Rueckgabe 1 = ok */
+static int cmt_vs_encode(int slot, cmt_txreq_t *r)
 {
-	const int i = ch - 1;
+	const int i = slot - 1, ch = s_vs[i].ch;
 	int id = s_vs[i].id & 0xFF, bat = s_vs[i].bat ? 1 : 0, t = s_vs[i].tenth, h = s_vs[i].hum, raw, k;
 	uint8_t b[16];
 
@@ -3608,17 +3611,17 @@ static int cmt_vs_encode(int ch, cmt_txreq_t *r)
 	return 0;
 }
 
-static int cmt_vs_send(int ch)
+static int cmt_vs_send(int slot)
 {
 	cmt_txreq_t r;
 
 	memset(&r, 0, sizeof(r));
 	r.gen = 1;
-	r.dev = s_vs[ch - 1].dev;
-	if(!cmt_vs_encode(ch, &r))
+	r.dev = s_vs[slot - 1].dev;
+	if(!cmt_vs_encode(slot, &r))
 		return 0;
 	r.repeat = cmt_dev(r.dev)->txrep;
-	r.sensorCh = ch;
+	r.sensorCh = s_vs[slot - 1].ch;
 	return cmt_tx_enqueue(&r);
 }
 
@@ -4855,8 +4858,8 @@ static void cmt_print_info(void)
 			if(!s_vs[i].active)
 				continue;
 			cmt_fmt_tenth(t, sizeof(t), s_vs[i].tenth);
-			ADDLOG_INFO(LOG_FEATURE_MAIN, "CMT virt. Sensor Kanal=%d %s Id=%02X Temp=%s Feuchte=%d Batterie=%d Intervall=%d s, zuletzt vor %u s",
-				i + 1, s_dev[s_vs[i].dev].name, s_vs[i].id, t, s_vs[i].hum, s_vs[i].bat, s_vs[i].interval,
+			ADDLOG_INFO(LOG_FEATURE_MAIN, "CMT virt. Sensor Slot=%d Kanal=%d %s Id=%02X Temp=%s Feuchte=%d Batterie=%d Intervall=%d s, zuletzt vor %u s",
+				i + 1, s_vs[i].ch, s_dev[s_vs[i].dev].name, s_vs[i].id, t, s_vs[i].hum, s_vs[i].bat, s_vs[i].interval,
 				(unsigned)((rtos_get_time() - s_vs[i].lastMs) / 1000u));
 		}
 	}
@@ -5491,11 +5494,13 @@ static void cmt_sens_list_protocols(void)
 }
 
 /* cmtsensor <Kanal> <Temp> [Feuchte] [Id] [Batterie] [Intervall_s] [Protokoll]
- * cmtsensor <Kanal> off | cmtsensor <Kanal> <Protokoll> | cmtsensor protocols | JSON
- * Der Protokollname darf an beliebiger Stelle stehen, die Zahlen bleiben in ihrer Reihenfolge. */
+ * cmtsensor <Slot> off | cmtsensor <Slot> <Protokoll> | cmtsensor protocols | JSON
+ * Der Protokollname darf an beliebiger Stelle stehen, die Zahlen bleiben in ihrer Reihenfolge.
+ * JSON "Slot" (1..8) waehlt den Speicherplatz getrennt vom Kanal; ohne Slot ist Slot = Kanal.
+ * Mit Slot und ohne Channel behaelt ein belegter Platz seinen Kanal (neu: Kanal = Slot). */
 static commandResult_t CMD_CmtSensor(const void *context, const char *cmd, const char *args, int cmdFlags)
 {
-	int ch = 0, hum = -1, id = -1, bat = -1, interval = -1, haveTemp = 0, off = 0, dev = -1, tenth = 0, i, p;
+	int ch = 0, slot = 0, hum = -1, id = -1, bat = -1, interval = -1, haveTemp = 0, off = 0, dev = -1, tenth = 0, i, p;
 	double temp = 0.0;
 	const char *a;
 	char t[12];
@@ -5505,6 +5510,7 @@ static commandResult_t CMD_CmtSensor(const void *context, const char *cmd, const
 	if(args && strchr(args, '{'))
 	{
 		if((a = cmt_json_find(args, "Channel")))     ch = atoi(a);
+		if((a = cmt_json_find(args, "Slot")))        slot = atoi(a);
 		if((a = cmt_json_find(args, "Temperature"))) { temp = atof(a); haveTemp = 1; }
 		if((a = cmt_json_find(args, "Humidity")))    hum = atoi(a);
 		if((a = cmt_json_find(args, "Id")))          id = (int)cmt_parse_hex(a);
@@ -5556,23 +5562,33 @@ static commandResult_t CMD_CmtSensor(const void *context, const char *cmd, const
 		if(nnum < 1)
 			return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 		ch = atoi(num[0]);
+		if(nnum == 1) { slot = ch; ch = 0; }     /* <Slot> off / <Slot> <Protokoll>: Kanal bleibt */
 		if(nnum >= 2) { temp = atof(num[1]); haveTemp = 1; }
 		if(nnum >= 3) hum = atoi(num[2]);
 		if(nnum >= 4) id = (int)cmt_parse_hex(num[3]);
 		if(nnum >= 5) bat = atoi(num[4]);
 		if(nnum >= 6) interval = atoi(num[5]);
 	}
-	if(ch < 1 || ch > CMT_VS_SLOTS)
+	if(slot == 0)
+		slot = ch;
+	if(slot < 1 || slot > CMT_VS_SLOTS)
 	{
-		ADDLOG_ERROR(LOG_FEATURE_MAIN, "CMT Sensor: Kanal muss 1..%d sein", CMT_VS_SLOTS);
+		ADDLOG_ERROR(LOG_FEATURE_MAIN, "CMT Sensor: Slot/Kanal muss 1..%d sein", CMT_VS_SLOTS);
 		return CMD_RES_BAD_ARGUMENT;
 	}
-	i = ch - 1;
+	i = slot - 1;
 	if(off)
 	{
 		s_vs[i].active = 0;
-		ADDLOG_INFO(LOG_FEATURE_MAIN, "CMT Sensor Kanal %d abgeschaltet", ch);
+		ADDLOG_INFO(LOG_FEATURE_MAIN, "CMT Sensor Slot %d abgeschaltet", slot);
 		return CMD_RES_OK;
+	}
+	if(ch <= 0)
+		ch = (s_vs[i].active && s_vs[i].ch > 0) ? s_vs[i].ch : slot;
+	if(ch > CMT_VS_SLOTS)
+	{
+		ADDLOG_ERROR(LOG_FEATURE_MAIN, "CMT Sensor: Kanal muss 1..%d sein", CMT_VS_SLOTS);
+		return CMD_RES_BAD_ARGUMENT;
 	}
 	if(dev < 0)
 		dev = s_vs[i].active ? s_vs[i].dev : CMT_D_NEXUS;
@@ -5622,23 +5638,24 @@ static commandResult_t CMD_CmtSensor(const void *context, const char *cmd, const
 	if(interval >= 0) s_vs[i].interval = interval > 3600 ? 3600 : interval;
 	s_vs[i].id &= sx->idMask;
 	s_vs[i].dev = dev;
+	s_vs[i].ch = ch;
 	s_vs[i].tenth = tenth;
 	s_vs[i].hum = sx->hasHum ? hum : -1;
 	s_vs[i].active = 1;
 
 	cmt_fmt_tenth(t, sizeof(t), tenth);
-	if(s_rxRunning && s_mode == CMT_MODE_RX && cmt_vs_send(ch))
+	if(s_rxRunning && s_mode == CMT_MODE_RX && cmt_vs_send(slot))
 	{
 		s_vs[i].lastMs = rtos_get_time();
-		ADDLOG_INFO(LOG_FEATURE_MAIN, "CMT Sensor Kanal %d: %s Id=%02X Temp=%s Feuchte=%d Batterie=%d Intervall=%d s - wird gesendet",
-			ch, s_dev[dev].name, s_vs[i].id, t, s_vs[i].hum, s_vs[i].bat, s_vs[i].interval);
+		ADDLOG_INFO(LOG_FEATURE_MAIN, "CMT Sensor Slot %d Kanal %d: %s Id=%02X Temp=%s Feuchte=%d Batterie=%d Intervall=%d s - wird gesendet",
+			slot, ch, s_dev[dev].name, s_vs[i].id, t, s_vs[i].hum, s_vs[i].bat, s_vs[i].interval);
 	}
 	else
 	{
 		/* gerade belegt (Scan/Spy/Warteschlange): beim naechsten Tick nachholen */
 		s_vs[i].lastMs = rtos_get_time() - (uint32_t)s_vs[i].interval * 1000u;
-		ADDLOG_INFO(LOG_FEATURE_MAIN, "CMT Sensor Kanal %d gespeichert (%s Id=%02X Temp=%s Feuchte=%d), Senden %s",
-			ch, s_dev[dev].name, s_vs[i].id, t, s_vs[i].hum, s_vs[i].interval > 0 ? "folgt" : "nicht moeglich (Sender belegt, Intervall 0)");
+		ADDLOG_INFO(LOG_FEATURE_MAIN, "CMT Sensor Slot %d Kanal %d gespeichert (%s Id=%02X Temp=%s Feuchte=%d), Senden %s",
+			slot, ch, s_dev[dev].name, s_vs[i].id, t, s_vs[i].hum, s_vs[i].interval > 0 ? "folgt" : "nicht moeglich (Sender belegt, Intervall 0)");
 	}
 	return CMD_RES_OK;
 }

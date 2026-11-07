@@ -76,7 +76,7 @@ Die Dateien sind `src/driver/cmt2300a.c/.h` (Chip-API auf unterster Ebene), `cmt
   - MQTT-Publishes laufen über eine eigene Warteschlange (`cmt_pq_push`, 1 KB). `cmt_pq_tick` sendet höchstens einen Publish je Quick-Tick, denn ein Publish dauert ~100 ms und eine Meldung hat bis zu 16 davon. Ohne MQTT-Verbindung wird nichts gepuffert. Die Zähler stehen in `cmtproto`. Neue Meldungen deshalb immer über `cmt_mqtt_value`/`cmt_pq_push` senden, nie direkt mit `MQTT_Publish*`.
   - Auf der Hauptseite steht eine Tabelle mit den letzten 8 Telegrammen.
   - 24-Bit-Fernbedienungen meldet zusätzlich unverändert der alte Decoder `cmt_dec_feed` als `RfReceived`. `RcSwitch*` überspringt deshalb 24 Bit.
-- Senden: `cmt_gen_build()` moduliert Rohbits mit den Zeiten eines Geräts (Felder `pw`, `txsp`, `txsg`, `txgap`, `nsync`, `txrep`). Darauf bauen `cmtsendp`, `cmtsensor` (Encoder in `cmt_vs_encode()`, sendefähig laut `s_stx[]`, Kanal 1..8) und `cmtkaku` auf.
+- Senden: `cmt_gen_build()` moduliert Rohbits mit den Zeiten eines Geräts (Felder `pw`, `txsp`, `txsg`, `txgap`, `nsync`, `txrep`). Darauf bauen `cmtsendp`, `cmtsensor` (Encoder in `cmt_vs_encode()`, sendefähig laut `s_stx[]`, 8 Speicherplätze `s_vs[]`; der Kanal im Telegramm steht in `s_vs[].ch` und ist nur ohne JSON-`"Slot"` gleich der Platznummer) und `cmtkaku` auf.
 - Weitere Befehle:
   - `cmtproto` listet Protokolle und Zähler und schaltet sie ein oder aus.
   - `cmtspy` schickt jeden Burst durch alle Geräte, ordnet rc-switch zu und gibt Manchester-Bits aus.
