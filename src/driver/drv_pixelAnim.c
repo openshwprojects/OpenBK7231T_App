@@ -325,14 +325,17 @@ void PixelAnim_CreatePanel(http_request_t *request) {
 	if (http_getArg(request->url, "spd", tmpA, sizeof(tmpA))) {
 		j = atoi(tmpA);
 		hprintf255(request, "<h3>Speed %i!</h3>", (j));
-		g_speed = j;
+		// slider is "speed" (right = faster), g_speed is a delay in ticks
+		g_speed = 10 - j;
+		if (g_speed < 0)
+			g_speed = 0;
 	}
 
 	poststr(request, "<tr><td>");
 	hprintf255(request, "<h5>Speed</h5>");
 	hprintf255(request, "<form action=\"index\">");
 	hprintf255(request, "<input type=\"range\" min=\"0\" max=\"10\" name=\"spd\" id=\"spd\" value=\"%i\" onchange=\"this.form.submit()\">",
-		g_speed);
+		g_speed > 10 ? 0 : 10 - g_speed);
 	hprintf255(request, "<input  type=\"submit\" class='disp-none'></form>");
 	poststr(request, "</td></tr>");
 
