@@ -617,6 +617,8 @@
 #undef ENABLE_DRIVER_IRREMOTEESP
 #define ENABLE_BT_PROXY							1
 #define ENABLE_DRIVER_ESPHOME_API				1
+// Active (connectable) BT proxy: GATT connect/discover/read/write/notify
+#define ENABLE_BT_PROXY_GATT					1
 #endif
 
 #elif PLATFORM_ECR6600
