@@ -447,7 +447,22 @@
 #define ENABLE_DRIVER_ESPHOME_API				1
 #endif
 
-#elif PLATFORM_LN882H
+ #elif PLATFORM_LN882H
+//#elif defined(PLATFORM_LN882H)
+
+// 1. Убираем глобальное отключение драйверов, чтобы разрешить сборку кастомных модулей
+//#undef OBK_DISABLE_ALL_DRIVERS
+
+// 2. Включаем обратно базовый фреймворк драйверов
+//#define OBK_HAS_DRIVERS 1
+
+// 3. Принудительно активируем драйвер штор (Blinds/Shutter)
+#define ENABLE_DRIVER_BLINDS 1
+#define ENABLE_DRIVER_SHUTTERS		1
+
+//#define ENABLE_SEND_POSTANDGET				1
+#define	ENABLE_HA_DISCOVERY
+
 
 //#define ENABLE_SEND_POSTANDGET				1
 #define	ENABLE_HA_DISCOVERY						1
@@ -455,9 +470,9 @@
 #define ENABLE_TASMOTADEVICEGROUPS				1
 #define ENABLE_NTP								1
 //#define ENABLE_TIME_DST						1
-#define ENABLE_DRIVER_BL0937					1
-#define ENABLE_DRIVER_BL0942					1
-#define ENABLE_DRIVER_LED 						1
+//#define ENABLE_DRIVER_BL0937					1
+//#define ENABLE_DRIVER_BL0942					1
+//#define ENABLE_DRIVER_LED 						1
 #define ENABLE_DRIVER_WEMO						1
 #define ENABLE_DRIVER_HUE						1
 #define ENABLE_DRIVER_DHT						1
@@ -467,14 +482,14 @@
 #define ENABLE_DRIVER_OPENWEATHERMAP			1
 //#define ENABLE_DRIVER_TMGN					1
 #define ENABLE_TASMOTA_JSON						1
-#define ENABLE_DRIVER_DS1820					1
+//#define ENABLE_DRIVER_DS1820					1
 #define ENABLE_OBK_SCRIPTING					1
 #define ENABLE_DRIVER_SSDP						1
 #define ENABLE_DRIVER_MDNS						1
 #define ENABLE_ADVANCED_CHANNELTYPES_DISCOVERY	1
 //#define ENABLE_OBK_BERRY						1
-#define ENABLE_DRIVER_SM16703P					1
-#define ENABLE_DRIVER_PIXELANIM					1
+//#define ENABLE_DRIVER_SM16703P					1
+//#define ENABLE_DRIVER_PIXELANIM					1
 #define ENABLE_DRIVER_IRREMOTEESP				1
 #define ENABLE_DRIVER_TUYAMCU					1
 #define ENABLE_DRIVER_TINYIR_NEC				1
