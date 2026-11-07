@@ -621,11 +621,23 @@ static T_APP_RESULT hal_bt_gcs_callback(T_CLIENT_ID client_id, uint8_t conn_id, 
 // ---------------------------------------------------------------------------
 // Connection management
 // ---------------------------------------------------------------------------
+static void gatt_log_conn_params(uint8_t conn_id, const char* what)
+{
+	uint16_t interval = 0, latency = 0, timeout = 0;
+	le_get_conn_param(GAP_PARAM_CONN_INTERVAL, &interval, conn_id);
+	le_get_conn_param(GAP_PARAM_CONN_LATENCY, &latency, conn_id);
+	le_get_conn_param(GAP_PARAM_CONN_TIMEOUT, &timeout, conn_id);
+	// interval in 1.25 ms units, timeout in 10 ms units
+	ADDLOG_INFO(LOG_FEATURE_GENERAL, "BTProxy: conn %d params %s: interval %d.%02d ms, latency %d, timeout %d ms",
+		conn_id, what, (interval * 125) / 100, (interval * 125) % 100, latency, timeout * 10);
+}
+
 static void link_report_connected(gatt_link_t* l)
 {
 	l->state = LINK_CONNECTED;
 	l->state_ms = g_timeMs;
 	link_update_led();
+	gatt_log_conn_params(l->conn_id, "at connect");
 	ESPHome_API_BT_OnConnection(l->address, true, l->mtu, 0);
 	link_kick(l);
 }
@@ -1015,6 +1027,19 @@ static void gatt_handle_gap_msg(T_IO_MSG* io)
 		case GAP_MSG_LE_CONN_MTU_INFO:
 			gatt_on_mtu(gap_msg.msg_data.gap_conn_mtu_info.conn_id, gap_msg.msg_data.gap_conn_mtu_info.mtu_size);
 			break;
+		case GAP_MSG_LE_CONN_PARAM_UPDATE:
+		{
+			T_GAP_CONN_PARAM_UPDATE* u = &gap_msg.msg_data.gap_conn_param_update;
+			if(u->status == GAP_CONN_PARAM_UPDATE_STATUS_SUCCESS)
+			{
+				gatt_log_conn_params(u->conn_id, "updated");
+			}
+			else if(u->status == GAP_CONN_PARAM_UPDATE_STATUS_FAIL)
+			{
+				ADDLOG_INFO(LOG_FEATURE_GENERAL, "BTProxy: conn %d parameter update failed, cause 0x%x", u->conn_id, u->cause);
+			}
+			break;
+		}
 		default:
 			break;
 	}
@@ -1040,6 +1065,26 @@ static T_APP_RESULT hal_bt_gap_callback(uint8_t cb_type, void* p_cb_data)
 			g_bt_proxy.scan_dropped_packets++;
 		}
 	}
+#if ENABLE_BT_PROXY_GATT
+	else if(cb_type == GAP_MSG_LE_CONN_UPDATE_IND && p_data->p_le_conn_update_ind)
+	{
+		// The peripheral asks for different connection parameters, usually a
+		// longer interval and slave latency so a battery device can sleep between
+		// connection events. The stack needs APP_RESULT_ACCEPT to grant it
+		// (APP_RESULT_SUCCESS is not an accept). Grant anything within the BLE
+		// spec limits; data still flows on demand.
+		T_LE_CONN_UPDATE_IND* u = p_data->p_le_conn_update_ind;
+		bool ok = u->conn_interval_min >= 6 && u->conn_interval_max <= 3200
+			&& u->conn_interval_min <= u->conn_interval_max
+			&& u->conn_latency <= 499
+			&& u->supervision_timeout >= 10 && u->supervision_timeout <= 3200;
+		ADDLOG_INFO(LOG_FEATURE_GENERAL,
+			"BTProxy: conn %d requests interval %d-%d (x1.25ms), latency %d, timeout %d0 ms -> %s",
+			u->conn_id, u->conn_interval_min, u->conn_interval_max, u->conn_latency,
+			u->supervision_timeout, ok ? "accept" : "reject");
+		return ok ? APP_RESULT_ACCEPT : APP_RESULT_REJECT;
+	}
+#endif
 	return APP_RESULT_SUCCESS;
 }
 
