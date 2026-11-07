@@ -11,6 +11,9 @@ int __attribute__((weak)) HAL_FlashRead(char*buffer, int readlen, int startaddr)
 	return res;
 }
 
+void __attribute__((weak)) HAL_OTA_BeforeReboot(int ok) {
+}
+
 int __attribute__((weak)) http_rest_post_flash(http_request_t* request, int startaddr, int maxaddr)
 {
 	int total = 0;
