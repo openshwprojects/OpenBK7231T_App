@@ -188,7 +188,7 @@ void HAL_BTProxy_RegisterCommands(void)
 {
 #if ENABLE_BT_PROXY
 	//cmddetail:{"name":"BTSetScanMode","args":"[isActive]",
-	//cmddetail:"descr":"Set BT scan mode",
+	//cmddetail:"descr":"Set BT scan mode: 1 = active (request scan responses; needed e.g. for Tuya BLE devices, which only advertise their protocol version in the scan response), 0 = passive. Can be used before the stack is ready (e.g. in the startup command); it is applied once BT is up.",
 	//cmddetail:"fn":"CMD_SetBTScanMode","file":"hal/generic/hal_bt_proxy_generic.c","requires":"ENABLE_BT_PROXY",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("BTSetScanMode", CMD_SetBTScanMode, NULL);
@@ -202,8 +202,8 @@ void HAL_BTProxy_RegisterCommands(void)
 	//cmddetail:"fn":"CMD_StartScan","file":"hal/generic/hal_bt_proxy_generic.c","requires":"ENABLE_BT_PROXY",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("BTStartScan", CMD_StartScan, NULL);
-	//cmddetail:{"name":"BTStartScan","args":"",
-	//cmddetail:"descr":"BT start scan",
+	//cmddetail:{"name":"BTStopScan","args":"",
+	//cmddetail:"descr":"BT stop scan",
 	//cmddetail:"fn":"CMD_StopScan","file":"hal/generic/hal_bt_proxy_generic.c","requires":"ENABLE_BT_PROXY",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("BTStopScan", CMD_StopScan, NULL);
