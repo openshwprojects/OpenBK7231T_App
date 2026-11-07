@@ -216,16 +216,37 @@ static void ESPHome_API_TCP_Server_Thread(void* param)
 		return;
 	}
 
+	// Non-blocking listen socket: it is also polled with select() while a client
+	// is active, and lwIP can report it readable with nothing to accept; a
+	// blocking accept() there would stall the active client. Accepted sockets
+	// are switched back to blocking below.
+	fcntl(s_listen_sock, F_SETFL, O_NONBLOCK);
+
 	ADDLOG_INFO(LOG_FEATURE_DRV, "ESPHomeAPI: TCP Server listening on port %d", ESPHOME_API_PORT);
+
+	// A connection accepted while another client was active; it replaces that
+	// client (only one client is served at a time). A new connection from HA
+	// means the old one is gone, even if its FIN/RST never reached us.
+	int pending_sock = INVALID_SOCK;
 
 	while(1)
 	{
 		struct sockaddr_storage source_addr;
 		socklen_t addr_len = sizeof(source_addr);
-		int new_sock = accept(s_listen_sock, (struct sockaddr*)&source_addr, &addr_len);
-
-		if(new_sock != INVALID_SOCK)
+		int new_sock;
+		if(pending_sock != INVALID_SOCK)
 		{
+			new_sock = pending_sock;
+			pending_sock = INVALID_SOCK;
+		}
+		else
+		{
+			new_sock = accept(s_listen_sock, (struct sockaddr*)&source_addr, &addr_len);
+		}
+
+		if(new_sock >= 0)
+		{
+			fcntl(new_sock, F_SETFL, 0); // blocking (see listen socket note)
 			ESPHome_API_DrainTx(INVALID_SOCK); // stale frames from a previous client
 			client_sock = new_sock;
 			// Blocking socket + select(): on some SDKs (RTL87X0C) a non-blocking
@@ -250,16 +271,35 @@ static void ESPHome_API_TCP_Server_Thread(void* param)
 				fd_set rfds;
 				FD_ZERO(&rfds);
 				FD_SET(client_sock, &rfds);
+				FD_SET(s_listen_sock, &rfds);
+				int maxfd = client_sock > s_listen_sock ? client_sock : s_listen_sock;
 				// Short poll so frames queued by other tasks go out promptly.
 				struct timeval tv = { 0, TX_POLL_MS * 1000 };
-				int sel = select(client_sock + 1, &rfds, NULL, NULL, &tv);
+				int sel = select(maxfd + 1, &rfds, NULL, NULL, &tv);
 				ESPHome_API_DrainTx(client_sock);
+				// No idle timeout: aioesphomeapi only pings when it receives nothing,
+				// and we stream adverts, so a healthy client can stay silent for long.
 				if(sel == 0) continue;
 				if(sel < 0)
 				{
 					ADDLOG_INFO(LOG_FEATURE_DRV, "ESPHomeAPI: select failed (%d)", sel);
 					break;
 				}
+				if(FD_ISSET(s_listen_sock, &rfds))
+				{
+					addr_len = sizeof(source_addr);
+					pending_sock = accept(s_listen_sock, (struct sockaddr*)&source_addr, &addr_len);
+					if(pending_sock < 0)
+					{
+						pending_sock = INVALID_SOCK; // spurious readiness, nothing to accept
+					}
+					else
+					{
+						ADDLOG_INFO(LOG_FEATURE_DRV, "ESPHomeAPI: new client (sock %d) replaces sock %d", pending_sock, client_sock);
+						goto disconnect;
+					}
+				}
+				if(!FD_ISSET(client_sock, &rfds)) continue;
 				int ret = recv(client_sock, buffer + read_len, sizeof(buffer) - read_len, 0);
 				if(ret > 0)
 				{
