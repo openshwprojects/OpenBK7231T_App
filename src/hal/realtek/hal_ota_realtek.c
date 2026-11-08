@@ -22,7 +22,28 @@ extern uint32_t sys_update_ota_get_curr_fw_idx(void);
 extern uint32_t sys_update_ota_prepare_addr(void);
 extern void sys_disable_fast_boot(void);
 extern void get_fw_info(uint32_t* targetFWaddr, uint32_t* currentFWaddr, uint32_t* fw1_sn, uint32_t* fw2_sn);
+extern void watchdog_refresh(void);
 static flash_t flash_ota;
+
+// The SDK's update_ota_erase_upg_region() erases the whole slot (~220 sectors)
+// in one loop while holding the flash lock. Code runs from flash (XIP), so the
+// main loop that feeds the 10 s hardware watchdog is starved; the watchdog then
+// resets the chip mid-erase and it hangs until power-cycled. Erase sector by
+// sector, releasing the lock and feeding the watchdog in between.
+static int OTA_EraseRegion_WDTSafe(uint32_t img_len, uint32_t addr)
+{
+	if((int)img_len <= 0) return -1;
+	uint32_t blocks = ((img_len - 1) / 4096) + 1;
+	for(uint32_t i = 0; i < blocks; i++)
+	{
+		device_mutex_lock(RT_DEV_LOCK_FLASH);
+		flash_erase_sector(&flash_ota, addr + i * 4096);
+		device_mutex_unlock(RT_DEV_LOCK_FLASH);
+		watchdog_refresh();
+		if((i & 15) == 15) rtos_delay_milliseconds(1);
+	}
+	return (int)img_len;
+}
 
 #elif PLATFORM_RTL8710B
 
@@ -107,7 +128,7 @@ int http_rest_post_flash(http_request_t* request, int startaddr, int maxaddr)
 	ADDLOG_INFO(LOG_FEATURE_OTA, "Current FW addr: 0x%08X, target FW addr: 0x%08X, fw1 sn: %u, fw2 sn: %u", currentFWaddr, targetFWaddr, fw1_sn, fw2_sn);
 	curr_fw_idx = sys_update_ota_get_curr_fw_idx();
 	ADDLOG_INFO(LOG_FEATURE_OTA, "Current firmware index is %d", curr_fw_idx);
-	int reserase = update_ota_erase_upg_region(towrite, 0, NewFWAddr);
+	int reserase = OTA_EraseRegion_WDTSafe(towrite, NewFWAddr);
 	NewFWLen = towrite;
 	if (reserase == -1)
 	{
@@ -139,6 +160,7 @@ int http_rest_post_flash(http_request_t* request, int startaddr, int maxaddr)
 			goto update_ota_exit;
 		}
 		device_mutex_unlock(RT_DEV_LOCK_FLASH);
+		watchdog_refresh();
 
 		rtos_delay_milliseconds(10);
 		ADDLOG_DEBUG(LOG_FEATURE_OTA, "Writelen %i at %i", writelen, total);

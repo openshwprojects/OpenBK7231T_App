@@ -76,5 +76,55 @@ void HAL_BTProxy_Unlock(void);
 void HAL_BTProxy_RegisterPlatformCommands(void);
 void HAL_BTProxy_RegisterCommands(void);
 
+#if ENABLE_BT_PROXY_GATT
+// ---------------------------------------------------------------------------
+// Active connections (ESPHome "ACTIVE_CONNECTIONS" + "REMOTE_CACHING").
+// Addresses are ESPHome-style: uint64, MAC big-endian in the low 48 bits.
+// All request functions may be called from any thread; they enqueue work for
+// the platform BT task. Results come back via the ESPHome_API_BT_* callbacks
+// (drv_esphome_api.h), always from the BT task.
+// ---------------------------------------------------------------------------
+#define BT_PROXY_GATT_MAX_LINKS 2
+
+typedef struct
+{
+	uint8_t uuid[16];		// 128-bit UUID, little-endian (BT wire order)
+	uint16_t handle;
+} bt_gatt_desc_t;
+
+typedef struct
+{
+	uint8_t uuid[16];
+	uint16_t decl_handle;
+	uint16_t handle;		// value handle
+	uint8_t properties;
+	uint8_t desc_first;		// index into descriptor array
+	uint8_t desc_count;
+} bt_gatt_char_t;
+
+typedef struct
+{
+	uint8_t uuid[16];
+	uint16_t handle;
+	uint16_t end_handle;
+	uint8_t char_count;
+	const bt_gatt_char_t* chars;
+	const bt_gatt_desc_t* descs;
+} bt_gatt_service_t;
+
+bool HAL_BTProxy_GattConnect(uint64_t address, uint8_t address_type);
+bool HAL_BTProxy_GattDisconnect(uint64_t address);
+bool HAL_BTProxy_GattGetServices(uint64_t address);
+bool HAL_BTProxy_GattRead(uint64_t address, uint16_t handle);
+bool HAL_BTProxy_GattWrite(uint64_t address, uint16_t handle, bool response, const uint8_t* data, uint16_t len);
+bool HAL_BTProxy_GattNotify(uint64_t address, uint16_t handle, bool enable);
+void HAL_BTProxy_GattDisconnectAll(void);
+// Fills up to max allocated addresses, returns count. *limit = max links.
+int HAL_BTProxy_GattGetAllocated(uint64_t* allocated, int max, int* limit);
+// For status LEDs: 0 = no link, 1 = connecting/discovering, 2 = connected
+int HAL_BTProxy_GattGetLinkState(void);
+void HAL_BTProxy_LogStatus(void);
+#endif // ENABLE_BT_PROXY_GATT
+
 #endif // ENABLE_BT_PROXY
 #endif // __HAL_BT_PROXY_H__
