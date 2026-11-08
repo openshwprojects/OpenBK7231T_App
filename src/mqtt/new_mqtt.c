@@ -154,9 +154,7 @@ int getLenData(int *len, unsigned char *data, int maxlen){
 }
 
 static SemaphoreHandle_t g_mutex = 0;
-#if PLATFORM_ESPIDF
 static SemaphoreHandle_t g_rx_mutex = 0;
-#endif
 
 static bool MQTT_Mutex_Take(int del) {
 	int taken;
@@ -179,23 +177,15 @@ static void MQTT_Mutex_Free()
 
 static bool MQTT_RX_Mutex_Take(int del)
 {
-#if PLATFORM_ESPIDF
 	if (g_rx_mutex == 0) {
-		return false;
+		g_rx_mutex = xSemaphoreCreateMutex();
 	}
 	return xSemaphoreTake(g_rx_mutex, del) == pdTRUE;
-#else
-	return MQTT_Mutex_Take(del);
-#endif
 }
 
 static void MQTT_RX_Mutex_Free()
 {
-#if PLATFORM_ESPIDF
 	xSemaphoreGive(g_rx_mutex);
-#else
-	MQTT_Mutex_Free();
-#endif
 }
 
 // this is called from tcp_thread context to queue received mqtt,
@@ -1968,12 +1958,15 @@ void MQTT_init()
 #ifdef WINDOWS
 	mqtt_client = 0;
 #endif
-#if PLATFORM_ESPIDF
-	// Create this before connecting; receive callbacks run in the TCP/IP task.
+	// Create this before connecting; receive callbacks run in the TCP/IP task
+	// on every platform. PR #2221 gave ESP-IDF a dedicated RX mutex so the
+	// ring buffer stops sharing g_mutex with the publish and connect path;
+	// the same split applies everywhere. Issue #2292 tracks the Beken
+	// freeze: the sharing there degrades to handled contention rather than
+	// corruption, and it is the first suspect to check if the freeze returns.
 	if (g_rx_mutex == 0) {
 		g_rx_mutex = xSemaphoreCreateMutex();
 	}
-#endif
 
 	MQTT_InitCallbacks();
 
