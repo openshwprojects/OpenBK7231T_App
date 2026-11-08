@@ -191,7 +191,7 @@
 #define LFS_BLOCKS_END 0x3FE000
 #define LFS_BLOCKS_MAX_LEN 0x100000
 
-#elif PLATFORM_88PAX01
+#elif PLATFORM_88PAAX01
 // 48k LittleFS inside 64k virtual/SPI flash region (+0x4000..+0xFFFF)
 #define LFS_BLOCKS_START 0x4000
 #define LFS_BLOCKS_START_MIN 0x4000

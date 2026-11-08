@@ -4,8 +4,8 @@
 #include "../../cmnds/cmd_public.h"
 #include "../../driver/drv_public.h"
 #include "../../logging/logging.h"
-#include "hal_88pax01.h"
-#include "hal_pinmap_88pax01.h"
+#include "hal_88paax01.h"
+#include "hal_pinmap_88paax01.h"
 
 #include "hw.h"
 #include "layout.h"
@@ -244,7 +244,7 @@ static void background_poll(void)
 	timer_poll();
 	usbcon_poll();
 	net_poll();
-	HAL_WiFi_Poll_88PAX01();
+	HAL_WiFi_Poll_88PAAX01();
 	tcp_poll();
 	mqtt_poll();
 	motor_api_poll();
@@ -290,7 +290,7 @@ void main(uint32_t arg)
 	static const uint8_t zero_ip[4]     = { 0, 0, 0, 0 };
 	net_init(default_mac, zero_ip);
 
-	HAL_WiFi_Init_88PAX01();
+	HAL_WiFi_Init_88PAAX01();
 
 #if USB_BOOT_ON
 	usbcon_start();

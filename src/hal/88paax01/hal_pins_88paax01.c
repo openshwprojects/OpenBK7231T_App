@@ -2,7 +2,7 @@
 #include "../../new_pins.h"
 #include "../../new_cfg.h"
 #include "../hal_pins.h"
-#include "hal_pinmap_88pax01.h"
+#include "hal_pinmap_88paax01.h"
 #include "hw.h"
 
 pax_pin_t g_pins[PLATFORM_GPIO_MAX] = {

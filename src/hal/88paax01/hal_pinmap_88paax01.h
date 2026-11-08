@@ -1,5 +1,5 @@
-#ifndef HAL_PINMAP_88PAX01_H
-#define HAL_PINMAP_88PAX01_H
+#ifndef HAL_PINMAP_88PAAX01_H
+#define HAL_PINMAP_88PAAX01_H
 
 /*
  * Raw SoC GPIO mapping for Marvell 88PAAX01-BPK2 (HP DeskJet 2620):
@@ -17,4 +17,4 @@ extern const int g_numPins;
 
 void pax_setup_default_channels(void);
 
-#endif /* HAL_PINMAP_88PAX01_H */
+#endif /* HAL_PINMAP_88PAAX01_H */

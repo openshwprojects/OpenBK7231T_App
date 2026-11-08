@@ -16,7 +16,7 @@ extern void jump_to(uint32_t entry, uint32_t arg) __attribute__((noreturn));
 
 void HAL_RebootModule(void)
 {
-	printf("[88PAX01] Rebooting module...\n");
+	printf("[88PAAX01] Rebooting module...\n");
 	uart_flush();
 	usbcon_stop();
 	timer_delay_ms(50);

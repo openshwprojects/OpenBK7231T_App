@@ -2,7 +2,7 @@
 #include "../hal_ota.h"
 #include "../../httpserver/new_http.h"
 #include "../../logging/logging.h"
-#include "hal_88pax01.h"
+#include "hal_88paax01.h"
 #include "layout.h"
 #include "image.h"
 #include "crc.h"
@@ -22,13 +22,13 @@ int http_rest_post_flash(http_request_t *request, int startaddr, int maxaddr)
 	int writelen = request->bodylen;
 
 	ADDLOG_INFO(LOG_FEATURE_OTA,
-	            "[88PAX01] Starting Web OTA (content-length=%d)",
+	            "[88PAAX01] Starting Web OTA (content-length=%d)",
 	            request->contentLength);
 
 	if (request->contentLength <= 0 ||
 	    (uint32_t)request->contentLength > OTA_BUF_MAX_SIZE) {
 		ADDLOG_ERROR(LOG_FEATURE_OTA,
-		             "[88PAX01] Invalid OTA size %d (max %u)",
+		             "[88PAAX01] Invalid OTA size %d (max %u)",
 		             request->contentLength, (unsigned)OTA_BUF_MAX_SIZE);
 		http_setup(request, httpMimeTypeJson);
 		hprintf255(request, "{\"error\":-1,\"msg\":\"Invalid OTA size\"}");
@@ -58,7 +58,7 @@ int http_rest_post_flash(http_request_t *request, int startaddr, int maxaddr)
 
 	if (total <= 0 || (request->contentLength > 0 && total != request->contentLength)) {
 		ADDLOG_ERROR(LOG_FEATURE_OTA,
-		             "[88PAX01] Incomplete OTA upload (%d / %d bytes)",
+		             "[88PAAX01] Incomplete OTA upload (%d / %d bytes)",
 		             total, request->contentLength);
 		http_setup(request, httpMimeTypeJson);
 		hprintf255(request, "{\"error\":-2,\"size\":%d}", total);
@@ -121,13 +121,13 @@ int http_rest_post_flash(http_request_t *request, int startaddr, int maxaddr)
 		hdr->load_address   = APP_LOAD_ADDR;
 		hdr->entry_address  = APP_LOAD_ADDR;
 		hdr->payload_crc32  = crc32_compute(ota_buf + sizeof(image_header_t), psize);
-		strncpy(hdr->name, "Open88PAX01", IMAGE_NAME_LEN);
+		strncpy(hdr->name, "Open88PAAX01", IMAGE_NAME_LEN);
 		hdr->header_crc32   = crc32_compute(hdr, IMAGE_HEADER_SIZE - 4);
 		flash_bytes         = (uint32_t)sizeof(image_header_t) + psize;
 	}
 
 	ADDLOG_INFO(LOG_FEATURE_OTA,
-	            "[88PAX01] Writing %u bytes to Slot %c (0x%06X), seq=%u...",
+	            "[88PAAX01] Writing %u bytes to Slot %c (0x%06X), seq=%u...",
 	            (unsigned)flash_bytes, slot_letter(target_slot),
 	            (unsigned)slot_offset(target_slot), (unsigned)hdr->sequence);
 

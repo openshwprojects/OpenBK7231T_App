@@ -1,6 +1,6 @@
 #include "../../new_common.h"
 #include "../hal_flashConfig.h"
-#include "hal_88pax01.h"
+#include "hal_88paax01.h"
 #include "spi_flash.h"
 
 static int g_vflash_ready = 0;

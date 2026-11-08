@@ -15,7 +15,7 @@
 #include "../cmnds/cmd_public.h"
 #include "../logging/logging.h"
 
-#ifdef PLATFORM_88PAX01
+#ifdef PLATFORM_88PAAX01
 
 #include "hw.h"
 #include "timer.h"
@@ -422,4 +422,4 @@ void HP2620Motors_AppendInformationToHTTPIndexPage(http_request_t *request, int 
 	poststr(request, "</div></div>");
 }
 
-#endif /* PLATFORM_88PAX01 */
+#endif /* PLATFORM_88PAAX01 */

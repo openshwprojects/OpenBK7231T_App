@@ -1,5 +1,5 @@
-#ifndef HAL_88PAX01_H
-#define HAL_88PAX01_H
+#ifndef HAL_88PAAX01_H
+#define HAL_88PAAX01_H
 
 #include <stdint.h>
 #include <stddef.h>
@@ -33,8 +33,8 @@ int  HAL_FlashRead(char *buffer, int readlen, int startaddr);
 int  HAL_FlashWrite(char *buf, unsigned int len, unsigned int addr);
 int  HAL_FlashEraseSector(int startaddr);
 
-void HAL_WiFi_Init_88PAX01(void);
-void HAL_WiFi_Poll_88PAX01(void);
+void HAL_WiFi_Init_88PAAX01(void);
+void HAL_WiFi_Poll_88PAAX01(void);
 int  HAL_WiFi_IsApMode(void);
 
-#endif /* HAL_88PAX01_H */
+#endif /* HAL_88PAAX01_H */

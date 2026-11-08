@@ -1,7 +1,7 @@
 #include "../../new_common.h"
 #include "../hal_flashVars.h"
 #include "../../logging/logging.h"
-#include "hal_88pax01.h"
+#include "hal_88paax01.h"
 
 FLASH_VARS_STRUCTURE g_flashVars;
 static int g_vars_loaded = 0;
@@ -20,7 +20,7 @@ static void flash_vars_load(void)
 static void flash_vars_save(void)
 {
 	flash_vars_load();
-	/* Never trigger safe-mode boot-loop lockouts on 88PAX01 */
+	/* Never trigger safe-mode boot-loop lockouts on 88PAAX01 */
 	g_flashVars.boot_count = 0;
 	g_flashVars.boot_success_count = 0;
 	HAL_FlashEraseSector((int)VFLASH_VARS_OFF);

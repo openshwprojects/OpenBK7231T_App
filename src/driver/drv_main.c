@@ -56,7 +56,7 @@ void GirierMCU_RunEverySecond();
 
 // startDriver BL0937
 static driver_t g_drivers[] = {
-#if PLATFORM_88PAX01
+#if PLATFORM_88PAAX01
 	{ "HP2620Panel",
 	HP2620Panel_Init,
 	HP2620Panel_OnEverySecond,

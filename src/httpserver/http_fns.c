@@ -1770,7 +1770,7 @@ int http_fn_cfg_wifi(http_request_t* request) {
 			hprintf255(request, "</table><br>");
 		}
 		SC_FREE();
-#elif PLATFORM_RTL8196C || PLATFORM_88PAX01
+#elif PLATFORM_RTL8196C || PLATFORM_88PAAX01
 		extern void HAL_WiFi_Scan_HTML(http_request_t *request);
 		HAL_WiFi_Scan_HTML(request);
 #else

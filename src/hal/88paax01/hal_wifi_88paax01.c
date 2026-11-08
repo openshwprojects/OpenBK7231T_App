@@ -3,7 +3,7 @@
 #include "../../new_cfg.h"
 #include "../../logging/logging.h"
 #include "../../httpserver/new_http.h"
-#include "hal_88pax01.h"
+#include "hal_88paax01.h"
 #include "hw.h"
 #include "timer.h"
 #include "net.h"
@@ -101,7 +101,7 @@ void net_link_change(int up, int ap_mode)
 			sync_primary_from_wifi();
 		} else {
 			const char *hn = CFG_GetShortDeviceName();
-			dhcp_wifi_start((hn && hn[0]) ? hn : "Open88PAX01");
+			dhcp_wifi_start((hn && hn[0]) ? hn : "Open88PAAX01");
 		}
 	}
 }
@@ -162,22 +162,22 @@ static int ensure_bcm_hw_up(void)
 {
 	if (g_wifi_hw_ready)
 		return 0;
-	printf("[88PAX01] Initializing Broadcom BCM43143 SDIO Wi-Fi...\n");
+	printf("[88PAAX01] Initializing Broadcom BCM43143 SDIO Wi-Fi...\n");
 	int rc = wifi_ensure_running();
 	if (rc != 0) {
-		printf("[88PAX01] wifi_ensure_running() failed (%d)\n", rc);
+		printf("[88PAAX01] wifi_ensure_running() failed (%d)\n", rc);
 		return rc;
 	}
 	const uint8_t *mac = wifi_mac();
 	net_set_wifi_link(&g_bcm_link, mac);
 	net_init(mac, net_ip());
 	g_wifi_hw_ready = 1;
-	printf("[88PAX01] BCM43143 up, MAC=%02X:%02X:%02X:%02X:%02X:%02X\n",
+	printf("[88PAAX01] BCM43143 up, MAC=%02X:%02X:%02X:%02X:%02X:%02X\n",
 	       mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
 	return 0;
 }
 
-void HAL_WiFi_Init_88PAX01(void)
+void HAL_WiFi_Init_88PAAX01(void)
 {
 	ensure_bcm_hw_up();
 }
@@ -187,7 +187,7 @@ int HAL_WiFi_IsApMode(void)
 	return g_wifi_ap_mode || (wifi_mode() == WIFI_MODE_AP);
 }
 
-void HAL_WiFi_Poll_88PAX01(void)
+void HAL_WiFi_Poll_88PAAX01(void)
 {
 	if (!g_wifi_hw_ready)
 		return;
@@ -200,7 +200,7 @@ void HAL_WiFi_Poll_88PAX01(void)
 		    (g_last_join_ms == 0 || (now - g_last_join_ms) > 15000u)) {
 			g_last_join_ms = now ? now : 1;
 			g_want_join = 0;
-			printf("[88PAX01] Joining SSID '%s'...\n", g_want_ssid);
+			printf("[88PAAX01] Joining SSID '%s'...\n", g_want_ssid);
 			wifi_join(g_want_ssid, g_want_pass[0] ? g_want_pass : NULL);
 		}
 		if (wifi_mode() == WIFI_MODE_STA && !g_sta_has_static) {
@@ -283,7 +283,7 @@ void HAL_DisconnectFromWifi(void)
 
 int HAL_SetupWiFiOpenAccessPoint(const char *ssid)
 {
-	const char *ap_ssid = (ssid && ssid[0]) ? ssid : "Open88PAX01";
+	const char *ap_ssid = (ssid && ssid[0]) ? ssid : "Open88PAAX01";
 	if (ensure_bcm_hw_up() != 0)
 		return -1;
 
@@ -294,7 +294,7 @@ int HAL_SetupWiFiOpenAccessPoint(const char *ssid)
 
 	if (wifi_start_ap(ap_ssid, NULL, 6) == 0) {
 		g_reported_up = 1;
-		printf("[88PAX01] Soft-AP '%s' active on 192.168.4.1/24\n", ap_ssid);
+		printf("[88PAAX01] Soft-AP '%s' active on 192.168.4.1/24\n", ap_ssid);
 	}
 	return 0;
 }
@@ -372,7 +372,7 @@ void HAL_PrintNetworkInfo(void)
 	HAL_GetMACWiFi(mac);
 	snprintf(g_mac_str, sizeof(g_mac_str), "%02X:%02X:%02X:%02X:%02X:%02X",
 	         mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
-	ADDLOG_INFO(LOG_FEATURE_GENERAL, "[88PAX01] IP=%s GW=%s MASK=%s MAC=%s",
+	ADDLOG_INFO(LOG_FEATURE_GENERAL, "[88PAAX01] IP=%s GW=%s MASK=%s MAC=%s",
 	            HAL_GetMyIPString(), HAL_GetMyGatewayString(),
 	            HAL_GetMyMaskString(), g_mac_str);
 }
