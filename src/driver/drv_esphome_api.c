@@ -228,7 +228,7 @@ static bool pb_parse_fields(uint8_t* payload, int size, pb_fields_t* out)
 		{
 			uint64_t len_val;
 			if(!pb_decode_varint(&p, &l, &len_val)) return false;
-			if((int)len_val > l) return false;
+			if(len_val > (uint64_t)l) return false;
 			if(field_idx > 0 && field_idx <= PB_MAX_FIELDS)
 			{
 				out->bytes[field_idx] = p;

@@ -34,12 +34,22 @@ static volatile int client_sock = INVALID_SOCK;
 typedef struct
 {
 	uint16_t len;
+	uint8_t droppable;	// advertisement: skip it rather than wait if the socket is congested
 	uint8_t data[];
 } tx_frame_t;
 #define TX_QUEUE_LEN 48
+// Advertisements may fill the queue only up to this many frames, so GATT
+// results (which must not be lost) always find a free slot.
+#define TX_QUEUE_ADV_MAX 32
+// GATT results are queued from the BT task, which also runs the BT stack:
+// never block it for long.
+#define TX_GATT_WAIT_MS 10
 #define TX_POLL_MS 20
 static QueueHandle_t s_tx_queue = NULL;
 static volatile int s_tx_dropped = 0;
+// Server thread only: the current client could not be written to and has
+// been shut down; the server loop disconnects it.
+static bool s_client_failed = false;
 
 // Optional status LEDs (channel indices, -1 = disabled), set by BTProxyLeds
 static int s_led_red_ch = -1;
@@ -93,36 +103,45 @@ bool ESPHome_API_IsClientConnected(void)
 	return client_sock != INVALID_SOCK;
 }
 
-// Server thread only. Writes one complete frame; a frame cut off half-way would
-// desync the stream, so in that case the client is dropped.
-static bool ESPHome_API_WriteFrame(int sock, const uint8_t* buf, int len, bool droppable)
+// Server thread only. Writes one complete frame. Returns false if the client
+// was dropped: a frame cut off half-way would desync the stream, and a GATT
+// result that cannot be written within the retry window means the peer is
+// gone (on this lwIP a dead socket looks the same as a congested one).
+// An advertisement that cannot be written at all is simply skipped.
+static bool ESPHome_API_WriteFrame(int sock, const tx_frame_t* f)
 {
-	int n = ESPHome_API_SendAll(sock, buf, len, droppable);
-	if(n == len) return true;
-	if(n > 0)
+	int n = ESPHome_API_SendAll(sock, f->data, f->len, f->droppable);
+	if(n == f->len) return true;
+	if(n == 0 && f->droppable)
 	{
-		ADDLOG_ERROR(LOG_FEATURE_DRV, "ESPHomeAPI: send failed mid-frame (%d/%d), dropping client", n, len);
-		shutdown(sock, SHUT_RDWR);
+		s_tx_dropped++;
+		return true;
 	}
+	ADDLOG_ERROR(LOG_FEATURE_DRV, "ESPHomeAPI: send failed (%d/%d), dropping client", n, f->len);
+	shutdown(sock, SHUT_RDWR);
+	s_client_failed = true;
 	return false;
 }
 
-// Server thread only: write out (or, with sock == INVALID_SOCK, discard) queued frames.
+// Server thread only: write out queued frames, or discard them when sock is
+// INVALID_SOCK or the client has failed. Handles at most one queue's worth per
+// call: frames keep arriving while we write, and the server thread must get
+// back to select()/recv() to notice a closed client.
 static void ESPHome_API_DrainTx(int sock)
 {
 	tx_frame_t* f;
 	if(s_tx_queue == NULL) return;
-	while(xQueueReceive(s_tx_queue, &f, 0) == pdTRUE)
+	for(int i = 0; i < TX_QUEUE_LEN && xQueueReceive(s_tx_queue, &f, 0) == pdTRUE; i++)
 	{
-		if(sock != INVALID_SOCK)
+		if(sock != INVALID_SOCK && !s_client_failed)
 		{
-			ESPHome_API_WriteFrame(sock, f->data, f->len, false);
+			ESPHome_API_WriteFrame(sock, f);
 		}
 		os_free(f);
 	}
 }
 
-static tx_frame_t* ESPHome_API_BuildFrame(uint32_t msg_type, const uint8_t* payload, uint32_t payload_len)
+static tx_frame_t* ESPHome_API_BuildFrame(uint32_t msg_type, const uint8_t* payload, uint32_t payload_len, bool droppable)
 {
 	uint8_t header[16];
 	uint8_t* ptr = header;
@@ -135,6 +154,7 @@ static tx_frame_t* ESPHome_API_BuildFrame(uint32_t msg_type, const uint8_t* payl
 	tx_frame_t* f = (tx_frame_t*)os_malloc(sizeof(tx_frame_t) + total);
 	if(!f) return NULL;
 	f->len = (uint16_t)total;
+	f->droppable = droppable ? 1 : 0;
 	memcpy(f->data, header, header_len);
 	if(payload_len) memcpy(f->data + header_len, payload, payload_len);
 	return f;
@@ -145,10 +165,10 @@ static tx_frame_t* ESPHome_API_BuildFrame(uint32_t msg_type, const uint8_t* payl
 bool ESPHome_API_SendFrameNow(int sock, uint32_t msg_type, const uint8_t* payload, uint32_t payload_len)
 {
 	if(sock == INVALID_SOCK) return false;
-	tx_frame_t* f = ESPHome_API_BuildFrame(msg_type, payload, payload_len);
+	tx_frame_t* f = ESPHome_API_BuildFrame(msg_type, payload, payload_len, false);
 	if(!f) return false;
 	ESPHome_API_DrainTx(sock);
-	bool ok = ESPHome_API_WriteFrame(sock, f->data, f->len, false);
+	bool ok = !s_client_failed && ESPHome_API_WriteFrame(sock, f);
 	os_free(f);
 	return ok;
 }
@@ -157,14 +177,20 @@ bool ESPHome_API_SendFrameNow(int sock, uint32_t msg_type, const uint8_t* payloa
 bool ESPHome_API_SendFrame(uint32_t msg_type, const uint8_t* payload, uint32_t payload_len, bool droppable)
 {
 	if(client_sock == INVALID_SOCK || s_tx_queue == NULL) return false;
-	tx_frame_t* f = ESPHome_API_BuildFrame(msg_type, payload, payload_len);
+	// Advertisements are dropped once the queue is mostly full, keeping room
+	// for GATT results.
+	if(droppable && uxQueueMessagesWaiting(s_tx_queue) >= TX_QUEUE_ADV_MAX)
+	{
+		s_tx_dropped++;
+		return false;
+	}
+	tx_frame_t* f = ESPHome_API_BuildFrame(msg_type, payload, payload_len, droppable);
 	if(!f)
 	{
 		s_tx_dropped++;
 		return false;
 	}
-	// Advertisements are dropped if the queue is full; GATT results wait briefly.
-	TickType_t wait = droppable ? 0 : pdMS_TO_TICKS(500);
+	TickType_t wait = droppable ? 0 : pdMS_TO_TICKS(TX_GATT_WAIT_MS);
 	if(xQueueSend(s_tx_queue, &f, wait) != pdTRUE)
 	{
 		os_free(f);
@@ -248,6 +274,7 @@ static void ESPHome_API_TCP_Server_Thread(void* param)
 		{
 			fcntl(new_sock, F_SETFL, 0); // blocking (see listen socket note)
 			ESPHome_API_DrainTx(INVALID_SOCK); // stale frames from a previous client
+			s_client_failed = false;
 			client_sock = new_sock;
 			// Blocking socket + select(): on some SDKs (RTL87X0C) a non-blocking
 			// recv() with no data returns -1 with errno == 0, which is
@@ -264,7 +291,7 @@ static void ESPHome_API_TCP_Server_Thread(void* param)
 
 			while(Main_HasWiFiConnected())
 			{
-				if(read_len == sizeof(buffer))
+				if(read_len == sizeof(buffer) || s_client_failed)
 				{
 					goto disconnect;
 				}
@@ -277,6 +304,7 @@ static void ESPHome_API_TCP_Server_Thread(void* param)
 				struct timeval tv = { 0, TX_POLL_MS * 1000 };
 				int sel = select(maxfd + 1, &rfds, NULL, NULL, &tv);
 				ESPHome_API_DrainTx(client_sock);
+				if(s_client_failed) goto disconnect;
 				// No idle timeout: aioesphomeapi only pings when it receives nothing,
 				// and we stream adverts, so a healthy client can stay silent for long.
 				if(sel == 0) continue;
