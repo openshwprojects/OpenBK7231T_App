@@ -387,73 +387,50 @@ int http_fn_index(http_request_t* request) {
 	CMD_Berry_RunEventHandlers_StrPtr(CMD_EVENT_ON_HTTP, "state", request);
 #endif
 
-	if (!CFG_HasFlag(OBK_FLAG_HTTP_NO_ONOFF_WORDS)){
-		poststr(request, "<table>");	//Table default to 100% width in stylesheet
+	{
+		int visCols[CHANNEL_MAX];
+		int nVis = 0;
 		for (i = 0; i < CHANNEL_MAX; i++) {
-
-			channelType = CHANNEL_GetType(i);
-			// check ability to hide given channel from gui
 			if (BIT_CHECK(g_hiddenChannels, i)) {
-				continue; // hidden
+				continue;
 			}
-			bool bToggleInv = channelType == ChType_Toggle_Inv;
-			if (h_isChannelRelay(i) || channelType == ChType_Toggle) {
-				if (i <= 1) {
-					hprintf255(request, "<tr>");
-				}
-				if (CHANNEL_Check(i) != bToggleInv) {
-					poststr(request, "<td class='on'>ON</td>");
-				}
-				else {
-					poststr(request, "<td class='off'>OFF</td>");
-				}
-				if (i == CHANNEL_MAX - 1) {
-					poststr(request, "</tr>");
-				}
+			channelType = CHANNEL_GetType(i);
+			if (h_isChannelRelay(i) || channelType == ChType_Toggle || channelType == ChType_Toggle_Inv) {
+				visCols[nVis++] = i;
 			}
 		}
-		poststr(request, "</table>");
-	}
-	poststr(request, "<table>");	//Table default to 100% width in stylesheet
-	for (i = 0; i < CHANNEL_MAX; i++) {
-
-
-		// check ability to hide given channel from gui
-		if (BIT_CHECK(g_hiddenChannels, i)) {
-			continue; // hidden
-		}
-
-		channelType = CHANNEL_GetType(i);
-		bool bToggleInv = channelType == ChType_Toggle_Inv;
-		if (h_isChannelRelay(i) || channelType == ChType_Toggle || bToggleInv) {
-			const char* c;
-			const char* prefix;
-			if (i <= 1) {
-				hprintf255(request, "<tr>");
-			}
-			if (CHANNEL_Check(i) != bToggleInv) {
-				c = "bgrn";
-			}
-			else {
-				c = "bred";
-			}
-			poststr(request, "<td><form action=\"index\">");
-			hprintf255(request, "<input type=\"hidden\" name=\"tgl\" value=\"%i\">", i);
-
-			if (CHANNEL_ShouldAddTogglePrefixToUI(i)) {
-				prefix = "Toggle ";
-			}
-			else {
-				prefix = "";
-			}
-
-			hprintf255(request, "<input class=\"%s\" type=\"submit\" value=\"%s%s\"/></form></td>", c, prefix, CHANNEL_GetLabel(i));
-			if (i == CHANNEL_MAX - 1) {
+		for (int base = 0; base < nVis; base += 3) {
+			int end = (base + 3 < nVis) ? (base + 3) : nVis;
+			poststr(request, "<table>");
+			if (!CFG_HasFlag(OBK_FLAG_HTTP_NO_ONOFF_WORDS)) {
+				const char *sz = (nVis > 2) ? " style='font-size:22px;padding:2px'" : "";
+				poststr(request, "<tr>");
+				for (int k = base; k < end; k++) {
+					i = visCols[k];
+					channelType = CHANNEL_GetType(i);
+					bool bToggleInv = channelType == ChType_Toggle_Inv;
+					if (CHANNEL_Check(i) != bToggleInv) {
+						hprintf255(request, "<td class='on'%s>ON</td>", sz);
+					} else {
+						hprintf255(request, "<td class='off'%s>OFF</td>", sz);
+					}
+				}
 				poststr(request, "</tr>");
 			}
+			poststr(request, "<tr>");
+			for (int k = base; k < end; k++) {
+				i = visCols[k];
+				channelType = CHANNEL_GetType(i);
+				bool bToggleInv = channelType == ChType_Toggle_Inv;
+				const char *c = (CHANNEL_Check(i) != bToggleInv) ? "bgrn" : "bred";
+				const char *prefix = CHANNEL_ShouldAddTogglePrefixToUI(i) ? "Toggle " : "";
+				poststr(request, "<td><form action=\"index\">");
+				hprintf255(request, "<input type=\"hidden\" name=\"tgl\" value=\"%i\">", i);
+				hprintf255(request, "<input class=\"%s\" style=\"font-size:0.82em;padding:0 4px\" type=\"submit\" value=\"%s%s\"/></form></td>", c, prefix, CHANNEL_GetLabel(i));
+			}
+			poststr(request, "</tr></table>");
 		}
 	}
-	poststr(request, "</table>");
 	poststr(request, "<table>");	//Table default to 100% width in stylesheet
 	for (i = 0; i < PLATFORM_GPIO_MAX; i++) {
 		int role;
@@ -1793,7 +1770,7 @@ int http_fn_cfg_wifi(http_request_t* request) {
 			hprintf255(request, "</table><br>");
 		}
 		SC_FREE();
-#elif PLATFORM_RTL8196C
+#elif PLATFORM_RTL8196C || PLATFORM_88PAX01
 		extern void HAL_WiFi_Scan_HTML(http_request_t *request);
 		HAL_WiFi_Scan_HTML(request);
 #else

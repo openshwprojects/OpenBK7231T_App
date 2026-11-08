@@ -28,6 +28,8 @@
 #include "drv_hlw8112.h"
 #include "drv_xiaomi_compact4.h"
 #include "drv_DCF77.h"
+#include "drv_hp2620_panel.h"
+#include "drv_hp2620_motors.h"
 
 void DRV_MQTTServer_Init();
 void DRV_MQTTServer_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState);
@@ -54,6 +56,28 @@ void GirierMCU_RunEverySecond();
 
 // startDriver BL0937
 static driver_t g_drivers[] = {
+#if PLATFORM_88PAX01
+	{ "HP2620Panel",
+	HP2620Panel_Init,
+	HP2620Panel_OnEverySecond,
+	HP2620Panel_AppendInformationToHTTPIndexPage,
+	HP2620Panel_RunQuickTick,
+	HP2620Panel_Stop,
+	HP2620Panel_OnChannelChanged,
+	NULL,
+	false,
+	},
+	{ "HP2620Motors",
+	HP2620Motors_Init,
+	HP2620Motors_OnEverySecond,
+	HP2620Motors_AppendInformationToHTTPIndexPage,
+	HP2620Motors_RunQuickTick,
+	HP2620Motors_Stop,
+	HP2620Motors_OnChannelChanged,
+	NULL,
+	false,
+	},
+#endif
 #if ENABLE_DRIVER_TUYAMCU
 	//drvdetail:{"name":"TuyaMCU",
 	//drvdetail:"title":"TODO",
