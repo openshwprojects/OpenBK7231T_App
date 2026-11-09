@@ -87,7 +87,14 @@ static void tcp_client_thread(tcp_thread_t* arg)
 		request.received[request.receivedLen] = 0;
 		if(received < remaining)
 		{
-			break;
+			// A request split across several TCP segments is complete only at the end of its headers (RFC 9112,
+			// CRLF CRLF); stopping after the first segment parsed it truncated. POST bodies are still read by their
+			// handler. A silent client is dropped by SO_RCVTIMEO (30 s, set on accept).
+			if(strstr(request.received, "\r\n\r\n") != NULL)
+			{
+				break;
+			}
+			continue;
 		}
 		if(strstr(request.received, "\r\n\r\n") != NULL &&
 		   (strncmp(request.received, "POST /api/lfs/", 14) == 0 ||
