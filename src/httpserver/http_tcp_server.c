@@ -90,8 +90,15 @@ static void tcp_client_thread(beken_thread_arg_t arg)
 			break;
 		}
 		request.receivedLen += received;
+		request.received[request.receivedLen] = 0;
 		if (received < remaining) {
-			break;
+			// A request split across several TCP segments is complete only at the end of its headers (RFC 9112,
+			// CRLF CRLF); stopping after the first segment parsed it truncated. POST bodies are still read by their
+			// handler. A silent client is dropped by SO_RCVTIMEO (30 s, set on accept).
+			if (strstr(request.received, "\r\n\r\n") != NULL) {
+				break;
+			}
+			continue;
 		}
 		// grow by 1024
 		request.receivedLenmax += 1024;
@@ -178,6 +185,15 @@ static void tcp_server_thread(beken_thread_arg_t arg)
 			client_fd = accept(tcp_listen_fd, (struct sockaddr*)&client_addr, &sockaddr_t_size);
 			if (client_fd >= 0)
 			{
+#if LWIP_SO_RCVTIMEO
+				// The request loop waits for the end of the headers: do not let a silent client hold it forever.
+#if LWIP_SO_SNDRCVTIMEO_NONSTANDARD
+				int rcv_timeout = 30 * 1000;
+#else
+				struct timeval rcv_timeout = { 30, 0 };
+#endif
+				setsockopt(client_fd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&rcv_timeout, sizeof(rcv_timeout));
+#endif
 #if PLATFORM_XR809
 #if DISABLE_SEPARATE_THREAD_FOR_EACH_TCP_CLIENT
 
