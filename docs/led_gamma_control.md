@@ -23,3 +23,8 @@
 			range: adjust brightness to desired minimum level and use the highest channel % value as brtMinX parameter.
 			Channels 0-2 is RGB, channels 3-4 is CW
 		Use command "list" to view gamma and calibration settings.
+
+		Matching stock Tuya firmware:
+			Tuya light configs set per-channel white balance ceilings as gmwr, gmwg and gmwb (percent).
+			Use them as calibration values: gmwr 100, gmwg 70, gmwb 75 is "led_gammaCtrl cal 1.0 0.7 0.75".
+			If the config also has colorpfun 1, set led_colorBlendLimit to colormaxp / 100: colormaxp 100 is "led_colorBlendLimit 1", 150 is "led_colorBlendLimit 1.5".
