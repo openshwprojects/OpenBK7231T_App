@@ -52,6 +52,33 @@ static tcp_thread_t sock[MAX_SOCKETS_TCP - 1] =
 	[0 ... MAX_SOCKETS_TCP - 2] = { -1, NULL, false },
 };
 
+// Whether `buf` (`len` bytes, NUL-terminated) holds a whole request: the end of
+// its headers, and as many bytes after them as its Content-Length says.
+static bool HTTP_RequestIsWhole(const char* buf, int len)
+{
+	const char* end = strstr(buf, "\r\n\r\n");
+	if (end == NULL)
+	{
+		return false;
+	}
+	int body = len - (int)(end + 4 - buf);
+	const char* line = buf;
+	while (line < end)
+	{
+		if (!my_strnicmp(line, "Content-Length:", 15))
+		{
+			return body >= atoi(line + 15);
+		}
+		const char* next = strstr(line, "\r\n");
+		if (next == NULL)
+		{
+			break;
+		}
+		line = next + 2;
+	}
+	return true; // no body said
+}
+
 static void tcp_client_thread(tcp_thread_t* arg)
 {
 	int fd = arg->fd;
@@ -85,15 +112,22 @@ static void tcp_client_thread(tcp_thread_t* arg)
 		}
 		request.receivedLen += received;
 		request.received[request.receivedLen] = 0;
-		if(received < remaining)
-		{
-			break;
-		}
+		// Their handlers read the body from the socket themselves.
 		if(strstr(request.received, "\r\n\r\n") != NULL &&
 		   (strncmp(request.received, "POST /api/lfs/", 14) == 0 ||
 		    strncmp(request.received, "POST /api/ota", 13) == 0))
 		{
 			break;
+		}
+		// A read that did not fill the buffer is not the end of the request:
+		// a body can arrive in a segment after its headers, and was lost.
+		if(HTTP_RequestIsWhole(request.received, request.receivedLen))
+		{
+			break;
+		}
+		if(received < remaining)
+		{
+			continue;
 		}
 		// grow by INCOMING_BUFFER_SIZE
 		request.receivedLenmax += INCOMING_BUFFER_SIZE;
