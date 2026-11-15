@@ -561,7 +561,10 @@ static commandResult_t CMD_Flags(const void* context, const char* cmd, const cha
 static commandResult_t CMD_HTTPOTA(const void* context, const char* cmd, const char* args, int cmdFlags) {
 
 	if (args && *args) {
-		OTA_RequestDownloadFromHTTP(args);
+		// Not started - a download already under way, say - is not "OK".
+		if (OTA_RequestDownloadFromHTTP(args) != 0) {
+			return CMD_RES_ERROR;
+		}
 	}
 	else {
 		ADDLOG_INFO(LOG_FEATURE_CMD, "Command requires 1 argument");
