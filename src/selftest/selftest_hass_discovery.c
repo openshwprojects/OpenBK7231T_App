@@ -359,11 +359,11 @@ void Test_VerifyForCommonPowerMeteringStuff() {
 		"unit_of_meas", "Wh",
 		"stat_cla", "total_increasing");
 
-	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY_4KEY("homeassistant", true, 0, 0,
+	// last hour is a rolling sum, so no total_increasing state_class
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY_3KEY("homeassistant", true, 0, 0,
 		"dev_cla", "energy",
 		"stat_t", "~/energycounter_last_hour/get",
-		"unit_of_meas", "Wh",
-		"stat_cla", "total_increasing");
+		"unit_of_meas", "Wh");
 
 	//SIM_DumpMQTTHistory();
 }

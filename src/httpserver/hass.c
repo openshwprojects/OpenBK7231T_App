@@ -908,7 +908,12 @@ HassDeviceInfo* hass_init_energy_sensor_device_info(int index, int asensdataseti
 
 	if (!strcmp(DRV_GetEnergySensorNamesEx(asensdatasetix, index)->hass_dev_class, "energy")) {
 		//state_class can be measurement, total or total_increasing. Energy values should be total_increasing.
-		cJSON_AddStringToObject(info->root, "stat_cla", "total_increasing");
+		//20261105 XJIKKA only total and today - last hour, yesterday, 2 and 3 days ago also decrease, HASS log:
+		//HASS:	Entity sensor..._energy_yesterday from integration mqtt has state class total_increasing,
+		//		but its state is not strictly increasing.
+		if ((index == OBK_CONSUMPTION_TOTAL) || (index == OBK_CONSUMPTION_TODAY)) {
+			cJSON_AddStringToObject(info->root, "stat_cla", "total_increasing");
+		}
 		cJSON_AddStringToObject(info->root, "unit_of_meas", CFG_HasFlag(OBK_FLAG_MQTT_ENERGY_IN_KWH) ? "kWh" : "Wh");
 	} else {
 		//20241024 XJIKKA skip measurement for timestamp - HASS log:
