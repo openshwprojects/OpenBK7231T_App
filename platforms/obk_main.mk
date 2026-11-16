@@ -154,6 +154,7 @@ OBKM_SRC  += $(OBK_SRCS)driver/drv_sm16703P.c
 OBKM_SRC  += $(OBK_SRCS)driver/drv_simpleEEPROM.c
 OBKM_SRC  += $(OBK_SRCS)driver/drv_leds_shared.c
 OBKM_SRC  += $(OBK_SRCS)driver/drv_ltr_als.c
+OBKM_SRC  += $(OBK_SRCS)driver/drv_everlight_als.c
 OBKM_SRC  += $(OBK_SRCS)driver/drv_sm2135.c
 OBKM_SRC  += $(OBK_SRCS)driver/drv_sm2235.c
 OBKM_SRC  += $(OBK_SRCS)driver/drv_soft_i2c.c
