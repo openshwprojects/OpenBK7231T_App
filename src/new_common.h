@@ -1367,6 +1367,10 @@ extern int g_startPingWatchDogAfter;
 extern int g_openAP;
 extern int g_bootFailures;
 extern int g_secondsElapsed;
+// set at boot on Beken when the device is running with an SDK fallback MAC
+// (BK7231N: c8:47:8c:00:00:00, BK7231T family: c8:47:8c:42:88:48),
+// which indicates a corrupted or missing RF calibration partition
+extern int g_rfPartitionCorrupted;
 extern int g_rebootReason;
 extern float g_wifi_temperature;
 extern char g_wifi_bssid[33];
