@@ -39,7 +39,8 @@ int sprintf2(char *o, const char* fmt, ...);
 // from http_fns.  should move to a utils file.
 extern unsigned char hexbyte(const char* hex);
 
-void OTA_RequestDownloadFromHTTP(const char *s);
+// 0 once the download has started (or, where it runs here, completed); -1 where it did not.
+int OTA_RequestDownloadFromHTTP(const char *s);
 
 #if WINDOWS
 #ifndef LINUX
