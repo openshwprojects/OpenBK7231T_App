@@ -1367,6 +1367,9 @@ extern int g_startPingWatchDogAfter;
 extern int g_openAP;
 extern int g_bootFailures;
 extern int g_secondsElapsed;
+// set at boot on Beken when the RF calibration partition is corrupted
+// (detected via the fallback MAC c8:47:8c:00:00:00 in Main_Init)
+extern int g_rfPartitionCorrupted;
 extern int g_rebootReason;
 extern float g_wifi_temperature;
 extern char g_wifi_bssid[33];
