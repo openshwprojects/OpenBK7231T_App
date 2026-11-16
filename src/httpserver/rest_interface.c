@@ -1136,7 +1136,8 @@ static int http_rest_get_info(http_request_t* request) {
 	hprintf255(request, "\"supportsSSDP\":0,");
 #endif
 
-	hprintf255(request, "\"supportsClientDeviceDB\":true}");
+	hprintf255(request, "\"supportsClientDeviceDB\":true,");
+	hprintf255(request, "\"rf_health\":\"%s\"}", g_rfPartitionCorrupted ? "corrupted" : "ok");
 
 	poststr(request, NULL);
 	return 0;
