@@ -369,3 +369,8 @@ void TinyIR_NEC_RunFrame();
 void DRV_ESPHome_API_Init();
 void DRV_ESPHome_API_Deinit();
 void DRV_ESPHome_API_OnEverySecond();
+
+void EverlightALS_Init();
+void EverlightALS_OnEverySecond();
+void EverlightALS_AppendInformationToHTTPIndexPage(http_request_t* request, int bPreState);
+void EverlightALS_Stop();

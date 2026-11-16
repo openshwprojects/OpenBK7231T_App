@@ -135,6 +135,7 @@ set(OBKM_SRC
 	${OBK_SRCS}driver/drv_shutters.c
 	${OBK_SRCS}driver/drv_leds_shared.c
 	${OBK_SRCS}driver/drv_ltr_als.c
+	${OBK_SRCS}driver/drv_everlight_als.c
 	${OBK_SRCS}driver/drv_spi.c
 	${OBK_SRCS}driver/drv_spiLED.c
 	${OBK_SRCS}driver/drv_spi_flash.c
