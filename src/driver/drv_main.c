@@ -812,6 +812,22 @@ static driver_t g_drivers[] = {
 	false,                                   // loaded
 	},
 #endif
+#if ENABLE_DRIVER_WS2811BB
+	//drvdetail:{"name":"WS2811BB",
+	//drvdetail:"title":"Bit-banged WS2811 LED strip (BK7231N)",
+	//drvdetail:"descr":"Bit-banged WS2811 style LED strip driver on the pin with role UCS1912_DIN, for Beken BK7231N. Uses the shared LED layer, same commands as SM16703P.",
+	//drvdetail:"requires":""}
+	{ "WS2811BB",                            // Driver Name
+	WS2811BB_Init,                           // Init
+	NULL,                                    // onEverySecond
+	NULL,                                    // appendInformationToHTTPIndexPage
+	NULL,                                    // runQuickTick
+	WS2811BB_Shutdown,                       // stopFunction
+	NULL,                                    // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
+	},
+#endif
 #if ENABLE_DRIVER_SM15155E
 	//drvdetail:{"name":"SM15155E",
 	//drvdetail:"title":"TODO",
