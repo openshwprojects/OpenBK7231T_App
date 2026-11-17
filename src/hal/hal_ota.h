@@ -42,5 +42,13 @@ void OTA_SetTotalBytes(int value);
 
 int HAL_FlashRead(char*buffer, int readlen, int startaddr);
 
+/// @brief Called once an HTTP OTA download has ended and what it received is
+/// written, just before the restart that applies it. Does nothing unless a
+/// driver defines it: a driver can leave the device as the new firmware should
+/// find it. The download can end early without an error being seen, so a
+/// hook that acts on it checks the image it was to write.
+/// @param ok 1 when no error was seen during the download
+void HAL_OTA_BeforeReboot(int ok);
+
 #endif /* __OTA_H__ */
 
