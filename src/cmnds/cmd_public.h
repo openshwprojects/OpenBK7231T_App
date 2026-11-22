@@ -212,6 +212,16 @@ enum LightMode {
 #define TOKENIZER_FORCE_SINGLE_ARGUMENT_MODE	8
 #define TOKENIZER_ALLOW_ESCAPING_QUOTATIONS		16
 #define TOKENIZER_EXPAND_EARLY					32
+// allow quotes in a named argument - so '"' is not at beginning or after a whitespace
+// but e.g. in a string like
+// mystr="that's my string"
+// w/o this, it will be tokenized as
+// 	mystr="that's
+//	my
+//	string"
+// but we want the string to be one token
+// we need this together with  TOKENIZER_ALLOW_QUOTES !
+#define TOKENIZER_ALLOW_QUOTES_IN_NAMEDARG_VALUE		(64 | TOKENIZER_ALLOW_QUOTES)
 
 // cmd_tokenizer.c
 int Tokenizer_GetArgsCount();
@@ -226,6 +236,9 @@ bool Tokenizer_IsArgInteger(int i);
 float Tokenizer_GetArgFloat(int i);
 int Tokenizer_GetArgIntegerRange(int i, int rangeMax, int rangeMin);
 void Tokenizer_TokenizeString(const char* s, int flags);
+const char *Tokenizer_GetArgEqualDefault(const char *search, const char *def);
+int Tokenizer_GetArgEqualInteger(const char *search, const int def);
+int Tokenizer_GetPinEqual(const char *search, const int def);
 // cmd_repeatingEvents.c
 void RepeatingEvents_Init();
 void RepeatingEvents_RunUpdate(float deltaTimeSeconds);

@@ -126,8 +126,9 @@ struct
 // writes 1 byte '_data' to register 'reg_addr'
 void BMP280_Write8(uint8_t reg_addr, uint8_t _data)
 {
-  BMP280_Start();
-  BMP280_Write(g_softI2C.address8bit);
+//  BMP280_Start();
+//  BMP280_Write(g_softI2C.address8bit);
+  BMP280_Start_new(g_softI2C.address8bit);
   BMP280_Write(reg_addr);
   BMP280_Write(_data);
   BMP280_Stop();
@@ -138,12 +139,14 @@ uint8_t BMP280_Read8(uint8_t reg_addr)
 {
   uint8_t ret;
 
-  BMP280_Start();
-  BMP280_Write(g_softI2C.address8bit);
+//  BMP280_Start();
+//  BMP280_Write(g_softI2C.address8bit);
+  BMP280_Start_new(g_softI2C.address8bit);
   BMP280_Write(reg_addr);
   Soft_I2C_Stop(&g_softI2C);
-  BMP280_Start();
-  BMP280_Write(g_softI2C.address8bit | 1);
+//  BMP280_Start();
+//  BMP280_Write(g_softI2C.address8bit | 1);
+  BMP280_Start_new(g_softI2C.address8bit | 1);
   ret = BMP280_Read(0);
   BMP280_Stop();
 
@@ -159,12 +162,14 @@ uint16_t BMP280_Read16(uint8_t reg_addr)
     uint16_t w;
   } ret;
 
-  BMP280_Start();
-  BMP280_Write(g_softI2C.address8bit);
+//  BMP280_Start();
+//  BMP280_Write(g_softI2C.address8bit);
+  BMP280_Start_new(g_softI2C.address8bit);
   BMP280_Write(reg_addr);
   Soft_I2C_Stop(&g_softI2C);
-  BMP280_Start();
-  BMP280_Write(g_softI2C.address8bit | 1);
+//  BMP280_Start();
+//  BMP280_Write(g_softI2C.address8bit | 1);
+  BMP280_Start_new(g_softI2C.address8bit | 1);
   ret.b[0] = BMP280_Read(1);
   ret.b[1] = BMP280_Read(0);
   BMP280_Stop();
@@ -286,12 +291,14 @@ void BMP280_Update()
   } ret;
   ret.b[3] = 0x00;
 
-  BMP280_Start();
-  BMP280_Write(g_softI2C.address8bit);
+//  BMP280_Start();
+//  BMP280_Write(g_softI2C.address8bit);
+  BMP280_Start_new(g_softI2C.address8bit);
   BMP280_Write(BMP280_REG_PRESS_MSB);
   Soft_I2C_Stop(&g_softI2C);
-  BMP280_Start();
-  BMP280_Write(g_softI2C.address8bit | 1);
+//  BMP280_Start();
+//  BMP280_Write(g_softI2C.address8bit | 1);
+  BMP280_Start_new(g_softI2C.address8bit | 1);
   ret.b[2] = BMP280_Read(1);
   ret.b[1] = BMP280_Read(1);
   ret.b[0] = BMP280_Read(1);
