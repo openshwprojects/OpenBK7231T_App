@@ -185,10 +185,10 @@ void SM2135_Init() {
 	//cmddetail:"fn":"CMD_LEDDriver_Map","file":"driver/drv_sm2135.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("SM2135_Map", CMD_LEDDriver_Map, NULL);
-	//cmddetail:{"name":"SM2135_Current","args":"[RGBLimit][CWLimit]",
-	//cmddetail:"descr":"Sets the maximum current for LED driver. Please note that arguments are using SM2135 codes, see [full list of codes here](https://www.elektroda.com/rtvforum/viewtopic.php?p=20493415#20493415)",
+	//cmddetail:{"name":"SM2135_Current","args":"[CWCode][RGBCode]",
+	//cmddetail:"descr":"Sets the maximum current for LED driver. Both arguments are SM2135 codes, not mA: code = (mA - 10) / 5, so 2 is 20 mA and 6 is 40 mA. CW takes codes 0-10 (10-60 mA) and RGB codes 0-7 (10-45 mA). The first argument sets the CW channels and the second the RGB channels, so 20 mA RGB with 40 mA CW is SM2135_Current 6 2. See [full list of codes here](https://www.elektroda.com/rtvforum/viewtopic.php?p=20493415#20493415)",
 	//cmddetail:"fn":"SM2135_Current","file":"driver/drv_sm2135.c","requires":"",
-	//cmddetail:"examples":""}
+	//cmddetail:"examples":"SM2135_Current 6 2"}
     CMD_RegisterCommand("SM2135_Current", SM2135_Current, NULL);
 
 	// alias for LED_Map. In future we may want to migrate totally to shared LED_Map command.... 
