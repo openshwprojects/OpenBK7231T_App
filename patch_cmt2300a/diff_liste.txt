@@ -1,0 +1,42 @@
+Basis-Commit: ce1abad8 (Update Makefile)
+Erstellt: 2026-11-07 12:20
+
+== cmt2300a.patch ==
+Geaendert:
+  M src/driver/drv_main.c
+  M src/obk_config.h
+  M src/driver/drv_ir.cpp      (IREnable RX 0/1: IR-Empfaenger abschaltbar)
+Neu:
+  A src/driver/cmt2300a.c
+  A src/driver/cmt2300a.h
+  A src/driver/cmt2300a_defs.h
+  A src/driver/cmt2300a_params.h
+  A src/driver/drv_cmt2300a.c
+  A src/driver/drv_cmt2300a.h
+  A docs/cmt2300a.md           (Anwender-Doku: Befehle, MQTT, Home Assistant, openHAB)
+
+ src/driver/drv_ir.cpp | 23 ++++++++++++++++++++---
+ src/driver/drv_main.c | 20 ++++++++++++++++++++
+ src/obk_config.h      |  3 ++-
+ 3 files changed, 42 insertions(+), 4 deletions(-)
+     165 src/driver/cmt2300a.c
+      29 src/driver/cmt2300a.h
+     608 src/driver/cmt2300a_defs.h
+     124 src/driver/cmt2300a_params.h
+    5939 src/driver/drv_cmt2300a.c
+      34 src/driver/drv_cmt2300a.h
+     667 docs/cmt2300a.md
+    7566 total
+
+Stand 2026-11-06 20:25 (Build 20:13:54): Protokoll-Engine (25 Geraete), verteilte Auswertung,
+gleitendes Fenster, Ersatzpuffer fuer kurze Pakete, MQTT-Warteschlange, OTA-Pause, WH2-Suche,
+RAM ~10 KB (Heap frei ~49,5 KB).
+Getestet auf 2x SH4 (.186/.117): RF-Kreuztest 10 bzw. 11 von 12 (TX141TH senden geht nicht,
+Empfang echter TX141TH geht), MQTT verloren 0, IREnable RX 0/1 geprueft.
+
+== makefile_buildenv.patch (separat, lokale Build-Umgebung) ==
+  M Makefile
+  (Stand 2026-11-06 20:30: nur "sh" -> "bash" in der HACK-Zeile, Aufruf von build.sh
+   des SDK. Die frueheren Aenderungen an Prebuild/Berry sind nicht mehr noetig.)
+
+Anwenden: git apply patch_cmt2300a/cmt2300a.patch

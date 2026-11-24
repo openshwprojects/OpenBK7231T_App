@@ -45,6 +45,9 @@ extern "C" {
     uint32_t gIRProtocolEnable = 0xFFFFFFFF;
     // 0 == active low.  1 = active hi
     uint8_t gIRPinPolarity = 0;
+    // 1 = IR receiver off (TX still works). A receiver hit by ambient light/interference
+    // otherwise eats nearly all CPU in the 50us ISR. Set with "IREnable RX 0".
+    uint8_t gIRRecvDisabled = 0;
 
     extern int my_strnicmp(const char* a, const char* b, int len);
 }
@@ -475,8 +478,8 @@ extern "C" void DRV_IR_ISR(void* arg){
         sending = 0;
     }
 
-    // don't receive if we are currently sending
-    if (ourReceiver && !sending){
+    // don't receive if we are currently sending (or if the receiver is switched off)
+    if (ourReceiver && !sending && !gIRRecvDisabled){
         IR_ISR();
     }
     ir_counter++;
@@ -587,6 +590,20 @@ extern "C" commandResult_t IR_Enable(const void *context, const char *cmd, const
         }
         gEnableIRSendWhilstReceive = enable;
         ADDLOG_INFO(LOG_FEATURE_IR, (char *)"IREnable RX whilst TX enable set %d", enable);
+        return CMD_RES_OK;
+    }
+
+    // "IREnable RX 0/1" - switch the receiver off/on (checked after RXTX, which starts with RX)
+    if (!my_strnicmp(p, "RX", 2) && (p[2] == ' ' || p[2] == 0)){
+        p += 2;
+        if (*p == ' '){
+            p++;
+            if (*p){
+                enable = atoi(p);
+            }
+        }
+        gIRRecvDisabled = enable ? 0 : 1;
+        ADDLOG_INFO(LOG_FEATURE_IR, (char *)"IREnable RX (receiver) set %d", enable);
         return CMD_RES_OK;
     }
 
@@ -718,7 +735,7 @@ extern "C" void DRV_IR_Init(){
 	//cmddetail:"examples":""}
             CMD_RegisterCommand("IRSend",IR_Send_Cmd, NULL);
 	//cmddetail:{"name":"IREnable","args":"[Str][1or0]",
-	//cmddetail:"descr":"Enable/disable aspects of IR.  IREnable RXTX 0/1 - enable Rx whilst Tx.  IREnable [protocolname] 0/1 - enable/disable a specified protocol",
+	//cmddetail:"descr":"Enable/disable aspects of IR.  IREnable RXTX 0/1 - enable Rx whilst Tx.  IREnable RX 0/1 - switch the IR receiver off/on (e.g. receiver disturbed by ambient light).  IREnable [protocolname] 0/1 - enable/disable a specified protocol",
 	//cmddetail:"fn":"IR_Enable","file":"driver/drv_ir.cpp","requires":"ENABLE_DRIVER_IR (Arduino-IRremote)",
 	//cmddetail:"examples":""}
             CMD_RegisterCommand("IREnable", IR_Enable, NULL);
