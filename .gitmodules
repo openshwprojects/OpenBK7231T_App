@@ -97,3 +97,6 @@
 	path = sdk/OpenBK7239N
 	url = https://github.com/NonPIayerCharacter/OpenBK7239N
 	branch = master
+[submodule "libraries/tailscalec"]
+	path = libraries/tailscalec
+	url = https://github.com/niteria/tailscaleC.git
