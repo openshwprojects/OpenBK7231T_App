@@ -9,6 +9,7 @@ Do not add anything here, as it will overwritten with next rebuild.
 - [Safe mode](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/docs/safeMode.md) - a method to recover device from wrong SSID/pass or crashing config
 - [Simple TCP command server for scripting](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/docs/tcpServer.md) - a simple TCP interface for scripting
 - [HomeAssistant Integration](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/docs/homeAssistant.md) - an easy HA pairing method with [Discovery](https://www.youtube.com/watch?v=pkcspey25V4) or Yaml gen
+- [Bluetooth proxy for Home Assistant](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/docs/btProxy.md) - use the device as an ESPHome Bluetooth proxy, including active BLE connections
 
 # Doc tables 
 | Section        | Comment        |

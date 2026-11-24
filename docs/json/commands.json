@@ -497,7 +497,7 @@
   {
     "name": "BTSetScanMode",
     "args": "[isActive]",
-    "descr": "Set BT scan mode",
+    "descr": "Set BT scan mode: 1 = active (request scan responses; needed e.g. for Tuya BLE devices, which only advertise their protocol version in the scan response), 0 = passive. Can be used before the stack is ready (e.g. in the startup command); it is applied once BT is up.",
     "fn": "CMD_SetBTScanMode",
     "file": "hal/generic/hal_bt_proxy_generic.c",
     "requires": "ENABLE_BT_PROXY",
@@ -522,9 +522,9 @@
     "examples": ""
   },
   {
-    "name": "BTStartScan",
+    "name": "BTStopScan",
     "args": "",
-    "descr": "BT start scan",
+    "descr": "BT stop scan",
     "fn": "CMD_StopScan",
     "file": "hal/generic/hal_bt_proxy_generic.c",
     "requires": "ENABLE_BT_PROXY",
@@ -537,6 +537,42 @@
     "fn": "CMD_StopScan",
     "file": "hal/generic/hal_bt_proxy_generic.c",
     "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "BTProxyLeds",
+    "args": "[redChannel] [blueChannel]",
+    "descr": "Status LEDs for the ESPHome BT proxy. Blue: Home Assistant connected. Red: blinking while connecting/discovering, solid while a BLE device is connected. -1 disables.",
+    "fn": "CMD_BTProxyLeds",
+    "file": "hal/generic/hal_bt_proxy_generic.c",
+    "requires": "ENABLE_DRIVER_ESPHOME_API",
+    "examples": "BTProxyLeds 60 61"
+  },
+  {
+    "name": "BTProxyStatus",
+    "args": "",
+    "descr": "Log BT proxy scan/link/task diagnostics",
+    "fn": "CMD_BTProxyStatus",
+    "file": "hal/generic/hal_bt_proxy_generic.c",
+    "requires": "ENABLE_BT_PROXY_GATT",
+    "examples": ""
+  },
+  {
+    "name": "BTProxyConnect",
+    "args": "[MAC] [addrType]",
+    "descr": "Debug: open a BLE GATT connection locally (no API client needed)",
+    "fn": "CMD_BTProxyConnect",
+    "file": "hal/generic/hal_bt_proxy_generic.c",
+    "requires": "ENABLE_BT_PROXY_GATT",
+    "examples": "BTProxyConnect AA:BB:CC:DD:EE:FF 0"
+  },
+  {
+    "name": "BTProxyDisconnect",
+    "args": "",
+    "descr": "Debug: disconnect all BLE GATT links",
+    "fn": "CMD_BTProxyDisconnect",
+    "file": "hal/generic/hal_bt_proxy_generic.c",
+    "requires": "ENABLE_BT_PROXY_GATT",
     "examples": ""
   },
   {

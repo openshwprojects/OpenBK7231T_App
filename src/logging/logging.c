@@ -407,6 +407,24 @@ void LOG_SetCommandHTTPRedirectReply(http_request_t* request) {
 	}
 #endif
 
+// The most bk_printf prints at once: Beken's FreeRTOS SDK (BK7238, and the
+// other beken_freertos_sdk chips) formats into 128 bytes with
+// vsnprintf(string, sizeof(string) - 1, ...), so a longer text loses its end.
+#define BK_PRINTF_MAX 126
+
+// Print `text` whole through bk_printf, in pieces it takes.
+static void bk_printf_whole(const char* text)
+{
+	int len = strlen(text);
+	while (len > 0)
+	{
+		int n = len > BK_PRINTF_MAX ? BK_PRINTF_MAX : len;
+		bk_printf("%.*s", n, text);
+		text += n;
+		len -= n;
+	}
+}
+
 // adds a log to the log memory
 // if head collides with either tail, move the tails on.
 void addLogAdv(int level, int feature, const char* fmt, ...)
@@ -488,7 +506,7 @@ void addLogAdv(int level, int feature, const char* fmt, ...)
 	}
 
 	if (direct_serial_log == LOGTYPE_DIRECT) {
-		bk_printf("%s", tmp);
+		bk_printf_whole(tmp);
 		if (taken == pdTRUE) {
 			xSemaphoreGive(logMemory.mutex);
 		}
@@ -966,7 +984,7 @@ static void log_serial_thread(beken_thread_arg_t arg)
 		int count = getSerial(seriallogbuf, SERIALLOGBUFSIZE);
 		if (count) {
 			if (direct_serial_log == LOGTYPE_THREAD) {
-				bk_printf("%s", seriallogbuf);
+				bk_printf_whole(seriallogbuf);
 			}
 		}
 		rtos_delay_milliseconds(10);
