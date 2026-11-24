@@ -362,7 +362,7 @@ typedef enum ioRole_e {
 	//iodetail:"descr":"Generic software SDA pin for our more advanced, scriptable I2C driver. This allows you to even connect a I2C display to OBK.",
 	//iodetail:"enum":"IOR_SOFT_SDA",
 	//iodetail:"file":"new_pins.h",
-	//iodetail:"driver":""}
+	//iodetail:"driver":""}	
 	IOR_SOFT_SDA,
 	//iodetail:{"name":"SOFT_SCL",
 	//iodetail:"title":"TODO",
@@ -699,7 +699,35 @@ typedef enum ioRole_e {
 	//iodetail:"enum":"IOR_BL0939_MISO",
 	//iodetail:"file":"new_pins.h",
 	//iodetail:"driver":"BL0939SPI"}
-	IOR_BL0939_MISO,
+	IOR_BL0939_MISO,	
+	//iodetail:{"name":"SHTC3_DAT",
+	//iodetail:"title":"TODO",	
+	//iodetail:"descr":"Humidity/temperature sensor DATA pin. Driver will autostart if both required pins are set.",
+	//iodetail:"enum":"IOR_SHTC3_DAT",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
+	IOR_SHTC3_DAT,
+	//iodetail:{"name":"SHTC3_CLK",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"Humidity/temperature sensor CLOCK pin. Driver will autostart if both required pins are set.",
+	//iodetail:"enum":"IOR_SHTC3_CLK",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
+	IOR_SHTC3_CLK,
+	//iodetail:{"name":"SHTC3_PWR",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"Humidity/temperature sensor POWER control pin. Optional.",
+	//iodetail:"enum":"IOR_SHTC3_PWR",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
+	IOR_SHTC3_PWR,
+	//iodetail:{"name":"SHTC3_PWR_n",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"Humidity/temperature sensor POWER control pin (inversed). Optional.",
+	//iodetail:"enum":"IOR_SHTC3_PWR_n",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
+	IOR_SHTC3_PWR_n,
 	//iodetail:{"name":"Total_Options",
 	//iodetail:"title":"TODO",
 	//iodetail:"descr":"Current total number of available IOR roles",
@@ -710,7 +738,7 @@ typedef enum ioRole_e {
 } ioRole_t;
 
 #define IS_PIN_DHT_ROLE(role) (((role)>=IOR_DHT11) && ((role)<=IOR_DHT22))
-#define IS_PIN_TEMP_HUM_SENSOR_ROLE(role) (((role)==IOR_SHT3X_DAT) || ((role)==IOR_CHT83XX_DAT))
+#define IS_PIN_TEMP_HUM_SENSOR_ROLE(role) (((role)==IOR_SHT3X_DAT) || ((role)==IOR_SHTC3_DAT) || ((role)==IOR_CHT83XX_DAT))
 #define IS_PIN_AIR_SENSOR_ROLE(role) (((role)==IOR_SGP_DAT))
 
 typedef enum channelType_e {
