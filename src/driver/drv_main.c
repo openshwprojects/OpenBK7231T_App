@@ -1643,6 +1643,22 @@ static driver_t g_drivers[] = {
 	false,                                // loaded
 	},
 #endif
+#if ENABLE_DRIVER_EVERLIGHT_ALS
+	//drvdetail:{"name":"EverlightALS",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"Everlight EAALSDIC2020A2 ambient light sensor driver (soft I2C, address 0x38).",
+	//drvdetail:"requires":""}
+	{ "EverlightALS",                              // Driver Name
+	EverlightALS_Init,                             // Init
+	EverlightALS_OnEverySecond,                    // onEverySecond
+	EverlightALS_AppendInformationToHTTPIndexPage, // appendInformationToHTTPIndexPage
+	NULL,                                          // runQuickTick
+	EverlightALS_Stop,                             // stopFunction
+	NULL,                                          // onChannelChanged
+	NULL,                                          // onHassDiscovery
+	false,                                         // loaded
+	},
+#endif
 #if ENABLE_DRIVER_TINYIR_NEC
 	//drvdetail:{"name":"TinyIR_NEC",
 	//drvdetail:"title":"TODO",
@@ -1689,7 +1705,7 @@ static driver_t g_drivers[] = {
 	NULL,                                    // onChannelChanged
 	NULL,                                    // onHassDiscovery
 	false,                                   // loaded
-	}
+	},
 #endif
 	//{ "", NULL, NULL, NULL, NULL, NULL, NULL, NULL, false },
 };
