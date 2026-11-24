@@ -104,6 +104,8 @@ typedef enum {
 	// @Brief ChType_ReadOnlyEnum, readonly with value_template
 	HASS_READONLYENUM,
 	HASS_GARAGE,
+	HASS_IRRECV,
+	HASS_IRSEND,
 
 } ENTITY_TYPE;
 

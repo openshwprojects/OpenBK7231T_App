@@ -97,6 +97,7 @@ set(OBKM_SRC
 	${OBK_SRCS}driver/drv_httpButtons.c
 	${OBK_SRCS}driver/drv_hue.c
 	${OBK_SRCS}driver/drv_ir2.c
+	${OBK_SRCS}driver/drv_ir_proxy.c
 	${OBK_SRCS}driver/drv_kp18058.c
 	${OBK_SRCS}driver/drv_kp18068.c
 	${OBK_SRCS}driver/drv_max6675.c

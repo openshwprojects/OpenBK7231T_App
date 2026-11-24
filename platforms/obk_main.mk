@@ -119,6 +119,7 @@ OBKM_SRC  += $(OBK_SRCS)driver/drv_ht16k33.c
 OBKM_SRC  += $(OBK_SRCS)driver/drv_httpButtons.c
 OBKM_SRC  += $(OBK_SRCS)driver/drv_hue.c
 OBKM_SRC  += $(OBK_SRCS)driver/drv_ir2.c
+OBKM_SRC  += $(OBK_SRCS)driver/drv_ir_proxy.c
 OBKM_SRC  += $(OBK_SRCS)driver/drv_kp18058.c
 OBKM_SRC  += $(OBK_SRCS)driver/drv_kp18068.c
 OBKM_SRC  += $(OBK_SRCS)driver/drv_max6675.c
