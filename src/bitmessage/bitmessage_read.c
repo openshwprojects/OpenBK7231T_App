@@ -18,26 +18,23 @@ int MSG_SkipBytes(bitMessage_t *msg, int c) {
 	return c;
 }
 int MSG_ReadString(bitMessage_t *msg, char *out, int outBufferSize) {
-	const char *start;
 	int len;
 
-	start = (const char*)(msg->data + msg->position);
+	if (msg == 0 || out == 0 || outBufferSize <= 0) {
+		return -1;
+	}
 	len = 0;
-	while(1) {
-		if(msg->position >= msg->totalSize) {
-			return -1;
-		}
-		if(msg->data[msg->position] == 0) {
-			msg->position++;
-			break;
-		}
-		msg->position++;
+	while (msg->position + len < msg->totalSize && msg->data[msg->position + len] != 0) {
 		len++;
-	} 
-	
-	strcpy_safe(out, start,outBufferSize);
+	}
+	if (msg->position + len >= msg->totalSize || len >= outBufferSize) {
+		out[0] = 0;
+		return -1;
+	}
+	memcpy(out, msg->data + msg->position, len);
 	out[len] = 0;
-	return strlen(out);
+	msg->position += len + 1;
+	return len;
 }
 unsigned short MSG_ReadU16(bitMessage_t *msg) {
 	byte *p;
@@ -94,5 +91,4 @@ int MSG_EOF(bitMessage_t *msg) {
 		return 1;
 	return 0;
 }
-
 
