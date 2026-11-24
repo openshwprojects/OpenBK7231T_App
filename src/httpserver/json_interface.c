@@ -229,9 +229,11 @@ static int http_tasmota_json_ENERGY(void* request, jsonCb_t printer) {
 	else {
 		printer(request, "{"); 
 		printer(request, "\"Power\": %f,", _getReading_NanToZero(OBK_POWER));
-		printer(request, "\"ApparentPower\": %f,", _getReading_NanToZero(OBK_POWER_APPARENT));
-		printer(request, "\"ReactivePower\": %f,", _getReading_NanToZero(OBK_POWER_REACTIVE));
-		printer(request, "\"Factor\":%f,", _getReading_NanToZero(OBK_POWER_FACTOR));
+		if (!CFG_HasFlag(OBK_FLAG_POWER_HIDE_EXTENDED_SENSORS)) {
+			printer(request, "\"ApparentPower\": %f,", _getReading_NanToZero(OBK_POWER_APPARENT));
+			printer(request, "\"ReactivePower\": %f,", _getReading_NanToZero(OBK_POWER_REACTIVE));
+			printer(request, "\"Factor\":%f,", _getReading_NanToZero(OBK_POWER_FACTOR));
+		}
 		printer(request, "\"Voltage\":%f,", _getReading_NanToZero(OBK_VOLTAGE));
 		printer(request, "\"Current\":%f,", _getReading_NanToZero(OBK_CURRENT));
 		printer(request, "\"Frequency\":%f,", _getReading_NanToZero(OBK_FREQUENCY));
