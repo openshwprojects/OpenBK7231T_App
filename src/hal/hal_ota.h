@@ -19,7 +19,8 @@ unsigned int HAL_Beken_FlashLength(void);
 
 /// @brief Handle OTA request. Only used for Beken SDK.
 /// @param urlin 
-void otarequest(const char *urlin);
+// 0 once the download has started; -1 where it did not (one already under way, or no memory).
+int otarequest(const char *urlin);
 
 
 /***** SDK independent code from this point. ******/

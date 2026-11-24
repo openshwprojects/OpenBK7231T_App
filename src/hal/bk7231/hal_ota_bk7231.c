@@ -203,11 +203,17 @@ static char *post_data = "";
 
 char *http_buf = (void *)0;
 
-void otarequest(const char *urlin){
+// Set once a fetch's thread is started. Every way the fetch ends restarts the
+// device (myhttpclientcallback, state 2), so it is never cleared; request->state
+// is no guide, being 0 both before a fetch and while it connects, and a second
+// fetch would reset the request under the first one's thread.
+static int http_ota_started = 0;
+
+int otarequest(const char *urlin){
   httprequest_t *request = &httprequest;
-  if (request->state == 1){
+  if (http_ota_started){
     addLogAdv(LOG_INFO, LOG_FEATURE_OTA,"********************http in progress, not starting another");
-    return;
+    return -1;
   }
 
   strncpy(url, urlin, sizeof(url));
@@ -221,7 +227,7 @@ void otarequest(const char *urlin){
     http_buf = os_malloc(BUF_SIZE+1);
     if (http_buf == (void *)0) {
         addLogAdv(LOG_INFO, LOG_FEATURE_OTA,"startrequest Malloc failed.");
-        return;
+        return -1;
     }
     memset(http_buf, 0, BUF_SIZE);
   }
@@ -236,10 +242,16 @@ void otarequest(const char *urlin){
   request->url = url;
   request->method = HTTPCLIENT_GET;
   request->timeout = 10000;
-  HTTPClient_Async_SendGeneric(request);
   //+2 Updating ota_status to 0 as before.
   OTA_ResetProgress();
   OTA_IncrementProgress(1);
+  http_ota_started = 1;
+  if (HTTPClient_Async_SendGeneric(request) != 0){
+    http_ota_started = 0;
+    OTA_ResetProgress();
+    return -1;
+  }
+  return 0;
  }
 
 int http_rest_post_flash(http_request_t* request, int startaddr, int maxaddr)

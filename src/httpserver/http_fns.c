@@ -3667,9 +3667,9 @@ int http_fn_cfg_dgr(http_request_t* request) {
 }
 #endif
 
-void OTA_RequestDownloadFromHTTP(const char* s) {
+int OTA_RequestDownloadFromHTTP(const char* s) {
 #if PLATFORM_BEKEN || PLATFORM_ARMINO
-	otarequest(s);
+	return otarequest(s);
 #elif PLATFORM_ECR6600
 	extern int http_client_download_file(const char* url);
 	extern int ota_done(bool reset);
@@ -3677,6 +3677,7 @@ void OTA_RequestDownloadFromHTTP(const char* s) {
 	int ret = http_client_download_file(s);
 	if(ret != -1) ota_done(1);
 	else ota_done(0);
+	return ret == -1 ? -1 : 0;
 #elif PLATFORM_W600 || PLATFORM_W800
 	t_http_fwup(s);
 #elif PLATFORM_XRADIO
@@ -3687,7 +3688,7 @@ void OTA_RequestDownloadFromHTTP(const char* s) {
 	if(ota_get_image(OTA_PROTOCOL_HTTP, s) != OTA_STATUS_OK)
 	{
 		addLogAdv(LOG_ERROR, LOG_FEATURE_HTTP, "OTA http get image failed");
-		return;
+		return -1;
 	}
 
 	if(ota_get_verify_data(&verify_data) != OTA_STATUS_OK)
@@ -3704,7 +3705,7 @@ void OTA_RequestDownloadFromHTTP(const char* s) {
 	if(ota_verify_image(verify_type, verify_value) != OTA_STATUS_OK)
 	{
 		addLogAdv(LOG_ERROR, LOG_FEATURE_HTTP, "OTA http verify image failed");
-		return;
+		return -1;
 	}
 
 	ota_reboot();
@@ -3735,7 +3736,9 @@ exit:
 	ota_update_deinit(ctx);
 	addLogAdv(LOG_ERROR, LOG_FEATURE_HTTP, "OTA failed");
 	if(ctx) free(ctx);
+	return -1;
 #endif
+	return 0;
 }
 int http_fn_ota_exec(http_request_t* request) {
 	char tmpA[128];

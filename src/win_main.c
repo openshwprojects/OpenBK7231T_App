@@ -720,9 +720,9 @@ void close_ota()
 	return;
 }
 
-void otarequest(const char *urlin)
+int otarequest(const char *urlin)
 {
-	return;
+	return 0;
 }
 
 #endif
