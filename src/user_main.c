@@ -83,6 +83,9 @@ static int g_reset = 0;
 static int g_bHasWiFiConnected = 0;
 // is Open Access point or a client?
 static int g_bOpenAccessPointMode = 0;
+// set at boot when the MAC address matches the Beken fallback pattern
+// (last 3 bytes zero), which indicates a corrupted RF calibration partition
+int g_rfPartitionCorrupted = 0;
 // in safe mode, user can press a button to enter the unsafe one
 static int g_doUnsafeInitIn = 0;
 int g_bootFailures = 0;
@@ -1699,6 +1702,30 @@ void Main_Init()
 {
 	g_unsafeInitDone = false;
 	bk_printf("%s, version %s\r\n", DEVICENAME_PREFIX_FULL, USER_SW_VER);
+
+#if PLATFORM_BK7231T || defined(PLATFORM_BK7231N)
+	// Detect a corrupted RF calibration partition: the chip falls back to
+	// its default MAC (c8:47:8c) with the last 3 bytes zeroed. This
+	// silently degrades WiFi performance and can cause intermittent
+	// connectivity issues that look like firmware bugs (#2292).
+	// Beken-only: other platforms have different fallback patterns or
+	// no RF partition at all.
+	g_rfPartitionCorrupted = 0;
+	{
+		unsigned char mac[6];
+		memset(mac, 0, sizeof(mac));
+		WiFI_GetMacAddress((char*)mac);
+		if (mac[0] == 0xc8 && mac[1] == 0x47 && mac[2] == 0x8c
+			&& mac[3] == 0 && mac[4] == 0 && mac[5] == 0) {
+			g_rfPartitionCorrupted = 1;
+			ADDLOGF_ERROR("RF partition corrupted: running with fallback MAC "
+				"%02X:%02X:%02X:%02X:%02X:%02X. "
+				"WiFi performance may be degraded. "
+				"Use Web App > Flash > Restore RF Config to fix.",
+				mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+		}
+	}
+#endif
 
 #ifdef WINDOWS
 #if ENABLE_LED_BASIC
