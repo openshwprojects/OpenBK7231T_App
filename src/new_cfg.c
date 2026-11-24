@@ -8,6 +8,9 @@
 #include "hal/hal_wifi.h"
 #include "hal/hal_flashConfig.h"
 #include "cmnds/cmd_public.h"
+#if PLATFORM_BL602
+#include "hal/bl602/hal_ota_config_bl602.h"
+#endif
 #if ENABLE_LITTLEFS
 #include "littlefs/our_lfs.h"
 #endif
@@ -878,5 +881,8 @@ void CFG_InitAndLoad() {
 		CFG_SetDefaultLEDCorrectionTable();
 	}
 	g_configInitialized = 1;
+#if PLATFORM_BL602
+	OBK_OtaConfig_TryImport();
+#endif
 	CFG_Save_IfThereArePendingChanges();
 }
