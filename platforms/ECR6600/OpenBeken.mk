@@ -1,7 +1,7 @@
 CFLAGS += -DPLATFORM_ECR6600 -Wno-error -DTCP_MSL=3000
-CFLAGS += -DENABLE_DRIVER_MDNS=1
 VPATH += $(TOPDIR)/../../src
 VPATH += $(TOPDIR)/../../platforms/ECR6600
+VPATH += $(TOPDIR)/../../libraries
 
 INCPATHS += $(TOPDIR)/../../src
 INCPATHS += $(TOPDIR)/include/ota
@@ -18,13 +18,13 @@ CSRCS  += hal/ecr6600/hal_pins_ecr6600.c
 CSRCS  += hal/ecr6600/hal_wifi_ecr6600.c
 CSRCS  += hal/ecr6600/hal_uart_ecr6600.c
 CSRCS  += hal/ecr6600/hal_ota_ecr6600.c
+CSRCS  += mqtt_patched.c
 
 OBK_SRCS = 
 include $(TOPDIR)/../../platforms/obk_main.mk
 CSRCS += $(OBKM_SRC)
 CFLAGS += $(OBK_CFLAGS)
 
-VPATH += $(TOPDIR)/../../libraries
 INCPATHS += $(TOPDIR)/../../include
 BERRY_MODULEPATH = berry/modules
 BERRY_SRCPATH = berry/src
