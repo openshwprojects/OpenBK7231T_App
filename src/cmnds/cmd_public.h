@@ -2,6 +2,15 @@
 #define __CMD_PUBLIC_H__
 
 #include "../new_common.h"
+// Im often struggling: is it only "defined" or defined with the value 1 ?
+// if we use "#define XY 0"
+// we usually want this to be the same as "#undef XY"
+// these two shold handle that:
+// you can use "#define ENABLE_XY" or "#define ENABLE_XY 1" to "enable" the feature
+// while "#undef ENABLE_XY" or "#define  ENABLE_XY 0" will "disable" the feature
+#define UNDEF_OR_ZERO(X) ( 1 -X +1  == 2 )
+#define DEFINED_AND_NOT_ZERO(x) !(UNDEF_OR_ZERO(x))
+
 
 typedef enum commandResult_e {
 	CMD_RES_OK,
@@ -212,6 +221,11 @@ enum LightMode {
 #define TOKENIZER_FORCE_SINGLE_ARGUMENT_MODE	8
 #define TOKENIZER_ALLOW_ESCAPING_QUOTATIONS		16
 #define TOKENIZER_EXPAND_EARLY					32
+// return value for index "out of range", 
+// we will check range in all Tokenizer_Get<XY> functions or return default
+// MAX_INT for 16 bit is 32,767
+// use -2 since we will later call return-value +1 !
+#define INDEX_NOTFOUND_VALUE	(32767 - 2)
 
 // cmd_tokenizer.c
 int Tokenizer_GetArgsCount();
@@ -226,6 +240,26 @@ bool Tokenizer_IsArgInteger(int i);
 float Tokenizer_GetArgFloat(int i);
 int Tokenizer_GetArgIntegerRange(int i, int rangeMax, int rangeMin);
 void Tokenizer_TokenizeString(const char* s, int flags);
+// new commands to use "named args" like "-SDA 17"
+// minimum is this one command to get the index of a string in the cammandline
+// (so if in the exapmle above we are searching for "-SDA", the following arg will be the 17
+int Tokenizer_GetStringIndex(const char *search);
+
+// some additional extensions using this command
+// if used "seldom", we can simply use defines to make it better readable
+// if used often, I'd propose to make additional functions instead to save some flash memory
+#if UNDEF_OR_ZERO(TOKENIZER_PARAM_EXTENSION)
+#define Tokenizer_GetPinEqual(STR,DEF) Tokenizer_GetPin(Tokenizer_GetStringIndex(STR) + 1,DEF)
+#define Tokenizer_GetArgEqualInteger(STR,DEF) Tokenizer_GetArgIntegerDefault(Tokenizer_GetStringIndex(STR) + 1,DEF)
+#define Tokenizer_GetArgEqualDefault(STR,DEF) (Tokenizer_GetStringIndex(STR) + 1 < Tokenizer_GetArgsCount()) ? Tokenizer_GetArg(Tokenizer_GetStringIndex(STR) +1 ) : DEF
+#define Tokenizer_IsStringPresent(STR) (Tokenizer_GetStringIndex(STR) < INDEX_NOTFOUND_VALUE)
+#else
+int Tokenizer_GetPinEqual(const char *search, int def);
+int Tokenizer_GetArgEqualInteger(const char *search, int def);
+bool Tokenizer_IsStringPresent(const char *search);
+const char *Tokenizer_GetArgEqualDefault(const char *search, const char *def);
+#endif
+
 // cmd_repeatingEvents.c
 void RepeatingEvents_Init();
 void RepeatingEvents_RunUpdate(float deltaTimeSeconds);
