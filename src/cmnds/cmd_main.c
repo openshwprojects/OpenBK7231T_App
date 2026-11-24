@@ -166,13 +166,26 @@ static commandResult_t CMD_PowerSave(const void* context, const char* cmd, const
 	else {
 		bk_wlan_power_save_set_level(0);
 	}
+	
 #elif defined(PLATFORM_W600) || defined(PLATFORM_W800)
-	if (bOn) {
-		tls_wifi_set_psflag(1, 0);	//Enable powersave but don't save to flash
+	// Apply now. Note: the second argument does not persist anything; the SDK's
+	// tls_wifi_set_psflag only changes in-memory state.
+	tls_wifi_set_psflag(bOn ? 1 : 0, 0);
+#if PLATFORM_W600
+	{
+		// The W600 SDK reapplies the stored TLS_PARAM_ID_PSM value every time the
+		// device gets an IP address (tls_sys.c, NETIF_IP_NET_UP), which silently
+		// undoes the runtime setting above after any reconnect. Keep the stored
+		// value in sync, writing to flash only when it actually changes.
+		u8 psmStored = 0;
+		u8 psmWanted = bOn ? 1 : 0;
+		tls_param_get(TLS_PARAM_ID_PSM, &psmStored, TRUE);
+		if (psmStored != psmWanted) {
+			tls_param_set(TLS_PARAM_ID_PSM, &psmWanted, TRUE);
+		}
 	}
-	else {
-		tls_wifi_set_psflag(0, 0);	//Disable powersave but don't save to flash
-	}
+#endif
+	
 #elif defined(PLATFORM_BL602)
 	if (bOn) {
 		wifi_mgmr_sta_ps_enter(2);
