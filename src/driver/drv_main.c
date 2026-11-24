@@ -28,6 +28,7 @@
 #include "drv_hlw8112.h"
 #include "drv_xiaomi_compact4.h"
 #include "drv_DCF77.h"
+#include "drv_cmt2300a.h"
 
 void DRV_MQTTServer_Init();
 void DRV_MQTTServer_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState);
@@ -200,6 +201,25 @@ static driver_t g_drivers[] = {
 	false,                                   // loaded
 	},
 #endif
+
+#if ENABLE_DRIVER_SH4
+        //drvdetail:{"name":"CMT2300A",
+        //drvdetail:"title":"CMT2300A_SH4",
+        //drvdetail:"descr":"Driver for Tuya-SH4 chip based on CMT2300A RF chip",
+        //drvdetail:"requires":""}
+
+        { "CMT2300A",
+            CMT2300A_SH4,
+            NULL,
+            CMT2300A_AppendInformationToHTTPIndexPage,
+            CMT2300A_RunQuickTick,
+            CMT2300A_Stop,
+            NULL,
+            NULL,
+            false,
+        },
+#endif
+
 #if ENABLE_DRIVER_TESTSPIFLASH
 	//drvdetail:{"name":"TESTSPIFLASH",
 	//drvdetail:"title":"TODO",
