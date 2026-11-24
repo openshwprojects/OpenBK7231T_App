@@ -841,6 +841,54 @@ void Test_TuyaMCU_Robustness() {
 	CMD_ExecuteCommand("uartFakeHex 55AA0008000F0000000000000001020004000000011E", 0);
 	Sim_RunFrames(100, false);
 	SELFTEST_ASSERT_CHANNEL(22, 1);
+
+	// -----------------------------------------------------------------------
+	// Part 4: Frame with a payload over 255 bytes (too large for the driver)
+	//
+	// The 300-byte payload hides a STATE packet setting dpId 1 to 55. The
+	// whole frame must be skipped: taking the length from its low byte only
+	// would split it and parse the hidden packet.
+	// -----------------------------------------------------------------------
+	{
+		static const byte hidden[] = { 0x55, 0xAA, 0x03, 0x07, 0x00, 0x08,
+			0x01, 0x02, 0x00, 0x04, 0x00, 0x00, 0x00, 0x37, 0x4F };
+		byte frame[6 + 300 + 1];
+		char hex[16 + 2 * sizeof(frame)];
+		byte sum = 0;
+		int i;
+
+		SIM_ClearOBK(0);
+		SIM_UART_InitReceiveRingBuffer(2048);
+		CMD_ExecuteCommand("startDriver TuyaMCU", 0);
+		CMD_ExecuteCommand("linkTuyaMCUOutputToChannel 1 val 20", 0);
+		CMD_ExecuteCommand("setChannel 20 99", 0);
+
+		memset(frame, 0, sizeof(frame));
+		frame[0] = 0x55;
+		frame[1] = 0xAA;
+		frame[2] = 0x03;
+		frame[3] = 0x07;
+		frame[4] = 300 >> 8;
+		frame[5] = 300 & 0xFF;
+		memcpy(frame + 6 + 100, hidden, sizeof(hidden));
+		for (i = 0; i < (int)sizeof(frame) - 1; i++) {
+			sum += frame[i];
+		}
+		frame[sizeof(frame) - 1] = sum;
+
+		strcpy(hex, "uartFakeHex ");
+		for (i = 0; i < (int)sizeof(frame); i++) {
+			sprintf(hex + strlen(hex), "%02X", frame[i]);
+		}
+		CMD_ExecuteCommand(hex, 0);
+		Sim_RunFrames(100, false);
+		SELFTEST_ASSERT_CHANNEL(20, 99);
+
+		// the next frame is still parsed
+		CMD_ExecuteCommand("uartFakeHex 55AA03070008010200040000000119", 0);
+		Sim_RunFrames(100, false);
+		SELFTEST_ASSERT_CHANNEL(20, 1);
+	}
 }
 
 #endif
