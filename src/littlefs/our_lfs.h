@@ -205,6 +205,13 @@
 #define LFS_BLOCKS_START_MIN 0x10000
 #define LFS_BLOCKS_END 0x70000
 
+#elif PLATFORM_MT7687
+
+#include "flash_map.h"
+#define LFS_BLOCKS_START FOTA_BASE
+#define LFS_BLOCKS_START_MIN FOTA_BASE
+#define LFS_BLOCKS_END FOTA_BASE + FOTA_LENGTH
+
 #else
 // TODO
 // start 0x1000 after OTA addr

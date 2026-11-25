@@ -234,7 +234,7 @@ static int http_rest_post(http_request_t* request) {
 		r = http_rest_post_flash(request, 0, -1);
 #elif PLATFORM_GD32VW553
 		r = http_rest_post_flash(request, 0, -1);
-#elif PLATFORM_ARMINO
+#elif PLATFORM_ARMINO || PLATFORM_MT7687
 		extern uint32_t g_ota_start_addr;
 		extern uint32_t g_ota_end_addr;
 		r = http_rest_post_flash(request, g_ota_start_addr, g_ota_end_addr);

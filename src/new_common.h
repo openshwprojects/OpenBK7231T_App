@@ -269,6 +269,12 @@ typedef long BaseType_t;
 #define PLATFORM_MCU_NAME "RTL8196C"
 #define MANUFACTURER "Realtek"
 #define DEF_MQTT_GROUP "rtl8196cs"
+#elif PLATFORM_MT7687
+#define DEVICENAME_PREFIX_FULL "OpenMT7687"
+#define DEVICENAME_PREFIX_SHORT "mt7687"
+#define PLATFORM_MCU_NAME "MT7687"
+#define MANUFACTURER "Mediatek"
+#define DEF_MQTT_GROUP "mt7687s"
 #else
 #error "You must define a platform.."
 This platform is not supported, error!
@@ -352,6 +358,8 @@ This platform is not supported, error!
 #define USER_SW_VER "BK7236N_Test"
 #elif PLATFORM_RTL8196C
 #define USER_SW_VER "RTL8196C_1.0"
+#elif PLATFORM_MT7687
+#define USER_SW_VER "MT7687_Test"
 #else
 #warning "USER_SW_VER undefined"
 #define USER_SW_VER "unknown"
@@ -1204,6 +1212,54 @@ typedef uint8_t UINT8;
 
 #define OBK_OTA_EXTENSION ".bin"
 
+#elif PLATFORM_MT7687
+
+#include "stdint.h"
+#include "FreeRTOS.h"
+#include "task.h"
+#include "semphr.h"
+#include "queue.h"
+#include "event_groups.h"
+#include "lwip/err.h"
+#include "lwip/sockets.h"
+#include "lwip/sys.h"
+#include "lwip/netdb.h"
+#include "lwip/dns.h"
+
+typedef unsigned int UINT32;
+typedef uint8_t UINT8;
+void* os_malloc(size_t size);
+void  os_free(void* ptr);
+void* os_realloc(void* ptr, size_t size);
+typedef int OSStatus;
+#define ASSERT
+#define lwip_close_force(x) lwip_close(x)
+#define bk_printf printf
+#define rtos_delay_milliseconds(x) vTaskDelay(x / portTICK_PERIOD_MS)
+#define delay_ms(x) vTaskDelay(x / portTICK_PERIOD_MS)
+
+#define kNoErr                      0       //! No error occurred.
+typedef void* beken_thread_arg_t;
+typedef xTaskHandle beken_thread_t;
+typedef void (*beken_thread_function_t)(beken_thread_arg_t arg);
+typedef int OSStatus;
+
+#define BEKEN_DEFAULT_WORKER_PRIORITY      (6)
+#define BEKEN_APPLICATION_PRIORITY         (7)
+
+OSStatus rtos_delete_thread(beken_thread_t* thread);
+OSStatus rtos_create_thread(beken_thread_t* thread,
+	uint8_t priority, const char* name,
+	beken_thread_function_t function,
+	uint32_t stack_size, beken_thread_arg_t arg);
+OSStatus rtos_suspend_thread(beken_thread_t* thread);
+
+#define GLOBAL_INT_DECLARATION()	;
+#define GLOBAL_INT_DISABLE()		;
+#define GLOBAL_INT_RESTORE()		;
+
+#define OBK_OTA_EXTENSION ".img"
+
 #else
 
 #include "gw_intf.h"
@@ -1353,7 +1409,7 @@ typedef enum
 } WIFI_RSSI_LEVEL;
 
 #if PLATFORM_LN882H || PLATFORM_REALTEK || PLATFORM_ECR6600 || PLATFORM_TR6260 || PLATFORM_XRADIO \
- || PLATFORM_TXW81X || PLATFORM_LN8825 || PLATFORM_ESP8266 || PLATFORM_ESPIDF || PLATFORM_GD32VW553 || PLATFORM_RTL8196C
+ || PLATFORM_TXW81X || PLATFORM_LN8825 || PLATFORM_ESP8266 || PLATFORM_ESPIDF || PLATFORM_GD32VW553 || PLATFORM_RTL8196C || PLATFORM_MT7687
 #define IP_STRING_FORMAT	"%u.%u.%u.%u"
 #else
 #define IP_STRING_FORMAT	"%hhu.%hhu.%hhu.%hhu"
