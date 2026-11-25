@@ -284,7 +284,7 @@ EfErrCode ef_port_read(uint32_t addr, uint32_t* buf, size_t size)
 #elif WINDOWS || LINUX
 	memcpy(buf, env_area + addr, size);
 	return EF_NO_ERR;
-#elif PLATFORM_TXW81X || PLATFORM_RDA5981
+#elif PLATFORM_TXW81X || PLATFORM_RDA5981 || PLATFORM_MT7687
 	HAL_FlashRead(buf, size, addr);
 	return EF_NO_ERR;
 #elif PLATFORM_BEKEN
@@ -334,7 +334,7 @@ EfErrCode ef_port_erase(uint32_t addr, size_t size)
 	return res;
 #elif WINDOWS || LINUX
 	memset(env_area + addr, 0xFF, size);
-#elif PLATFORM_TXW81X || PLATFORM_RDA5981
+#elif PLATFORM_TXW81X || PLATFORM_RDA5981 || PLATFORM_MT7687
 	HAL_FlashEraseSector(addr);
 	return EF_NO_ERR;
 #elif PLATFORM_BEKEN
@@ -421,7 +421,7 @@ EfErrCode ef_port_write(uint32_t addr, const uint32_t* buf, size_t size)
 #elif WINDOWS || LINUX
 	memcpy(env_area + addr, buf, size);
 	return EF_NO_ERR;
-#elif PLATFORM_TXW81X || PLATFORM_RDA5981
+#elif PLATFORM_TXW81X || PLATFORM_RDA5981 || PLATFORM_MT7687
 	HAL_FlashWrite(buf, size, addr);
 	return EF_NO_ERR;
 #elif PLATFORM_BEKEN

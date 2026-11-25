@@ -159,6 +159,11 @@ extern uint32_t ENV_AREA_SIZE;
 #undef EF_WRITE_GRAN
 #define EF_WRITE_GRAN             8
 
+#elif PLATFORM_MT7687
+
+#define EF_START_ADDR             0x60000
+#define ENV_AREA_SIZE             0x8000
+
 #elif WINDOWS
 
 #define EF_START_ADDR             0

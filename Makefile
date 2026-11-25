@@ -472,6 +472,14 @@ endif
 	else echo "prebuild for OpenBK7236 not found ... "; \
 	fi
 
+prebuild_OpenMT7687: berry
+	git submodule update --init --recursive --depth=1 sdk/OpenMT7687
+	@if [ -e platforms/MT7687/pre_build.sh ]; then \
+		echo "prebuild found for OpenMT7687"; \
+		sh platforms/MT7687/pre_build.sh; \
+	else echo "prebuild for OpenMT7687 not found ... "; \
+	fi
+
 # Build main binaries
 OpenBK7231T: prebuild_OpenBK7231T
 	mkdir -p output
@@ -911,6 +919,13 @@ OpenBK7236: prebuild_OpenBK7236
 	mkdir -p output/$(APP_VERSION)
 	cp sdk/OpenBK7239N/build/bk7236/BK7236/package/all-app.bin output/$(APP_VERSION)/OpenBK7236_QIO_$(APP_VERSION).bin
 	cp sdk/OpenBK7239N/build/bk7236/BK7236/package/app_pack.rbl output/$(APP_VERSION)/OpenBK7236_${APP_VERSION}.rbl
+
+.PHONY: OpenMT7687
+OpenMT7687: prebuild_OpenMT7687
+	cd ./sdk/OpenMT7687 && ./build.sh mt7687_hdk openbeken -o=APP_VERSION=$(APP_VERSION) -o=OBK_VARIANT=$(OBK_VARIANT)
+	mkdir -p output/$(APP_VERSION)
+	python3 ./platforms/MT7687/Create_AIO.py output/$(APP_VERSION)/OpenMT7687_$(APP_VERSION).bin 0x03 0x0 ./sdk/OpenMT7687/tools/mt7687_bootloader.bin 0x04 0x0 ./sdk/OpenMT7687/tools/mt7697_bootloader.bin 0x02 0x10000 ./sdk/OpenMT7687/out/mt7687_hdk/openbeken/WIFI_RAM_CODE_MT76X7_in_flash.bin 0x02 0x79000 ./sdk/OpenMT7687/out/mt7687_hdk/openbeken/openbeken.bin
+	python3 ./platforms/MT7687/Create_OTA.py -i sdk/OpenMT7687/out/mt7687_hdk/openbeken/openbeken.bin -o output/$(APP_VERSION)/OpenMT7687_$(APP_VERSION)_ota.img
 
 OPENRTL8196C_SDK ?= $(or $(firstword $(wildcard sdk/OpenRTL8196C ../OpenRTL8196C)),sdk/OpenRTL8196C)
 OPENRTL8196C_GIT ?= https://github.com/openshwprojects/OpenRTL8196C.git

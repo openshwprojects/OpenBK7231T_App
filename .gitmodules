@@ -97,3 +97,7 @@
 	path = sdk/OpenBK7239N
 	url = https://github.com/NonPIayerCharacter/OpenBK7239N
 	branch = master
+[submodule "sdk/OpenMT7687"]
+	path = sdk/OpenMT7687
+	url = https://github.com/NonPIayerCharacter/OpenMT7687
+	branch = master
