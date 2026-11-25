@@ -151,10 +151,11 @@ static u8_t ping_recv(void *arg, struct raw_pcb *pcb, struct pbuf *p, const ip_a
   LWIP_UNUSED_ARG(addr);
   LWIP_ASSERT("p != NULL", p != NULL);
 
-#ifdef PLATFORM_RTL8196C
-	/* The SDK raw receive shim supplies contiguous pbufs and has no pbuf_copy_partial. */
-	if (p->len >= (PBUF_IP_HLEN + sizeof(struct icmp_echo_hdr))) {
-		memcpy(&iecho, (const char *)p->payload + PBUF_IP_HLEN, sizeof(iecho));
+#if PLATFORM_RTL8196C
+	// The RTL8196C lwIP shim provides contiguous receive buffers.
+	if ((p->tot_len >= (PBUF_IP_HLEN + sizeof(iecho))) &&
+		(p->len >= (PBUF_IP_HLEN + sizeof(iecho)))) {
+		memcpy(&iecho, (const u8_t *)p->payload + PBUF_IP_HLEN, sizeof(iecho));
 #else
 	if ((p->tot_len >= (PBUF_IP_HLEN + sizeof(struct icmp_echo_hdr))) &&
 		pbuf_copy_partial(p, &iecho, sizeof(iecho), PBUF_IP_HLEN) == sizeof(iecho)) {
