@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.16.0)
 if("$ENV{IDF_TARGET}" STREQUAL "esp32" AND "$ENV{OBK_VARIANT}" STREQUAL "10")
 	set(SDKCONFIG_DEFAULTS "sdkconfig.defaults;sdkconfig.defaults.esp32;sdkconfig.defaults.xiaomi_compact4")
+elseif("$ENV{IDF_TARGET}" STREQUAL "esp32c3" AND "$ENV{OBK_VARIANT}" STREQUAL "1")
+	set(SDKCONFIG_DEFAULTS "sdkconfig.defaults;sdkconfig.defaults.esp32c3;sdkconfig.defaults.esp32c3_2mb")
 endif()
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)
 add_compile_definitions(PLATFORM_ESPIDF=1)

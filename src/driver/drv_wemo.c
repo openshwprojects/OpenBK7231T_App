@@ -39,8 +39,7 @@ static const char *g_wemo_setup_4 =
 "</serialNumber>"
 "<presentationURL>http://";
 static const char *g_wemo_setup_5 =
-":80/</presentationURL>"
-"<binaryState>0</binaryState>";
+":80/</presentationURL>";
 static const char *g_wemo_setup_6 =
 	"<serviceList>"
 		"<service>"
@@ -64,7 +63,6 @@ static const char *g_wemo_setup_6 =
 const char *g_wemo_msearch =
 "HTTP/1.1 200 OK\r\n"
 "CACHE-CONTROL: max-age=86400\r\n"
-"DATE: Fri, 15 Apr 2016 04:56:29 GMT\r\n"
 "EXT:\r\n"
 "LOCATION: http://%s:80/setup.xml\r\n"
 "OPT: \"http://schemas.upnp.org/upnp/1/0/\"; ns=01\r\n"
@@ -175,6 +173,9 @@ void DRV_WEMO_Send_Advert_To(int mode, struct sockaddr_in *addr) {
 	if (mode == 1) {
 		useType = "urn:Belkin:device:**";
 	}
+	else if (mode == 3) {
+		useType = "urn:Belkin:device:controllee:1";
+	}
 	else {
 		useType = "upnp:rootdevice";
 	}
@@ -184,6 +185,8 @@ void DRV_WEMO_Send_Advert_To(int mode, struct sockaddr_in *addr) {
 	if (buffer_out == 0) {
 		outBufferLen = strlen(g_wemo_msearch) + 256;
 		buffer_out = (char*)malloc(outBufferLen);
+		if (!buffer_out)
+			return;
 	}
 	snprintf(buffer_out, outBufferLen, g_wemo_msearch, HAL_GetMyIPString(), useType, g_uid, useType);
 
@@ -218,45 +221,77 @@ bool Main_GetFirstPowerState() {
 	}
 	return 0;
 }
-static int WEMO_BasicEvent1(http_request_t* request) {
-	const char* cmd = request->bodystart;
-
-
-	addLogAdv(LOG_INFO, LOG_FEATURE_HTTP, "Wemo post event %s", cmd);
-	// Sample event data taken by my user
-	/*
-	<?xml version="1.0" encoding="utf-8"?><s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/"s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"><s:Body><u:GetBinaryState xmlns:u="urn:Belkin:service:basicevent:1"><BinaryState>1</BinaryState></u:GetBinaryState></s:Body></s:Envelope>
-	*/
-	// Set and Get are the same so we can hack just one letter
-	char letter;
-	// is this a Set request?
-	if (strstr(cmd, "SetBinaryState")) {
-		// set
-		letter = 'S';
-		if (strstr(cmd, "State>1</Binary")) {
-			CMD_ExecuteCommand("POWER ON", 0);
-		}
-		if (strstr(cmd, "State>0</Binary")) {
-			CMD_ExecuteCommand("POWER OFF", 0);
-		}
-	}
-	else {
-		// get
-		letter = 'G';
-	}
-	int bMainPower = Main_GetFirstPowerState();
-
-	// We must send a SetBinaryState or GetBinaryState response depending on what 
-	// was sent to us	
+static int WEMO_Fault(http_request_t *request) {
+	request->responseCode = HTTP_RESPONSE_SERVER_ERROR;
 	http_setup(request, httpMimeTypeXML);
 	poststr(request, g_wemo_response_1);
-	// letter is twice because we have two SetBinaryStateResponse tokens (opening and closing tag)
-	hprintf255(request, g_wemo_response_2_fmt, letter, bMainPower, letter);
+	poststr(request, "<s:Fault><faultcode>s:Client</faultcode><faultstring>UPnPError</faultstring>"
+		"<detail><UPnPError xmlns=\"urn:schemas-upnp-org:control-1-0\">"
+		"<errorCode>402</errorCode><errorDescription>Invalid Args</errorDescription>"
+		"</UPnPError></detail></s:Fault></s:Body></s:Envelope>");
 	poststr(request, NULL);
+	return 0;
+}
 
+static void WEMO_SetFirstPowerState(int on) {
+	int ch;
+#if ENABLE_LED_BASIC
+	if (LED_IsLEDRunning()) {
+		CMD_ExecuteCommand(on ? "POWER ON" : "POWER OFF", 0);
+		return;
+	}
+#endif
+	// Wemo advertises one socket: control exactly the output reported by Get.
+	for (ch = 0; ch < CHANNEL_MAX; ch++) {
+		if (h_isChannelRelay(ch) || CHANNEL_GetType(ch) == ChType_Toggle) {
+			CHANNEL_Set(ch, on, 0);
+			return;
+		}
+	}
+}
 
+static int WEMO_BasicEvent1(http_request_t* request) {
+	char *cmd, *value, *end;
+	char letter = 'G';
+	int on;
+	if (!request->bodystart || request->bodylen <= 0
+		|| request->bodylen < request->contentLength)
+		return WEMO_Fault(request);
+	// HTTP buffers can contain a partial body and need not terminate at bodylen.
+	cmd = malloc(request->bodylen + 1);
+	if (!cmd)
+		return WEMO_Fault(request);
+	memcpy(cmd, request->bodystart, request->bodylen);
+	cmd[request->bodylen] = 0;
+	if (strstr(cmd, "SetBinaryState")) {
+		letter = 'S';
+		value = strstr(cmd, "<BinaryState>");
+		if (!value) {
+			free(cmd);
+			return WEMO_Fault(request);
+		}
+		value += strlen("<BinaryState>");
+		while (*value == ' ' || *value == '\t' || *value == '\r' || *value == '\n')
+			value++;
+		on = *value - '0';
+		end = *value ? value + 1 : value;
+		while (*end == ' ' || *end == '\t' || *end == '\r' || *end == '\n')
+			end++;
+		if ((on != 0 && on != 1) || strncmp(end, "</BinaryState>", 14)) {
+			free(cmd);
+			return WEMO_Fault(request);
+		}
+		WEMO_SetFirstPowerState(on);
+	} else if (!strstr(cmd, "GetBinaryState")) {
+		free(cmd);
+		return WEMO_Fault(request);
+	}
+	free(cmd);
+	http_setup(request, httpMimeTypeXML);
+	poststr(request, g_wemo_response_1);
+	hprintf255(request, g_wemo_response_2_fmt, letter, Main_GetFirstPowerState(), letter);
+	poststr(request, NULL);
 	stat_eventsReceived++;
-
 	return 0;
 }
 static int WEMO_EventService(http_request_t* request) {
@@ -283,17 +318,18 @@ static int WEMO_Setup(http_request_t* request) {
 	http_setup(request, httpMimeTypeXML);
 	poststr(request, g_wemo_setup_1);
 	// friendly name
-	poststr(request, CFG_GetDeviceName());
+	poststr_escaped(request, (char*)CFG_GetDeviceName());
 	poststr(request, g_wemo_setup_2);
 	// uuid
 	poststr(request, g_uid);
 	poststr(request, g_wemo_setup_3);
-	// IP str
-	poststr(request, HAL_GetMyIPString());
-	poststr(request, g_wemo_setup_4);
-	// serial str
+	// serial number
 	poststr(request, g_serial);
+	poststr(request, g_wemo_setup_4);
+	// presentation URL
+	poststr(request, HAL_GetMyIPString());
 	poststr(request, g_wemo_setup_5);
+	hprintf255(request, "<binaryState>%d</binaryState>", Main_GetFirstPowerState());
 	poststr(request, g_wemo_setup_6);
 	poststr(request, NULL);
 
@@ -305,6 +341,8 @@ void WEMO_Init() {
 	char uid[64];
 	char serial[32];
 	unsigned char mac[8];
+	if (g_uid)
+		return;
 
 	WiFI_GetMacAddress((char*)mac);
 	snprintf(serial, sizeof(serial), "201612%02X%02X%02X%02X", mac[2], mac[3], mac[4], mac[5]);
@@ -312,6 +350,11 @@ void WEMO_Init() {
 
 	g_serial = strdup(serial);
 	g_uid = strdup(uid);
+	if (!g_serial || !g_uid) {
+		free(g_serial); free(g_uid);
+		g_serial = g_uid = NULL;
+		return;
+	}
 
 	HTTP_RegisterCallback("/upnp/control/basicevent1", HTTP_POST, WEMO_BasicEvent1, 0);
 	HTTP_RegisterCallback("/eventservice.xml", HTTP_GET, WEMO_EventService, 0);

@@ -15,7 +15,7 @@
 // define the feature ADDLOGF_XXX will use
 #define LOG_FEATURE LOG_FEATURE_HTTP
 
-const char httpHeader[] = "HTTP/1.1 %d OK\nContent-type: %s";	// HTTP header
+const char httpHeader[] = "HTTP/1.1 %d OK\r\nContent-type: %s";	// HTTP header
 const char httpMimeTypeHTML[] = "text/html";					// HTML MIME type
 const char httpMimeTypeText[] = "text/plain";					// TEXT MIME type
 const char httpMimeTypeXML[] = "text/xml";						// TEXT MIME type
