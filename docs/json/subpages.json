@@ -9,7 +9,7 @@
 		"topic": "Safe mode",
 		"mdName": "safeMode",
 		"shortDesc": "a method to recover device from wrong SSID/pass or crashing config",
-		"content": "Device is counting full boots (full boot is a boot after which device worked for 30 seconds). If you power off and on device multiple times, it will enter open access point mode and safe mode (safe mode means even pin systems are not initialized). Those modes are used to recover devices from bad configs and errors."
+		"content": "Device is counting full boots. A boot counts as full once the device has stayed up for FullBootTime seconds, which is 5 by default (FullBootTime command, or 'Uptime in seconds required to mark boot as OK' under Config > Configure General/Flags). If you power off and on device 5 times in quick succession (but not too quick because device might have capacitors and they need to discharge every time), so that 4 boots in a row end before FullBootTime, the 5th boot enters open access point mode and safe mode (safe mode means even pin systems are not initialized, and autoexec.bat is not run). Those modes are used to recover devices from bad configs and errors.\n\nIn safe mode many console commands are not registered, including restart and reboot, so /cm?cmnd=reboot does nothing. After fixing the config, use the Restart button on the main page (/index?restart=1). The Exit safe mode button (/index?unsafe=1) starts pins and drivers without a reboot and without running autoexec.bat.\n\nAny boot that stays up for FullBootTime resets the counter, a safe mode boot included. So safe mode is not permanent, but a config that crashes the device at boot sends it straight back there."
 	},
 	{
 		"topic": "Simple TCP command server for scripting",
