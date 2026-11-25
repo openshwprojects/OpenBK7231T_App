@@ -68,10 +68,21 @@
 
 // Sony Control-A1 / S-Link Device & Commands
 #define SLINK_DEVICE_AMP             0xC0 // 192
+#define SLINK_DEVICE_MD              0xB0 // 176
+#define SLINK_DEVICE_TUNER           0xC1 // 193
+#define SLINK_DEVICE_AMP_NEW         0x70 // 112
+#define SLINK_DEVICE_SURROUND        0xC3 // 194
+#define SLINK_DEVICE_CDP_CX1L        0x90 // 200
+
 #define SLINK_CMD_AMP_VOLUME_UP      0x14 // 20
 #define SLINK_CMD_AMP_VOLUME_DOWN    0x15 // 21
 #define SLINK_CMD_AMP_POWER_ON       0x2E // 46
 #define SLINK_CMD_AMP_POWER_OFF      0x2F // 47
+#define SLINK_CMD_AMP_MUTE_ON        0x06 // 6
+#define SLINK_CMD_AMP_MUTE_OFF       0x07 // 7
+#define SLINK_CMD_AMP_5_1_IN_ON      0x0C // 12
+#define SLINK_CMD_AMP_5_1_IN_OFF     0x0D // 13
+#define SLINK_CMD_AMP_SET_INPUT_CHAN 0x50 // 80
 
 // S-Link Protocol Timings (microseconds)
 #define SLINK_MARK_SYNC_US           2400
