@@ -9,6 +9,8 @@ extern "C" {
 void DRV_IR_Init();
 void DRV_IR_RunFrame();
 void DRV_IR_Deinit();
+void DRV_IR_DoDiscovery(const char *topic);
+void DRV_IR_OnRetainedState(const char *topic, const char *payload, int len);
 
 #ifdef __cplusplus
 }
