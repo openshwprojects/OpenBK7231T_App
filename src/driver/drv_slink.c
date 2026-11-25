@@ -2,7 +2,7 @@
 #include "../new_pins.h"
 #include "../new_cfg.h"
 #include "../logging/logging.h"
-#include "../cmd/cmd_public.h"
+#include "../cmnds/cmd_public.h"
 #include "../hal/hal_pins.h"
 #include "drv_local.h"
 
