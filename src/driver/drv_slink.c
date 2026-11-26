@@ -8,64 +8,6 @@
 
 #if ENABLE_DRIVER_SLINK
 
-#if PLATFORM_BL602
-
-    #include <FreeRTOS.h>
-    #include <task.h>
-    #include <bl_timer.h>
-
-    #define SLINK_DELAY_US(us)     bl_timer_delay_us(us)
-    #define SLINK_NOW_US()         bl_timer_now_us()
-    #define SLINK_CRIT_ENTER()     taskENTER_CRITICAL()
-    #define SLINK_CRIT_EXIT()      taskEXIT_CRITICAL()
-
-#elif PLATFORM_ESPIDF
-
-    #include "freertos/FreeRTOS.h"
-    #include "freertos/task.h"
-    #include "esp_timer.h"
-    #include "esp_rom_sys.h"
-
-    static portMUX_TYPE g_slink_mux = portMUX_INITIALIZER_UNLOCKED;
-
-    #define SLINK_DELAY_US(us)     esp_rom_delay_us(us)
-    #define SLINK_NOW_US()         ((uint32_t)esp_timer_get_time())
-    #define SLINK_CRIT_ENTER()     portENTER_CRITICAL(&g_slink_mux)
-    #define SLINK_CRIT_EXIT()      portEXIT_CRITICAL(&g_slink_mux)
-
-#elif PLATFORM_RTL8720D || PLATFORM_RTL87X0C || PLATFORM_RTL8710B
-
-    #include <FreeRTOS.h>
-    #include <task.h>
-    #include "timer_api.h"
-
-    #define SLINK_DELAY_US(us)     DelayUs(us)
-    #define SLINK_NOW_US()         (xTaskGetTickCount() * 1000UL) // 1ms tick is sufficient
-    #define SLINK_CRIT_ENTER()     taskENTER_CRITICAL()
-    #define SLINK_CRIT_EXIT()      taskEXIT_CRITICAL()
-
-#elif PLATFORM_BK7231T || PLATFORM_BK7231N
-
-    #include "arm_arch.h"
-    #include "../hal/hal_generic.h"
-
-    #define SLINK_DELAY_US(us)     usleep(us)
-    #define SLINK_NOW_US()         (HAL_GetTicks() * 1000UL)
-    #define SLINK_CRIT_ENTER()     GLOBAL_INT_DECLARATION(); GLOBAL_INT_DISABLE()
-    #define SLINK_CRIT_EXIT()      GLOBAL_INT_RESTORE()
-
-#else
-
-    // Generic fallback for W800, LN882H, XR809, etc.
-    #include "../hal/hal_generic.h"
-
-    #define SLINK_DELAY_US(us)     usleep(us)
-    #define SLINK_NOW_US()         (HAL_GetTicks() * 1000UL)
-    #define SLINK_CRIT_ENTER()
-    #define SLINK_CRIT_EXIT()
-
-#endif
-
 // Sony Control-A1 / S-Link Device & Commands
 #define SLINK_DEVICE_AMP             0xC0 // 192
 #define SLINK_DEVICE_MD              0xB0 // 176
@@ -104,36 +46,44 @@ static void slink_line_check(void)
         return; // TX-only mode if no RX pin is configured
     }
 
-    uint32_t start = SLINK_NOW_US();
-    uint32_t beginTimeout = start;
-
+    uint32_t quiet_us = 0;
+    uint32_t total_us = 0;
+    
     do
     {
-        SLINK_DELAY_US(SLINK_LOOP_DELAY_US);
+        usleep(SLINK_LOOP_DELAY_US);
+        total_us += SLINK_LOOP_DELAY_US;
         if (HAL_PIN_ReadDigitalInput(g_slink_pin_in) == 0)
         {
-          start = SLINK_NOW_US();
+            quiet_us =0;
+        } else {
+          quiet_us += SLINK_LOOP_DELAY_US();
         }
-    } while (((uint32_t)(SLINK_NOW_US() - start) < SLINK_LINE_READY_US) && ((uint32_t)(SLINK_NOW_US() - beginTimeout) < SLINK_LOOP_TIMEOUT_US));
+    } while (quiet_us < SLINK_LINE_READY_US) && total_us < SLINK_LOOP_TIMEOUT_US));
 }
 
-static void slink_write_sync(void)
+static uint32_t slink_write_sync(void)
 {
     HAL_PIN_SetOutputValue(g_slink_pin_out, 1); // pull bus low
-    SLINK_DELAY_US(SLINK_MARK_SYNC_US);
+    usleep(SLINK_MARK_SYNC_US);
     HAL_PIN_SetOutputValue(g_slink_pin_out, 0); // release bus
-    SLINK_DELAY_US(SLINK_MARK_DELIMITER_US);
+    usleep(SLINK_MARK_DELIMITER_US);
+    return SLINK_MARK_SYNC_US + SLINK_MARK_DELIMITER_US;
 }
 
-static void slink_write_byte(uint8_t value)
+static uint32_t slink_write_byte(uint8_t value)
 {
+    uint32_t elapsed = 0;
     for (int i = 7; i >= 0; i--)
     {
+        uint32_t mark = (value & (1 << i)) ? SLINK_MARK_ONE_US : SLINK_MARK_ZERO_US; 
         HAL_PIN_SetOutputValue(g_slink_pin_out, 1);
-        SLINK_DELAY_US((value & (1 << i)) ? SLINK_MARK_ONE_US : SLINK_MARK_ZERO_US);
+        usleep(mark);
         HAL_PIN_SetOutputValue(g_slink_pin_out, 0);
-        SLINK_DELAY_US(SLINK_MARK_DELIMITER_US);
+        usleep(SLINK_MARK_DELIMITER_US);
+        elapsed += mark + SLINK_MARK_DELIMITER_US;
     }
+return elapsed;
 }
 
 void SLink_SendCommand(uint8_t deviceId, uint8_t commandId)
@@ -144,25 +94,25 @@ void SLink_SendCommand(uint8_t deviceId, uint8_t commandId)
     }
 
     slink_line_check();
-    uint32_t start = SLINK_NOW_US();
+    uint32_t elapsed = 0;
 
     // Protect ~25ms pulse train from Wi-Fi / FreeRTOS jitter
-    SLINK_CRIT_ENTER();
-    slink_write_sync();
+    elapsed += slink_write_sync();
+
     slink_write_byte(deviceId);
     slink_write_byte(commandId);
-    SLINK_CRIT_EXIT();
 
     // Post-frame padding (interruptible by other bus traffic)
     do
     {
-        SLINK_DELAY_US(SLINK_LOOP_DELAY_US);
+        usleep(SLINK_LOOP_DELAY_US);
+        elapsed += SLINK_LOOP_DELAY_US;
 
         if (g_slink_pin_in >= 0 && HAL_PIN_ReadDigitalInput(g_slink_pin_in) == 0)
         {
             break;
         }
-    } while ((uint32_t)(SLINK_NOW_US() - start) < SLINK_WORD_DELIMITER_US);
+    } while (elapsed < SLINK_WORD_DELIMITER_US);
 
     ADDLOG_INFO(LOG_FEATURE_DRV, "SLink: Sent 0x%02X 0x%02X", deviceId, commandId);
 }
