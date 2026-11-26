@@ -700,6 +700,13 @@ typedef enum ioRole_e {
 	//iodetail:"file":"new_pins.h",
 	//iodetail:"driver":"BL0939SPI"}
 	IOR_BL0939_MISO,
+	//iodetail:{"name":"IRLearn",
+	//iodetail:"title":"IR learning receiver",
+	//iodetail:"descr":"On-demand IR receiver used by the IRremoteESP learning interface.",
+	//iodetail:"enum":"IOR_IRLearn",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":"IR"}
+	IOR_IRLearn,
 	//iodetail:{"name":"Total_Options",
 	//iodetail:"title":"TODO",
 	//iodetail:"descr":"Current total number of available IOR roles",

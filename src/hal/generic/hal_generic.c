@@ -15,6 +15,11 @@ void __attribute__((weak)) HAL_Delay_us(int delay)
 	}
 }
 
+uint32_t __attribute__((weak)) HAL_GetMicroseconds(void)
+{
+	return 0;
+}
+
 void __attribute__((weak)) HAL_Configure_WDT()
 {
 
