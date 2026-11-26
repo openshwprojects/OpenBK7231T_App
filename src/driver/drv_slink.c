@@ -19,7 +19,7 @@
     #define SLINK_CRIT_ENTER()     taskENTER_CRITICAL()
     #define SLINK_CRIT_EXIT()      taskEXIT_CRITICAL()
 
-#if PLATFORM_ESPIDF
+#elif PLATFORM_ESPIDF
 
     #include "freertos/FreeRTOS.h"
     #include "freertos/task.h"
