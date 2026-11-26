@@ -134,6 +134,8 @@ static void store_sector(unsigned int addr, unsigned char *data){
 
 
 httprequest_t httprequest;
+// Whether the download under way has seen an error (HAL_OTA_BeforeReboot).
+static int ota_failed = 0;
 
 int myhttpclientcallback(httprequest_t* request){
 
@@ -145,6 +147,10 @@ int myhttpclientcallback(httprequest_t* request){
   OTA_SetTotalBytes(OTA_GetTotalBytes() + request->client_data.response_buf_filled);
 
   switch(request->state){
+    case -1: // could not connect or send the request
+    case -2: // the response was cut off
+      ota_failed = 1;
+      break;
     case 0: // start
       //init_ota(0xff000);
 
@@ -177,6 +183,7 @@ int myhttpclientcallback(httprequest_t* request){
 #endif
 	  DRV_SavePowerMeterDriverStatistics();
       rtos_delay_milliseconds(1000);
+      HAL_OTA_BeforeReboot(!ota_failed);
       bk_reboot();
       break;
   }
@@ -218,6 +225,7 @@ int otarequest(const char *urlin){
 
   strncpy(url, urlin, sizeof(url));
 
+  ota_failed = 0;
   OTA_SetTotalBytes(0);
   memset(request, 0, sizeof(*request));
   httpclient_t *client = &request->client;
