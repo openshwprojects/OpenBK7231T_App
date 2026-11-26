@@ -3668,7 +3668,7 @@ int http_fn_cfg_dgr(http_request_t* request) {
 #endif
 
 int OTA_RequestDownloadFromHTTP(const char* s) {
-#if PLATFORM_BEKEN || PLATFORM_ARMINO
+#if PLATFORM_BEKEN || PLATFORM_ARMINO || PLATFORM_MT7687
 	return otarequest(s);
 #elif PLATFORM_ECR6600
 	extern int http_client_download_file(const char* url);
