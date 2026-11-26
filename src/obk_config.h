@@ -333,6 +333,7 @@
 #define ENABLE_DRIVER_SM16703P					1
 #define ENABLE_DRIVER_PIXELANIM					1
 #define ENABLE_DRIVER_SM15155E					1
+#define ENABLE_DRIVER_SLINK        1
 
 #endif
 // parse things like $CH1 or $hour etc
@@ -613,6 +614,7 @@
 #if PLATFORM_RTL87X0C || PLATFORM_REALTEK_NEW || PLATFORM_RTL8720D
 #undef ENABLE_DRIVER_DDP
 #define ENABLE_DRIVER_IRREMOTEESP				1
+#define ENABLE_DRIVER_SLINK        1
 #endif
 
 #if PLATFORM_RTL8720E
