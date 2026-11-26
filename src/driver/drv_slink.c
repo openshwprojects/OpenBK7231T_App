@@ -57,9 +57,9 @@ static void slink_line_check(void)
         {
             quiet_us =0;
         } else {
-          quiet_us += SLINK_LOOP_DELAY_US();
+          quiet_us += SLINK_LOOP_DELAY_US;
         }
-    } while (quiet_us < SLINK_LINE_READY_US) && total_us < SLINK_LOOP_TIMEOUT_US));
+    } while ((quiet_us < SLINK_LINE_READY_US) && (total_us < SLINK_LOOP_TIMEOUT_US));
 }
 
 static uint32_t slink_write_sync(void)
