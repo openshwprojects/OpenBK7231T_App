@@ -99,8 +99,8 @@ void SLink_SendCommand(uint8_t deviceId, uint8_t commandId)
     // Protect ~25ms pulse train from Wi-Fi / FreeRTOS jitter
     elapsed += slink_write_sync();
 
-    slink_write_byte(deviceId);
-    slink_write_byte(commandId);
+    elapsed += slink_write_byte(deviceId);
+    elapsed += slink_write_byte(commandId);
 
     // Post-frame padding (interruptible by other bus traffic)
     do
@@ -172,7 +172,7 @@ void DRV_SLink_Init(void)
 
     if (g_slink_pin_in >= 0)
     {
-        HAL_PIN_Setup_Input(g_slink_pin_in);
+        HAL_PIN_Setup_Input(g_slink_pin_in);  // External PullUp resistor presents in schematic
     }
 
     CMD_RegisterCommand("SLinkVolUp", CMD_SLink_VolUp, NULL);
