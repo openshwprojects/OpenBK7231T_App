@@ -1707,6 +1707,9 @@ static driver_t g_drivers[] = {
 	false,                 // loaded
 	},
 #endif
+#if ENABLE_DRIVER_SLINK
+	{ "Slink", DRV_SLink_Init, NULL, NULL, NULL, NULL, NULL, NULL, NULL, false },
+#endif
 	//{ "", NULL, NULL, NULL, NULL, NULL, NULL, NULL, false },
 };
 

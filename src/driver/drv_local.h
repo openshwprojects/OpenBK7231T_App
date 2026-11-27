@@ -374,3 +374,5 @@ void IR_Proxy_Init();
 void IR_Proxy_Deinit();
 void IR_Proxy_RunFrame();
 void IR_Proxy_HA_Discovery(const char* topic);
+
+void DRV_SLink_Init(void);
