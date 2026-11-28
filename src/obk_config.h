@@ -334,6 +334,9 @@
 #define ENABLE_DRIVER_SM15155E					1
 
 #endif
+#if PLATFORM_BK7231N && !PLATFORM_BEKEN_NEW
+#define ENABLE_DRIVER_WS2811BB					1
+#endif
 // parse things like $CH1 or $hour etc
 #define ENABLE_EXPAND_CONSTANT					1
 #define ENABLE_DRIVER_DHT						1
